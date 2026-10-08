@@ -52,31 +52,51 @@
   </a>
 
   <div class="auth__panel">
-    <h1 class="auth__title">Selamat Datang</h1>
-    <p class="auth__sub">Silakan masuk ke akun Anda</p>
-    <p id="loginError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
+    <section id="loginPanel">
+      <h1 class="auth__title">Selamat Datang</h1>
+      <p class="auth__sub">Silakan masuk ke akun Anda</p>
+      <p id="loginError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
 
-    <form class="auth__form" id="loginForm" method="post" action="masuk-preview.html" novalidate>
-      <input type="hidden" name="csrfmiddlewaretoken" value="...">
-      
+      <form class="auth__form" id="loginForm" novalidate>
+        <label class="sr-only" for="id_email">Email</label>
+        <input class="auth__input" id="id_email" type="email" name="email"
+               placeholder="Masukkan Email" autocomplete="email" required autofocus>
 
-      
+        <label class="sr-only" for="id_password">Kata sandi</label>
+        <input class="auth__input" id="id_password" type="password" name="password"
+               placeholder="Masukkan Kata Sandi" autocomplete="current-password" required>
 
-      <label class="sr-only" for="id_email">Email</label>
-      <input class="auth__input" id="id_email" type="email" name="email" value=""
-             placeholder="Masukkan Email" autocomplete="email" required autofocus>
+        <button class="auth__submit" type="submit">Masuk</button>
+      </form>
 
-      <label class="sr-only" for="id_password">Kata sandi</label>
-      <input class="auth__input" id="id_password" type="password" name="password"
-             placeholder="Masukkan Kata Sandi" autocomplete="current-password" required>
+      <p class="auth__alt">Belum punya akun?</p>
+      <a class="auth__link" href="#daftar" id="showRegister">Daftar Sekarang</a>
+    </section>
 
-      <a class="auth__forgot" href="#lupa_password">Lupa Password?</a>
+    <section id="registerPanel" hidden>
+      <h1 class="auth__title">Buat Akun Peserta</h1>
+      <p class="auth__sub">Daftar untuk bergabung dengan event SIMEVENT</p>
+      <p id="registerError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
 
-      <button class="auth__submit" type="submit">Continue</button>
-    </form>
+      <form class="auth__form" id="registerForm" novalidate>
+        <label class="sr-only" for="registerName">Nama lengkap</label>
+        <input class="auth__input" id="registerName" name="name" type="text"
+               placeholder="Nama lengkap" autocomplete="name" required minlength="2">
+        <label class="sr-only" for="registerEmail">Email</label>
+        <input class="auth__input" id="registerEmail" name="email" type="email"
+               placeholder="Email aktif" autocomplete="email" required>
+        <label class="sr-only" for="registerPassword">Kata sandi</label>
+        <input class="auth__input" id="registerPassword" name="password" type="password"
+               placeholder="Buat kata sandi (min. 8 karakter)" autocomplete="new-password" required minlength="8">
+        <label class="sr-only" for="registerConfirm">Ulangi kata sandi</label>
+        <input class="auth__input" id="registerConfirm" name="confirm" type="password"
+               placeholder="Ulangi kata sandi" autocomplete="new-password" required minlength="8">
+        <button class="auth__submit" type="submit">Buat Akun</button>
+      </form>
 
-    <p class="auth__alt">Belum punya akun?</p>
-    <a class="auth__link" href="#daftar">Daftar Sekarang</a>
+      <p class="auth__alt">Sudah punya akun?</p>
+      <a class="auth__link" href="#masuk" id="showLogin">Masuk</a>
+    </section>
   </div>
 </section>
 
@@ -91,25 +111,81 @@
     // ===== Login sederhana (prototipe, sisi klien) =====
     // Sesi disimpan di localStorage -> tetap login walau browser ditutup.
     var SESSION_KEY = 'simevent_session';
+    var USERS_KEY = 'simevent_users';
+    var requestedEvent = new URLSearchParams(location.search).get('event');
     var USERS = [
       { email: 'budi.panitia@simevent.com', password: 'admin123',
-        name: 'Budi Santoso', role: 'Main Admin', redirect: 'panitia_page.html' }
+        name: 'Budi Santoso', role: 'Main Admin', redirect: 'panitia_page.html' },
+      { email: 'peserta@simevent.com', password: 'peserta123',
+        name: 'Peserta Event', role: 'Peserta', redirect: 'peserta_page.html' }
     ];
 
-    function getSession() {
-      try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { return null; }
+    function readUsers() {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) return [];
+      var users = JSON.parse(raw);
+      if (!Array.isArray(users)) throw new Error('Data akun tidak valid.');
+      return users;
     }
 
-    // Kalau sudah pernah login, langsung ke dashboard
-    var existing = getSession();
-    if (existing && existing.redirect) { location.replace(existing.redirect); }
+    function readSession() {
+      try {
+        return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function destination(user) {
+      if (user.role === 'Peserta') {
+        return 'peserta_page.html' + (requestedEvent ? '?event=' + encodeURIComponent(requestedEvent) : '');
+      }
+      return user.redirect;
+    }
+
+    function saveSession(user) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        email: user.email, name: user.name, role: user.role,
+        redirect: user.redirect, loginAt: new Date().toISOString()
+      }));
+    }
+
+    function showAuthPanel(panel) {
+      document.getElementById('loginPanel').hidden = panel !== 'login';
+      document.getElementById('registerPanel').hidden = panel !== 'register';
+      document.getElementById('loginError').hidden = true;
+      document.getElementById('registerError').hidden = true;
+      history.replaceState(null, '', panel === 'register' ? '#daftar' : '#masuk');
+    }
+
+    document.getElementById('showRegister').addEventListener('click', function (event) {
+      event.preventDefault();
+      showAuthPanel('register');
+    });
+    document.getElementById('showLogin').addEventListener('click', function (event) {
+      event.preventDefault();
+      showAuthPanel('login');
+    });
+    if (location.hash === '#daftar') showAuthPanel('register');
+    var existingSession = readSession();
+    if (existingSession && existingSession.email && existingSession.redirect) {
+      location.replace(destination(existingSession));
+    }
 
     document.getElementById('loginForm').addEventListener('submit', function (e) {
       e.preventDefault();
+      if (!e.currentTarget.reportValidity()) return;
       var email = document.getElementById('id_email').value.trim().toLowerCase();
       var pass  = document.getElementById('id_password').value;
       var err   = document.getElementById('loginError');
-      var user  = USERS.find(function (u) { return u.email === email && u.password === pass; });
+      var user;
+      try {
+        user = USERS.concat(readUsers()).find(function (u) { return u.email === email && u.password === pass; });
+      } catch (storageError) {
+        err.textContent = 'Data akun tidak bisa dibaca dari penyimpanan browser.';
+        err.hidden = false;
+        return;
+      }
 
       if (!user) {
         err.textContent = 'Email atau kata sandi salah.';
@@ -117,16 +193,53 @@
         return;
       }
       try {
-        localStorage.setItem(SESSION_KEY, JSON.stringify({
-          email: user.email, name: user.name, role: user.role,
-          redirect: user.redirect, loginAt: new Date().toISOString()
-        }));
+        saveSession(user);
       } catch (ex) {
-        err.textContent = 'Browser memblokir penyimpanan login. Aktifkan penyimpanan lokal lalu coba lagi.';
+        err.textContent = 'Login tidak bisa disimpan oleh browser. Izinkan penyimpanan lokal lalu coba lagi.';
         err.hidden = false;
         return;
       }
-      location.href = user.redirect;
+      location.href = destination(user);
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      var name = document.getElementById('registerName').value.trim();
+      var email = document.getElementById('registerEmail').value.trim().toLowerCase();
+      var password = document.getElementById('registerPassword').value;
+      var confirm = document.getElementById('registerConfirm').value;
+      var error = document.getElementById('registerError');
+      var form = event.currentTarget;
+
+      if (!form.reportValidity()) return;
+      if (password !== confirm) {
+        error.textContent = 'Konfirmasi kata sandi belum sama.';
+        error.hidden = false;
+        return;
+      }
+      var user = { name: name, email: email, password: password, role: 'Peserta', redirect: 'peserta_page.html' };
+      try {
+        var users = readUsers();
+        if (USERS.concat(users).some(function (registeredUser) { return registeredUser.email === email; })) {
+          error.textContent = 'Email ini sudah terdaftar. Silakan masuk.';
+          error.hidden = false;
+          return;
+        }
+        users.push(user);
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      } catch (storageError) {
+        error.textContent = 'Akun tidak bisa disimpan oleh browser. Izinkan penyimpanan lokal lalu coba lagi.';
+        error.hidden = false;
+        return;
+      }
+      try {
+        saveSession(user);
+      } catch (storageError) {
+        error.textContent = 'Akun berhasil dibuat, tetapi sesi masuk tidak bisa disimpan. Silakan masuk dengan akun baru.';
+        error.hidden = false;
+        return;
+      }
+      location.href = destination(user);
     });
   </script>
 </body>

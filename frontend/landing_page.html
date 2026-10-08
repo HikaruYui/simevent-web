@@ -8,7 +8,140 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="static/css/style.css">
-  
+  <style>
+    .events {
+      max-width: 1280px; margin: 72px auto 0; padding: 36px 24px;
+      border-radius: 24px; background: #fbf8ee;
+      scroll-margin-top: 28px;
+    }
+    .events__heading {
+      display: flex; justify-content: space-between; align-items: end; gap: 24px;
+      margin-bottom: 30px;
+    }
+    .events__crumb { margin-bottom: 12px; color: var(--taupe); font-size: 14px; }
+    .events .section__title {
+      color: var(--olive); font: 800 clamp(32px, 4vw, 42px)/1.1 var(--font-head);
+      text-shadow: none;
+    }
+    .events__search { display: block; width: min(360px, 42%); }
+    .events__search input {
+      width: 100%; height: 48px; padding: 0 20px; border: 1.5px solid #bca98e;
+      border-radius: 999px; background: transparent; color: var(--olive);
+      font: 500 15px var(--font-body);
+    }
+    .events__layout {
+      display: grid; grid-template-columns: 236px minmax(0, 1fr); align-items: start; gap: 28px;
+    }
+    .events__sidebar {
+      position: sticky; top: 24px; padding: 22px 20px; border: 1px solid #e8dec9;
+      border-radius: 20px; background: #fffdf7; box-shadow: 0 8px 22px rgba(63, 66, 46, .08);
+    }
+    .events__filter-heading {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 16px; border-bottom: 1px solid #eee5d3;
+    }
+    .events__filter-heading h3, .events__results-heading h3 {
+      color: var(--olive); font: 800 18px/1.25 var(--font-head);
+    }
+    .events__reset {
+      padding: 4px 0; border: 0; background: transparent; color: #a26019;
+      font: 700 13px var(--font-body); cursor: pointer;
+    }
+    .events__sidebar fieldset {
+      display: grid; gap: 11px; margin: 18px 0 0; padding: 0; border: 0;
+    }
+    .events__sidebar legend, .events__sort-label {
+      margin-bottom: 10px; color: #454536; font: 800 14px var(--font-head);
+    }
+    .events__sidebar fieldset label {
+      display: flex; align-items: center; gap: 9px; color: #615b4f;
+      font: 600 13px/1.4 var(--font-body); cursor: pointer;
+    }
+    .events__sidebar input { width: 16px; height: 16px; margin: 0; accent-color: var(--orange); }
+    .events__sort-label { display: block; margin: 20px 0 8px; }
+    .events__sidebar select {
+      width: 100%; height: 42px; padding: 0 12px; border: 1px solid #e1d5be;
+      border-radius: 10px; background: #fff; color: #514b3e; font: 600 13px var(--font-body);
+    }
+    .events__results-heading {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .events__results-heading h3 { font-size: 21px; }
+    .events__count { color: #817767; font: 600 13px var(--font-body); }
+    .events__grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
+      justify-content: initial; margin: 0;
+    }
+    .event-preview-card {
+      min-width: 0; overflow: hidden; border: 1px solid rgba(91, 83, 61, .09);
+      border-radius: 18px; background: #fffdf7; box-shadow: 0 9px 20px rgba(63, 66, 46, .11);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .event-preview-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(63, 66, 46, .16); }
+    .event-preview-card[hidden] { display: none; }
+    .event-preview-card__visual {
+      position: relative; display: flex; min-height: 168px; align-items: end; padding: 20px 16px;
+      background: linear-gradient(135deg, rgba(159, 136, 111, .94), rgba(51, 54, 39, .98));
+      color: #fff4d8;
+    }
+    .event-preview-card__category {
+      position: absolute; top: 13px; left: 13px; padding: 6px 11px; border-radius: 999px;
+      background: #f8edcf; color: #4e4c37; font: 800 11px/1 var(--font-body);
+    }
+    .event-preview-card__visual h4 {
+      max-width: 250px; color: inherit; font: 800 18px/1.18 var(--font-head);
+      text-shadow: 0 2px 5px rgba(0, 0, 0, .16);
+    }
+    .event-preview-card__body { padding: 14px 16px 16px; }
+    .event-preview-card__date {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      margin-bottom: 6px; color: var(--taupe); font: 700 12px var(--font-body);
+    }
+    .event-preview-card__status { color: #9a6b24; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .event-preview-card__status--live { color: #347050; }
+    .event-preview-card__body h4 {
+      min-height: 38px; color: var(--olive); font: 800 14px/1.35 var(--font-head);
+    }
+    .event-preview-card__location { margin-top: 6px; color: var(--taupe); font: 600 12px/1.4 var(--font-body); }
+    .event-preview-card__footer {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 12px;
+    }
+    .event-preview-card__footer strong { color: #c67e24; font: 800 15px var(--font-head); }
+    .event-preview-card__footer a {
+      display: inline-flex; min-height: 34px; align-items: center; padding: 0 14px; border-radius: 999px;
+      background: var(--olive); color: #fff4d8; font: 800 12px var(--font-body);
+    }
+    .events__empty {
+      margin-top: 16px; padding: 30px; border: 1px solid #e8dec9; border-radius: 16px;
+      background: #fffdf7; color: #817767; font-weight: 700; text-align: center;
+    }
+    .events__empty[hidden] { display: none; }
+    @media (max-width: 1080px) {
+      .events__layout { grid-template-columns: 220px minmax(0, 1fr); gap: 20px; }
+      .events__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .events__heading { align-items: stretch; flex-direction: column; gap: 18px; }
+      .events__search { width: 100%; }
+      .events__layout { grid-template-columns: 1fr; }
+      .events__sidebar { position: static; }
+    }
+    @media (max-width: 480px) {
+      .events { padding: 28px 16px; }
+      .events__grid { grid-template-columns: 1fr; }
+    }
+    .about-story { max-width: 950px; margin: 0 auto 36px; text-align: center; }
+    .about-story h2 { margin-bottom: 14px; color: var(--olive); font: 800 clamp(30px, 4vw, 46px)/1.15 var(--font-head); }
+    .about-story p { color: var(--muted); font: 400 17px/1.8 var(--font-body); }
+    .about-process { margin-top: 40px; }
+    .about-process h2 { margin-bottom: 20px; text-align: center; color: var(--olive); font: 800 30px/1.2 var(--font-head); }
+    .about-process ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; list-style: none; }
+    .about-process li { padding: 24px; border: 1px solid var(--line); border-radius: 22px; background: var(--cream-card); }
+    .about-process li b { display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 14px; border-radius: 50%; background: var(--olive); color: #fff; }
+    .about-process h3 { margin-bottom: 8px; color: var(--olive); font: 700 19px var(--font-head); }
+    .about-process p { color: var(--muted); font: 400 15px/1.6 var(--font-body); }
+    @media (max-width: 700px) { .about-process ol { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body class="">
   
@@ -45,14 +178,14 @@
     
 <header class="site-header">
   <nav class="navbar" aria-label="Navigasi utama">
-    <a class="navbar__brand" href="preview.html" aria-label="SIMEVENT, ke beranda">
+    <a class="navbar__brand" href="landing_page.html" aria-label="SIMEVENT, ke beranda">
       <img src="static/img/logo.svg" alt="SIMEVENT">
     </a>
 
     <ul class="navbar__menu">
-      <li><a href="preview.html"  class="is-active">Beranda</a></li>
-      <li><a href="#jelajah"  class="">Jelajah</a></li>
-      <li><a href="#tentang"  class="">Tentang</a></li>
+      <li><a href="landing_page.html" class="is-active">Beranda</a></li>
+      <li><a href="#jelajah">Jelajah</a></li>
+      <li><a href="#tentang">Tentang</a></li>
       <li><a href="#bantuan"  class="">Bantuan</a></li>
     </ul>
 
@@ -76,9 +209,9 @@
     <h1>Temukan Berbagai Event Menarik Hanya di SIMEVENT</h1>
     <p class="hero__sub">Daftar dan Hadiri event untuk Mendapatkan Sertifikat Digital</p>
 
-    <form class="search" action="#jelajah" method="get" role="search">
+    <form class="search" id="hero-search" action="#jelajah" role="search">
       <svg class="icon"><use href="#ic-search"/></svg>
-      <input type="search" name="q" placeholder="Mau ikut event apa?" value="" aria-label="Cari event">
+      <input id="hero-search-input" type="search" name="q" placeholder="Mau ikut event apa?" value="" aria-label="Cari event">
     </form>
 
     <ul class="stats">
@@ -100,31 +233,31 @@
   
   <div class="categories">
     
-    <a class="category" href="#jelajah?kategori=konferensi">
+    <a class="category" href="#jelajah" data-event-category="konferensi">
       <svg class="icon category__icon"><use href="#ic-konferensi"/></svg>
       <strong>Konferensi</strong>
       <span>10 event</span>
     </a>
     
-    <a class="category" href="#jelajah?kategori=workshop">
+    <a class="category" href="#jelajah" data-event-category="workshop">
       <svg class="icon category__icon"><use href="#ic-workshop"/></svg>
       <strong>Workshop</strong>
       <span>10 event</span>
     </a>
     
-    <a class="category" href="#jelajah?kategori=seminar">
+    <a class="category" href="#jelajah" data-event-category="seminar">
       <svg class="icon category__icon"><use href="#ic-seminar"/></svg>
       <strong>Seminar</strong>
       <span>10 event</span>
     </a>
     
-    <a class="category" href="#jelajah?kategori=webinar">
+    <a class="category" href="#jelajah" data-event-category="webinar">
       <svg class="icon category__icon"><use href="#ic-webinar"/></svg>
       <strong>Webinar</strong>
       <span>10 event</span>
     </a>
     
-    <a class="category" href="#jelajah?kategori=sosialisasi">
+    <a class="category" href="#jelajah" data-event-category="sosialisasi">
       <svg class="icon category__icon"><use href="#ic-sosialisasi"/></svg>
       <strong>Sosialisasi</strong>
       <span>10 event</span>
@@ -134,116 +267,118 @@
 </section>
 
 
-<section class="section events">
-  <h2 class="section__title">Rekomendasi Event</h2>
+<section class="section events" id="jelajah">
+  <div class="events__heading">
+    <div>
+      <p class="events__crumb">Beranda / Jelajah Event</p>
+      <h2 class="section__title">Jelajah Event</h2>
+    </div>
+    <label class="events__search">
+      <span class="sr-only">Cari event</span>
+      <input id="event-search" type="search" placeholder="Cari event..." autocomplete="off">
+    </label>
+  </div>
 
-  <div class="events__grid">
-    
-    <article class="event-card">
-      <div class="event-card__img" style="background-image:url('static/img/hero.jpg')"></div>
-
-      <div class="event-card__chips">
-        <span class="chip chip--cream">Konferensi</span>
-        <span class="chip chip--white">6 Nov 2026</span>
+  <div class="events__layout">
+    <aside class="events__sidebar" aria-label="Filter dan sortir event">
+      <div class="events__filter-heading">
+        <h3>Filter &amp; Sortir</h3>
+        <button class="events__reset" type="button" id="event-reset">Reset</button>
       </div>
+      <fieldset>
+        <legend>Kategori</legend>
+        <label><input type="checkbox" name="event-category" value="konferensi"> Konferensi</label>
+        <label><input type="checkbox" name="event-category" value="workshop"> Workshop</label>
+        <label><input type="checkbox" name="event-category" value="kuliah umum"> Kuliah Umum</label>
+        <label><input type="checkbox" name="event-category" value="seminar"> Seminar</label>
+        <label><input type="checkbox" name="event-category" value="pelatihan"> Pelatihan</label>
+        <label><input type="checkbox" name="event-category" value="webinar"> Webinar</label>
+      </fieldset>
+      <fieldset>
+        <legend>Status</legend>
+        <label><input type="checkbox" name="event-status" value="soon"> Akan datang</label>
+        <label><input type="checkbox" name="event-status" value="live"> Sedang berlangsung</label>
+      </fieldset>
+      <fieldset>
+        <legend>Biaya</legend>
+        <label><input type="radio" name="event-price" value="semua" checked> Semua</label>
+        <label><input type="radio" name="event-price" value="gratis"> Gratis</label>
+        <label><input type="radio" name="event-price" value="berbayar"> Berbayar</label>
+      </fieldset>
+      <label class="events__sort-label" for="event-sort">Urutkan</label>
+      <select id="event-sort">
+        <option value="relevan">Paling relevan</option>
+        <option value="tanggal">Tanggal terdekat</option>
+        <option value="harga">Harga terendah</option>
+      </select>
+    </aside>
 
-      
-      <span class="status status--live"><i></i>Sedang Berlangsung</span>
-      
-
-      <h3 class="event-card__title">Konferensi Meja Bundar</h3>
-
-      <ul class="event-card__meta">
-        <li><svg class="icon"><use href="#ic-pin"/></svg>Hotel Mercure</li>
-        <li><svg class="icon"><use href="#ic-user"/></svg>Ir. Soekarno</li>
-      </ul>
-
-      <div class="event-card__foot">
-        <span class="price">Rp145.000</span>
-        <a class="btn btn--dark btn--sm" href="#detail_event">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>
+    <div class="events__results">
+      <div class="events__results-heading">
+        <h3>Event untukmu</h3>
+        <p class="events__count" aria-live="polite"><b id="event-count">4</b> event ditemukan</p>
       </div>
-    </article>
-    
-    <article class="event-card">
-      <div class="event-card__img" style="background-image:url('static/img/hero.jpg')"></div>
-
-      <div class="event-card__chips">
-        <span class="chip chip--cream">Workshop</span>
-        <span class="chip chip--white">10 Nov 2026</span>
+      <div class="events__grid" id="event-grid">
+        <article class="event-preview-card" data-event-id="conference-tech" data-category="konferensi" data-status="live" data-price="berbayar" data-date="2026-11-06" data-amount="145000">
+          <div class="event-preview-card__visual">
+            <span class="event-preview-card__category">Konferensi</span>
+            <h4>Konferensi Teknologi Nusantara 2026</h4>
+          </div>
+          <div class="event-preview-card__body">
+            <p class="event-preview-card__date">6 Nov 2026 <span class="event-preview-card__status event-preview-card__status--live">Berlangsung</span></p>
+            <h4>Konferensi Teknologi Nusantara 2026</h4>
+            <p class="event-preview-card__location">Hotel Mercure</p>
+            <div class="event-preview-card__footer"><strong>Rp145.000</strong><a href="masuk-preview.html?event=conference-tech">Daftar</a></div>
+          </div>
+        </article>
+        <article class="event-preview-card" data-event-id="workshop-uiux" data-category="workshop" data-status="soon" data-price="berbayar" data-date="2026-11-10" data-amount="145000">
+          <div class="event-preview-card__visual">
+            <span class="event-preview-card__category">Workshop</span>
+            <h4>Workshop UI/UX untuk Pemula</h4>
+          </div>
+          <div class="event-preview-card__body">
+            <p class="event-preview-card__date">10 Nov 2026 <span class="event-preview-card__status">Akan datang</span></p>
+            <h4>Workshop UI/UX untuk Pemula</h4>
+            <p class="event-preview-card__location">Hotel Mercure</p>
+            <div class="event-preview-card__footer"><strong>Rp145.000</strong><a href="masuk-preview.html?event=workshop-uiux">Daftar</a></div>
+          </div>
+        </article>
+        <article class="event-preview-card" data-event-id="seminar-education" data-category="seminar" data-status="live" data-price="gratis" data-date="2026-11-09" data-amount="0">
+          <div class="event-preview-card__visual">
+            <span class="event-preview-card__category">Seminar</span>
+            <h4>Seminar Nasional Pendidikan</h4>
+          </div>
+          <div class="event-preview-card__body">
+            <p class="event-preview-card__date">9 Nov 2026 <span class="event-preview-card__status event-preview-card__status--live">Berlangsung</span></p>
+            <h4>Seminar Nasional Pendidikan</h4>
+            <p class="event-preview-card__location">Hotel Mercure</p>
+            <div class="event-preview-card__footer"><strong>Gratis</strong><a href="masuk-preview.html?event=seminar-education">Daftar</a></div>
+          </div>
+        </article>
+        <article class="event-preview-card" data-event-id="forum-kalimantan" data-category="konferensi" data-status="soon" data-price="gratis" data-date="2026-11-04" data-amount="0">
+          <div class="event-preview-card__visual">
+            <span class="event-preview-card__category">Konferensi</span>
+            <h4>Forum Inovasi Kalimantan</h4>
+          </div>
+          <div class="event-preview-card__body">
+            <p class="event-preview-card__date">4 Nov 2026 <span class="event-preview-card__status">Akan datang</span></p>
+            <h4>Forum Inovasi Kalimantan</h4>
+            <p class="event-preview-card__location">Hotel Mercure</p>
+            <div class="event-preview-card__footer"><strong>Gratis</strong><a href="masuk-preview.html?event=forum-kalimantan">Daftar</a></div>
+          </div>
+        </article>
       </div>
-
-      
-      <span class="status status--soon"><i></i>Akan Datang</span>
-      
-
-      <h3 class="event-card__title">Konferensi Meja Bundar</h3>
-
-      <ul class="event-card__meta">
-        <li><svg class="icon"><use href="#ic-pin"/></svg>Hotel Mercure</li>
-        <li><svg class="icon"><use href="#ic-user"/></svg>Ir. Soekarno</li>
-      </ul>
-
-      <div class="event-card__foot">
-        <span class="price">Rp145.000</span>
-        <a class="btn btn--dark btn--sm" href="#detail_event">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>
-      </div>
-    </article>
-    
-    <article class="event-card">
-      <div class="event-card__img" style="background-image:url('static/img/hero.jpg')"></div>
-
-      <div class="event-card__chips">
-        <span class="chip chip--cream">Seminar</span>
-        <span class="chip chip--white">9 Nov 2026</span>
-      </div>
-
-      
-      <span class="status status--live"><i></i>Sedang Berlangsung</span>
-      
-
-      <h3 class="event-card__title">Konferensi Meja Bundar</h3>
-
-      <ul class="event-card__meta">
-        <li><svg class="icon"><use href="#ic-pin"/></svg>Hotel Mercure</li>
-        <li><svg class="icon"><use href="#ic-user"/></svg>Ir. Soekarno</li>
-      </ul>
-
-      <div class="event-card__foot">
-        <span class="price">Rp145.000</span>
-        <a class="btn btn--dark btn--sm" href="#detail_event">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>
-      </div>
-    </article>
-    
-    <article class="event-card">
-      <div class="event-card__img" style="background-image:url('static/img/hero.jpg')"></div>
-
-      <div class="event-card__chips">
-        <span class="chip chip--cream">Konferensi</span>
-        <span class="chip chip--white">4 Nov 2026</span>
-      </div>
-
-      
-      <span class="status status--live"><i></i>Sedang Berlangsung</span>
-      
-
-      <h3 class="event-card__title">Konferensi Meja Bundar</h3>
-
-      <ul class="event-card__meta">
-        <li><svg class="icon"><use href="#ic-pin"/></svg>Hotel Mercure</li>
-        <li><svg class="icon"><use href="#ic-user"/></svg>Ir. Soekarno</li>
-      </ul>
-
-      <div class="event-card__foot">
-        <span class="price">Rp145.000</span>
-        <a class="btn btn--dark btn--sm" href="#detail_event">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>
-      </div>
-    </article>
-    
+      <p class="events__empty" id="events-empty" role="status" hidden>Tidak ada event yang cocok dengan pencarian atau filter.</p>
+    </div>
   </div>
 </section>
 
 
-<section class="why">
+<section class="why" id="tentang">
+  <div class="about-story">
+    <h2>Tentang SIMEVENT</h2>
+    <p>SIMEVENT adalah platform pendaftaran dan pengelolaan event yang menghubungkan peserta, penyelenggara, dan komunitas. Kami ingin membuat pencarian acara, proses pendaftaran, presensi, hingga penerbitan sertifikat menjadi lebih simpel dalam satu tempat.</p>
+  </div>
   <div class="why__box">
 
     <div class="why__left">
@@ -307,6 +442,14 @@
     </div>
 
   </div>
+  <div class="about-process">
+    <h2>Cara menggunakan SIMEVENT</h2>
+    <ol>
+      <li><b>1</b><h3>Jelajahi event</h3><p>Cari seminar, workshop, konferensi, atau webinar sesuai minatmu.</p></li>
+      <li><b>2</b><h3>Daftar dengan mudah</h3><p>Isi data pendaftaran dan ikuti langkah pembayaran jika event berbayar.</p></li>
+      <li><b>3</b><h3>Hadiri dan dapatkan sertifikat</h3><p>Gunakan tiket untuk presensi, lalu akses sertifikat digital setelah acara.</p></li>
+    </ol>
+  </div>
 </section>
 
 
@@ -325,15 +468,15 @@
         <h3>Kategori Event</h3>
         <ul>
           
-          <li><a href="#jelajah?kategori=konferensi">Konferensi</a></li>
+          <li><a href="#jelajah">Konferensi</a></li>
           
-          <li><a href="#jelajah?kategori=workshop">Workshop</a></li>
+          <li><a href="#jelajah">Workshop</a></li>
           
-          <li><a href="#jelajah?kategori=seminar">Seminar</a></li>
+          <li><a href="#jelajah">Seminar</a></li>
           
-          <li><a href="#jelajah?kategori=webinar">Webinar</a></li>
+          <li><a href="#jelajah">Webinar</a></li>
           
-          <li><a href="#jelajah?kategori=sosialisasi">Sosialisasi</a></li>
+          <li><a href="#jelajah">Sosialisasi</a></li>
           
         </ul>
       </div>
@@ -368,6 +511,72 @@
 
   </div>
 
-  
+  <script>
+    const eventGrid = document.getElementById("event-grid");
+    const eventCards = Array.from(eventGrid.querySelectorAll(".event-preview-card"));
+    const eventSearch = document.getElementById("event-search");
+    const eventSort = document.getElementById("event-sort");
+    const eventCount = document.getElementById("event-count");
+    const eventsEmpty = document.getElementById("events-empty");
+
+    function filterEvents() {
+      const query = eventSearch.value.trim().toLocaleLowerCase("id");
+      const categories = Array.from(document.querySelectorAll('input[name="event-category"]:checked'))
+        .map(input => input.value);
+      const statuses = Array.from(document.querySelectorAll('input[name="event-status"]:checked'))
+        .map(input => input.value);
+      const price = document.querySelector('input[name="event-price"]:checked').value;
+      const visibleCards = eventCards.filter(card => {
+        const matches = card.textContent.toLocaleLowerCase("id").includes(query)
+          && (!categories.length || categories.includes(card.dataset.category))
+          && (!statuses.length || statuses.includes(card.dataset.status))
+          && (price === "semua" || card.dataset.price === price);
+        card.hidden = !matches;
+        return matches;
+      });
+
+      if (eventSort.value === "tanggal") {
+        visibleCards.sort((a, b) => a.dataset.date.localeCompare(b.dataset.date));
+      } else if (eventSort.value === "harga") {
+        visibleCards.sort((a, b) => Number(a.dataset.amount) - Number(b.dataset.amount));
+      }
+      visibleCards.forEach(card => eventGrid.append(card));
+      eventCount.textContent = visibleCards.length;
+      eventsEmpty.hidden = visibleCards.length > 0;
+    }
+
+    document.querySelectorAll(".events__sidebar input, #event-sort").forEach(control => {
+      control.addEventListener("input", filterEvents);
+      control.addEventListener("change", filterEvents);
+    });
+    eventSearch.addEventListener("input", filterEvents);
+
+    document.getElementById("event-reset").addEventListener("click", () => {
+      document.querySelectorAll('input[name="event-category"], input[name="event-status"]')
+        .forEach(input => { input.checked = false; });
+      document.querySelector('input[name="event-price"][value="semua"]').checked = true;
+      eventSearch.value = "";
+      eventSort.value = "relevan";
+      filterEvents();
+    });
+
+    document.getElementById("hero-search").addEventListener("submit", event => {
+      event.preventDefault();
+      eventSearch.value = document.getElementById("hero-search-input").value;
+      filterEvents();
+      document.getElementById("jelajah").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.querySelectorAll("[data-event-category]").forEach(link => {
+      link.addEventListener("click", () => {
+        document.querySelectorAll('input[name="event-category"]').forEach(input => {
+          input.checked = input.value === link.dataset.eventCategory;
+        });
+        filterEvents();
+      });
+    });
+
+    filterEvents();
+  </script>
 </body>
 </html>

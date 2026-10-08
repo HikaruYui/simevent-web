@@ -73,7 +73,7 @@
 
       <div class="event-card__foot">
         <span class="price">Rp{{ event.harga|intcomma }}</span>
-        <a class="btn btn--dark btn--sm" href="{% url 'detail_event' event.pk %}">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>
+        <a class="btn btn--dark btn--sm" href="{% url 'masuk' %}">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>
       </div>
     </article>
     {% empty %}
