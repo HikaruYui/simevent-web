@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMEVENT - Dashboard Peserta</title>
+    <script>
+        // Penjaga halaman: wajib login dulu, kalau belum -> ke halaman masuk
+        (function () {
+            var session = null;
+            try { session = JSON.parse(localStorage.getItem('simevent_session')); } catch (e) {}
+            if (!session || !session.email) { location.replace('masuk-preview.html'); }
+            else if (session.role !== 'Peserta') { location.replace(session.redirect || 'landing_page.html'); }
+            window.SIMEVENT_SESSION = session;
+        })();
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'Manrope', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            cream: '#F3E2BF',       // latar utama (krem keemasan)
+                            creamLight: '#FBF3E4',  // sidebar / modal
+                            sand: '#E6D2A9',
+                            tan: '#CDB68E',         // pill navbar
+                            orange: '#DB9743',      // aksen oranye (huruf "E" di logo)
+                            orangeDeep: '#B8721F',
+                            goldLight: '#F3D9A6',
+                            bronze: '#8B6A44',
+                            olive: '#3F422E',       // tombol "Daftar" & judul
+                            oliveDark: '#2C2E1F',
+                            ink: '#5F5944',
+                            muted: '#70664F'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F3E2BF;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CDB68E;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #DB9743;
+        }
+    
+        html, body { height: 100%; overflow-x: hidden; }
+        @supports (height: 100dvh) { body { height: 100dvh; } }
+        body {
+            background:
+                radial-gradient(1200px 600px at 100% 100%, rgba(219,151,67,.55), transparent 60%),
+                radial-gradient(900px 500px at 0% 100%, rgba(251,243,228,.9), transparent 60%),
+                linear-gradient(160deg, #D9CDB0 0%, #EBD7AE 45%, #F3E2BF 100%);
+            background-attachment: fixed;
+        }
+        .text-gradient-brand {
+            background: linear-gradient(90deg, #E7BB7F, #DB9743 40%, #8A7A5A 70%, #3F422E);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+    </style>
+</head>
+<body class="h-full text-brand-olive font-sans antialiased flex flex-col">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="w-full bg-brand-tan/80 backdrop-blur-md border-b border-white/40 shadow-lg shadow-brand-orange/10 sticky top-0 z-30">
+        <div class="px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <button id="menuBtn" onclick="toggleSidebar()" aria-label="Buka menu" class="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-brand-olive hover:bg-white/50 transition-all">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUQAAAA/CAYAAACYeLFwAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAJ69JREFUeAHtfQuUnFd93//eb16SAK9ODecYAsyeHtrCOdi7lKQQQJ51DDUJxKvYBItHdpbGrQ2kkupasvraUWgrS6bdVRKCKW521hjbiUm0Sh2wS2BHNrHJsX12DT1JOG06QwJxc0iOpqHGq9357u193//95j0ryY72+9mr73kf3/fd+7v/171D4DyjVJoYYxGbIZxMAPCSOFUkhADnvAmErHHg1Y1448w3a3/SGDC/iVptbQ1SpEiR4gKDwHnEntKV+wmFitgd63sz5zVOSfWxr31rqWeeU2+uPrby7TKkSJEixQUGhS3iJ0tvmpDb0jVXzgPhC5AgQyEZdk5ISAkYr159zZX1PT915UypVGwj0VLpH0jp8ipIkSJFiouALUmIe665co4S+izj7CqRUUWdlARIiNnVZEiIL8aoz52ya4gUNcIiKTE2Y4gnKCVzIkXtzNefnYUUKVKkuMAYSkK87rqJot2/5toJQYakCDHUqOQ5Rnef+fq3yJmVbxO5FcfjlMBsRGlD/IG4F6jYSmqUx/6cPi/zEuRaJhFfIRlYzUR0UZ47x8hRSJEiRYqLgIElxPe99yemgbPmw488XXv/T7+tHANbZGxj/JFH1hr90l533VvKlGbmiCRQ4Or/biVrAVNeFO4Xzo5++ctPVyBFihQpLgIGIsTp6dJYLooXf+u3H98rjz94w546Y6zx0KlvTMEQ+LnpnyxnBDEKqita0tNV4GaPqD25FeR79Ld+5xsVSJEiRYqLhMwgN12+M7d/g8fLcv9jH3p3mQlCE7vPwpD4neUnqmJT/ci+kpA2o+kMhasFDRblNW1bZE0hIa5tkvjg/fc/lobapEiR4qKiLyEeKE+PbdLW9D2/8fCkPN5RyO+XW8Ffl8GIuO+BmiTXZZ1/aWwdChOwDo27H/xqA1KkSJHiRUJfQszupNNZyH/XHu8qFCa0qgulQ5+8YfrEr/32MmwBC9VaU2xqkCJFihQvMvp6mXfl8zM7C7ma3K8cuKm4M5+Dnfk87CwUYGc2v1g5XC5CihQpUlwC6CkhzlduKbbOnStxTsxskkJz1w6q4giJdobIYOqVE//q5r2H/uPnXxSb398891iZMroo93G8o6qjOd716nd0dB793//9aJUSMiNsl8KHw5RLB+S++FPubuniYbE/Zmxq95v31WAEnF2ZL25mWV3mY8uTZYEpU52X54DpOE3OGq/+x/9hvFNef376QEXcNwfcpmUurc+Hu/Oq/uqlsPD5UD1Mmeod0BYbH7/1kYYt7zufuaZCTHnyfeh3Y8qSeel31/z7tz2zG7aAJ+665gBwOs9VLUSJcsvFHzFb1eZo45rD/y14L48cv2FF1Kgkag46LQX99Sgw5a2jel/dTXW+4PN0aQg+p48ZJ43ZO36l43f49aO31hnnRWben3wtMTP78g2Zfaau8dq/vusLQzkhJQ7cMl3kMRNOTJ2nyk/ky7g/FsVP3XPfIzWb5qM3lcriORZlGqbasK8PS9TN10+cM8+hyjLnTd271I5UL7UY4Z4SYoHSklCRhZqcU8eVhWpTSIdNeW5nQUuJYr/4skJm9bO//PE5eJEgiQ+ToT3X/UPae2zwONf7YD6+TWYDy60znvBpGBGbESuprG2diPkzx7YTmYLd+c7whA22wRLDccZxj/MjBF/sAPX+7Ptov0wZq+nMfNA9JJ5FdJyxP75rogRbAYcZvUnMcHK7khy7mVfCwVATnm0HJj9O/PPxMC1Pbs3rJT0CMTig9oE/a/AibXpS+tRtHynBCOCoPXLw35UbUmsHBdeMUXtIZoibhB4kUdNP1B56d6VLBj0JMZ/JTBRyOdiRy03Yc4Vc9uSOXFaeA7ktCBW6kBVWxmymsnjn/vrSXQevh4sI2uEROs2Q6QzcicIYJNns7MjJLUFxMgMjgkRwve1uriUiMgQj/zhCHqTutgETEjRY3CktudggJ5c/HvlRB+nU8t/wS7UakXZekw6IJwMw78i86xKMiCfnr5OhWBOe++wgZPbNMYv5Uqf0HP0RlNYdqz+Tnycp/Wc53o4m4F8p78MEdhDFJI4HIx5SzBxsAfb1O/RtIyYdTx4nGovdMY0E15i33XdpoychUsKviohQHijMLFYOqLnG9BxdoAQalGjFRCogal/8Ec6EeN9art75SytLx//5DFwEsJi5/bZv1ksqAt1YbTgkIYlMuO+LKI+xs9/+QglGgMiiZLoLOms7Hyq0vcw2KI0YU0Bwb6jmOEEU7YPpxCRRQejR+YU6dQbXDUtOlshF6pG/OW9tTCceQ0t0gD8jb7z7yMO1trTBEUHH+ol5QPhmx04vRQTpNQHipateTBCIUdylw8W4wUafKlVuu6kEIwAXZb+nHYxardYA6bkjb52Uu4zb9hMDZXcwuNTQkxAJsZYcNkbzrQPy3Gxlock5nRKfvqEsLQScFYYQZ8UpiTTVpWOfqN93/BMzi8duKcKFeoBIP4K1eShJi/iG3WsUdRKZ2frG4Ju1s7/pI0FGtARD4rnH50uiNLd4BQ/0GWhTe3hSXO0AK4UQzOBGyiQQ5u0kXPANnyR0oX5NP9eiC7pD6btxx/GqIxS/PaLaLNpMqFmob6ekcmcSEU+31DGxk1BJ+wUsbVvys2q0uoU4ydATGXf3DfMESSIhbkS1VZFCQ7QIQwPLm9yRoUUm4QmIY+a+O0ff3LMqCfIDMyHCm0BIm/awXdDby8z5d3UnU1Lg/i+euFmpzrNHFhqMb06JczVniAdvniamA4r3WhR71YhE9XuPfXzxC8duKcEFROdO0R2e7BKEhBqg72z6vJCWhzYJCCm7bAr09SSoDIQET3UEBa8B8ra6AzinF1bFMfmSkMjC3gKw3qHM8YO1pviuNXcfrigmWza82vzksVKRM1LyqqvN2b93WW/KMtWOGSCCw/1YOkgsCdrxB98DwWwpfI74evSS1E29kIDlwbkv070fVV7x6G0fnoGhgL4gRwOmqX+rexJTlcQzJCR8V/lk4yOkazPUeW55sayXHHpLiHRzzfj6xBEfi1nmlCW12SN3Nz56x2emgMezomk0wPvurFQpVWjxZ8hSkAIhdOWLxz+xet/xW4dsEN2BVWboJGn1Yhb1+E66Ad9j/B3OFmeNzpxPnF1dLMIwIORqzay6DCwhWtXVNnme7Nndsgy2YWfR0hT3tjF7n2cC8CISuJvs+yp0KVNI4Kcx43iJ0dcmovJZh0RES8R4eAMJzqq26lFIberIcmOg/Ihu1gTbBq2k6J7ZS4YWdjCx+wnTbOeiSEjaPPGO222QotyYVWBQrEMo5dm6mvejTiUZMUKfuoOAKLeWzHVeDFcPfeJO/cncNpT0/LcHPcNu4hc2qtlCfo4odU+9jKL4d+WBO2+p7Lvj7qPyxC8cubsqNtUvHrulLNhvTt5DVbgCN3Za/dGMYiv+yIR4s9X7RR5AWOVDh//LEpwHJD+QJYbeTZqFo6hlFX3C1JgbaddbnBlE0tu8AAPge9+YnxB5Fx3p2T7O7T4xYTLBoN5T0GVSYscqviVQK3hyEGYNclDfLd98DLHayHWJYhkbApagZfiF0LFMziJPsfvDwnqzU7n5OFvdoBtz4rYxXEVLKypXTkqrxyaKk0f6L/rhHpXwGWZ6LEfqLXWhMkQOqtVeeXDLYM7Di9RiAmcESVZZrGsbu9rqi7qFRmrgtte4ZBUVttNq9iqXuYqDayeMB8oqGt+cA6b47w7um/nl+Qf6t30xOvFN+5lDenV24EQvFk8mV6CaVWFDpm1Z0lNRUrEQUiJ+vXjWaRUChuvoC2iKj3GQuPcUiWeLzQ3y3Yh9RhtwiaEnIc5Wqs3fPP5PZsU7OOVOUjVaV37zzo+VKWezHzhSrcnTHzbE+MCxXywJu+L+iIAJUeFhL/cSTFH8UxX5VIRKWbnx8OJoxBhBR84beART7d+Tn7JXIXUnbNUmSUSk2jwQIeaAlZw0Eoy8xqHD8LDvC+J9JMR2uQO8vRB4c3xftQrnGVJt/pOTbxdaQ6gWS9uxjHUjRpfIUFoGuz5mHzw5L9TlTZNf8M0sUWm1l8XxmW55JAQ9T45G9iac1n/u8Pl/H8B5YhBLqJiGjUmSyHTayoED06cXFpZ7Eq6UEEkGkDSLcyKa6BJN/cEHaw2xqfbK9n3ve1tRWMSnca2wHVGQerP29Wd75nEpoq8R4IOH/+tyhsdHs2QT1J9ovRmQ+61iRNnKqeMfXTl1zHvO9h25p/bBw/fsZaw1HsHGUoZvNtT9Ks2GyiMDG+ZY50Mhrp6686OLp46VizAs4j7X+WDXtarvFFdzSTiOiGsqvsEwVhJqc/+fSVAZ0+u5H4MBOSCaPjyDI5Ik9npXUEAqPiSM533SbhWC+I7i0UGVzPwTKv4aRm1WZGjJC5wKbt6GKRSEuvxIo3dGPn2/T37eQJAX3BXOcZVqkrBsULW6BSzhQHEXKxwYpBg8OIYDpVE3+juZO4CF7YRr6h7OkXTpYSCr6A1HqhXCNo5KEstIUhOEJkktwzcg4pulTERWHj5+08rDn943Y9PsO1Jt3Hj43vINd9w7TnlrNiKbayqNzINrQrR5yHMRbJYzdH3l9058YAKGQYT2+fBdwVOSOQqlwibvZIAGpWX2DdJ+bmW+CFKa4qEUaHJreBrwNeE8SW/tUJNLkCU/yIdDX+lyKyhAYU1KoO6EUdUh4AKhNlcmBhowxAAwg45cQL0xt4J5sioMARuMrat34d6FU4PdwATOjmhmfJwR52p+fU9wbUn/y/YLKbHne1rHZZl3bcnXljdy/duO9UdsC8naRhjYTbT3yIOVPGlN5kBKfBtCFWxZCU8TI2yWonij+siJG+qPfvqGmTDt/dXrDz8wSVhrKktbNS8lmjyMtCiIsSjU8NVHj4fpBwUf4qyFVTUBqyS2NxKmljiz17FURiLoKwVFWataEi+JGolTmPHOBEZ42+Chv4RHaSebaUIVv0CQarMQepacem+1OMPKVlqiOzLlfnmtzpfGxM0lHL+ntV00y0Te+MLzp3vl46ILiJ+xZE2JyqYHFwimzRCrmifCvKQNVErUHEvTPJDox3awXE8psQAQmgRQc9maKOzD1XB+XhbYnhjKb/6eQw+t5XPxpCCvk1pSNGqwU3+l9CdILd6sfu34z9aT6d9/5Eu1997+0FTE4lmRppG1qrORHC05CnKt/v7xnx2MFJHK3GY35P1scYaAbAgDdlDoC/JEI+mtNAN1XwlROE2vd0SK88CwPgSC6ww9pV0bmJ0Msk30mQsGYaxfxtI0x4zoVH7SNzxpfdO8Qy8J6kPzGUxcaXWqUutpZ+M4HYdAfZfHFyw4xAycdsDU84o9/Urn17/9T/fVxG7NUqf+n7h2JLY9pcRkCFQwiG5l4GMMvSST97alQY+h28rUweXmtYd+94CQBscFiS076Y5vOjU4J44ptJZsmpVKKfjg7zmyXL328O8KG2PrqJEMVRqrPitVmmwurBy7rghDADeWgVQJ7Rb1EqLX0/Qx47tF410LPM6uLBj7wVOfL/XKnoCenaKcNSaRdtpAk0C85urJw6DYvlIexVJtKLm6ul9AvPHgN2tEeSEtEWOPhimeCrV5vtRTHRSPcb21FwKEAfU2GFs45wZaXi4p4biOfkFtYkg1h+ALBBBO3aPWlOEleQPOx/KtTFcpsWBz58n2N0Q77wAdZ9DZ+mxV8u2IgVbM7gRj5N772Il3lyNgcyYI27RDevLqw1+t2HvzL4sWnzhxzUQG2N6fOFRzq+JMHf5y5fFj19ZoxE+Jxj+GZQ3xocdEp1qUt/Wqh5qp4rjEN/5wgv0gaJcmRRaXxTE7Q400SExIhs5a6WPyfK1Tbnp2CthwpaABU8KlHa6o8/Tlmxv0hvWoO2POiWrtWPg55Mn64k3F9oTrHQ7bw7DxSjddq8D5SVH+HDCn6OoLBEk/Gy+UoYc3nsmfouVeunSeVP1u5bax59BXTverS3vxpg6GsISkPoYdduuGZta7Zmiun1N7TTk7q2Ox3NOKOeEsCLgpVYSUePS2D0szw4yvMiZFJSUudPI4yzpG4G2QFjhcaxRIswtjxgeuQm/M0G0HaNie2LI2sefQV6vvOPQ1IS1KNbjVEF7otXce+qob8Z45sWcuwzanM9Aqik+w+vRd71pcPfa2or3+riO/X6NxPCm90ZGRLo0XW0qepafuemepV/lBYDaMNnKSxBY3cpHPmj2HClEbSrrPWhGSTdknc0qd+mvF8KxuyyRRi1D17QXrjXUTXpBxSfxfJPlMneSiuniJdSF613kU1znJ1BlQ8Qd18Vz1OBvX40wk/mg9jqDeorzeInEdBgGDmrY0JFaIAT8wRT1m9fzh8dI0UfGMSCrRic0yXGq/BgNVxae19eD+UB5PtwipbxJa3yBRnZBWXdiH63nxvDkC9ay4lhHXIireGYg/cU3kWs/lmXxH871LT9hywWuiwfk4rtg77LO6OefiPUTrtKuUyBMahJ2muhXSYnYFODv4ACJxQrakjf9txnkzrwjJr5ol5xpZtrHXnls9/vZpChsVbRvU3mnhlS6LIW9FBu/a+95+pNbIxuemcqTVVKo3wTbJuKetDs9llgjDVropMTZxML571RZ8e47iczV3P8cqhmqkxedWP1vsnLeenYJjwy2J5bJ8BZ0I6u86zICsyK065RozOAkWew01Q3A35S+Zj07KYVCp+o23P10Tt9aCbkmQdERUaMlEN7VZ9MdpPEw4xwh6Dk7YEgwASmjbV/YKAnH5ucBtR5Tc19lXxGfQB9yqsfahCbaDchcULVFZeLAh5LAllBDZfNV36WJLXO8YU2vcOMMpQe1P4OoaKhmphLhl/I8TbykLp/Hs5JFvNuy5KFJOk4Z3mljP9GYxm8nU/+j4W9yoKNNFbGPWhfVw57QZaO4w8Z4Pd66vlGjXTXULpgKy6Wm1dffkrFBj5JxtbgziAFgEiVq0jbDl7BSxKXp2sFv117h8z785TSmqI/c2Rjdq837PC4AlT4LyciYE848d713e9l58I5JABgbnZyz76eys3Q6spDoWb653HtCM9OiewFXdfkdoTN3uFz3tBTubhaP64/2QqX09CaGINJ0zyNSn/+CAJi+Fn8t+Axp2L8p5BdscExgjXaREjggKe4V5e8lDQL41NFgkytuuOC+E+Mfzb5PhMk1MhhJX/stnlqM4nqLAljJUzmBQapTYErVPMmT+O//5rXPu/sPPLGcI1NQ9kVoUQd7f0zBvVWberUMP8G3bA1JJkFAYxZcIto2BlSalPbDdm5qjidhDwMJHuxrIsbgAPKlEdkTbPFNPJW5fez1N1+HoupMITTlOyOlPAhjrGbYQ9CbLK5bYlFOkfQ3Jp+4qlSha/Qd3TO4Jtr/tsAO8CuiI1W04Uqfd8yasuIk306csnNLvumwTNj4pJYprS7iumKcFYXaUEjsSlBk8R59T7CfTcuZjJ3lC0t1uOC+EKIzUzTcdXuvoDXzjkbXGm25fFWpydopk8g2aKQDNFoBk8+LUDsF8+cp3fm2P6zRRlD8or1NxTW7FPX0DfN2CBoHV2V3tntAaUhJ5JUdM4VFflj+RmsxLS0W8bdYK4XRGSyxevdakpNIs+aLRCN+h3MGAuzA6FTgZFHED1qt5h64/rOVo8uBaUyiGNZ+RISIbD6iel0ysJqIMxKOX7TcDNBgFHZzzgaZGSlBk6EhK2FZSbJ/Xbu2NvK2JeNseh95r/uH50Im200FClNikaEojipnUg4hwJP4I2qVE07ZVNTlvM6+0Rpiqwtxq2+Y7oE8f2Cy3Gc4LIU4e7B0nJiFDNXIsO0myhSUiCS+3A4glvii/sLqoO83fO/jEmjhXo+YeyOYbPTOOwlHSq414qO6MoKknyAnJGFpt5iRwrjjVWQCrhWefnC8KjWwCiV3mfpWiccXUkZrNhxh11vUhZiW7ft5D491EHcM/BvdecM5DKcaq2U7t4spJbKVH6zUdDuQ0ftVe9fW/u9PatT6BU4jyrrbSmjkBWG0VR2v9p+p5tNeaBAu/+s8Q/tSEtt1RwPOe1V3O1iiPe3URiiRN92yeGDt4gY8LKVFsTgaxi9wMnZoZ98uf/g0SoQEfq9x20BkJ9rE4+HxRdpfqajb90DXspr44XRRfdEauXiI6imzQ7iOJl7UmPvWZiNDq+OzyGgyIcU2c5f/5+Z9Zo5TOI0lm7BWtHXJkrKj8s4XvohkHjZ6ZysBs6uqltlg9HKzFIGWJhKvPuGI4HBWafkkP5gkCAjVrpSqPN+OoBJTZulsp0qpnNZuOgrvYVkOalHaTYKAX2SAhj9vRnjO/io+TPlBPwuo12I7IrU1puB52LgPV3CbM4+lyLvTGPg+PZsCEJ0l1Wc7jxaU4cjQdktDBpUNwj2BWWDKNQZKxXnGJJm8FbC/k+P0QbD8EZHLoU7hO5E8R6Pn9MvRcJWbZGS7thtZL70YVGOOR8mzP4hK4/bbETgEEt6rOSLD2c2h/FKxhbDe0EaIgQvFBCguSDOWxV0bQexISUMSlFAT76/d9cA0Imx3/8EMDE+Mbbv69hT9dvFF6iFVIg5FXnBRBsjsb1HYOHld7ZtZltRtPAN0bjNJomJekLNlpfgjVhgy01hgnTRUf6ToQ6EWdmfrxKdWACWXXt0tn+imx/YiBXUgXnERqpY2Q0DvDqXrce5NRp2qMf+T+cbgIkGrzH931D2tMBqFbEgbT39RDqaecFmrzwclKrSnVZZvWVB+Sgg7bhDMwBKwvR4eLEESwWuojnFQ/cMdvzMJ5hosDNCNTSILdB5fKwnLz8Cd//qS4Podtd67JElK+5Zbpo3ffrdd/1NK7b9OaDOH8PANPOGxsR9imCIbP+kPlEi1cVqfZ/IyQ0prir0EyBanCavU2V3BqLsnqfWEXnCB0x+qfPVherD8w+E8F/N3ZLy1AVDgp1WJpS6S5nZe5SmULY8TYECGXHahzdHYI9G41TEemIjsfQGAUR5BqM5cLpAK65hlg7AdPfrakk5NgSSWkhCB1GVw2loRxHXT2vdVmgjrci91+WwROGh1ObRhH0rq+RajNLT3gKXXZgrg0+pJKUBtGXcaFWOnXZu1shBcQyUBmpDv0/ILnMhtSCnamJrzepkR2M54LysBl4r8tPB/H5QIyFWxjOEL8sy/dOk1JfoUoMiqc5Ot0vLjv3vHih+6d5OtkN4/ys4IIG4K4wNr31J8mM+kcKUd5WPne6U/MDFz6TloRzpWmJtbCs/Z0lN/1elNGdXyfsrl0h5nLTFDHInZI7YcEieKI/Y5SJzGrrvCkwievsem/euJXp/3Z8B7GWeA1peg+lZ6xwMHRG9pq9lKx88RRXBPvpmntdBJaDfT6hXA0TT91rFQSB0V7LoBzfAy3so3PingnjYF13FywxR1UseFqh85MK7c9CpazUkSbOMnN/TY1yqt8S1marcA5Vdq1jq3CmXLABXtf4AHkpQ7VL587dbgopL/FKC8kvyh/9PU3fu7A+GzVjV5yf/znP1993Q2fGxcMOAuCGLUEt8NJi1FeEGWmUBQH1e89/C8W66cO9PUOj++tNqPcy2pEEGsmu3PFnhf5TUiyzVJytF8eePkv76EENxe238OHwiDys4Z9S+GVk7M1kaIZSJQ2D86vioWtFZsYHFmCVLkzVeiBUcgtUK0duWOp9OJAeZsZPW1JOjT2W3sin+ERm7ZqsrqCZrlYsBfWhw+3caqmL3MAi8mWYdsBAQI86SAZoNzNHFvgcok56Ex0lLbCWTJGmrPe4U4e8kHh/OPIXo1b4Lb2MrMd9JSQ1MZoZge8du+vVHoleN3eX61msvkpIdEtWSkxsh5jKzVG+XJ+x87V575SKUIf8EzutFCZG6+5fl51hD//yuFSlC0UeZQ9esXeuxv90tPkMkbczyZxjbMLnBvBuzsh9FK3D/FiFF2yUgBunNKuSiNyFQ6cdf2CQ+NVU4fWkmVb/TxZZ3V9EGM+RyEiehRQV14MuZEwXg2cEtZhYf64dMoRmGkPEg9q23dlm+4VAHBqe8LBcSERchKaxij3+sRwSCmRyznhOqcgLdMvSGgctGQdPtbOaN+dXT1nFFBTd8bDgd09yTZVnelzK58qCfV0ItKqcG2QRFe893jjx376zjJEmYPS1qikxEzB/WlVWkiLOVr/y5V/P9crryizo5iJ8m66Xza/a5HkCo3X/sxdFRgAzM5TMA2GeO9EsrW2QTcK7lTs9v7ZqUC+7Edoc854B4n6xTldrtHiTB3IyU5lW2ApzyucvSvCDdNi6dY+Mz9fFvch8OYjT9fA2sRMXFv4CaT3m4xxcx2bOAydSzF7GUYCcYOPfnbDwlsJSxm0ZETAHEmLgyJet1KizsE+CPr6uv8YAiSIA61k2RppxWxTf0iBQQnNTzunSbYwVOJXv/tTC4L9ZGxhA9sUrcNF5RflKj94/NOnzOrRbRBqeuNV76ko6ekvHz8xJ5w0ola5KRgUxobIE3a9QaAkRNMitD25fTZHEq/88ZtrgIzhrkS5VDxnYxyndx2FdezoTq1TlUFLfnEb4dYduFO4RPbkBVsAsDfkjB5Xa+4NEH5ZL3uxXVUWg0Zjz+2PjjY7Bay1AOXnrScXDsjm5r8lGpQHWI1moeqlRBzDyJ32IWyuhtfdgg6K74lTPzIjrFllNRSsWYX29Is/qL4UkImyO69GS6ZMnF2dH9s9eXBgtUV4ThtnV+YnN7PCQRLR/ainejUG+HSUJRN/9fSvVy5/68eXcPrnX55VZPHXf/iZuZjF5RjiqSv2HGzAoIi0VEACdU1XwI+63cB0J+LcqagkuL1zWpHzEgWyX/kRA/VM/0CVlRLNC1iT76itZBaH85FtBzYSa+/Vv5ibBEEA1dLbr8b+1703ldVoYX5RT0nSqhfYc6izqsPYXGPwfAzLgwTbt4FEy6IO+60UqJ+Fumfp/EhWmuu8jNpAxRIvK+vfYiZg9XUVjwi8+MCxj5X1E0dgDc+xGTnU7E+qzzP5C4XmPcnXJNpW8+OVz3aVXF2YFDEWFqPOOql3APANWCA52A92OqM3smpHH0ftmvOAfEeGnKlCuudDyYs0qr7IyNB8YcKqX+IDjLUgkuERtWEy2T2lCPTAD576XJPQaA6Mdy8gRSJGOmEj+utn7qlQSivixGkZyjIGY2NnVxfn4rg1kc1lJl+lFlMYAjFgnRNCi06fRmkCnOU9lBLzY0m8LZ828HiZA92vvcsQCGculWI11bP6BxmjUZqYTtBLQqSSDd1afADYSmCSjUWEL3L9YOpeRfQqaFKf0/cy9aeCfYkhd8ELhaz6/kMT4uTt36ytnfhHDfmtrcc5HC80SWGCtG88JmQJRkRg6iCGkKzKriiRlgilJWqOdbk2cIlCFNlfH1fmDblepUhL1ZZR3hC3dSZEE3+oPNnMfw/wVRkIUko88E+npZQ4x5Et0f4QFG4X5omDgXgkjVnF4Lpi2lo86ztb6tIEVfOFjWNEODOEyJhbHPgX5RJ45Y//s4oYaWeNDRGIiVuUW6RKC4dJriqcJmfPfus+LrarDKLvXv7Wm6d2D0uGEsHUvZCW+o6gFMmRHDlgOITbtue8tSbub/DEPWFohGZJ0VHOQBe4WpNQsh0I1kjJeYe0HUQyx5gAzgsa9CucpvvSqf0gJLQl56snvqNZjYxxjsZIM3FRqMuDrmzTvVy7ZyRO59GxSgr312wasw2ncCbz61UmcoQRv/I3vjYwNsDHJbrC0WIU1qESVlPfOgojupWe/ClsLtq2ThWiQmgkaUnCUnbAIt0xNj9qhpdPzlaFY2WvyKupHDXIrmjDdNy5XGGNZKPJvzP5C8NN1cIIfoY0JIKw+beD2nut2gOAnCF9Ektvs7X3YFIixNmQxPVaJ3VZg7URKEfqUM/x2U7N416WgIAU0cDQqWdbURJJ1qRdxh0NTMYRWl3M/BSAVokNrNToyUrcNpLt0EHNR/Z5tn94fcKp8tD+lFgtdU4z4AMRo0/jyxuWT5wtMSDAtlq6uuLtqOBORrfHGm0LpWwjUOHUaPoAayvF5cs//NNHT52tf6UII2D3m25c5pncXkeCucSfIsj8En8hmtr9xn0N2ALkArF4ni4EjRp6fljmFytxqklgXO7VJqj+4aCAlIAjiU01tGr3wvGBid9zh/0lW9th7Z6HZuMgDKktP29vtWZMHiiSo0MuASfyqrk3EEhudpcArrWwb1ZhK+BobT9EFo53iZdIraRo1Xdu07iZNdj+N+C7sGOLE7z5SOMKbdEFbqREO6zxhI0aOCCyHZ20fPMjXnwHXNT2lBAzws17Rjy8n0fsG8F0VjhZnv/+meoGZUu7r5hqwBDY/Yb31/6m/rVZQViL+oz9xNJ+Hy9dNn5tGc4TOjlUVGMaKPxESwHEiRV4xOyeXqrNMHCP6YCkzRoRqT3uBknklLTX1m2RWuqvYaYIyyAEQkP96Bqzrh/AaSJ/L8XYCz25INLyZo61qUP/feB58B1hHADaC0va1OdgvHQDRpKgkWrtXs8A7cfaKxmEpogRSFFKiZ/8xfcJKZHPufq4edK6LMVfjG9ZgtMmRDkguIjYba0qW2SEyLZMpXdYIZQ0xAsqijdUyXGo/Ogv/qAWcyZ/S7gh3mFTvDi10EEmF70+3mTjUTZ6PY/5s7te846KzeEV4z9V/eH3Hy8Kj9UcynjtFa97RxnOE+QCsRHVXkP7w1JBfxig4VBiA1R9lwHYyvg7OJJBxIT7Rto/LYSVRD0/8H66e4z8E7wXOyC4/rZl0Ey+yjY358P3ZwfEUH0Wzzu6uQRlrZ/LLkNuf/DeCYTg4gOdBxpCyRDZ7ZzzqU8L0AtYEPfi/A826VPxCJMGM63MwgZtif4oQ7h48J0ArcRkzmyJGPVK8f54u5OhBH35a99VIybkgWMdA8IXJAijJD74nCCfxSgTnSKUrEQRPSXe6YIkVDFqTQjvZzVZwMtf866KcCzoOCvgTUGOe+E8w3Z++x8gAuiTEqx66Q3KdssGiiPbGrBUZzoU9B/9tcbMVdwkmH2fpR8Q2lRwx/leMrQXgulgw4WjtkGG7HAbRkMSzg1UBVnWJhtuZZtOYEnpExJfnlv7IQU8WjpedBXjTkoMJOZu4DxhB7bZ63+jEQJCpZQIsr+gwa6z+cOr+KOgfYG7rZHrpQL1Rl547smicLOviN0ivihfEMUzCoxILYlNHK6JD7dEBEGaOZWTL/uxd3ZUfc7WV8Zy+dyqSHfyZa9+59YlghQpUqS4AFBD2I4r3t4QktuUILYlQ3ZOajJk2FRSJIeTQkWd2nVu17ggtimaifSSXQQOdiNDid3jU1IynErJMEWKFC9ldDQaSImx1ZK/oyxsGplMQxJm8p6zz60Uszy7KmTvJUGGByBFihQptiv+3/e/UX3+L/7gFKRIkSLFJYIRpoULMvzeY2XhALhq57mdU5AiRYoU2xVSVf7R/3niFK+vjjS9L0WKFCleqhg6LiCKo9KOF87NkvHJ0RbyTJEiRYoUKVKkSJEiRYoUKVKkSJEiRYoUKVKkSJEiRYoUKVKkSJEiRYoUKVKkSJEiRYpLDP8fcC9IB2/8NvIAAAAASUVORK5CYII=" alt="Logo SIMEVENT" class="h-7 sm:h-9 w-auto object-contain">
+            </div>
+
+            <!-- Header Action Right -->
+            <div class="flex items-center gap-1 sm:gap-3 lg:gap-6">
+
+                <!-- Notifications Button -->
+                <button onclick="toggleModal('notificationModal')" class="relative flex items-center gap-2 px-3 py-2 rounded-full text-brand-olive hover:text-brand-orangeDeep hover:bg-white/50 transition-all group">
+                    <div class="relative">
+                        <i class="fa-regular fa-bell text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand-orangeDeep rounded-full animate-ping"></span>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand-orange rounded-full"></span>
+                    </div>
+                    <span class="text-sm font-medium hidden md:inline">Notifikasi</span>
+                </button>
+
+                <!-- Logout Button -->
+                <a href="landing_page.html" onclick="try{localStorage.removeItem('simevent_session')}catch(e){}" title="Keluar ke halaman utama" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
+                    <i class="fa-solid fa-power-off text-brand-goldLight"></i>
+                    <span class="hidden md:inline">Log Out</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WRAPPER: SIDEBAR + CONTENT -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- LEFT SIDEBAR -->
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-brand-olive/40 backdrop-blur-sm z-40 hidden md:hidden"></div>
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] -translate-x-full overflow-y-auto bg-brand-creamLight md:bg-brand-creamLight/70 md:backdrop-blur-md border-r border-brand-tan/50 flex flex-col justify-between p-4 shrink-0 transition-transform duration-300 md:static md:z-auto md:translate-x-0 md:w-20 md:p-3 lg:w-64 lg:p-4 md:overflow-visible">
+            <div class="space-y-6">
+                <!-- Tombol tutup (hanya HP) -->
+                <div class="flex items-center justify-between md:hidden">
+                    <span class="font-display font-bold text-brand-olive">Menu</span>
+                    <button onclick="toggleSidebar()" aria-label="Tutup menu" class="w-9 h-9 rounded-full hover:bg-brand-sand/60 text-brand-olive"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <!-- Navigation Group -->
+                <nav class="space-y-2">
+                    <div class="px-3 block md:hidden lg:block text-[11px] font-semibold text-brand-muted/80 uppercase tracking-wider">
+                        Menu Utama
+                    </div>
+
+                    <!-- Sidebar Link: Dashboard Active -->
+                    <a href="#participant-home" class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start bg-brand-orange/25 border border-brand-orange/60 text-brand-olive font-semibold shadow-inner group">
+                        <i class="fa-solid fa-house text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="inline md:hidden lg:inline text-sm">Dashboard</span>
+                    </a>
+
+                    <!-- Sidebar Link: Event Saya -->
+                    <a href="#event-saya" class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start text-brand-muted hover:text-brand-olive hover:bg-brand-sand/50 border border-transparent hover:border-brand-orange/30 transition-all group">
+                        <i class="fa-regular fa-calendar-check text-brand-muted group-hover:text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="inline md:hidden lg:inline text-sm font-medium">Event Saya</span>
+                    </a>
+                </nav>
+
+                <div class="pt-4 border-t border-brand-tan/50">
+                    <div class="px-3 block md:hidden lg:block text-[11px] font-semibold text-brand-muted/80 uppercase tracking-wider mb-2">
+                        Dukungan & System
+                    </div>
+                    <nav class="space-y-2">
+                        <!-- Sidebar Link: Pusat Bantuan -->
+                        <a href="landing_page.html#jelajah" class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start text-brand-muted hover:text-brand-olive hover:bg-brand-sand/50 border border-transparent hover:border-brand-orange/30 transition-all group">
+                            <i class="fa-regular fa-comments text-brand-muted group-hover:text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"></i>
+                            <span class="inline md:hidden lg:inline text-sm font-medium">Jelajah Event</span>
+                        </a>
+
+                        <!-- Sidebar Link: Pengaturan -->
+                        <a href="#sertifikat" class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start text-brand-muted hover:text-brand-olive hover:bg-brand-sand/50 border border-transparent hover:border-brand-orange/30 transition-all group">
+                            <i class="fa-solid fa-gear text-brand-muted group-hover:text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"></i>
+                            <span class="inline md:hidden lg:inline text-sm font-medium">Sertifikat</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT AREA -->
+        <main id="participantMain" class="flex-1 min-w-0 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+
+            <!-- 1. HERO PROFILE BANNER (Top Wireframe Card) -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-creamLight via-brand-goldLight/70 to-brand-orange/70 border border-white/50 shadow-2xl shadow-brand-orange/20 p-5 sm:p-8">
+                <!-- Background decorative glow -->
+                <div class="absolute -top-24 -right-24 w-72 h-72 bg-brand-orange/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-brand-olive/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col xl:flex-row items-center xl:items-start justify-between gap-6">
+                    <!-- Profile Avatar & Details -->
+                    <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
+                        <!-- Avatar Box -->
+                        <div class="relative shrink-0">
+                            <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-brand-orange to-brand-goldLight p-1 shadow-lg">
+                                <div class="w-full h-full bg-brand-olive rounded-[14px] overflow-hidden flex items-center justify-center">
+                                    <i class="fa-solid fa-user text-4xl text-brand-goldLight"></i>
+                                </div>
+                            </div>
+                            <span class="absolute -bottom-1 -right-1 bg-brand-olive text-brand-goldLight text-[10px] font-bold px-2 py-0.5 rounded-full shadow border border-white">
+                                PRO
+                            </span>
+                        </div>
+
+                        <!-- Profile Info (Nama, Email, Bio) -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
+                                <h2 class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive tracking-tight">
+                                    <span id="userName">Budi Santoso</span>
+                                </h2>
+                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-brand-olive text-brand-goldLight border border-brand-olive">
+                                    Main Admin
+                                </span>
+                            </div>
+
+                            <p class="text-brand-orangeDeep text-sm flex items-center justify-center sm:justify-start gap-2 font-mono">
+                                <i class="fa-regular fa-envelope text-brand-orangeDeep"></i>
+                                <span id="userEmail" class="break-all">budi.panitia@simevent.com</span>
+                            </p>
+
+                            <p id="loginInfo" class="text-brand-muted text-xs flex items-center justify-center sm:justify-start gap-1.5">
+                                <i class="fa-regular fa-clock"></i><span></span>
+                            </p>
+
+                            <p class="text-brand-ink text-sm max-w-xl pt-1">
+                                <i class="fa-solid fa-quote-left text-brand-orange/60 text-xs mr-1"></i>
+                                Event Director & Coordinator - SIMEVENT 2026. Berfokus pada pengelolaan ekosistem acara berskala nasional.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Button "+ Cari Event Baru" -->
+                    <div class="shrink-0 w-full sm:w-auto">
+                        <a href="landing_page.html#jelajah" class="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-brand-olive hover:bg-brand-oliveDark text-brand-creamLight font-bold text-sm tracking-wide shadow-xl shadow-brand-olive/30 transition-all transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-base"></i>
+                            <span>Cari Event Baru</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. MAIN 2-COLUMN GRID SECTION (Matches Wireframe Layout) -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
+
+                <!-- LEFT COLUMN (Span 7): Event Mendatang Table -->
+                <div class="xl:col-span-7 min-w-0 bg-white/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <!-- Header Title -->
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-3 h-3 rounded-full bg-brand-orange"></div>
+                                <h3 class="font-display text-xl font-bold text-brand-olive tracking-wide">
+                                    Event Saya
+                                </h3>
+                            </div>
+                            <span class="text-xs text-brand-muted bg-brand-sand/60 px-3 py-1 rounded-full border border-brand-tan/70">
+                                3 Event Aktif
+                            </span>
+                        </div>
+
+                        <!-- Event List Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[520px] text-left text-sm text-brand-ink">
+                                <thead class="text-xs uppercase bg-brand-sand/70 text-brand-olive border-b border-brand-tan/70">
+                                    <tr>
+                                        <th class="py-3 px-3 rounded-l-xl">Nama Event</th>
+                                        <th class="py-3 px-3 whitespace-nowrap">Tanggal</th>
+                                        <th class="py-3 px-3 whitespace-nowrap">Status</th>
+                                        <th class="py-3 px-3 rounded-r-xl text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-brand-tan/40">
+                                    <!-- Row 1 -->
+                                    <tr class="hover:bg-brand-sand/30 transition-colors">
+                                        <td class="py-3.5 px-3 font-semibold text-brand-olive">
+                                            Festival Seni Budaya 2026
+                                            <span class="block text-xs font-normal text-brand-muted">1,200 Peserta Terdaftar</span>
+                                        </td>
+                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">25 Okt 2026</td>
+                                        <td class="py-3.5 px-3">
+                                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-olive/10 text-brand-olive border border-brand-olive/40">
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-3 text-right">
+                                            <button onclick="alert('Melihat E-Ticket...')" class="px-2.5 py-1 rounded-full bg-brand-sand/80 hover:bg-brand-olive hover:text-white text-xs font-semibold text-brand-olive transition-colors">
+                                                E-Ticket
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 2 -->
+                                    <tr class="hover:bg-brand-sand/30 transition-colors">
+                                        <td class="py-3.5 px-3 font-semibold text-brand-olive">
+                                            National Tech Conference
+                                            <span class="block text-xs font-normal text-brand-muted">850 Peserta Terdaftar</span>
+                                        </td>
+                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">12 Nov 2026</td>
+                                        <td class="py-3.5 px-3">
+                                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-olive/10 text-brand-olive border border-brand-olive/40">
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-3 text-right">
+                                            <button onclick="alert('Melihat E-Ticket...')" class="px-2.5 py-1 rounded-full bg-brand-sand/80 hover:bg-brand-olive hover:text-white text-xs font-semibold text-brand-olive transition-colors">
+                                                E-Ticket
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 3 -->
+                                    <tr class="hover:bg-brand-sand/30 transition-colors">
+                                        <td class="py-3.5 px-3 font-semibold text-brand-olive">
+                                            Workshop UI/UX Design
+                                            <span class="block text-xs font-normal text-brand-muted">Drafting Rundown</span>
+                                        </td>
+                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">05 Des 2026</td>
+                                        <td class="py-3.5 px-3">
+                                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-orange/20 text-brand-orangeDeep border border-brand-orange/50">
+                                                Draft
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-3 text-right">
+                                            <button onclick="alert('Detail event...')" class="px-2.5 py-1 rounded-full bg-brand-sand/80 hover:bg-brand-olive hover:text-white text-xs font-semibold text-brand-olive transition-colors">
+                                                Detail
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-brand-tan/50 flex justify-end">
+                        <a href="#manajemen-event" class="text-xs font-semibold text-brand-orangeDeep hover:text-brand-orangeDeep flex items-center gap-1 transition-colors">
+                            <span>Lihat Semua Event</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN (Span 5): 4 Metric Cards (2x2 Grid) -->
+                <div class="xl:col-span-5 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-2 gap-3 sm:gap-4">
+
+                    <!-- Metric Card 1: Total Event Yang Dikelola -->
+                    <div class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-brand-muted uppercase tracking-wider">Total Event</span>
+                            <div class="w-8 h-8 rounded-xl bg-brand-orange/15 flex items-center justify-center text-brand-orangeDeep group-hover:bg-brand-orange group-hover:text-white transition-colors">
+                                <i class="fa-regular fa-calendar text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="text-3xl font-display font-extrabold text-brand-olive">8</h4>
+                            <p class="text-xs text-brand-muted mt-1">Event dikelola tahun ini</p>
+                        </div>
+                    </div>
+
+                    <!-- Metric Card 2: Pendapatan -->
+                    <div class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-brand-muted uppercase tracking-wider">Pendapatan</span>
+                            <div class="w-8 h-8 rounded-xl bg-brand-olive/10 flex items-center justify-center text-brand-olive group-hover:bg-brand-olive group-hover:text-white transition-colors">
+                                <i class="fa-solid fa-wallet text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive">75 Jt</h4>
+                            <p class="text-xs text-brand-muted mt-1">Total tiket terjual</p>
+                        </div>
+                    </div>
+
+                    <!-- Metric Card 3: Achievement -->
+                    <div class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-brand-muted uppercase tracking-wider">Achievement</span>
+                            <div class="w-8 h-8 rounded-xl bg-brand-orange/15 flex items-center justify-center text-brand-orangeDeep group-hover:bg-brand-orange group-hover:text-white transition-colors">
+                                <i class="fa-solid fa-trophy text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="text-3xl font-display font-extrabold text-brand-orangeDeep">98%</h4>
+                            <p class="text-xs text-brand-muted mt-1">Kepuasan Peserta</p>
+                        </div>
+                    </div>
+
+                    <!-- Metric Card 4: Album -->
+                    <div class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-brand-muted uppercase tracking-wider">Album</span>
+                            <div class="w-8 h-8 rounded-xl bg-brand-bronze/15 flex items-center justify-center text-brand-bronze group-hover:bg-brand-bronze group-hover:text-white transition-colors">
+                                <i class="fa-regular fa-images text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="text-3xl font-display font-extrabold text-brand-olive">142</h4>
+                            <p class="text-xs text-brand-muted mt-1">Foto & Dokumentasi</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- 3. BOTTOM SECTION: LOG AKTIVITAS TERBARU -->
+            <div class="bg-white/60 rounded-3xl border border-brand-tan/50 p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-display text-lg font-bold text-brand-olive flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-brand-orangeDeep text-base"></i>
+                        <span>Log Aktivitas Terbaru</span>
+                    </h3>
+                    <span class="text-xs text-brand-muted">Real-time update</span>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Log Item 1 -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 p-3 rounded-2xl bg-brand-sand/40 border border-brand-tan/50 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-olive/15 text-brand-olive flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-user-plus text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-brand-olive font-medium">Peserta Baru Terdaftar: <span class="text-brand-olive font-semibold">Anisa Rahma</span></p>
+                                <p class="text-xs text-brand-muted">Event Festival Seni Budaya 2026</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-brand-muted/80 font-mono">2 menit lalu</span>
+                    </div>
+
+                    <!-- Log Item 2 -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 p-3 rounded-2xl bg-brand-sand/40 border border-brand-tan/50 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-orange/20 text-brand-orangeDeep flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-receipt text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-brand-olive font-medium">Pembayaran Dikonfirmasi: <span class="text-brand-olive font-semibold">INV-2026-089</span></p>
+                                <p class="text-xs text-brand-muted">Nominal Rp 150.000 via QRIS</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-brand-muted/80 font-mono">15 menit lalu</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: CREATE NEW EVENT -->
+    <div id="createEventModal" class="fixed inset-0 bg-brand-olive/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-brand-creamLight border border-brand-tan/70 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-brand-tan/50 pb-3">
+                <h3 class="text-lg font-bold text-brand-olive flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-plus text-brand-orangeDeep"></i>
+                    <span>Buat Event Baru</span>
+                </h3>
+                <button onclick="toggleModal('createEventModal')" class="text-brand-muted hover:text-brand-olive">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); alert('Event berhasil dibuat!'); toggleModal('createEventModal');" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-brand-ink mb-1">Nama Event</label>
+                    <input type="text" placeholder="Contoh: Semnas Teknologi 2026" required class="w-full bg-white/80 border border-brand-tan/70 rounded-xl p-2.5 text-sm text-brand-olive focus:outline-none focus:border-brand-orange">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-brand-ink mb-1">Tanggal</label>
+                    <input type="date" required class="w-full bg-white/80 border border-brand-tan/70 rounded-xl p-2.5 text-sm text-brand-olive focus:outline-none focus:border-brand-orange">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-brand-ink mb-2">Kategori Event</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="kategori" value="Konferensi" class="peer sr-only" checked>
+                            <div class="h-full rounded-2xl border border-brand-orange/30 bg-white/70 p-3 transition-all hover:border-brand-orange/70 peer-checked:bg-brand-orange/15 peer-checked:border-brand-orange peer-checked:shadow-md">
+                                <i class="fa-solid fa-door-open text-brand-orange text-lg"></i>
+                                <p class="mt-3 text-sm font-bold text-brand-bronze">Konferensi</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="kategori" value="Workshop" class="peer sr-only">
+                            <div class="h-full rounded-2xl border border-brand-orange/30 bg-white/70 p-3 transition-all hover:border-brand-orange/70 peer-checked:bg-brand-orange/15 peer-checked:border-brand-orange peer-checked:shadow-md">
+                                <i class="fa-solid fa-wrench text-brand-orange text-lg"></i>
+                                <p class="mt-3 text-sm font-bold text-brand-bronze">Workshop</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="kategori" value="Seminar" class="peer sr-only">
+                            <div class="h-full rounded-2xl border border-brand-orange/30 bg-white/70 p-3 transition-all hover:border-brand-orange/70 peer-checked:bg-brand-orange/15 peer-checked:border-brand-orange peer-checked:shadow-md">
+                                <i class="fa-solid fa-chalkboard text-brand-orange text-lg"></i>
+                                <p class="mt-3 text-sm font-bold text-brand-bronze">Seminar</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="kategori" value="Webinar" class="peer sr-only">
+                            <div class="h-full rounded-2xl border border-brand-orange/30 bg-white/70 p-3 transition-all hover:border-brand-orange/70 peer-checked:bg-brand-orange/15 peer-checked:border-brand-orange peer-checked:shadow-md">
+                                <i class="fa-solid fa-video text-brand-orange text-lg"></i>
+                                <p class="mt-3 text-sm font-bold text-brand-bronze">Webinar</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="kategori" value="Sosialisasi" class="peer sr-only">
+                            <div class="h-full rounded-2xl border border-brand-orange/30 bg-white/70 p-3 transition-all hover:border-brand-orange/70 peer-checked:bg-brand-orange/15 peer-checked:border-brand-orange peer-checked:shadow-md">
+                                <i class="fa-solid fa-users text-brand-orange text-lg"></i>
+                                <p class="mt-3 text-sm font-bold text-brand-bronze">Sosialisasi</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3">
+                    <button type="button" onclick="toggleModal('createEventModal')" class="px-4 py-2.5 sm:py-2 rounded-full bg-brand-sand/70 text-brand-olive text-sm font-medium hover:bg-brand-tan">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 sm:py-2 rounded-full bg-brand-olive text-brand-creamLight text-sm font-bold hover:bg-brand-oliveDark">
+                        Simpan Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: NOTIFICATION DRAWER -->
+    <div id="notificationModal" class="fixed inset-0 bg-brand-olive/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-brand-creamLight border border-brand-tan/70 rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 shadow-2xl space-y-3">
+            <div class="flex items-center justify-between border-b border-brand-tan/50 pb-2">
+                <h3 class="text-base font-bold text-brand-olive flex items-center gap-2">
+                    <i class="fa-regular fa-bell text-brand-orangeDeep"></i>
+                    <span>Notifikasi Panitia</span>
+                </h3>
+                <button onclick="toggleModal('notificationModal')" class="text-brand-muted hover:text-brand-olive">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-2 text-xs">
+                <div class="p-2.5 rounded-xl bg-brand-sand/60 border border-brand-tan/70">
+                    <p class="font-semibold text-brand-orangeDeep">Target Tiket Tercapai!</p>
+                    <p class="text-brand-muted mt-0.5">Festival Seni Budaya telah mencapai 75% kuota.</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-brand-sand/60 border border-brand-tan/70">
+                    <p class="font-semibold text-brand-olive">Verifikasi Panitia Baru</p>
+                    <p class="text-brand-muted mt-0.5">Akun 'Rina (Seksi Acara)' menunggu konfirmasi.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- JAVASCRIPT MODAL HELPER -->
+    <script>
+        if (window.SIMEVENT_SESSION && window.SIMEVENT_SESSION.role === 'Peserta') {
+        const PARTICIPANT_EVENTS = [
+            { id: 'conference-tech', title: 'Konferensi Teknologi Nusantara 2026', category: 'Konferensi', date: '6 Nov 2026', status: 'live', place: 'Hotel Mercure', price: 'Rp145.000' },
+            { id: 'workshop-uiux', title: 'Workshop UI/UX untuk Pemula', category: 'Workshop', date: '10 Nov 2026', status: 'soon', place: 'Hotel Mercure', price: 'Rp145.000' },
+            { id: 'seminar-education', title: 'Seminar Nasional Pendidikan', category: 'Seminar', date: '9 Nov 2026', status: 'live', place: 'Hotel Mercure', price: 'Gratis' },
+            { id: 'forum-kalimantan', title: 'Forum Inovasi Kalimantan', category: 'Konferensi', date: '4 Nov 2026', status: 'soon', place: 'Hotel Mercure', price: 'Gratis' }
+        ];
+        const participantSession = window.SIMEVENT_SESSION;
+        const participantMain = document.getElementById('participantMain');
+        const participantStorageKey = 'simevent_participant_' + participantSession.email.toLowerCase();
+        let participantState = { registrations: {} };
+        let participantStorageError = '';
+        let participantPageNotice = '';
+
+        function escapeParticipantText(value) {
+            return String(value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[character]);
+        }
+
+        function showParticipantMessage(message) {
+            const node = document.getElementById('participantMessage');
+            if (!node) return;
+            node.textContent = message;
+            node.hidden = !message;
+        }
+
+        function saveParticipantState() {
+            try {
+                localStorage.setItem(participantStorageKey, JSON.stringify(participantState));
+                participantStorageError = '';
+                showParticipantMessage('');
+                return true;
+            } catch (error) {
+                participantStorageError = 'Perubahan belum tersimpan. Izinkan penyimpanan lokal di browser lalu coba lagi.';
+                showParticipantMessage(participantStorageError);
+                return false;
+            }
+        }
+
+        function loadParticipantState() {
+            try {
+                const stored = localStorage.getItem(participantStorageKey);
+                if (!stored) return;
+                const parsed = JSON.parse(stored);
+                if (!parsed || typeof parsed !== 'object' || !parsed.registrations || typeof parsed.registrations !== 'object') {
+                    throw new Error('Format data peserta tidak valid.');
+                }
+                participantState = parsed;
+            } catch (error) {
+                participantStorageError = 'Data peserta tidak bisa dibaca. Bersihkan data situs atau hubungi pengelola.';
+            }
+        }
+
+        function renderParticipantPortal() {
+            const name = escapeParticipantText(participantSession.name || participantSession.email);
+            const registrations = participantState.registrations;
+            const myEvents = PARTICIPANT_EVENTS.filter(item => registrations[item.id]);
+            const certificates = myEvents.filter(item => registrations[item.id].certificate);
+            const requestedEvent = new URLSearchParams(location.search).get('event');
+
+            participantMain.innerHTML = `
+                <div id="participant-home" class="max-w-6xl mx-auto space-y-6">
+                    <div class="rounded-3xl border border-white/60 bg-gradient-to-br from-white/80 to-brand-goldLight/70 p-6 sm:p-8 shadow-xl">
+                        <p class="text-sm font-semibold text-brand-muted">Dashboard Peserta</p>
+                        <h1 class="mt-2 text-3xl font-display font-extrabold text-brand-olive">Halo, ${name}!</h1>
+                        <p class="mt-2 text-sm text-brand-muted">Daftar event, catat kehadiran, isi feedback, lalu klaim sertifikatmu.</p>
+                        <p class="mt-3 text-xs text-brand-muted">Mode prototipe: akun dan pendaftaran disimpan di browser ini.</p>
+                    </div>
+                    <p id="participantMessage" role="alert" hidden class="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"></p>
+                    <section id="event-katalog" class="rounded-3xl border border-brand-tan/50 bg-white/70 p-5 sm:p-7 shadow-xl">
+                        <div class="flex flex-wrap items-end justify-between gap-3">
+                            <div><p class="text-sm font-semibold text-brand-orangeDeep">SIMEVENT</p><h2 class="text-2xl font-display font-extrabold text-brand-olive">Jelajah Event</h2></div>
+                            <a href="landing_page.html#jelajah" class="rounded-full bg-brand-olive px-4 py-2 text-sm font-bold text-white">Lihat halaman Jelajah</a>
+                        </div>
+                        <p class="mt-3 rounded-xl bg-brand-sand/40 px-4 py-3 text-xs text-brand-muted">Presensi pada halaman demo ini hanya simulasi. Untuk melanjutkan alur feedback dan sertifikat, daftar event berstatus berlangsung lalu pilih “Simulasikan hadir”.</p>
+                        <div class="mt-5 grid gap-4 md:grid-cols-2">
+                            ${PARTICIPANT_EVENTS.map(item => {
+                                const registered = Boolean(registrations[item.id]);
+                                return `<article class="rounded-2xl border border-brand-tan/50 bg-white p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3"><span class="rounded-full bg-brand-cream px-3 py-1 text-xs font-bold text-brand-olive">${escapeParticipantText(item.category)}</span><span class="text-xs font-bold ${item.status === 'live' ? 'text-emerald-700' : 'text-amber-700'}">${item.status === 'live' ? 'Berlangsung' : 'Akan datang'}</span></div>
+                                    <h3 class="mt-3 text-lg font-display font-extrabold text-brand-olive">${escapeParticipantText(item.title)}</h3>
+                                    <p class="mt-1 text-sm text-brand-muted">${escapeParticipantText(item.date)} · ${escapeParticipantText(item.place)}</p>
+                                    <div class="mt-4 flex items-center justify-between gap-3"><strong class="text-brand-orangeDeep">${escapeParticipantText(item.price)}</strong>${registered ? '<span class="rounded-full bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">Sudah terdaftar</span>' : `<button type="button" data-register="${item.id}" class="rounded-full bg-brand-olive px-4 py-2 text-sm font-bold text-white hover:bg-brand-oliveDark">Daftar event</button>`}</div>
+                                </article>`;
+                            }).join('')}
+                        </div>
+                    </section>
+                    <section id="event-saya" class="rounded-3xl border border-brand-tan/50 bg-white/70 p-5 sm:p-7 shadow-xl">
+                        <div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-brand-orangeDeep">Pendaftaranmu</p><h2 class="text-2xl font-display font-extrabold text-brand-olive">Event Saya</h2></div><span class="rounded-full bg-brand-sand/60 px-3 py-1 text-sm font-bold text-brand-olive">${myEvents.length} event</span></div>
+                        <div class="mt-4 space-y-4">
+                            ${myEvents.length ? myEvents.map(item => {
+                                const registration = registrations[item.id];
+                                const feedback = registration.feedback;
+                                const certificate = registration.certificate;
+                                return `<article class="rounded-2xl border border-brand-tan/50 bg-white p-4 sm:p-5">
+                                    <div class="flex flex-wrap items-start justify-between gap-3"><div><h3 class="font-display text-lg font-extrabold text-brand-olive">${escapeParticipantText(item.title)}</h3><p class="mt-1 text-sm text-brand-muted">${escapeParticipantText(item.date)} · ${escapeParticipantText(item.place)}</p></div><span class="rounded-full ${registration.attended ? 'bg-emerald-100 text-emerald-800' : 'bg-brand-sand/60 text-brand-muted'} px-3 py-1 text-xs font-bold">${registration.attended ? 'Hadir (demo)' : 'Terdaftar'}</span></div>
+                                    ${!registration.attended && item.status === 'live' ? `<button type="button" data-attend="${item.id}" class="mt-4 rounded-full bg-brand-olive px-4 py-2 text-sm font-bold text-white">Simulasikan hadir</button>` : ''}
+                                    ${!registration.attended && item.status === 'soon' ? '<p class="mt-4 text-sm text-brand-muted">Event belum berlangsung. Tombol presensi tersedia saat event berlangsung.</p>' : ''}
+                                    ${registration.attended && !feedback ? `<form class="mt-4 space-y-3 rounded-xl bg-brand-cream/60 p-4" data-feedback="${item.id}">
+                                        <h4 class="font-display font-extrabold text-brand-olive">Feedback event <span class="text-red-700">*</span></h4>
+                                        <label class="block text-sm font-semibold text-brand-olive">Penilaian
+                                            <select name="rating" required class="mt-1 block w-full rounded-xl border border-brand-tan bg-white px-3 py-2">
+                                                <option value="">Pilih rating</option><option value="5">5 - Sangat puas</option><option value="4">4 - Puas</option><option value="3">3 - Cukup</option><option value="2">2 - Kurang puas</option><option value="1">1 - Tidak puas</option>
+                                            </select>
+                                        </label>
+                                        <label class="block text-sm font-semibold text-brand-olive">Ceritakan pengalamanmu
+                                            <textarea name="comment" required minlength="5" maxlength="1000" class="mt-1 block w-full rounded-xl border border-brand-tan bg-white px-3 py-2" rows="3" placeholder="Masukkan minimal 5 karakter"></textarea>
+                                        </label>
+                                        <button class="rounded-full bg-brand-orange px-4 py-2 text-sm font-extrabold text-white">Kirim feedback</button>
+                                    </form>` : ''}
+                                    ${feedback ? `<p class="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900"><strong>Feedback terkirim · ${feedback.rating}/5</strong><br>${escapeParticipantText(feedback.comment)}</p>` : ''}
+                                    ${feedback && !certificate ? `<button type="button" data-claim="${item.id}" class="mt-4 rounded-full bg-brand-orange px-4 py-2 text-sm font-extrabold text-white">Klaim sertifikat</button>` : ''}
+                                    ${certificate ? `<div class="mt-4 rounded-xl border-2 border-double border-brand-orange bg-brand-cream/50 p-4 text-center"><p class="text-xs font-bold uppercase tracking-wider text-brand-orangeDeep">Sertifikat digital SIMEVENT</p><p class="mt-2 font-display text-lg font-extrabold text-brand-olive">${escapeParticipantText(participantSession.name || participantSession.email)}</p><p class="mt-1 text-sm text-brand-muted">${escapeParticipantText(item.title)}</p><p class="mt-2 text-xs text-brand-muted">No. ${escapeParticipantText(certificate.number)} · ${escapeParticipantText(certificate.date)}</p></div>` : ''}
+                                </article>`;
+                            }).join('') : '<p class="rounded-2xl border border-dashed border-brand-tan p-8 text-center text-sm text-brand-muted">Kamu belum mendaftar event. Pilih event di Jelajah Event untuk mulai.</p>'}
+                        </div>
+                    </section>
+                    <section id="sertifikat" class="rounded-3xl border border-brand-tan/50 bg-white/70 p-5 sm:p-7 shadow-xl">
+                        <div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-brand-orangeDeep">Koleksi digital</p><h2 class="text-2xl font-display font-extrabold text-brand-olive">Sertifikat Saya</h2></div><span class="rounded-full bg-brand-sand/60 px-3 py-1 text-sm font-bold text-brand-olive">${certificates.length} sertifikat</span></div>
+                        ${certificates.length ? `<div class="mt-4 space-y-3">${certificates.map(item => `<div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-tan/50 bg-white p-4"><div><h3 class="font-bold text-brand-olive">${escapeParticipantText(item.title)}</h3><p class="mt-1 text-xs text-brand-muted">Feedback sudah dikirim · No. ${escapeParticipantText(registrations[item.id].certificate.number)}</p></div><button type="button" data-print="${item.id}" class="rounded-full bg-brand-olive px-4 py-2 text-sm font-bold text-white">Cetak / Simpan PDF</button></div>`).join('')}</div>` : '<p class="mt-4 rounded-2xl border border-dashed border-brand-tan p-6 text-center text-sm text-brand-muted">Belum ada sertifikat. Hadiri event dan kirim feedback sebelum klaim sertifikat.</p>'}
+                    </section>
+                </div>`;
+
+            if (participantStorageError) showParticipantMessage(participantStorageError);
+            else if (participantPageNotice) showParticipantMessage(participantPageNotice);
+        }
+
+        function updateParticipantRegistration() {
+            const requestedEvent = new URLSearchParams(location.search).get('event');
+            if (!requestedEvent) return;
+            const item = PARTICIPANT_EVENTS.find(event => event.id === requestedEvent);
+            if (!item) {
+                history.replaceState(null, '', location.pathname);
+                participantPageNotice = 'Event yang diminta tidak ditemukan.';
+                return;
+            }
+            if (!participantState.registrations[item.id]) {
+                participantState.registrations[item.id] = {
+                    registeredAt: new Date().toISOString(), attended: false, feedback: null, certificate: null
+                };
+                saveParticipantState();
+            }
+            history.replaceState(null, '', location.pathname + '#event-saya');
+        }
+
+        loadParticipantState();
+        updateParticipantRegistration();
+        renderParticipantPortal();
+        participantMain.addEventListener('click', event => {
+            const registerButton = event.target.closest('[data-register]');
+            const attendButton = event.target.closest('[data-attend]');
+            const claimButton = event.target.closest('[data-claim]');
+            const printButton = event.target.closest('[data-print]');
+
+            if (registerButton) {
+                const id = registerButton.dataset.register;
+                if (!participantState.registrations[id]) {
+                    participantState.registrations[id] = {
+                        registeredAt: new Date().toISOString(), attended: false, feedback: null, certificate: null
+                    };
+                    if (saveParticipantState()) renderParticipantPortal();
+                }
+            } else if (attendButton) {
+                const id = attendButton.dataset.attend;
+                const item = PARTICIPANT_EVENTS.find(event => event.id === id);
+                if (item && item.status === 'live' && participantState.registrations[id]) {
+                    participantState.registrations[id].attended = true;
+                    participantState.registrations[id].attendedAt = new Date().toISOString();
+                    if (saveParticipantState()) renderParticipantPortal();
+                }
+            } else if (claimButton) {
+                const id = claimButton.dataset.claim;
+                const registration = participantState.registrations[id];
+                if (registration && registration.attended && registration.feedback && !registration.certificate) {
+                    registration.certificate = {
+                        number: 'SMV-' + id.toUpperCase() + '-' + Date.now(),
+                        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                    };
+                    if (saveParticipantState()) renderParticipantPortal();
+                }
+            } else if (printButton) {
+                window.print();
+            }
+        });
+
+        participantMain.addEventListener('submit', event => {
+            const form = event.target.closest('[data-feedback]');
+            if (!form) return;
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            const registration = participantState.registrations[form.dataset.feedback];
+            if (!registration || !registration.attended || registration.feedback) return;
+            registration.feedback = {
+                rating: Number(new FormData(form).get('rating')),
+                comment: String(new FormData(form).get('comment')).trim(),
+                submittedAt: new Date().toISOString()
+            };
+            if (saveParticipantState()) renderParticipantPortal();
+        });
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                if (modal.classList.contains('hidden')) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                } else {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }
+            }
+        }
+
+        // Sidebar: drawer di HP, otomatis tertutup saat menu dipilih / layar dibesarkan
+        function toggleSidebar(force) {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebarOverlay');
+            const open = typeof force === 'boolean' ? force : sb.classList.contains('-translate-x-full');
+            sb.classList.toggle('-translate-x-full', !open);
+            ov.classList.toggle('hidden', !open);
+        }
+        document.querySelectorAll('#sidebar a').forEach(a => a.addEventListener('click', () => toggleSidebar(false)));
+        window.addEventListener('resize', () => { if (window.innerWidth >= 768) toggleSidebar(false); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleSidebar(false); });
+    </script>
+</body>
+</html>

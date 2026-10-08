@@ -1,0 +1,51 @@
+.tt { max-width: 1100px; margin: 0 auto; padding: 24px 24px 72px; color: #3b3f2b; }
+.tt__crumb { font-size: 15px; color: #7a6a4f; margin-bottom: 18px; }
+.tt__crumb a { color: inherit; text-decoration: none; }
+.tt__crumb b { color: #6b4a1f; }
+
+/* Hero */
+.tt-hero { position: relative; overflow: hidden; border-radius: 36px; padding: clamp(32px, 6vw, 72px); margin-bottom: 28px;
+  background: linear-gradient(135deg, #f6e9cc 0%, #ecd3a0 55%, #c9a06b 100%); }
+.tt-hero::after { content: ""; position: absolute; right: -80px; top: -80px; width: 320px; height: 320px; border-radius: 50%; background: rgba(255,255,255,.35); }
+.tt-badge { position: relative; display: inline-block; background: #3b3f2b; color: #fff; font-size: 14px; font-weight: 700; padding: 8px 16px; border-radius: 999px; margin-bottom: 20px; }
+.tt-hero h1 { position: relative; font-size: clamp(32px, 5.5vw, 58px); line-height: 1.08; margin: 0 0 18px; max-width: 700px; }
+.tt-hero h1 em { font-style: normal; color: #a8661f; }
+.tt-hero p { position: relative; font-size: 18px; line-height: 1.7; max-width: 640px; margin: 0 0 28px; }
+.tt-hero__act { position: relative; display: flex; flex-wrap: wrap; gap: 12px; }
+.tt .btn { display: inline-block; }
+
+/* Masalah vs solusi */
+.tt-compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 48px; }
+.tt-box { border-radius: 28px; padding: 28px 30px; }
+.tt-box h2 { margin: 0 0 14px; font-size: 22px; }
+.tt-box ul { list-style: none; margin: 0; padding: 0; }
+.tt-box li { position: relative; padding: 9px 0 9px 32px; line-height: 1.5; }
+.tt-box li::before { position: absolute; left: 0; top: 9px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.tt-box--old { background: #fff; border: 1px solid #eadfc6; }
+.tt-box--old li::before { content: "✕"; background: #f3dcd3; color: #b4452a; }
+.tt-box--new { background: #3b3f2b; color: #fff; }
+.tt-box--new li::before { content: "✓"; background: #f6e9cc; color: #3b3f2b; }
+
+/* Judul seksi */
+.tt-title { font-size: clamp(24px, 3.5vw, 34px); margin: 0 0 20px; }
+
+/* Fitur */
+.tt-feat { list-style: none; margin: 0 0 48px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+.tt-feat li { background: #fff; border-radius: 24px; padding: 22px; box-shadow: 0 6px 24px rgba(120, 90, 40, .08); transition: transform .2s; }
+.tt-feat li:hover { transform: translateY(-4px); }
+.tt-ic { width: 46px; height: 46px; border-radius: 14px; background: #f6e9cc; display: grid; place-items: center; margin-bottom: 14px; }
+.tt-ic .icon { width: 24px; height: 24px; }
+.tt-feat h3 { margin: 0 0 6px; font-size: 17px; }
+.tt-feat p { margin: 0; font-size: 15px; line-height: 1.5; color: #6f6a58; }
+
+/* Langkah */
+.tt-steps { list-style: none; margin: 0 0 48px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.tt-steps li { background: #fff; border-radius: 28px; padding: 26px; }
+.tt-steps b { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #3b3f2b; color: #fff; margin-bottom: 14px; }
+.tt-steps h3 { margin: 0 0 8px; }
+.tt-steps p { margin: 0; line-height: 1.6; color: #6f6a58; }
+
+/* CTA */
+.tt-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; background: #3b3f2b; color: #fff; border-radius: 32px; padding: 36px clamp(24px, 4vw, 48px); }
+.tt-cta h2 { margin: 0 0 6px; font-size: 28px; }
+.tt-cta p { margin: 0; opacity: .85; }

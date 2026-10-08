@@ -5,27 +5,68 @@
 
 {% block content %}
 <section class="tt">
+
   <div class="tt__crumb"><a href="{% url 'beranda' %}">Beranda</a> › <b>Tentang</b></div>
-  <h1>Tentang SIMEVENT</h1>
-  <p class="tt__lead">SIMEVENT dibuat pada tahun 2026 karena sistem pengelolaan event yang ada saat ini terasa terlalu ribet.</p>
 
-  <div class="tt__card">
-    <h2>Kenapa SIMEVENT dibuat?</h2>
-    <p>Informasi event tersebar di banyak tempat, pendaftaran harus lewat beberapa langkah yang berbelit, dan sertifikat sering sulit dicari setelah acara selesai. Penyelenggara pun harus mengurus banyak hal secara manual.</p>
-    <p>SIMEVENT hadir untuk menyederhanakan semuanya dalam satu tempat.</p>
-  </div>
-
-  <div class="tt__grid">
-    <div class="tt__card">
-      <h3>Untuk peserta</h3>
-      <p>Jelajahi seminar, workshop, konferensi, dan webinar, daftar dengan cepat, lalu dapatkan sertifikat digital setelah mengisi feedback.</p>
-    </div>
-    <div class="tt__card">
-      <h3>Untuk penyelenggara</h3>
-      <p>Buat dan kelola event, pantau peserta, dan bagikan sertifikat tanpa proses manual yang melelahkan.</p>
+  {# ===== HERO ===== #}
+  <div class="tt-hero">
+    <span class="tt-badge">Dibuat tahun 2026</span>
+    <h1>Event itu seharusnya <em>simpel</em>, bukan ribet.</h1>
+    <p>SIMEVENT lahir dari satu keresahan: sistem event yang ada sekarang terlalu berbelit. Informasi tersebar, daftar lewat banyak langkah, dan sertifikat susah dicari. Kami menyatukan semuanya di satu tempat.</p>
+    <div class="tt-hero__act">
+      <a class="btn btn--dark" href="{% url 'jelajah' %}">Jelajah Event</a>
+      <a class="btn btn--outline" href="{% url 'buat_event' %}">Buat Event</a>
     </div>
   </div>
 
-  <a class="btn btn--dark" href="{% url 'jelajah' %}">Mulai Jelajah Event</a>
+  {# ===== MASALAH vs SOLUSI ===== #}
+  <div class="tt-compare">
+    <div class="tt-box tt-box--old">
+      <h2>Yang bikin ribet</h2>
+      <ul>
+        <li>Info event tersebar di banyak grup dan akun</li>
+        <li>Daftar harus isi form berulang-ulang</li>
+        <li>Presensi manual dan antre panjang</li>
+        <li>Sertifikat telat, hilang, atau sulit diminta</li>
+      </ul>
+    </div>
+    <div class="tt-box tt-box--new">
+      <h2>Dengan SIMEVENT</h2>
+      <ul>
+        <li>Semua event ada di satu halaman Jelajah</li>
+        <li>Daftar dan bayar hanya dengan beberapa klik</li>
+        <li>E-tiket dengan QR untuk presensi cepat</li>
+        <li>Sertifikat digital terbit otomatis</li>
+      </ul>
+    </div>
+  </div>
+
+  {# ===== FITUR ===== #}
+  <h2 class="tt-title">Kemudahan yang kami siapkan</h2>
+  <ul class="tt-feat">
+    <li><span class="tt-ic"><svg class="icon"><use href="#ic-qr"/></svg></span><h3>E-Tiket &amp; QR</h3><p>Presensi cepat tanpa antre.</p></li>
+    <li><span class="tt-ic"><svg class="icon"><use href="#ic-award"/></svg></span><h3>Sertifikat Digital</h3><p>Terbit otomatis setelah acara.</p></li>
+    <li><span class="tt-ic"><svg class="icon"><use href="#ic-verified"/></svg></span><h3>Penyelenggara Terverifikasi</h3><p>Kampus, instansi, dan organisasi resmi.</p></li>
+    <li><span class="tt-ic"><svg class="icon"><use href="#ic-banknote"/></svg></span><h3>Daftar &amp; Bayar Mudah</h3><p>Tanpa proses berbelit.</p></li>
+    <li><span class="tt-ic"><svg class="icon"><use href="#ic-sliders"/></svg></span><h3>Bebas Atur Event</h3><p>Buat dan kelola event sendiri.</p></li>
+  </ul>
+
+  {# ===== LANGKAH ===== #}
+  <h2 class="tt-title">Cara kerjanya</h2>
+  <ol class="tt-steps">
+    <li><b>1</b><h3>Jelajah</h3><p>Cari seminar, workshop, konferensi, atau webinar yang kamu mau.</p></li>
+    <li><b>2</b><h3>Daftar</h3><p>Isi data sekali, bayar kalau berbayar, tiket langsung terbit.</p></li>
+    <li><b>3</b><h3>Hadiri &amp; dapat sertifikat</h3><p>Scan QR saat hadir, isi feedback, sertifikat masuk ke akunmu.</p></li>
+  </ol>
+
+  {# ===== CTA ===== #}
+  <div class="tt-cta">
+    <div>
+      <h2>Siap mulai?</h2>
+      <p>Temukan event berikutnya, atau buat event kamu sendiri hari ini.</p>
+    </div>
+    <a class="btn btn--cta" href="{% url 'jelajah' %}">Mulai Jelajah</a>
+  </div>
+
 </section>
 {% endblock %}

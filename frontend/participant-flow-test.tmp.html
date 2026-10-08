@@ -1,0 +1,72 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Participant flow test</title>
+<pre id="result">RUNNING</pre>
+<iframe id="app" src="masuk-preview.html?event=conference-tech#daftar" hidden></iframe>
+<script>
+  const result = document.getElementById('result');
+  const frame = document.getElementById('app');
+  const run = async () => {
+    const checks = [];
+    const check = (name, ok) => {
+      if (!ok) throw new Error('Failed: ' + name);
+      checks.push(name);
+    };
+    const waitFor = async predicate => {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        if (predicate()) return;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      throw new Error('Timed out waiting for page state.');
+    };
+    try {
+      await new Promise((resolve, reject) => {
+        frame.addEventListener('load', resolve, { once: true });
+        frame.addEventListener('error', reject, { once: true });
+      });
+      let doc = frame.contentDocument;
+      const email = 'qa-' + Date.now() + '@example.test';
+      check('account sign-up form opened', !doc.getElementById('registerPanel').hidden);
+      doc.getElementById('registerName').value = 'Peserta Uji';
+      doc.getElementById('registerEmail').value = email;
+      doc.getElementById('registerPassword').value = 'uji-kata-sandi-123';
+      doc.getElementById('registerConfirm').value = 'beda-kata-sandi';
+      doc.getElementById('registerForm').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      check('rejects mismatched passwords', doc.getElementById('registerError').textContent.includes('belum sama'));
+      doc.getElementById('registerConfirm').value = 'uji-kata-sandi-123';
+      const dashboardLoad = new Promise(resolve => frame.addEventListener('load', resolve, { once: true }));
+      doc.getElementById('registerForm').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await dashboardLoad;
+      await waitFor(() => frame.contentDocument.getElementById('event-saya'));
+      doc = frame.contentDocument;
+      check('account creation redirects to participant dashboard', frame.contentWindow.location.pathname.endsWith('/peserta_page.html'));
+      check('event from Daftar button is registered automatically', doc.getElementById('event-saya').textContent.includes('Konferensi Teknologi Nusantara 2026'));
+      check('feedback is not offered before attendance', doc.querySelector('[data-feedback="conference-tech"]') === null);
+      doc.querySelector('[data-attend="conference-tech"]').click();
+      await waitFor(() => frame.contentDocument.querySelector('[data-feedback="conference-tech"]'));
+      doc = frame.contentDocument;
+      check('attendance enables feedback', !!doc.querySelector('[data-feedback="conference-tech"]'));
+      check('certificate remains locked before feedback', doc.querySelector('[data-claim="conference-tech"]') === null);
+      doc.querySelector('[data-feedback="conference-tech"] [name="rating"]').value = '5';
+      doc.querySelector('[data-feedback="conference-tech"] [name="comment"]').value = 'Acara informatif dan berjalan baik.';
+      const feedbackForm = doc.querySelector('[data-feedback="conference-tech"]');
+      feedbackForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await waitFor(() => frame.contentDocument.querySelector('[data-claim="conference-tech"]'));
+      doc = frame.contentDocument;
+      check('submitted feedback unlocks certificate claim', !!doc.querySelector('[data-claim="conference-tech"]'));
+      doc.querySelector('[data-claim="conference-tech"]').click();
+      await waitFor(() => frame.contentDocument.querySelector('#sertifikat')?.textContent.includes('SMV-CONFERENCE-TECH-'));
+      doc = frame.contentDocument;
+      check('claimed certificate appears in participant account', doc.getElementById('sertifikat').textContent.includes('SMV-CONFERENCE-TECH-'));
+      const storage = frame.contentWindow.localStorage;
+      const accounts = JSON.parse(storage.getItem('simevent_users') || '[]');
+      storage.setItem('simevent_users', JSON.stringify(accounts.filter(user => user.email !== email)));
+      storage.removeItem('simevent_session');
+      storage.removeItem('simevent_participant_' + email);
+      result.textContent = 'PASS\n' + checks.join('\n');
+    } catch (error) {
+      result.textContent = 'FAIL\n' + error.stack;
+    }
+  };
+  run();
+</script>
