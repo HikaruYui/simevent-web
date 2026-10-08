@@ -1,0 +1,15 @@
+{% extends 'peserta/base_peserta.html' %}
+{% load static %}
+{% block ptitle %}Sertifikat{% endblock %}
+{% block peserta %}
+{% with e=sertifikat.registrasi.event %}
+<div class="cert max-w-3xl mx-auto bg-white border-[10px] border-double border-brand-orange p-8 sm:p-12 text-center">
+ <img src="{% static 'img/logo.svg' %}" class="h-10 mx-auto" alt="SIMEVENT">
+ <p class="text-xs tracking-widest text-brand-muted mt-3">SERTIFIKAT KEHADIRAN</p><p class="mt-5">Diberikan kepada</p>
+ <div class="font-display text-3xl font-extrabold text-brand-orange my-3 border-b-2 border-brand-sand inline-block px-8">{{ user.get_full_name|default:user.username }}</div>
+ <p>atas partisipasinya dalam<br><b>{{ e.judul }}</b><br>{{ e.tanggal|date:"j F Y" }} · {{ e.lokasi }}</p>
+ <p class="text-xs text-brand-muted mt-5">Penyelenggara: {{ e.penyelenggara }}<br>No. {{ sertifikat.nomor }}</p>
+</div>
+<div class="text-center mt-4"><button onclick="print()" class="px-4 py-2 rounded-full text-sm font-bold bg-brand-orange text-white">Cetak / Simpan PDF</button> <a href="{% url 'peserta_sertifikat' %}" class="px-4 py-2 rounded-full text-sm font-bold bg-white">Kembali</a></div>
+{% endwith %}
+{% endblock %}

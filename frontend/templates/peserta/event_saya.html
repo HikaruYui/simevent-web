@@ -1,0 +1,8 @@
+{% extends 'peserta/base_peserta.html' %}
+{% block ptitle %}Event Saya{% endblock %}
+{% block peserta %}
+<div class="bg-brand-creamLight/90 rounded-3xl p-6 shadow-lg">
+ <h3 class="font-display text-xl font-bold">Event Saya</h3>
+ <div class="divide-y divide-brand-tan/40">{% for r in registrasi %}{% include 'peserta/_registrasi_item.html' %}{% empty %}<p class="py-8 text-center text-sm text-brand-muted">Belum ada event terdaftar.</p>{% endfor %}</div>
+</div>
+{% endblock %}

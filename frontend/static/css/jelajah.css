@@ -1,0 +1,18 @@
+/* Tambahan untuk halaman Jelajah (melengkapi static/css/style.css) */
+.jj{max-width:1180px;margin:0 auto;padding:24px 16px 60px;color:#3F422E}
+.jj h1{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:clamp(28px,4vw,46px);margin:8px 0}
+.jj__crumb{font-size:13px;color:#6F6556}.jj__sub{max-width:640px;line-height:1.6}
+.jj__lay{display:grid;grid-template-columns:260px 1fr;gap:28px;margin-top:24px}
+.jj-fil{background:#fff;border-radius:24px;padding:20px;align-self:start}
+.jj-fil h4{margin:14px 0 8px;padding-top:14px;border-top:1px solid #E6DCC3;font-size:14px}.jj-fil h4:first-of-type{border:0;padding:0}
+.jj-fil label{display:flex;gap:8px;align-items:center;font-size:14px;margin:7px 0;cursor:pointer}.jj-fil label em{margin-left:auto;font-style:normal;color:#8F8673;font-size:12px}
+.jj-fil input[type=checkbox]{accent-color:#3F422E;width:16px;height:16px}
+.jj-pill{border:1px solid #E6DCC3;background:#fff;border-radius:20px;padding:6px 14px;font:inherit;font-size:13px;margin:0 4px 6px 0;cursor:pointer}.jj-pill.on{background:#3F422E;color:#F5E6C5;border-color:#3F422E}
+.jj-bar{background:#fff;border-radius:24px;padding:14px;box-shadow:0 8px 20px #0002;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.jj-bar input,.jj-bar select{background:#F1ECE0;border:0;border-radius:14px;padding:13px;font:inherit;flex:1;min-width:150px}
+.jj-chips{margin:14px 0}.jj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.jj-card{background:#fff;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.jj-org{background:#FAF6EC;border-radius:12px;padding:8px 12px;font-size:13px}.jj-note{font-size:12px;color:#6F6556}.jj-note.red{color:#B3261E}
+.jj-empty{padding:40px;text-align:center;color:#8F8673;background:#fff;border-radius:20px}
+@media(max-width:860px){.jj__lay{grid-template-columns:1fr}}
+a.jj-pill{display:inline-block;text-decoration:none;color:inherit}a.jj-pill.on{color:#F5E6C5}.jj-fil label input[type=radio]{accent-color:#3F422E}

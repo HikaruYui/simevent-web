@@ -1,0 +1,11 @@
+{% extends 'peserta/base_peserta.html' %}
+{% block ptitle %}Sertifikat{% endblock %}
+{% block peserta %}
+<div class="bg-brand-creamLight/90 rounded-3xl p-6 shadow-lg">
+ <h3 class="font-display text-xl font-bold">Sertifikat Saya</h3>
+ <div class="divide-y divide-brand-tan/40">
+ {% for s in sertifikat %}<div class="py-4 flex items-center justify-between gap-3"><div><div class="font-semibold">{{ s.registrasi.event.judul }}</div><div class="text-xs text-brand-muted">No. {{ s.nomor }} · {{ s.diklaim|date:"j M Y" }}</div></div><a class="px-4 py-2 rounded-full text-sm font-bold bg-brand-orange text-white" href="{% url 'sertifikat_detail' s.pk %}">Lihat</a></div>
+ {% empty %}<p class="py-8 text-center text-sm text-brand-muted">Belum ada sertifikat. Ikuti event, kirim feedback, lalu klaim di menu Event Saya.</p>{% endfor %}
+ </div>
+</div>
+{% endblock %}

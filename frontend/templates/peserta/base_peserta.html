@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% block ptitle %}Dashboard Peserta{% endblock %} | SIMEVENT{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#B8721F',goldLight:'#F3D9A6',bronze:'#8B6A44',olive:'#3F422E',oliveDark:'#2C2E1F',ink:'#5F5944',muted:'#70664F'}}}}}</script>
+<style>body{background:linear-gradient(160deg,#D9CDB0 0%,#EBD7AE 45%,#F3E2BF 100%) fixed}.rate{display:flex;flex-direction:row-reverse;justify-content:flex-end}.rate input{display:none}.rate label{font-size:2rem;color:#CDB68E;cursor:pointer}.rate input:checked~label,.rate label:hover,.rate label:hover~label{color:#DB9743}
+@media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:fixed;inset:0;margin:auto;height:fit-content}}</style>
+{% endblock %}
+{% block content %}
+<div class="min-h-screen flex flex-col text-brand-olive">
+ <header class="bg-brand-tan/80 backdrop-blur border-b border-white/40 shadow-lg sticky top-0 z-30">
+  <div class="px-4 lg:px-8 h-16 flex items-center justify-between">
+   <a href="{% url 'beranda' %}"><img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" class="h-8"></a>
+   <div class="flex items-center gap-5 text-sm font-medium">
+    <a href="{% url 'jelajah' %}"><i class="fa-solid fa-compass mr-1"></i>Jelajah</a>
+    <span><i class="fa-regular fa-bell mr-1"></i>Notifikasi</span>
+    <a href="{% url 'keluar' %}"><i class="fa-solid fa-power-off mr-1"></i>Log Out</a>
+   </div>
+  </div>
+ </header>
+ <div class="flex flex-1 flex-col md:flex-row">
+  <aside class="md:w-56 shrink-0 bg-brand-creamLight/90 border-r border-white/40 p-4 flex md:flex-col justify-between gap-2">
+   <nav class="flex md:flex-col gap-1 text-sm font-semibold">
+    {% url 'peserta_dashboard' as u1 %}{% url 'peserta_event' as u2 %}{% url 'peserta_sertifikat' as u3 %}
+    <a href="{{ u1 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u1 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-solid fa-table-columns w-5"></i>Dashboard</a>
+    <a href="{{ u2 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u2 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-regular fa-calendar-check w-5"></i>Event Saya</a>
+    <a href="{{ u3 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u3 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-solid fa-award w-5"></i>Sertifikat</a>
+   </nav>
+   <nav class="hidden md:block text-sm font-medium space-y-1 border-t border-brand-tan/50 pt-3">
+    <a href="#" class="block px-3 py-2.5 rounded-xl hover:bg-brand-sand/60"><i class="fa-solid fa-headset w-5"></i>Pusat Bantuan</a>
+    <a href="#" class="block px-3 py-2.5 rounded-xl hover:bg-brand-sand/60"><i class="fa-solid fa-gear w-5"></i>Pengaturan</a>
+   </nav>
+  </aside>
+  <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-5">
+   {% for m in messages %}<div class="rounded-xl px-4 py-3 text-sm font-semibold bg-white/80 border border-brand-tan">{{ m }}</div>{% endfor %}
+   {% block peserta %}{% endblock %}
+  </main>
+ </div>
+</div>
+{% endblock %}
