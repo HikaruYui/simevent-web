@@ -1,1 +1,0 @@
-# SIMEVENT Django Project
