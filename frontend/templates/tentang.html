@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Tentang | SIMEVENT{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/tentang.css' %}">{% endblock %}
+
+{% block content %}
+<section class="tt">
+  <div class="tt__crumb"><a href="{% url 'beranda' %}">Beranda</a> › <b>Tentang</b></div>
+  <h1>Tentang SIMEVENT</h1>
+  <p class="tt__lead">SIMEVENT dibuat pada tahun 2026 karena sistem pengelolaan event yang ada saat ini terasa terlalu ribet.</p>
+
+  <div class="tt__card">
+    <h2>Kenapa SIMEVENT dibuat?</h2>
+    <p>Informasi event tersebar di banyak tempat, pendaftaran harus lewat beberapa langkah yang berbelit, dan sertifikat sering sulit dicari setelah acara selesai. Penyelenggara pun harus mengurus banyak hal secara manual.</p>
+    <p>SIMEVENT hadir untuk menyederhanakan semuanya dalam satu tempat.</p>
+  </div>
+
+  <div class="tt__grid">
+    <div class="tt__card">
+      <h3>Untuk peserta</h3>
+      <p>Jelajahi seminar, workshop, konferensi, dan webinar, daftar dengan cepat, lalu dapatkan sertifikat digital setelah mengisi feedback.</p>
+    </div>
+    <div class="tt__card">
+      <h3>Untuk penyelenggara</h3>
+      <p>Buat dan kelola event, pantau peserta, dan bagikan sertifikat tanpa proses manual yang melelahkan.</p>
+    </div>
+  </div>
+
+  <a class="btn btn--dark" href="{% url 'jelajah' %}">Mulai Jelajah Event</a>
+</section>
+{% endblock %}
