@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}Jelajah Event | SIMEVENT{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/jelajah.css' %}">{% endblock %}
+
+{% block content %}
+<section class="jj">
+  <div class="jj__crumb"><a href="{% url 'beranda' %}">Beranda</a> › <b>Jelajah Event</b></div>
+  <h1>Jelajah &amp; Temukan Event Inspiratif</h1>
+  <p class="jj__sub">Telusuri seminar, workshop, konferensi, dan webinar dari penyelenggara kampus dan komunitas, lalu dapatkan sertifikat digital untuk setiap event yang kamu hadiri.</p>
+
+  <form method="get" class="jj__lay" id="filter-form">
+    <aside class="jj-fil">
+      <b>Filter</b>
+      <h4>Status Event</h4>
+      {% for val, label in status_choices %}
+      <label><input type="checkbox" name="status" value="{{ val }}" {% if val in status_aktif %}checked{% endif %} onchange="this.form.submit()">{{ label }}</label>
+      {% endfor %}
+      <h4>Biaya</h4>
+      {% for val, label in biaya_choices %}
+      <label><input type="radio" name="biaya" value="{{ val }}" {% if biaya == val %}checked{% endif %} onchange="this.form.submit()">{{ label }}</label>
+      {% endfor %}
+      <a class="btn btn--dark" style="width:100%;margin-top:14px;text-align:center" href="{% url 'jelajah' %}">Bersihkan Filter</a>
+    </aside>
+
+    <section>
+      <div class="jj-bar">
+        <input type="search" name="q" value="{{ q }}" placeholder="Cari judul event, lokasi, atau penyelenggara...">
+        <select name="urut" onchange="this.form.submit()">
+          <option value="tanggal" {% if urut == 'tanggal' %}selected{% endif %}>Terdekat</option>
+          <option value="harga" {% if urut == 'harga' %}selected{% endif %}>Termurah</option>
+        </select>
+        <button class="btn btn--dark" type="submit">Cari</button>
+        <span class="jj-note"><b>{{ events|length }}</b> event ditemukan</span>
+      </div>
+
+      <div class="jj-chips">
+        <a class="jj-pill {% if not kategori %}on{% endif %}" href="?">Semua Kategori</a>
+        {% for k in kategori_list %}<a class="jj-pill {% if kategori == k.slug %}on{% endif %}" href="?kategori={{ k.slug }}">{{ k.nama }} ({{ k.jumlah }})</a>{% endfor %}
+        {% if kategori %}<input type="hidden" name="kategori" value="{{ kategori }}">{% endif %}
+      </div>
+
+      <div class="jj-grid">
+        {% for event in events %}
+        <article class="jj-card">
+          <div class="event-card__chips"><span class="chip chip--cream">{{ event.kategori }}</span><span class="chip chip--white">{{ event.tanggal|date:"j M Y" }}</span></div>
+          {% if event.status == 'berlangsung' %}<span class="status status--live"><i></i>Sedang Berlangsung</span>
+          {% else %}<span class="status status--soon"><i></i>{% if event.status == 'selesai' %}Selesai{% else %}Akan Datang{% endif %}</span>{% endif %}
+          <h3 class="event-card__title">{{ event.judul }}</h3>
+          <ul class="event-card__meta">
+            <li><svg class="icon"><use href="#ic-pin"/></svg>{{ event.lokasi }}</li>
+            <li><svg class="icon"><use href="#ic-user"/></svg>{{ event.penyelenggara }}</li>
+          </ul>
+          <div class="jj-note">Sertifikat digital setelah mengisi feedback</div>
+          <div class="event-card__foot">
+            <span class="price">{% if event.harga %}Rp{{ event.harga|intcomma }}{% else %}Gratis{% endif %}</span>
+            {% if event.pk in terdaftar_ids %}<a class="btn btn--dark btn--sm" href="{% url 'peserta_event' %}">Terdaftar ✓</a>
+            {% elif event.status == 'selesai' %}<span class="btn btn--sm" style="background:#9A9A8C;color:#eee">Selesai</span>
+            {% else %}<a class="btn btn--dark btn--sm" href="{% url 'detail_event' event.pk %}">Daftar <svg class="icon"><use href="#ic-arrow"/></svg></a>{% endif %}
+          </div>
+        </article>
+        {% empty %}<div class="jj-empty">Tidak ada event yang cocok dengan filter.</div>{% endfor %}
+      </div>
+    </section>
+  </form>
+</section>
+{% endblock %}
