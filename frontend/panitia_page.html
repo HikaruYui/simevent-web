@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMEVENT - Dashboard Panitia</title>
+    <script>
+        // Penjaga halaman: wajib login dulu, kalau belum -> ke halaman masuk
+        (function () {
+            var session = null;
+            try { session = JSON.parse(localStorage.getItem('simevent_session')); } catch (e) {}
+            if (!session || !session.email) { location.replace('masuk-preview.html'); }
+            window.SIMEVENT_SESSION = session;
+        })();
+    </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons CDN -->
@@ -100,7 +109,7 @@
                 </button>
 
                 <!-- Logout Button -->
-                <a href="landing_page.html" title="Keluar ke halaman utama" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
+                <a href="landing_page.html" onclick="try{localStorage.removeItem('simevent_session')}catch(e){}" title="Keluar ke halaman utama" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
                     <i class="fa-solid fa-power-off text-brand-goldLight"></i>
                     <span class="hidden md:inline">Log Out</span>
                 </a>
@@ -188,7 +197,7 @@
                         <div class="space-y-1">
                             <div class="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
                                 <h2 class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive tracking-tight">
-                                    Budi Santoso
+                                    <span id="userName">Budi Santoso</span>
                                 </h2>
                                 <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-brand-olive text-brand-goldLight border border-brand-olive">
                                     Main Admin
@@ -197,7 +206,11 @@
 
                             <p class="text-brand-orangeDeep text-sm flex items-center justify-center sm:justify-start gap-2 font-mono">
                                 <i class="fa-regular fa-envelope text-brand-orangeDeep"></i>
-                                <span class="break-all">budi.panitia@simevent.com</span>
+                                <span id="userEmail" class="break-all">budi.panitia@simevent.com</span>
+                            </p>
+
+                            <p id="loginInfo" class="text-brand-muted text-xs flex items-center justify-center sm:justify-start gap-1.5">
+                                <i class="fa-regular fa-clock"></i><span></span>
                             </p>
 
                             <p class="text-brand-ink text-sm max-w-xl pt-1">
@@ -540,6 +553,20 @@
                 }
             }
         }
+
+        // Tampilkan data hasil login yang tersimpan
+        (function () {
+            var u = window.SIMEVENT_SESSION;
+            if (!u) return;
+            document.getElementById('userName').textContent = u.name || u.email;
+            document.getElementById('userEmail').textContent = u.email;
+            var role = document.querySelector('#userName').closest('div').querySelector('span.rounded-full');
+            if (role && u.role) role.textContent = u.role;
+            if (u.loginAt) {
+                var t = new Date(u.loginAt).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+                document.querySelector('#loginInfo span').textContent = 'Login terakhir: ' + t;
+            }
+        })();
 
         // Sidebar: drawer di HP, otomatis tertutup saat menu dipilih / layar dibesarkan
         function toggleSidebar(force) {

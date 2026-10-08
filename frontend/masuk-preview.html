@@ -47,15 +47,16 @@
     <main>
       
 <section class="auth">
-  <a class="auth__logo" href="preview.html" aria-label="SIMEVENT, ke beranda">
+  <a class="auth__logo" href="landing_page.html" aria-label="SIMEVENT, ke beranda">
     <img src="static/img/logo.svg" alt="SIMEVENT">
   </a>
 
   <div class="auth__panel">
     <h1 class="auth__title">Selamat Datang</h1>
     <p class="auth__sub">Silakan masuk ke akun Anda</p>
+    <p id="loginError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
 
-    <form class="auth__form" method="post" action="masuk-preview.html" novalidate>
+    <form class="auth__form" id="loginForm" method="post" action="masuk-preview.html" novalidate>
       <input type="hidden" name="csrfmiddlewaretoken" value="...">
       
 
@@ -85,5 +86,48 @@
   </div>
 
   
+
+  <script>
+    // ===== Login sederhana (prototipe, sisi klien) =====
+    // Sesi disimpan di localStorage -> tetap login walau browser ditutup.
+    var SESSION_KEY = 'simevent_session';
+    var USERS = [
+      { email: 'budi.panitia@simevent.com', password: 'admin123',
+        name: 'Budi Santoso', role: 'Main Admin', redirect: 'panitia_page.html' }
+    ];
+
+    function getSession() {
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { return null; }
+    }
+
+    // Kalau sudah pernah login, langsung ke dashboard
+    var existing = getSession();
+    if (existing && existing.redirect) { location.replace(existing.redirect); }
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = document.getElementById('id_email').value.trim().toLowerCase();
+      var pass  = document.getElementById('id_password').value;
+      var err   = document.getElementById('loginError');
+      var user  = USERS.find(function (u) { return u.email === email && u.password === pass; });
+
+      if (!user) {
+        err.textContent = 'Email atau kata sandi salah.';
+        err.hidden = false;
+        return;
+      }
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+          email: user.email, name: user.name, role: user.role,
+          redirect: user.redirect, loginAt: new Date().toISOString()
+        }));
+      } catch (ex) {
+        err.textContent = 'Browser memblokir penyimpanan login. Aktifkan penyimpanan lokal lalu coba lagi.';
+        err.hidden = false;
+        return;
+      }
+      location.href = user.redirect;
+    });
+  </script>
 </body>
 </html>
