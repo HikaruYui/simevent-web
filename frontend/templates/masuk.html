@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Masuk | SIMEVENT{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <a class="auth__logo" href="{% url 'beranda' %}" aria-label="SIMEVENT, ke beranda">
+    <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
+  </a>
+
+  <div class="auth__panel">
+    <h1 class="auth__title">Selamat Datang</h1>
+    <p class="auth__sub">Silakan masuk ke akun Anda</p>
+
+    <form class="auth__form" method="post" action="{% url 'masuk' %}" novalidate>
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      {% if error %}<p class="auth__error" role="alert">{{ error }}</p>{% endif %}
+
+      <label class="sr-only" for="id_email">Email</label>
+      <input class="auth__input" id="id_email" type="email" name="email" value="{{ email }}"
+             placeholder="Masukkan Email" autocomplete="email" required autofocus>
+
+      <label class="sr-only" for="id_password">Kata sandi</label>
+      <input class="auth__input" id="id_password" type="password" name="password"
+             placeholder="Masukkan Kata Sandi" autocomplete="current-password" required>
+
+      <a class="auth__forgot" href="{% url 'lupa_password' %}">Lupa Password?</a>
+
+      <button class="auth__submit" type="submit">Continue</button>
+    </form>
+
+    <p class="auth__alt">Belum punya akun?</p>
+    <a class="auth__link" href="{% url 'daftar' %}">Daftar Sekarang</a>
+  </div>
+</section>
+{% endblock %}

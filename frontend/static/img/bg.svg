@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 2939" preserveAspectRatio="none">
+<defs>
+<radialGradient id="g" cx="0" cy="0" r="1" gradientTransform="matrix(-2532 3676.62 -1801.41 -10219.4 1498.5 443.432)" gradientUnits="userSpaceOnUse">
+<stop offset="0.0225" stop-color="#D78B30"/><stop offset="0.1546" stop-color="#E6B97B"/><stop offset="0.291" stop-color="#EECFA0"/><stop offset="0.4047" stop-color="#F5E6C5"/><stop offset="0.5846" stop-color="#6D6B54"/>
+</radialGradient>
+</defs>
+<rect width="1440" height="2939" fill="url(#g)"/>
+</svg>

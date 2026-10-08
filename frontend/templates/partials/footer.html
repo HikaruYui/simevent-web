@@ -1,0 +1,45 @@
+{% load static %}
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
+        <p>Platform pendaftaran dan pembuatan event formal. Menghubungkan peserta, penyelenggara, dan komunitas dalam satu sistem.</p>
+      </div>
+
+      <div>
+        <h3>Kategori Event</h3>
+        <ul>
+          {% for k in kategori_list %}
+          <li><a href="{% url 'jelajah' %}?kategori={{ k.slug }}">{{ k.nama }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <h3>SIMEVENT</h3>
+        <ul>
+          <li><a href="{% url 'tentang' %}">Tentang Kami</a></li>
+          <li><a href="{% url 'bantuan' %}">Bantuan</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Kontak dan Alamat</h3>
+        <ul class="footer__contact">
+          <li><svg class="icon"><use href="#ic-mail"/></svg><a href="mailto:halo@simevent.id">halo@simevent.id</a></li>
+          <li><svg class="icon"><use href="#ic-instagram"/></svg><a href="https://instagram.com/simivent.id">@simivent.id</a></li>
+          <li><svg class="icon"><use href="#ic-pin"/></svg><span>Samarinda, Kalimantan Timur</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>&copy; 2026 SIMEVENT | All Right Reserved</p>
+      <div>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Syarat &amp; Ketentuan</a>
+      </div>
+    </div>
+  </div>
+</footer>
