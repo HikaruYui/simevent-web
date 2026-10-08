@@ -1,0 +1,21 @@
+{% load static %}
+<header class="site-header">
+  <nav class="navbar" aria-label="Navigasi utama">
+    <a class="navbar__brand" href="{% url 'beranda' %}" aria-label="SIMEVENT, ke beranda">
+      <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
+    </a>
+
+    <ul class="navbar__menu">
+      <li><a href="{% url 'beranda' %}"  class="{% if halaman_aktif == 'beranda' %}is-active{% endif %}">Beranda</a></li>
+      <li><a href="{% url 'jelajah' %}"  class="{% if halaman_aktif == 'jelajah' %}is-active{% endif %}">Jelajah</a></li>
+      <li><a href="{% url 'tentang' %}"  class="{% if halaman_aktif == 'tentang' %}is-active{% endif %}">Tentang</a></li>
+      <li><a href="{% url 'bantuan' %}"  class="{% if halaman_aktif == 'bantuan' %}is-active{% endif %}">Bantuan</a></li>
+    </ul>
+
+    <div class="navbar__actions">
+      {# Ganti dengan {% if user.is_authenticated %} ... nama user / Logout {% else %} ... bila sudah ada auth #}
+      <a class="btn btn--outline" href="{% url 'masuk' %}">Masuk</a>
+      <a class="btn btn--dark" href="{% url 'daftar' %}">Daftar</a>
+    </div>
+  </nav>
+</header>

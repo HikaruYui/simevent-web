@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1020" fill="none">
+<defs>
+<filter id="sh" x="326.343" y="-40" width="1127.66" height="1081.11" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="b"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="h"/>
+<feOffset dy="16"/><feGaussianBlur stdDeviation="2"/><feComposite in2="h" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="b" result="e"/><feBlend mode="normal" in="SourceGraphic" in2="e" result="shape"/>
+</filter>
+</defs>
+<g filter="url(#sh)"><path d="M504.5 296C300.5 195.5 188.5 113.5 675 18L1328 -40L1450 -26V1005.5V1020.5H1019C1019 1020.5 873.5 1035.5 574 916.5C274.5 797.5 297 612.5 598.5 627.5C900 642.5 708.5 396.5 504.5 296Z" fill="#9F886F"/></g>
+</svg>
