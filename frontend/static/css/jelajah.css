@@ -13,6 +13,14 @@
 .jj-fil h4 { margin: 22px 0 10px; font-size: 16px; }
 .jj-fil label { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 16px; cursor: pointer; }
 .jj-fil input { width: 18px; height: 18px; accent-color: #3b3f2b; }
+.jj-filter-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.jj-filter-title b { font-size: 19px; }
+.jj-filter-title button { padding: 5px 10px; border: 0; border-radius: 999px; background: #f1ece0; color: #6f6a58; cursor: pointer; font-size: 12px; font-weight: 700; }
+.jj-fil fieldset { margin: 0; padding: 15px 0; border: 0; border-top: 1px solid #eadfc6; }
+.jj-fil legend { padding: 0 0 8px; font-size: 14px; font-weight: 800; }
+.jj-fil fieldset label { font-size: 13px; }
+.jj-sort-label { display: block; padding: 14px 0 8px; border-top: 1px solid #eadfc6; font-size: 14px !important; font-weight: 800; }
+.jj-fil select { width: 100%; padding: 12px; border: 1px solid #eadfc6; border-radius: 12px; background: #f1ece0; color: #3b3f2b; font: inherit; }
 
 /* Bar pencarian */
 .jj-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; background: #fff; border-radius: 28px; padding: 22px 24px; margin-bottom: 18px; }
@@ -39,11 +47,28 @@
 .jj .price { font-weight: 700; font-size: 17px; }
 .jj .icon { width: 16px; height: 16px; }
 .jj-empty { grid-column: 1 / -1; background: #fff; border-radius: 24px; padding: 40px; text-align: center; color: #6f6a58; }
+.jj-results { min-width: 0; }
+.jj-event-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.jj-event-card { min-width: 0; overflow: hidden; border: 1px solid rgba(91,83,61,.09); border-radius: 18px; background: #fffdf7; box-shadow: 0 9px 20px rgba(63,66,46,.11); }
+.jj-event-card[hidden] { display: none; }
+.jj-event-card__visual { position: relative; display: flex; min-height: 168px; align-items: end; padding: 20px 16px; background: linear-gradient(135deg, rgba(159,136,111,.94), rgba(51,54,39,.98)); color: #fff4d8; }
+.jj-event-card__visual h2 { max-width: 250px; font: 800 18px/1.18 var(--font-head); }
+.jj-event-card__category { position: absolute; top: 13px; left: 13px; padding: 6px 11px; border-radius: 999px; background: #f8edcf; color: #4e4c37; font: 800 11px/1 var(--font-body); }
+.jj-event-card__body { padding: 14px 16px 16px; }
+.jj-event-card__date { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; color: #9f886f; font-size: 12px; font-weight: 700; }
+.jj-event-card__status { color: #9a6b24; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.jj-event-card__status--live { color: #347050; }
+.jj-event-card__body h2 { min-height: 38px; color: #333627; font: 800 14px/1.35 var(--font-head); }
+.jj-event-card__location { margin-top: 6px; color: #9f886f; font-size: 12px; }
+.jj-event-card__footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 12px; }
+.jj-event-card__footer strong { color: #c67e24; font: 800 15px var(--font-head); }
+.jj-event-card__footer a { display: inline-flex; min-height: 34px; align-items: center; padding: 0 14px; border-radius: 999px; background: var(--olive); color: #fff4d8; font: 800 12px var(--font-body); }
+.jj-empty[hidden] { display: none; }
 
 @media (max-width: 900px) {
   .jj__lay { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
-  .jj-grid { grid-template-columns: minmax(0, 1fr); }
+  .jj-grid, .jj-event-grid { grid-template-columns: minmax(0, 1fr); }
 }
