@@ -1,0 +1,496 @@
+/* ==========================
+   COLOR VARIABLES
+========================== */
+:root{
+
+    --primary-dark:#3F422E;
+    --text-stat:#5F5243;
+    --gold:#D78B30;
+
+    --beige-light:#FAE9D7;
+    --beige:#F5E6C5;
+    --brown:#9F886F;
+    --peach:#F1C095;
+
+}
+
+/* ==========================
+   RESET
+========================== */
+
+*{
+
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+
+}
+
+body{
+
+    overflow-x:hidden;
+
+    background:var(--beige);
+
+}
+
+.hero::before{
+
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:1;
+    background:
+
+    /* bawah kiri - tengah - kanan */
+    linear-gradient(
+        90deg,
+        /* #6D6B5466 30%, */
+        #F5E6C577 10%,
+        #E6B97B55 80%
+    ),
+
+    /* fade bawah */
+    linear-gradient(
+        180deg,
+        transparent 70%,
+        #6D6B54 30%,
+        #F5E6C5 80%
+
+    ),
+
+    /* cahaya kanan atas */
+    radial-gradient(
+        ellipse at 90% 10%,
+        #D78B3088 0%,
+        transparent 55%
+    );
+
+}
+/* ==========================
+   HERO
+========================== */
+
+.hero {
+
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: url("../assets/background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+
+}
+
+/* Warna dasar dan cahaya atas */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            #F5E6C577 10%,
+            #E6B97B55 80%
+        ),
+        radial-gradient(
+            ellipse at 90% 10%,
+            #D78B3088 0%,
+            transparent 55%
+        );
+}
+
+/* Warna bawah muncul bertahap menutupi foto */
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 1;
+
+    /* Kiri olive, tengah krem, kanan keemasan */
+    background: linear-gradient(
+        90deg,
+        #6D6B54 0%,
+        #F5E6C5 50%,
+        #E6B97B 100%
+    );
+
+    /* Persentase dihitung dari tinggi keseluruhan hero */
+    -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0)    0%,
+    rgba(0, 0, 0, 0)   15%,
+    rgba(0, 0, 0, .04) 25%,
+    rgba(0, 0, 0, .15) 35%,
+    rgba(0, 0, 0, .35) 45%,
+    rgba(0, 0, 0, .65) 55%,
+    rgba(0, 0, 0, .86) 65%,
+    rgba(0, 0, 0, .97) 75%,
+    rgba(0, 0, 0, 1)   85%,
+    rgba(0, 0, 0, 1)  100%
+);
+
+mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0)    0%,
+    rgba(0, 0, 0, 0)   15%,
+    rgba(0, 0, 0, .04) 25%,
+    rgba(0, 0, 0, .15) 35%,
+    rgba(0, 0, 0, .35) 45%,
+    rgba(0, 0, 0, .65) 55%,
+    rgba(0, 0, 0, .86) 65%,
+    rgba(0, 0, 0, .97) 75%,
+    rgba(0, 0, 0, 1)   85%,
+    rgba(0, 0, 0, 1)  100%
+);
+}
+
+/* ==========================
+   NAVBAR
+========================== */
+
+.navbar{
+
+    position:relative;
+    z-index:2;
+    width: 76%;
+    max-width: 1200px;
+    margin: 25px auto;
+    height:70px;
+    background:
+    rgba(250,233,215,0.55);
+    backdrop-filter:blur(12px);
+    border-radius:50px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 35px;
+
+}
+
+/* ==========================
+   LOGO
+========================== */
+
+.logo{
+
+    font-family:"Plus Jakarta Sans", sans-serif;
+    font-size:32px;
+    font-weight:800;
+    color:var(--gold);
+
+}
+
+.logo-icon{
+    color:var(--gold);
+}
+
+/* ==========================
+   NAV MENU
+========================== */
+
+/* Wadah kaca yang membungkus seluruh menu */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 8px 14px;
+    border-radius: 32px;
+
+    background: linear-gradient(
+        90deg,
+        rgba(245, 230, 197, 0.20) 49%,
+        rgba(143, 134, 115, 0.20) 100%
+    );
+
+    backdrop-filter: blur(50px) brightness(100%) saturate(105%);
+    -webkit-backdrop-filter: blur(50px) brightness(100%) saturate(105%);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.40),
+        inset 0 -1px 33px rgba(0, 0, 0, 0.20);
+}
+
+
+/* Kapsul untuk masing-masing menu */
+/* Wadah kaca yang membungkus seluruh menu */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    padding: 8px 14px;
+    border-radius: 32px;
+
+    background: linear-gradient(
+        90deg,
+        rgba(245, 230, 197, 0.20) 49%,
+        rgba(143, 134, 115, 0.20) 100%
+    );
+
+    backdrop-filter: blur(50px) brightness(100%) saturate(105%);
+    -webkit-backdrop-filter: blur(50px) brightness(100%) saturate(105%);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.40),
+        inset 0 -1px 33px rgba(0, 0, 0, 0.20);
+}
+
+
+/* Kapsul untuk masing-masing menu */
+.nav-menu a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 40px;
+    padding: 8px 17px;
+    border-radius: 64px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+
+    color: var(--brown);
+    background-color: rgba(245, 230, 197, 0.20);
+
+    backdrop-filter: blur(50px) saturate(80%) hue-rotate(10deg);
+    -webkit-backdrop-filter: blur(50px) saturate(80%) hue-rotate(10deg);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.40),
+        inset 0 -1px 33px rgba(0, 0, 0, 0.05);
+
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+
+/* Saat kursor berada di atas menu */
+.nav-menu a:hover {
+    background-color: rgba(245, 230, 197, 0.40);
+    color: var(--primary-dark);
+}
+
+
+/* Efek kaca pada navbar luar */
+.navbar {
+    background: rgba(245, 230, 197, 0.24);
+
+    backdrop-filter: blur(17px) brightness(108%) saturate(80%);
+    -webkit-backdrop-filter: blur(17px) brightness(108%) saturate(80%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.70),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -8px 24px rgba(63, 66, 46, 0.06);
+
+    height: auto;
+    min-height: 80px;
+    padding: 14px 32px;
+}
+.navbar .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateY(5px);
+
+    flex-shrink: 0;
+    margin: 0;
+    line-height: 1;
+}
+
+
+/* Ukuran gambar logo */
+.navbar .logo img,
+.navbar img.logo {
+    display: block;
+    height: 65px;
+    width: auto;
+    object-fit: contain;
+}
+
+
+/* Tombol Sign in */
+.navbar .login-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+    min-height: 48px;
+    padding: 0 24px;
+
+    border: 1px solid transparent;
+    border-radius: 999px;
+
+    background: #3F422E;
+    color: #F5E6C5;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* Berubah warna saat diarahkan kursor */
+.navbar .login-btn:hover,
+.navbar .login-btn:focus-visible {
+    background: #D78B30;
+    color: #3F422E;
+}
+
+/* ==========================
+   HERO CONTENT
+========================== */
+
+.hero-content{
+    position:relative;
+    z-index:2;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding-bottom:60px;
+
+}
+
+/* TITLE */
+
+.hero-content h1{
+    font-family:"Plus Jakarta Sans", sans-serif;
+    font-size:clamp(42px,5vw,80px);
+    font-weight:800;
+    line-height:1.15;
+    color: rgba(63, 66, 46, 0.78);
+    text-shadow:
+    7px 6px 8.1px rgba(63, 66, 46, 0.35);
+    /* Kalo mau lebih muda atau transparan warnanya pake ini
+    color: rgba(63, 66, 46, 0.69);
+    text-shadow: 7px 6px 8.1px rgba(63, 66, 46, 0.30);
+} */
+}
+
+
+
+/* DESCRIPTION */
+
+.hero-content p{
+
+    font-family:"Inter", sans-serif;
+    margin-top:25px;
+    font-size:clamp(16px,2vw,24px);
+    font-weight:400;
+    color: rgba(63, 66, 46, 0.78);
+
+
+}
+
+/* ==========================
+   SEARCH BOX
+========================== */
+
+.search-box {
+    width: 90%;
+    max-width: 672px;
+    height: 80px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 25px auto;
+    padding: 0 34px;
+
+    background: #FFFFFF;
+    border-radius: 48px;
+    box-shadow: 0 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+.search-box input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+
+    border: none;
+    outline: none;
+    background: transparent;
+
+    font-family: "Manrope", sans-serif;
+    font-size: clamp(16px, 2vw, 24px);
+    font-weight: 300;
+    line-height: normal;
+    color: #3F422E;
+}
+
+.search-box input::placeholder {
+    color: #3F422E;
+    opacity: 1;
+}
+
+.search-box .search-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    color: #000000;
+}
+
+
+/* ==========================
+   STATISTIC
+========================== */
+
+.stats{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:clamp(30px,5vw,80px);
+    margin-top:25px;
+
+}
+
+
+
+.stats h2{
+    font-family:"League Spartan", sans-serif;
+    font-size:clamp(40px,4vw,64px);
+    font-weight:700;
+    color:var(--text-stat);
+
+}
+
+
+
+.stats p{
+    font-family:"Inter", sans-serif;
+    margin-top:-5px;
+    font-size:clamp(14px,2vw,24px);
+    font-weight:300;
+    color:var(--primary-dark);
+
+}

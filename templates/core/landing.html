@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SIMEVENT - Platform Event Management</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <!-- Plus Jakarta Sans -->
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&display=swap" rel="stylesheet">
+        <!-- Inter -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+        <!-- League Spartan -->
+        <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@700&display=swap" rel="stylesheet">
+        <style>
+            /* Quick fix for the background image path in style.css */
+            .hero {
+                background-image: url("{% static 'assets/background.jpg' %}");
+            }
+        </style>
+    </head>
+    <body>
+        <section class="hero">
+            <!-- di bawah ini navbar yaa-->
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="{% static 'assets/logo.png' %}" alt="SIMEVENT">
+                </div>
+
+                <div class="nav-menu">
+                    <a href="{% url 'landing' %}">Beranda</a>
+                    <a href="#">Tentang</a>
+                    <a href="{% url 'event_list' %}">Jelajah</a>
+                    <a href="#">Kontak</a>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'login_redirect' %}" style="text-decoration:none;">
+                        <button class="login-btn">Dashboard</button>
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" style="text-decoration:none;">
+                        <button class="login-btn">Sign In</button>
+                    </a>
+                {% endif %}
+            </nav>
+
+            <div class="hero-content">
+                <h1>
+                    Temukan Berbagai Event<br>
+                    Menarik Hanya di<br>
+                    SIMEVENT
+                </h1>
+                <p>
+                    Daftar dan Hadiri event untuk Mendapatkan Sertifikat Digital
+                </p>
+                
+                <form action="{% url 'event_list' %}" method="GET" class="search-box">
+                    <button type="submit" style="background:none;border:none;cursor:pointer;">
+                        <svg class="search-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+                            <circle cx="12" cy="12" r="11"></circle>
+                            <path d="M20 20L31 31"></path>
+                        </svg>
+                    </button>
+                    <input type="text" name="q" placeholder="Mau ikut event apa?" aria-label="Cari event">
+                </form>
+
+                <div class="stats">
+                    <div>
+                        <h2>{{ total_peserta }}</h2>
+                        <p>Peserta</p>
+                    </div>
+                    <div>
+                        <h2>{{ total_penyelenggara }}</h2>
+                        <p>Penyelenggara</p>
+                    </div>
+                    <div>
+                        <h2>{{ total_events }}</h2>
+                        <p>Event</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>

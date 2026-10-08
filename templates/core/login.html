@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | SIMEVENT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&family=Manrope:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <main class="login-page">
+        <!-- PANEL KIRI -->
+        <section class="brand-panel" aria-label="SIMEVENT">
+            <div class="brand-ribbon">
+                <img src="{% static 'assets/rope.jpg' %}" alt="" aria-hidden="true" style="object-fit:cover; width:100%; height:100%;">
+            </div>
+
+            <div class="brand-mark">
+                <img class="brand-logo" src="{% static 'assets/logo.png' %}" alt="SIMEVENT"
+                     onerror="this.hidden = true; this.nextElementSibling.hidden = false;">
+                <span class="brand-fallback" hidden>SIMEVENT</span>
+            </div>
+        </section>
+
+        <!-- PANEL KANAN -->
+        <section class="form-panel" aria-labelledby="login-title">
+            <div class="login-content">
+                <header class="login-heading">
+                    <h1 id="login-title">Selamat Datang</h1>
+                    <p>Silakan masuk ke akun Anda</p>
+                </header>
+
+                <form class="login-form" id="login-form" method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    
+                    {% if messages %}
+                        <div style="background-color: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-field">
+                        <label for="email">Email</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="form-field">
+                        <label for="password">Kata Sandi</label>
+                        {{ form.password }}
+                    </div>
+
+                    <button class="continue-btn" type="submit">Continue</button>
+                </form>
+
+                <p class="signup-text">Belum punya akun? <a href="{% url 'register' %}">Sign up</a></p>
+                <div style="text-align:center; margin-top:20px;">
+                    <a href="{% url 'landing' %}" style="color:var(--muted); text-decoration:none;">&larr; Kembali ke Beranda</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
