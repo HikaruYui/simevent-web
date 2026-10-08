@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jelajah Event | SIMEVENT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="static/css/jelajah.css">
+</head>
+<body>
+  <div class="page">
+    <header class="site-header jj-site-header">
+      <nav class="navbar" aria-label="Navigasi utama">
+        <a class="navbar__brand" href="landing_page.html" aria-label="Kembali ke Beranda SIMEVENT"><img src="static/img/logo.svg" alt="SIMEVENT"></a>
+        <ul class="navbar__menu">
+          <li><a href="landing_page.html">Beranda</a></li>
+          <li><a href="jelajah.html" class="is-active" aria-current="page">Jelajah</a></li>
+          <li><a href="tentang.html">Tentang</a></li>
+        </ul>
+        <div class="navbar__actions"><a class="btn btn--dark" href="masuk-preview.html">Masuk / Daftar</a></div>
+      </nav>
+    </header>
+
+    <main class="jj">
+      <a class="jj-back-home" href="landing_page.html">← Kembali ke Beranda</a>
+      <div class="jj__crumb"><a href="landing_page.html">Beranda</a> / <b>Jelajah Event</b></div>
+      <h1>Jelajah Event</h1>
+      <p class="jj__sub">Temukan seminar, workshop, konferensi, dan event menarik. Daftar dengan akun peserta dan pantau pendaftaranmu.</p>
+
+      <div class="jj__lay">
+        <aside class="jj-fil" aria-label="Filter dan sortir event">
+          <div class="jj-filter-title"><b>Filter &amp; Sortir</b><button type="button" id="jj-reset">Reset</button></div>
+          <fieldset>
+            <legend>Kategori</legend>
+            <label><input type="checkbox" name="kategori" value="konferensi"> Konferensi</label>
+            <label><input type="checkbox" name="kategori" value="workshop"> Workshop</label>
+            <label><input type="checkbox" name="kategori" value="kuliah umum"> Kuliah Umum</label>
+            <label><input type="checkbox" name="kategori" value="seminar"> Seminar</label>
+            <label><input type="checkbox" name="kategori" value="pelatihan"> Pelatihan</label>
+            <label><input type="checkbox" name="kategori" value="webinar"> Webinar</label>
+            <label><input type="checkbox" name="kategori" value="sosialisasi"> Sosialisasi</label>
+          </fieldset>
+          <fieldset>
+            <legend>Status</legend>
+            <label><input type="checkbox" name="status" value="soon"> Akan datang</label>
+            <label><input type="checkbox" name="status" value="live"> Sedang berlangsung</label>
+          </fieldset>
+          <fieldset>
+            <legend>Biaya</legend>
+            <label><input type="radio" name="biaya" value="semua" checked> Semua</label>
+            <label><input type="radio" name="biaya" value="gratis"> Gratis</label>
+            <label><input type="radio" name="biaya" value="berbayar"> Berbayar</label>
+          </fieldset>
+          <label class="jj-sort-label" for="jj-sort">Urutkan</label>
+          <select id="jj-sort">
+            <option value="relevan">Paling relevan</option>
+            <option value="tanggal">Tanggal terdekat</option>
+            <option value="harga">Harga terendah</option>
+          </select>
+        </aside>
+
+        <section class="jj-results" aria-label="Daftar event">
+          <div class="jj-bar">
+            <label class="sr-only" for="jj-search">Cari event</label>
+            <input id="jj-search" type="search" placeholder="Cari event...">
+            <span class="jj-note"><b id="jj-count">4</b> event ditemukan</span>
+          </div>
+          <div class="jj-event-grid" id="jj-grid">
+            <article class="jj-event-card" data-id="conference-tech" data-category="konferensi" data-status="live" data-price="berbayar" data-date="2026-11-06" data-amount="145000">
+              <div class="jj-event-card__visual"><span class="jj-event-card__category">Konferensi</span><h2>Konferensi Teknologi Nusantara 2026</h2></div>
+              <div class="jj-event-card__body"><p class="jj-event-card__date">6 Nov 2026 <span class="jj-event-card__status jj-event-card__status--live">Berlangsung</span></p><h2>Konferensi Teknologi Nusantara 2026</h2><p class="jj-event-card__location">Hotel Mercure</p><div class="jj-event-card__footer"><strong>Rp145.000</strong><a href="masuk-preview.html?event=conference-tech">Daftar</a></div></div>
+            </article>
+            <article class="jj-event-card" data-id="workshop-uiux" data-category="workshop" data-status="soon" data-price="berbayar" data-date="2026-11-10" data-amount="145000">
+              <div class="jj-event-card__visual"><span class="jj-event-card__category">Workshop</span><h2>Workshop UI/UX untuk Pemula</h2></div>
+              <div class="jj-event-card__body"><p class="jj-event-card__date">10 Nov 2026 <span class="jj-event-card__status">Akan datang</span></p><h2>Workshop UI/UX untuk Pemula</h2><p class="jj-event-card__location">Hotel Mercure</p><div class="jj-event-card__footer"><strong>Rp145.000</strong><a href="masuk-preview.html?event=workshop-uiux">Daftar</a></div></div>
+            </article>
+            <article class="jj-event-card" data-id="seminar-education" data-category="seminar" data-status="live" data-price="gratis" data-date="2026-11-09" data-amount="0">
+              <div class="jj-event-card__visual"><span class="jj-event-card__category">Seminar</span><h2>Seminar Nasional Pendidikan</h2></div>
+              <div class="jj-event-card__body"><p class="jj-event-card__date">9 Nov 2026 <span class="jj-event-card__status jj-event-card__status--live">Berlangsung</span></p><h2>Seminar Nasional Pendidikan</h2><p class="jj-event-card__location">Hotel Mercure</p><div class="jj-event-card__footer"><strong>Gratis</strong><a href="masuk-preview.html?event=seminar-education">Daftar</a></div></div>
+            </article>
+            <article class="jj-event-card" data-id="forum-kalimantan" data-category="konferensi" data-status="soon" data-price="gratis" data-date="2026-11-04" data-amount="0">
+              <div class="jj-event-card__visual"><span class="jj-event-card__category">Konferensi</span><h2>Forum Inovasi Kalimantan</h2></div>
+              <div class="jj-event-card__body"><p class="jj-event-card__date">4 Nov 2026 <span class="jj-event-card__status">Akan datang</span></p><h2>Forum Inovasi Kalimantan</h2><p class="jj-event-card__location">Hotel Mercure</p><div class="jj-event-card__footer"><strong>Gratis</strong><a href="masuk-preview.html?event=forum-kalimantan">Daftar</a></div></div>
+            </article>
+          </div>
+          <p class="jj-empty" id="jj-empty" role="status" hidden>Tidak ada event yang cocok dengan pencarian atau filter.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script>
+    const grid = document.getElementById('jj-grid');
+    const cards = Array.from(grid.querySelectorAll('.jj-event-card'));
+    const search = document.getElementById('jj-search');
+    const sort = document.getElementById('jj-sort');
+    const count = document.getElementById('jj-count');
+    const empty = document.getElementById('jj-empty');
+    const parameters = new URLSearchParams(location.search);
+    const initialOrder = new Map(cards.map((card, index) => [card, index]));
+    search.value = parameters.get('q') || '';
+    const selectedCategory = parameters.get('kategori');
+    if (selectedCategory) {
+      const checkbox = Array.from(document.querySelectorAll('input[name="kategori"]'))
+        .find(input => input.value === selectedCategory);
+      if (checkbox) checkbox.checked = true;
+    }
+
+    function filterEvents() {
+      const query = search.value.trim().toLocaleLowerCase('id');
+      const categories = Array.from(document.querySelectorAll('input[name="kategori"]:checked')).map(input => input.value);
+      const statuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(input => input.value);
+      const price = document.querySelector('input[name="biaya"]:checked').value;
+      const visible = cards.filter(card => {
+        const matches = card.textContent.toLocaleLowerCase('id').includes(query)
+          && (!categories.length || categories.includes(card.dataset.category))
+          && (!statuses.length || statuses.includes(card.dataset.status))
+          && (price === 'semua' || price === card.dataset.price);
+        card.hidden = !matches;
+        return matches;
+      });
+      if (sort.value === 'tanggal') visible.sort((a, b) => a.dataset.date.localeCompare(b.dataset.date));
+      if (sort.value === 'harga') visible.sort((a, b) => Number(a.dataset.amount) - Number(b.dataset.amount));
+      if (sort.value === 'relevan') visible.sort((a, b) => initialOrder.get(a) - initialOrder.get(b));
+      visible.forEach(card => grid.append(card));
+      count.textContent = visible.length;
+      empty.hidden = visible.length > 0;
+    }
+
+    document.querySelectorAll('.jj-fil input, #jj-sort').forEach(control => {
+      control.addEventListener('input', filterEvents);
+      control.addEventListener('change', filterEvents);
+    });
+    search.addEventListener('input', filterEvents);
+    document.getElementById('jj-reset').addEventListener('click', () => {
+      document.querySelectorAll('.jj-fil input[type="checkbox"]').forEach(input => { input.checked = false; });
+      document.querySelector('.jj-fil input[type="radio"][value="semua"]').checked = true;
+      search.value = '';
+      sort.value = 'relevan';
+      history.replaceState(null, '', location.pathname);
+      filterEvents();
+    });
+    filterEvents();
+  </script>
+</body>
+</html>

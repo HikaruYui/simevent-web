@@ -74,8 +74,8 @@
     </section>
 
     <section id="registerPanel" hidden>
-      <h1 class="auth__title">Buat Akun Peserta</h1>
-      <p class="auth__sub">Daftar untuk bergabung dengan event SIMEVENT</p>
+      <h1 class="auth__title">Buat Akun</h1>
+      <p class="auth__sub">Pilih jenis akun untuk bergabung dengan SIMEVENT</p>
       <p id="registerError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
 
       <form class="auth__form" id="registerForm" novalidate>
@@ -85,6 +85,12 @@
         <label class="sr-only" for="registerEmail">Email</label>
         <input class="auth__input" id="registerEmail" name="email" type="email"
                placeholder="Email aktif" autocomplete="email" required>
+        <label class="sr-only" for="registerRole">Jenis akun</label>
+        <select class="auth__input" id="registerRole" name="role" required>
+          <option value="" selected disabled>Pilih jenis akun</option>
+          <option value="Peserta">Peserta</option>
+          <option value="Panitia">Panitia</option>
+        </select>
         <label class="sr-only" for="registerPassword">Kata sandi</label>
         <input class="auth__input" id="registerPassword" name="password" type="password"
                placeholder="Buat kata sandi (min. 8 karakter)" autocomplete="new-password" required minlength="8">
@@ -97,6 +103,7 @@
       <p class="auth__alt">Sudah punya akun?</p>
       <a class="auth__link" href="#masuk" id="showLogin">Masuk</a>
     </section>
+    <a class="auth__home" href="landing_page.html">← Kembali ke Beranda</a>
   </div>
 </section>
 
@@ -206,6 +213,7 @@
       event.preventDefault();
       var name = document.getElementById('registerName').value.trim();
       var email = document.getElementById('registerEmail').value.trim().toLowerCase();
+      var role = document.getElementById('registerRole').value;
       var password = document.getElementById('registerPassword').value;
       var confirm = document.getElementById('registerConfirm').value;
       var error = document.getElementById('registerError');
@@ -217,7 +225,13 @@
         error.hidden = false;
         return;
       }
-      var user = { name: name, email: email, password: password, role: 'Peserta', redirect: 'peserta_page.html' };
+      var redirects = { Peserta: 'peserta_page.html', Panitia: 'panitia_page.html' };
+      if (!Object.prototype.hasOwnProperty.call(redirects, role)) {
+        error.textContent = 'Pilih jenis akun Peserta atau Panitia.';
+        error.hidden = false;
+        return;
+      }
+      var user = { name: name, email: email, password: password, role: role, redirect: redirects[role] };
       try {
         var users = readUsers();
         if (USERS.concat(users).some(function (registeredUser) { return registeredUser.email === email; })) {

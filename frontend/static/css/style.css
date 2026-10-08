@@ -103,6 +103,13 @@ button, input { font: inherit; }
 .navbar__actions { display: flex; align-items: center; gap: 25px; margin-left: 21px; }
 .navbar__actions .btn { width: 88px; height: 48px; padding: 0; font-size: 15px; }
 .navbar__actions .btn--outline { width: 86px; height: 46px; }
+.jj-site-header, .tt-site-header { position: relative; top: auto; margin: 28px 24px 0; }
+.jj-site-header .navbar, .tt-site-header .navbar { flex-wrap: nowrap; }
+.jj-site-header .navbar__brand img, .tt-site-header .navbar__brand img { width: 190px; }
+.jj-site-header .navbar__menu, .tt-site-header .navbar__menu { margin-left: auto; }
+.jj-site-header .navbar__actions, .tt-site-header .navbar__actions { margin-left: 16px; }
+.jj-site-header .navbar__actions .btn, .tt-site-header .navbar__actions .btn { width: auto; padding: 0 18px; }
+.jj-back-home, .tt-back-home { display: inline-block; margin: 14px 0; color: #7a6a4f; font-size: 14px; font-weight: 700; }
 
 /* ---------- Hero ---------- */
 .hero { position: relative; padding-top: 325px; }
@@ -318,6 +325,7 @@ button, input { font: inherit; }
 }
 @media (max-width: 1100px) {
   .navbar { flex-wrap: wrap; justify-content: space-between; padding: 16px 28px; }
+  .jj-site-header .navbar, .tt-site-header .navbar { flex-wrap: wrap; }
   .navbar__menu { order: 3; width: 100%; margin: 0; justify-content: center; flex-wrap: wrap; }
   .navbar__actions { margin: 0; }
   .hero { padding-top: 260px; }
@@ -411,7 +419,8 @@ button, input { font: inherit; }
 }
 .auth__alt { margin-top: calc(24 * var(--u)); text-align: center; font: 400 calc(22 * var(--u))/1.3 var(--font-body); }
 .auth__link { display: block; margin-top: calc(10 * var(--u)); text-align: center; font: 400 max(13px, calc(15 * var(--u)))/1.3 var(--font-body); text-decoration: underline; }
-.auth__forgot:hover, .auth__link:hover { color: var(--cream); }
+.auth__home { display: block; margin-top: calc(20 * var(--u)); text-align: center; font: 600 max(13px, calc(15 * var(--u)))/1.3 var(--font-body); }
+.auth__forgot:hover, .auth__link:hover, .auth__home:hover { color: var(--cream); }
 
 @media (max-width: 900px) {
   .auth { --u: 1px; grid-template-columns: 1fr; justify-items: center; align-content: center; gap: 36px; padding: 40px 24px; background: #9F886F; }
