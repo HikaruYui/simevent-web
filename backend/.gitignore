@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env.example
+.env.*
+!.env.example
+.pytest_cache/
+backend/staticfiles/
+backend/media/
+.coverage
+VERIFICATION.md 
+OOP.md 
+ARCHITECTURE.md 
+backend.zip
+.env.example
+README.md
+
