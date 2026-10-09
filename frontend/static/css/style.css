@@ -321,7 +321,10 @@ button, input { font: inherit; }
    Responsif (desain utama = desktop; ini hanya penyesuaian)
    ========================================================= */
 @media (max-width: 1320px) {
-  .events__grid { grid-template-columns: repeat(2, 296px); margin-inline: 0; }
+  .events__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-inline: 0; }
+}
+@media (max-width: 900px) {
+  .events__grid { grid-template-columns: repeat(2, minmax(0, 296px)); justify-content: center; gap: 16px; }
 }
 @media (max-width: 1100px) {
   .navbar { flex-wrap: wrap; justify-content: space-between; padding: 16px 28px; }
