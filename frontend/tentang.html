@@ -11,7 +11,24 @@
   <link rel="stylesheet" href="static/css/tentang.css">
 </head>
 <body>
-  <div class="page">
+  <div class="page tt-page">
+    <header class="site-header tt-site-header">
+      <nav class="navbar" aria-label="Navigasi utama">
+        <a class="navbar__brand" href="landing_page.html" aria-label="SIMEVENT, ke beranda">
+          <img src="static/img/logo.svg" alt="SIMEVENT">
+        </a>
+        <ul class="navbar__menu">
+          <li><a href="landing_page.html">Beranda</a></li>
+          <li><a href="jelajah.html">Jelajah</a></li>
+          <li><a href="tentang.html" class="is-active" aria-current="page">Tentang</a></li>
+          <li><a href="#bantuan">Bantuan</a></li>
+        </ul>
+        <div class="navbar__actions">
+          <a class="btn btn--outline" href="masuk-preview.html">Masuk</a>
+          <a class="btn btn--dark" href="masuk-preview.html#daftar">Daftar</a>
+        </div>
+      </nav>
+    </header>
     <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
       <symbol id="ic-qr" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 7v10"/><path d="M12 7v10"/><path d="M16 7v10"/></symbol>
       <symbol id="ic-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></symbol>
@@ -20,7 +37,6 @@
       <symbol id="ic-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
     </svg>
     <main class="tt">
-      <a class="tt-back-home" href="landing_page.html">← Kembali ke Beranda</a>
       <div class="tt__crumb"><a href="landing_page.html">Beranda</a> / <b>Tentang</b></div>
       <div class="tt-hero">
         <span class="tt-badge">Dibuat tahun 2026</span>
@@ -70,6 +86,44 @@
         <a class="btn btn--cta" href="jelajah.html">Mulai Jelajah</a>
       </div>
     </main>
+    <footer class="footer tt-footer" id="bantuan">
+      <div class="footer__inner">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <img src="static/img/logo.svg" alt="SIMEVENT">
+            <p>Platform pendaftaran dan pembuatan event formal. Menghubungkan peserta, penyelenggara, dan komunitas dalam satu sistem.</p>
+          </div>
+          <div>
+            <h3>Kategori Event</h3>
+            <ul>
+              <li><a href="jelajah.html?kategori=konferensi">Konferensi</a></li>
+              <li><a href="jelajah.html?kategori=workshop">Workshop</a></li>
+              <li><a href="jelajah.html?kategori=seminar">Seminar</a></li>
+              <li><a href="jelajah.html?kategori=webinar">Webinar</a></li>
+              <li><a href="jelajah.html?kategori=sosialisasi">Sosialisasi</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>SIMEVENT</h3>
+            <ul>
+              <li><a href="tentang.html">Tentang Kami</a></li>
+              <li><a href="#bantuan">Bantuan</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Kontak dan Alamat</h3>
+            <ul class="footer__contact">
+              <li><a href="mailto:halo@simevent.id">halo@simevent.id</a></li>
+              <li><span>Samarinda, Kalimantan Timur</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer__bottom">
+          <p>&copy; 2026 SIMEVENT | All Right Reserved</p>
+          <div><a href="#">Kebijakan Privasi</a><a href="#">Syarat &amp; Ketentuan</a></div>
+        </div>
+      </div>
+    </footer>
   </div>
 </body>
 </html>
