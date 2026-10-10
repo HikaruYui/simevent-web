@@ -102,7 +102,14 @@ button, input { font: inherit; }
 .navbar__menu a.is-active { background: var(--cream); color: var(--olive); }
 .navbar__actions { display: flex; align-items: center; gap: 25px; margin-left: 21px; }
 .navbar__actions .btn { width: 88px; height: 48px; padding: 0; font-size: 15px; }
-.navbar__actions .btn--outline { width: 86px; height: 46px; }
+.navbar__actions .btn--outline {
+  width: 86px; height: 46px;
+  border-color: var(--orange); background: transparent; color: var(--olive);
+}
+.navbar__actions .btn--outline:hover,
+.navbar__actions .btn--outline:focus-visible {
+  border-color: var(--olive); background: var(--olive); color: var(--cream);
+}
 .jj-site-header, .tt-site-header { position: relative; top: auto; margin: 28px 24px 0; }
 .jj-site-header .navbar, .tt-site-header .navbar { flex-wrap: nowrap; }
 .jj-site-header .navbar__brand img, .tt-site-header .navbar__brand img { width: 190px; }
