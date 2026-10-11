@@ -439,3 +439,38 @@ button, input { font: inherit; }
   .auth__panel { width: 100%; max-width: 420px; padding-top: 0; }
   .auth__title { font-size: 40px; }
 }
+
+/* =========================================================
+  Hover & Active Effects untuk Header Navbar
+  ========================================================= */
+
+/* Efek saat cursor mengambang (hover) di menu navigasi */
+.navbar__menu a {
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar__menu a:hover {
+  background: var(--cream);
+  color: var(--olive);
+  transform: translateY(-2px); /* Terangkat sedikit saat diarahkan cursor */
+}
+
+/* Efek saat menu navigasi ditekan (active/clicked) */
+.navbar__menu a:active {
+  transform: translateY(0) scale(0.95); /* Sedikit membal saat diklik */
+}
+
+/* Efek tombol header Masuk & Daftar */
+.navbar__actions .btn {
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar__actions .btn:hover {
+  transform: translateY(-2px); /* Terangkat sedikit saat diarahkan cursor */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar__actions .btn:active {
+  transform: translateY(0) scale(0.96); /* Efek membal saat diklik */
+  box-shadow: none;
+}
