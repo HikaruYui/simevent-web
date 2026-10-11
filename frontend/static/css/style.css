@@ -330,16 +330,16 @@ button, input { font: inherit; }
 
 .testi-grid {
   width: 100%; max-width: 568px; margin-top: 32px;
-  display: grid; grid-template-columns: 240px 1fr; grid-auto-rows: 128px; gap: 8px;
+  display: grid; grid-template-columns: 220px 1fr; grid-auto-rows: 124px; gap: 8px;
 }
 .testi {
   position: relative; display: flex; flex-direction: column; overflow: hidden;
-  padding: 14px 16px; border-radius: 24px; color: #fff;
-  background: linear-gradient(120deg, var(--taupe), rgba(57, 49, 40, .8));
+  padding: 12px 28px 12px 24px; border-radius: 24px; color: #fff;
+  background: linear-gradient(100deg, #6B5D4F 0%, var(--taupe) 68%, #85735E 100%);
   box-shadow: var(--shadow-card);
 }
 .testi__stars { display: flex; gap: 1px; color: #FFD501; font-size: 14px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
-.testi blockquote { margin-top: 6px; font: 700 13px/16px var(--font-head); text-shadow: var(--shadow-text); }
+.testi blockquote { margin-top: 5px; font: 700 12px/14px var(--font-head); text-shadow: var(--shadow-text); }
 .testi figcaption { margin-top: auto; display: flex; align-items: center; gap: 6px; }
 .testi figcaption > span:last-child { display: flex; flex-direction: column; }
 .testi b { font: 700 9px/11px var(--font-head); }
@@ -347,9 +347,9 @@ button, input { font: inherit; }
 .testi__avatar { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--orange); color: var(--cream); }
 .testi__avatar .icon { width: 12px; height: 12px; }
 
-.testi:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; padding: 20px 24px; }
+.testi:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; padding: 18px 24px 22px; }
 .testi:nth-child(3) .testi__stars { font-size: 28px; gap: 0; }
-.testi:nth-child(3) blockquote { margin-top: 14px; font-size: 24px; line-height: 28px; }
+.testi:nth-child(3) blockquote { margin-top: 12px; font-size: 24px; line-height: 28px; }
 .testi:nth-child(3) figcaption { gap: 12px; }
 .testi:nth-child(3) b { font-size: 16px; line-height: 20px; }
 .testi:nth-child(3) small { font-size: 16px; line-height: 20px; }
