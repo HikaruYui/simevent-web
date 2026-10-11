@@ -42,7 +42,15 @@
 
 
   <div class="page">
-    
+    <!-- Tambahkan kode SVG di sini -->
+    <svg class="blob" viewBox="0 0 1440 1020" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <filter id="blob-shadow" x="-5%" y="-5%" width="110%" height="115%">
+          <feDropShadow dx="0" dy="16" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
+        </filter>
+      </defs>
+      <path filter="url(#blob-shadow)" fill="#9F886F" d="M494.422 305C290.422 204.5 170.422 139.5 670.422 25.5L984.422 -31H1317.92L1439.92 -17V1014.5V1029.5H1008.92C1008.92 1029.5 863.422 1044.5 563.922 925.5C264.422 806.5 286.922 621.5 588.422 636.5C889.922 651.5 698.422 405.5 494.422 305Z"/>
+    </svg>
 
     <main>
       
@@ -53,59 +61,85 @@
 
   <div class="auth__panel">
     <section id="loginPanel">
-      <h1 class="auth__title">Selamat Datang</h1>
-      <p class="auth__sub">Silakan masuk ke akun Anda</p>
-      <p id="loginError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
-      <p id="loginNotice" role="status" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#e7f1e6;border:1px solid #b8d0b3;color:#345a36;font-size:.9rem;text-align:center"></p>
+  <!-- Ubah inline style untuk font judul dan subjudul -->
+  <h1 class="auth__title" style="font-family: 'League Spartan', sans-serif; font-size: 4.1rem; text-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.25);">Selamat Datang</h1>
+  <p class="auth__sub" style="font-family: 'Manrope', sans-serif; font-size: 1.3rem;">Silakan masuk ke akun Anda</p>
+  
+  <!-- Pesan Notifikasi (Penting untuk fungsionalitas JS bawaan) -->
+  <p id="loginError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
+  <p id="loginNotice" role="status" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#e7f1e6;border:1px solid #b8d0b3;color:#345a36;font-size:.9rem;text-align:center"></p>
 
-      <form class="auth__form" id="loginForm" novalidate>
-        <label class="sr-only" for="id_email">Email</label>
-        <input class="auth__input" id="id_email" type="email" name="email"
-               placeholder="Masukkan Email" autocomplete="email" required autofocus>
+  <!-- Tambahkan class "form" dan bungkus input dengan "campo" -->
+  <form class="auth__form form" id="loginForm" novalidate>
+    <div class="campo">
+      <!-- Ingat: beri placeholder kosong " " agar efek CSS mengambang bekerja -->
+      <input class="field" id="id_email" type="email" name="email" placeholder=" " autocomplete="email" required autofocus>
+      <!-- Label diletakkan SETELAH input -->
+      <label for="id_email">Masukkan Email</label>
+    </div>
 
-        <label class="sr-only" for="id_password">Kata sandi</label>
-        <input class="auth__input" id="id_password" type="password" name="password"
-               placeholder="Masukkan Kata Sandi" autocomplete="current-password" required>
+    <div class="campo">
+      <input class="field" id="id_password" type="password" name="password" placeholder=" " autocomplete="current-password" required>
+      <label for="id_password">Masukkan Kata Sandi</label>
+    </div>
 
-        <button class="auth__submit" type="submit">Masuk</button>
-      </form>
+    <!-- Tambahkan Lupa Password -->
+    <a class="forgot" href="#">Lupa Password?</a>
 
-      <p class="auth__alt">Belum punya akun?</p>
-      <a class="auth__link" href="#daftar" id="showRegister">Daftar Sekarang</a>
-    </section>
+    <!-- Tombol Submit -->
+    <button class="btn" type="submit">Continue</button>
+  </form>
+
+  <!-- Navigasi pindah ke form daftar -->
+  <p class="switch">Belum punya akun? <a href="#daftar" id="showRegister">Daftar sekarang</a></p>
+
+  <div class="atau" aria-hidden="true"><i></i>or<i></i></div>
+
+  <button class="btn-google" type="button">
+    <!-- SVG logo Google -->
+    <svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Continue with Google
+  </button>
+</section>
 
     <section id="registerPanel" hidden>
-      <h1 class="auth__title">Buat Akun</h1>
-      <p class="auth__sub">Pilih jenis akun untuk bergabung dengan SIMEVENT</p>
-      <p id="registerError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
+  <h1 class="auth__title" style="font-family: 'League Spartan', sans-serif; font-size: 4.1rem; text-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.25);">Selamat Datang</h1>
+  <p class="auth__sub" style="font-family: 'Manrope', sans-serif; font-size: 1.3rem;">Buat akun untuk bergabung dengan SIMEVENT</p>
+  <p id="registerError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
 
-      <form class="auth__form" id="registerForm" novalidate>
-        <label class="sr-only" for="registerName">Nama lengkap</label>
-        <input class="auth__input" id="registerName" name="name" type="text"
-               placeholder="Nama lengkap" autocomplete="name" required minlength="2">
-        <label class="sr-only" for="registerEmail">Email</label>
-        <input class="auth__input" id="registerEmail" name="email" type="email"
-               placeholder="Email aktif" autocomplete="email" required>
-        <label class="sr-only" for="registerRole">Jenis akun</label>
-        <select class="auth__input" id="registerRole" name="role" required>
-          <option value="" selected disabled>Pilih jenis akun</option>
-          <option value="Peserta">Peserta</option>
-          <option value="Panitia">Panitia</option>
-        </select>
-        <label class="sr-only" for="registerPassword">Kata sandi</label>
-        <input class="auth__input" id="registerPassword" name="password" type="password"
-               placeholder="Buat kata sandi (min. 8 karakter)" autocomplete="new-password" required minlength="8">
-        <label class="sr-only" for="registerConfirm">Ulangi kata sandi</label>
-        <input class="auth__input" id="registerConfirm" name="confirm" type="password"
-               placeholder="Ulangi kata sandi" autocomplete="new-password" required minlength="8">
-        <button class="auth__submit" type="submit">Buat Akun</button>
-      </form>
+  <form class="auth__form form" id="registerForm" novalidate>
+    <div class="campo">
+      <!-- Label "Nama lengkap" dan "Jenis akun" dihapus agar sesuai screenshot -->
+      <input class="field" id="registerEmail" name="email" type="email" placeholder=" " autocomplete="email" required>
+      <label for="registerEmail">Masukkan Email</label>
+    </div>
+    
+    <div class="campo">
+      <input class="field" id="registerPassword" name="password" type="password" placeholder=" " autocomplete="new-password" required minlength="8">
+      <label for="registerPassword">Masukkan Kata Sandi</label>
+    </div>
+    
+    <div class="campo">
+      <input class="field" id="registerConfirm" name="confirm" type="password" placeholder=" " autocomplete="new-password" required minlength="8">
+      <label for="registerConfirm">Konfirmasi Kata Sandi</label>
+    </div>
 
-      <p class="auth__alt">Sudah punya akun?</p>
-      <a class="auth__link" href="#masuk" id="showLogin">Masuk</a>
-    </section>
-    <a class="auth__home" href="landing_page.html">← Kembali ke Beranda</a>
-  </div>
+    <!-- Dropdown role disembunyikan/dihapus sementara karena tidak ada di desain -->
+    <!-- Jika masih dibutuhkan oleh JavaScript, Anda bisa membuatnya type="hidden" -->
+    <input type="hidden" id="registerRole" name="role" value="Peserta">
+
+    <button class="btn" type="submit">Continue</button>
+  </form>
+
+  <p class="switch">Sudah punya akun? <a href="#masuk" id="showLogin">Masuk sekarang</a></p>
+
+  <div class="atau" aria-hidden="true"><i></i>or<i></i></div>
+
+  <button class="btn-google" type="button">
+    <!-- SVG logo Google -->
+    <svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Continue with Google
+  </button>
 </section>
 
     </main>
