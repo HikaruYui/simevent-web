@@ -34,16 +34,8 @@
 .jj-pill.on { background: #3b3f2b; color: #fff; border-color: #3b3f2b; }
 
 /* Kartu event */
-.jj-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .jj-card { width: 100%; min-width: 0; }
 
-.jj .chip { padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
-.jj .chip--cream { background: #f6e9cc; color: #3b3f2b; }
-.jj .chip--white { background: transparent; color: #3b3f2b; }
-.jj .status { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; border: 1px solid #eadfc6; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-.jj .status i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.jj .status--live { color: #1d6b4f; }
-.jj .status--soon { color: #8a5a1f; }
 .jj .price { font-weight: 700; font-size: 17px; }
 .jj .icon { width: 16px; height: 16px; }
 .jj-empty { grid-column: 1 / -1; background: #fff; border-radius: 24px; padding: 40px; text-align: center; color: #6f6a58; }
@@ -70,7 +62,7 @@
 }
 
 @media (max-width: 640px) {
-  .jj-grid, .jj-event-grid { grid-template-columns: minmax(0, 1fr); }
+  .jj-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Jelajah page layout */
@@ -80,45 +72,13 @@
 .jj-site-header {
   position: relative;
   top: auto;
-  margin: 32px auto 0;
-  padding: 0 clamp(24px, 8vw, 96px);
-}
-.jj-site-header .navbar {
-  width: 100%;
-  max-width: 960px;
-  min-height: 60px;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 20px;
-}
-.jj-site-header .navbar__brand img { width: clamp(130px, 14vw, 190px); }
-.jj-site-header .navbar__menu {
-  order: 0;
-  width: auto;
-  flex-wrap: nowrap;
-  gap: 6px;
-  margin: 0 0 0 auto;
-  padding: 4px 6px;
-}
-.jj-site-header .navbar__menu a {
-  min-width: 0;
-  height: 34px;
-  padding: 0 12px;
-  font-size: 13px;
-}
-.jj-site-header .navbar__actions { gap: 10px; margin: 0 0 0 8px; }
-.jj-site-header .navbar__actions .btn {
-  width: auto;
-  min-width: 62px;
-  height: 38px;
-  padding: 0 12px;
-  font-size: 13px;
+  margin: 0;
+  padding: 47px 24px 0;     /* jarak dari atas halaman sama seperti landing (top: 47px) */
 }
 
 .jj {
-  max-width: 1080px;
-  padding: 34px clamp(28px, 11.4vw, 112px) 24px;
+  max-width: 1280px;       
+  padding: 34px 24px 24px;
 }
 .jj__crumb { margin-bottom: 7px; font-size: 12px; }
 .jj h1 {
@@ -164,6 +124,37 @@
 #jj-status { width: 82px; }
 #jj-price { width: 76px; }
 .jj-sort-select { width: 84px; }
+/* ---------- Dropdown kustom (Kategori, Status, Biaya, Urutkan) ---------- */
+.jj-dd { position: relative; flex: none; }
+.jj-dd > select { display: none; }          /* <select> asli tetap ada untuk data & filter, hanya disembunyikan */
+.jj-dd__btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  height: 28px; min-width: 86px; padding: 0 10px;
+  border: 0; border-radius: 7px;
+  background: var(--olive); color: var(--cream);
+  font: 700 12px/1 var(--font-body); cursor: pointer;
+}
+.jj-dd__btn .icon { width: 12px; height: 12px; stroke-width: 2.5; transition: transform .2s ease; }
+.jj-dd.is-open .jj-dd__btn .icon { transform: rotate(180deg); }   /* panah ke atas saat terbuka */
+.jj-dd__btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+.jj-dd__menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+  min-width: 100%; width: max-content; max-width: 240px;
+  display: none; flex-direction: column; gap: 3px;
+  margin: 0; padding: 0;
+}
+.jj-dd.is-open .jj-dd__menu { display: flex; }
+.jj-dd__menu li {
+  padding: 9px 10px; border-radius: 7px; list-style: none;
+  background: var(--olive); color: var(--cream);
+  font: 700 12px/1 var(--font-body); cursor: pointer; white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .18);
+  transition: background-color .15s ease, color .15s ease;
+}
+.jj-dd__menu li:hover,
+.jj-dd__menu li.is-focus { background: var(--taupe); color: var(--olive); }   /* hover = taupe */
+.jj-dd__menu li[aria-selected="true"] { box-shadow: inset 3px 0 0 var(--orange), 0 3px 8px rgba(0, 0, 0, .18); }
 .jj-reset-button {
   flex: none;
   padding: 5px 0;
@@ -202,7 +193,7 @@
 
 .jj-note { margin: 0; color: var(--muted); font: 500 11px/1.4 var(--font-body); text-align: right; }
 
-.jj-event-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.jj-event-grid { grid-template-columns: repeat(auto-fill, 296px); justify-content: center; gap: 16px; }
 .jj-event-card {
   display: flex;
   min-width: 0;
@@ -312,7 +303,7 @@
 .jj-footer .footer__brand img { width: 180px; }
 
 @media (min-width: 700px) and (max-width: 900px) {
-  .jj-toolbar, .jj-note, .jj-event-grid, .jj-empty, .jj-pagination { margin-left: -32px; margin-right: -32px; }
+  .jj-toolbar, .jj-note, .jj-empty, .jj-pagination { margin-left: -32px; margin-right: -32px; }
   .jj-footer .footer__inner { padding: 30px 6vw 0; }
   .jj-footer .footer__grid { grid-template-columns: 1.5fr .75fr .7fr 1.2fr; gap: 18px; padding-bottom: 26px; }
   .jj-footer .footer__brand img { width: 140px; }
@@ -335,10 +326,13 @@
   .jj__sub { margin-bottom: 22px; font-size: 14px; }
   .jj-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .jj-toolbar-select { width: 100%; height: 38px; }
+  .jj-dd, .jj-dd__btn { width: 100%; }
+  .jj-dd__btn { height: 38px; }
+  .jj-dd__menu { max-width: none; }
   #jj-status, #jj-price, .jj-sort-select { width: 100%; }
   .jj-search { width: auto; grid-column: 1 / -1; height: 38px; }
   .jj-reset-button { justify-self: start; }
-  .jj-event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .jj-event-grid { grid-template-columns: minmax(0, 296px); }
   .jj-event-card { min-height: 174px; }
   .jj-footer .footer__inner { padding-top: 32px; }
   .jj-footer .footer__grid { grid-template-columns: 1fr; }
