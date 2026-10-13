@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="">
   
@@ -44,14 +45,14 @@
     
 <header class="site-header">
   <nav class="navbar" aria-label="Navigasi utama">
-    <a class="navbar__brand" href="landing_page.html" aria-label="SIMEVENT, ke beranda">
-      <img src="static/img/logo.svg" alt="SIMEVENT">
+    <a class="navbar__brand" href="{% url 'landing' %}" aria-label="SIMEVENT, ke beranda">
+      <img src="{% static 'img/logo.svg' %}">
     </a>
 
     <ul class="navbar__menu">
-      <li><a href="landing_page.html" class="is-active">Beranda</a></li>
-      <li><a href="jelajah.html">Jelajah</a></li>
-      <li><a href="tentang.html">Tentang</a></li>
+      <li><a href="{% url 'landing' %}" class="is-active">Beranda</a></li>
+      <li><a href="{% url 'jelajah' %}">Jelajah</a></li>
+      <li><a href="{% url 'tentang' %}">Tentang</a></li>
       <li><a href="#bantuan">Bantuan</a></li>
     </ul>
 
@@ -62,12 +63,7 @@
     </div>
   </nav>
 </header>
-
-
     <main>
-      
-
-
 <section class="hero">
   <div class="hero__photo" style="background-image:url('static/img/hero.jpg')" aria-hidden="true"></div>
 
@@ -75,7 +71,7 @@
     <h1>Temukan Berbagai Event Menarik Hanya di SIMEVENT</h1>
     <p class="hero__sub">Daftar dan Hadiri event untuk Mendapatkan Sertifikat Digital</p>
 
-    <form class="search" id="hero-search" action="jelajah.html" role="search">
+    <form class="search" id="hero-search" action="{% url 'jelajah' %}" method="get" role="search">
       <svg class="icon"><use href="#ic-search"/></svg>
       <input id="hero-search-input" type="search" name="q" placeholder="Mau ikut event apa?" value="" aria-label="Cari event">
     </form>
@@ -221,16 +217,12 @@
     </div>
   </div>
 </section>
-
-
-    </main>
-
-    
+    </main>    
 <footer class="footer" id="bantuan">
   <div class="footer__inner">
     <div class="footer__grid">
       <div class="footer__brand">
-        <img src="static/img/logo.svg" alt="SIMEVENT">
+        <img src="{% static 'img/logo.svg' %}">
         <p>Platform pendaftaran dan pembuatan event formal. Menghubungkan peserta, penyelenggara, dan komunitas dalam satu sistem.</p>
       </div>
 
@@ -254,7 +246,7 @@
       <div>
         <h3>SIMEVENT</h3>
         <ul>
-          <li><a href="tentang.html">Tentang Kami</a></li>
+          <li><a href="{% url 'tentang' %}">Tentang Kami</a></li>
           <li><a href="#bantuan">Bantuan</a></li>
         </ul>
       </div>
