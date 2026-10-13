@@ -1,18 +1,14 @@
 # Fungsi file: Penanganan request HTTP, scope akses, dan respons untuk event, ownership, dan alur approval/publikasi.
-
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.generic import DetailView, ListView
-
 from apps.accounts.permissions import require_organizer
-
 from .forms import DeleteDraftForm, TransitionForm
 from .models import Event
 from .workflow import EventWorkflow
-
 
 def event_data(event):
     """Explicit public fields; never serialize a model or its relations wholesale."""
