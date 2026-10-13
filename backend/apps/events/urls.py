@@ -1,7 +1,6 @@
 # Fungsi file: Pemetaan URL ke view untuk event, ownership, dan alur approval/publikasi.
 
 from django.urls import path
-
 from . import views
 
 app_name = "events"
