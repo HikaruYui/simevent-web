@@ -110,7 +110,7 @@
                 </button>
 
                 <!-- Logout Button -->
-                <a href="landing_page.html" onclick="try{localStorage.removeItem('simevent_session')}catch(e){}" title="Keluar dari akun" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
+                <a href="{% url 'landing' %}" onclick="try{localStorage.removeItem('simevent_session')}catch(e){}" title="Keluar dari akun" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
                     <i class="fa-solid fa-power-off text-brand-goldLight"></i>
                     <span class="hidden md:inline">Log Out</span>
                 </a>
@@ -216,7 +216,7 @@
 
                     <!-- Quick Action Button "+ Cari Event Baru" -->
                     <div class="shrink-0 w-full sm:w-auto">
-                        <a href="jelajah.html" class="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-brand-olive hover:bg-brand-oliveDark text-brand-creamLight font-bold text-sm tracking-wide shadow-xl shadow-brand-olive/30 transition-all transform active:scale-95">
+                        <a href="{% url 'jelajah' %}" class="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-brand-olive hover:bg-brand-oliveDark text-brand-creamLight font-bold text-sm tracking-wide shadow-xl shadow-brand-olive/30 transition-all transform active:scale-95">
                             <i class="fa-solid fa-magnifying-glass text-base"></i>
                             <span>Cari Event Baru</span>
                         </a>
@@ -601,7 +601,7 @@
                     <section id="event-katalog" class="rounded-3xl border border-brand-tan/50 bg-white/70 p-5 sm:p-7 shadow-xl">
                         <div class="flex flex-wrap items-end justify-between gap-3">
                             <div><p class="text-sm font-semibold text-brand-orangeDeep">SIMEVENT</p><h2 class="text-2xl font-display font-extrabold text-brand-olive">Daftar Event</h2></div>
-                            <a href="landing_page.html" class="rounded-full border border-brand-olive px-4 py-2 text-sm font-bold text-brand-olive">Kembali ke Beranda</a>
+                            <a href="{% url 'landing' %}" class="rounded-full border border-brand-olive px-4 py-2 text-sm font-bold text-brand-olive">Kembali ke Beranda</a>
                         </div>
                         <p class="mt-3 rounded-xl bg-brand-sand/40 px-4 py-3 text-xs text-brand-muted">Sertifikat tersedia untuk event yang kamu daftarkan setelah hadir dan mengirim feedback. Presensi di halaman demo ini disimulasikan melalui tombol “Simulasikan hadir” pada event berlangsung.</p>
                         <div class="mt-5 grid gap-4 md:grid-cols-2">
