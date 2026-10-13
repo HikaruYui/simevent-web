@@ -1,95 +1,81 @@
-.tt-page {
-  background: linear-gradient(180deg, #f2dfb9 0, #faf7ee 220px, #fffdf8 62%, #f4eddf 100%);
-}
-.tt-site-header {
-  position: relative;
-  top: auto;
-  margin: 32px auto 0;
-  padding: 0 clamp(24px, 8vw, 96px);
-}
-.tt-site-header .navbar {
-  width: 100%;
-  max-width: 960px;
-  min-height: 60px;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 20px;
-}
-.tt-site-header .navbar__brand img { width: clamp(130px, 14vw, 190px); }
-.tt-site-header .navbar__menu {
-  order: 0;
-  width: auto;
-  flex-wrap: nowrap;
-  gap: 6px;
-  margin: 0 0 0 auto;
-  padding: 4px 6px;
-}
-.tt-site-header .navbar__menu a {
-  min-width: 0;
-  height: 34px;
-  padding: 0 12px;
-  font-size: 13px;
-}
-.tt-site-header .navbar__actions { gap: 10px; margin: 0 0 0 8px; }
-.tt-site-header .navbar__actions .btn {
-  width: auto;
-  min-width: 62px;
-  height: 38px;
-  padding: 0 12px;
-  font-size: 13px;
-}
+/* Halaman Tentang. Navbar memakai ukuran landing page (style.css), tidak ada override ukuran di sini. */
+.tt-page { background: linear-gradient(180deg, #F9F0DC 0, #fff 460px); }
+.tt-site-header { position: relative; top: auto; margin: 0; padding: 72px 24px 0; }
 
-.tt { max-width: 1100px; margin: 0 auto; padding: 24px 24px 72px; color: #3b3f2b; }
-.tt__crumb { font-size: 15px; color: #7a6a4f; margin-bottom: 18px; }
-.tt__crumb a { color: inherit; text-decoration: none; }
-.tt__crumb b { color: #6b4a1f; }
+.tt { max-width: 1190px; margin: 0 auto; padding: 56px 24px 96px; color: var(--olive); }
+.tt__crumb { padding-left: 15px; font: 400 15px/1 var(--font-body); color: var(--muted); }
+.tt__crumb a { color: inherit; }
+.tt__crumb b { color: var(--olive-ink); }
 
-/* Hero */
-.tt-hero { position: relative; overflow: hidden; border-radius: 36px; padding: clamp(32px, 6vw, 72px); margin-bottom: 28px;
-  background: linear-gradient(135deg, #f6e9cc 0%, #ecd3a0 55%, #c9a06b 100%); }
-.tt-hero::after { content: ""; position: absolute; right: -80px; top: -80px; width: 320px; height: 320px; border-radius: 50%; background: rgba(255,255,255,.35); }
-.tt-badge { position: relative; display: inline-block; background: #3b3f2b; color: #fff; font-size: 14px; font-weight: 700; padding: 8px 16px; border-radius: 999px; margin-bottom: 20px; }
-.tt-hero h1 { position: relative; font-size: clamp(32px, 5.5vw, 58px); line-height: 1.08; margin: 0 0 18px; max-width: 700px; }
-.tt-hero h1 em { font-style: normal; color: #a8661f; }
-.tt-hero p { position: relative; font-size: 18px; line-height: 1.7; max-width: 640px; margin: 0 0 28px; }
-.tt-hero__act { position: relative; display: flex; flex-wrap: wrap; gap: 12px; }
+/* Headline & cerita */
+.tt-hero { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 32px 40px; margin-top: 36px; padding-left: 15px; }
+.tt-hero__text { flex: 1 1 520px; min-width: 0; }
+.tt-hero h1 { font: 800 56px/72px var(--font-head); text-shadow: var(--shadow-text); }
+.tt-hero p { margin-top: 16px; max-width: 830px; font: 500 18px/28px var(--font-head); text-shadow: 0 2px 4px rgba(215, 139, 48, .18); }
+.tt-hero p + p { margin-top: 22px; }
+.tt-hero__photo { flex: 0 0 336px; width: 336px; max-width: 100%; height: 314px; object-fit: cover; border-radius: 24px; box-shadow: var(--shadow-card); }
 
-/* Masalah vs solusi */
-.tt-compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 48px; }
-.tt-box { border-radius: 28px; padding: 28px 30px; }
-.tt-box h2 { margin: 0 0 14px; font-size: 22px; }
-.tt-box ul { list-style: none; margin: 0; padding: 0; }
-.tt-box li { position: relative; padding: 9px 0 9px 32px; line-height: 1.5; }
-.tt-box li::before { position: absolute; left: 0; top: 9px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
-.tt-box--old { background: #fff; border: 1px solid #eadfc6; }
-.tt-box--old li::before { content: "✕"; background: #f3dcd3; color: #b4452a; }
-.tt-box--new { background: #3b3f2b; color: #fff; }
-.tt-box--new li::before { content: "✓"; background: #f6e9cc; color: #3b3f2b; }
+/* Statistik peserta */
+.tt-stat {
+  position: relative; margin: 80px auto 0; max-width: 1142px; aspect-ratio: 1142 / 411;
+  background: var(--olive); border-radius: 28px; box-shadow: var(--shadow-card);
+}
+.tt-stat h2 {
+  position: absolute; top: 4.6%; left: 0; right: 0; text-align: center;
+  font: 700 40px/48px var(--font-head); color: var(--orange); text-shadow: var(--shadow-text);
+}
+.tt-stat__chart { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tt-stat__chart polyline { fill: none; stroke: var(--cream); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Judul seksi */
-.tt-title { font-size: clamp(24px, 3.5vw, 34px); margin: 0 0 20px; }
+.tt-title { margin-top: 96px; text-align: center; font: 700 48px/56px var(--font-head); color: var(--orange); text-shadow: var(--shadow-text); }
 
-/* Fitur */
-.tt-feat { list-style: none; margin: 0 0 48px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
-.tt-feat li { background: #fff; border-radius: 24px; padding: 22px; box-shadow: 0 6px 24px rgba(120, 90, 40, .08); transition: transform .2s; }
-.tt-feat li:hover { transform: translateY(-4px); }
-.tt-ic { width: 46px; height: 46px; border-radius: 14px; background: #f6e9cc; display: grid; place-items: center; margin-bottom: 14px; }
-.tt-ic .icon { width: 24px; height: 24px; }
-.tt-feat h3 { margin: 0 0 6px; font-size: 17px; }
-.tt-feat p { margin: 0; font-size: 15px; line-height: 1.5; color: #6f6a58; }
+/* Untuk siapa */
+.tt-who { display: flex; flex-wrap: wrap; gap: 36px; max-width: 1142px; margin: 48px auto 0; }
+.tt-card { flex: 1 1 420px; min-width: 0; padding: 34px 39px 36px; border-radius: 28px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: flex-start; }
+.tt-card--peserta { background: var(--muted); color: #fff; }
+.tt-card--eo { background: var(--olive); color: var(--cream); }
+.tt-card h3 { margin-top: 24px; max-width: 460px; font: 600 40px/40px var(--font-head); text-shadow: var(--shadow-text); }
+.tt-card ul { margin: 24px 0 0; display: grid; gap: 14px; }
+.tt-card li { position: relative; padding-left: 36px; font: 600 16px/21px var(--font-body); }
+.tt-card li::before { content: ""; position: absolute; left: 12px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--orange); }
+.tt-card .tt-btn { margin-top: 32px; }
 
-/* Langkah */
-.tt-steps { list-style: none; margin: 0 0 48px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-.tt-steps li { background: #fff; border-radius: 28px; padding: 26px; }
-.tt-steps b { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #3b3f2b; color: #fff; margin-bottom: 14px; }
-.tt-steps h3 { margin: 0 0 8px; }
-.tt-steps p { margin: 0; line-height: 1.6; color: #6f6a58; }
+.tt-pill { padding: 7px 28px; border-radius: 999px; font: 600 16px/1.2 var(--font-body); }
+.tt-pill--cream { background: var(--cream); color: var(--olive); }
+.tt-pill--orange { background: var(--orange); color: var(--olive-ink); }
 
-/* CTA */
-.tt-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; background: #3b3f2b; color: #fff; border-radius: 32px; padding: 36px clamp(24px, 4vw, 48px); }
-.tt-cta h2 { margin: 0 0 6px; font-size: 28px; }
-.tt-cta p { margin: 0; opacity: .85; }
+.tt-btn {
+  display: inline-flex; align-items: center; justify-content: center; height: 48px; padding: 0 24px;
+  border-radius: 999px; font: 600 24px/1 var(--font-head); white-space: nowrap;
+  transition: background-color .2s ease, color .2s ease;
+}
+.tt-btn--cream { background: var(--cream); color: var(--olive); }
+.tt-btn--cream:hover { background: #fff; }
+.tt-btn--orange { background: var(--orange); color: var(--cream); }
+.tt-btn--orange:hover { background: var(--cream); color: var(--olive); }
+
+/* Tim */
+.tt-team { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1142px; margin: 48px auto 0; }
+.tt-team li {
+  flex: 1 1 260px; min-width: 0; min-height: 232px; padding: 30px 20px 28px; border-radius: 28px;
+  background: var(--cream); box-shadow: var(--shadow-card);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.tt-avatar { display: grid; place-items: center; width: 80px; height: 80px; border-radius: 50%; background: var(--orange); color: #fff; box-shadow: 0 4px 6px rgba(0, 0, 0, .22); }
+.tt-avatar .icon { width: 44px; height: 44px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.tt-team b { margin-top: 22px; font: 700 32px/1.2 var(--font-body); }
+.tt-team li > span:last-child { margin-top: 18px; font: 300 16px/1.2 var(--font-body); }
+
+/* Ajakan penutup */
+.tt-cta {
+  max-width: 1142px; min-height: 325px; margin: 96px auto 0; padding: 48px 24px;
+  background: var(--olive); border-radius: 28px; box-shadow: var(--shadow-card);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; text-align: center;
+}
+.tt-cta p { font: 700 48px/60px var(--font-head); color: var(--cream); text-shadow: var(--shadow-text); }
+.tt-cta p span { color: var(--orange); }
+.tt-cta__act { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
 
 .tt-footer .footer__grid { grid-template-columns: 1.7fr .8fr .8fr 1.2fr; gap: 28px; }
 .tt-footer .footer__brand img { width: 180px; }
@@ -103,14 +89,19 @@
   .tt-footer .footer__bottom { font-size: 9px; }
 }
 
+@media (max-width: 899px) {
+  .tt { padding-top: 40px; }
+  .tt-hero h1 { font-size: 40px; line-height: 52px; }
+  .tt-hero__photo { flex-basis: 100%; width: 100%; height: 260px; }
+  .tt-stat { aspect-ratio: 4 / 3; }
+  .tt-stat h2 { font-size: 30px; }
+  .tt-title { font-size: 36px; line-height: 44px; }
+  .tt-card h3 { font-size: 32px; line-height: 36px; }
+  .tt-cta p { font-size: 32px; line-height: 42px; }
+}
+
 @media (max-width: 699px) {
-  .tt-site-header { margin-top: 16px; padding: 0 16px; }
-  .tt-site-header .navbar { flex-wrap: wrap; gap: 8px; padding: 10px 14px; border-radius: 24px; }
-  .tt-site-header .navbar__brand img { width: 140px; }
-  .tt-site-header .navbar__menu { order: 3; width: 100%; justify-content: space-between; gap: 2px; margin: 0; padding: 3px; }
-  .tt-site-header .navbar__menu a { height: 30px; padding: 0 7px; font-size: 11px; }
-  .tt-site-header .navbar__actions { margin-left: auto; gap: 7px; }
-  .tt-site-header .navbar__actions .btn { min-width: 54px; height: 32px; padding: 0 9px; font-size: 11px; }
+  .tt-site-header { padding-top: 16px; }
   .tt-footer .footer__inner { padding-top: 32px; }
   .tt-footer .footer__grid { grid-template-columns: 1fr; gap: 24px; padding-bottom: 32px; }
 }
