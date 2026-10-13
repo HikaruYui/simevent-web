@@ -109,7 +109,7 @@
                 </button>
 
                 <!-- Logout Button -->
-                <a href="landing_page.html" onclick="try{localStorage.removeItem('simevent_session')}catch(e){}" title="Keluar ke halaman utama" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
+                <a href="{% url 'landing' %}" onclick="try{localStorage.removeItem('simevent_session')}catch(e){}" title="Keluar ke halaman utama" class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm">
                     <i class="fa-solid fa-power-off text-brand-goldLight"></i>
                     <span class="hidden md:inline">Log Out</span>
                 </a>
