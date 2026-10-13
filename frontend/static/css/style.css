@@ -170,12 +170,6 @@ button, input { font: inherit; }
 }
 
 /* --- KODE SISANYA DARI FILE ANDA --- */
-.tt-site-header { position: relative; top: auto; margin: 28px 24px 0; }
-.jj-site-header .navbar, .tt-site-header .navbar { flex-wrap: nowrap; }
-.jj-site-header .navbar__brand img, .tt-site-header .navbar__brand img { width: 190px; }
-.jj-site-header .navbar__menu, .tt-site-header .navbar__menu { margin-left: auto; }
-.jj-site-header .navbar__actions, .tt-site-header .navbar__actions { margin-left: 16px; }
-.jj-site-header .navbar__actions .btn, .tt-site-header .navbar__actions .btn { width: auto; padding: 0 18px; }
 .jj-back-home, .tt-back-home { display: inline-block; margin: 14px 0; color: #7a6a4f; font-size: 14px; font-weight: 700; }
 
 .hero { position: relative; padding-top: 325px; }
