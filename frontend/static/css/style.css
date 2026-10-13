@@ -29,9 +29,16 @@ html {
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+
   font-family: var(--font-body);
   color: var(--olive);
   background: var(--cream);
@@ -438,8 +445,15 @@ button, input { font: inherit; }
   display: grid; grid-template-columns: minmax(0, 1fr) calc(676 * var(--u)); align-items: center;
 }
 .auth::before {
-  content: ""; position: absolute; inset: 0; z-index: 0;
+  content: "";
+  position: absolute;
+  inset: -120px -180px -160px 0;
+  z-index: 0;
+
   background: url("../img/login-blob.svg") right center / cover no-repeat;
+
+  transform: translate(150px, 90px);
+  pointer-events: none;
 }
 .auth__logo, .auth__panel { position: relative; z-index: 1; }
 .auth__logo { justify-self: center; padding: 0 16px; }
