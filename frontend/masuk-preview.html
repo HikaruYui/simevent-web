@@ -1,307 +1,782 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Masuk | SIMEVENT</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/style.css">
-  
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/style.css' %}"
+  >
 </head>
+
+
 <body class="page-auth">
-  
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-  <defs>
-    <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
-    <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
-    <symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-    <symbol id="ic-calendar-clock" viewBox="0 0 24 24"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></symbol>
-    <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
-    <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
-    <symbol id="ic-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
-    <symbol id="ic-instagram" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></symbol>
-    <symbol id="ic-star" viewBox="0 0 24 24"><polygon fill="currentColor" stroke="none" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
-
-    
-    <symbol id="ic-konferensi" viewBox="0 0 24 24"><path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h9"/><path d="M10 12v.01"/><path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4-1A2 2 0 0 1 13 4.561Z"/></symbol>
-    <symbol id="ic-workshop" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
-    <symbol id="ic-seminar" viewBox="0 0 24 24"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></symbol>
-    <symbol id="ic-webinar" viewBox="0 0 24 24"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></symbol>
-    <symbol id="ic-sosialisasi" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></symbol>
-
-    
-    <symbol id="ic-qr" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 7v10"/><path d="M12 7v10"/><path d="M16 7v10"/></symbol>
-    <symbol id="ic-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></symbol>
-    <symbol id="ic-verified" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></symbol>
-    <symbol id="ic-banknote" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></symbol>
-    <symbol id="ic-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
-  </defs>
-</svg>
-
 
   <div class="page">
-    <!-- Tambahkan kode SVG di sini -->
-    <svg class="blob" viewBox="0 0 1440 1020" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <filter id="blob-shadow" x="-5%" y="-5%" width="110%" height="115%">
-          <feDropShadow dx="0" dy="16" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
-        </filter>
-      </defs>
-      <path filter="url(#blob-shadow)" fill="#9F886F" d="M494.422 305C290.422 204.5 170.422 139.5 670.422 25.5L984.422 -31H1317.92L1439.92 -17V1014.5V1029.5H1008.92C1008.92 1029.5 863.422 1044.5 563.922 925.5C264.422 806.5 286.922 621.5 588.422 636.5C889.922 651.5 698.422 405.5 494.422 305Z"/>
-    </svg>
 
     <main>
-      
-<section class="auth">
-  <a class="auth__logo" href="landing_page.html" aria-label="SIMEVENT, ke beranda">
-    <img src="static/img/logo.svg" alt="SIMEVENT">
-  </a>
 
-  <div class="auth__panel">
-    <section id="loginPanel">
-  <!-- Ubah inline style untuk font judul dan subjudul -->
-  <h1 class="auth__title" style="font-family: 'League Spartan', sans-serif; font-size: 4.1rem; text-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.25);">Selamat Datang</h1>
-  <p class="auth__sub" style="font-family: 'Manrope', sans-serif; font-size: 1.3rem;">Silakan masuk ke akun Anda</p>
-  
-  <!-- Pesan Notifikasi (Penting untuk fungsionalitas JS bawaan) -->
-  <p id="loginError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
-  <p id="loginNotice" role="status" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#e7f1e6;border:1px solid #b8d0b3;color:#345a36;font-size:.9rem;text-align:center"></p>
+      <section class="auth">
+        <a
+          class="auth__logo"
+          href="{% url 'landing' %}"
+          aria-label="SIMEVENT, ke beranda"
+        >
+          <img
+            src="{% static 'img/logo.svg' %}"
+            alt="SIMEVENT"
+          >
+        </a>
 
-  <!-- Tambahkan class "form" dan bungkus input dengan "campo" -->
-  <form class="auth__form form" id="loginForm" novalidate>
-    <div class="campo">
-      <!-- Ingat: beri placeholder kosong " " agar efek CSS mengambang bekerja -->
-      <input class="field" id="id_email" type="email" name="email" placeholder=" " autocomplete="email" required autofocus>
-      <!-- Label diletakkan SETELAH input -->
-      <label for="id_email">Masukkan Email</label>
-    </div>
 
-    <div class="campo">
-      <input class="field" id="id_password" type="password" name="password" placeholder=" " autocomplete="current-password" required>
-      <label for="id_password">Masukkan Kata Sandi</label>
-    </div>
+        <div class="auth__panel">
 
-    <!-- Tambahkan Lupa Password -->
-    <a class="forgot" href="#">Lupa Password?</a>
+          <section id="loginPanel">
+            <h1
+              class="auth__title"
+              style="
+                font-family: 'League Spartan', sans-serif;
+                font-size: 4.1rem;
+                text-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.25);
+              "
+            >
+              Selamat Datang
+            </h1>
 
-    <!-- Tombol Submit -->
-    <button class="btn" type="submit">Continue</button>
-  </form>
 
-  <!-- Navigasi pindah ke form daftar -->
-  <p class="switch">Belum punya akun? <a href="#daftar" id="showRegister">Daftar sekarang</a></p>
+            <p
+              class="auth__sub"
+              style="
+                font-family: 'Manrope', sans-serif;
+                font-size: 1.3rem;
+              "
+            >
+              Silakan masuk ke akun Anda
+            </p>
 
-  <div class="atau" aria-hidden="true"><i></i>or<i></i></div>
 
-  <button class="btn-google" type="button">
-    <!-- SVG logo Google -->
-    <svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-    Continue with Google
-  </button>
-</section>
+            <!-- Error login -->
+            <p
+              id="loginError"
+              role="alert"
+              hidden
+              style="
+                margin: 12px 0;
+                padding: 10px 14px;
+                border-radius: 14px;
+                background: #fbe9e7;
+                border: 1px solid #e4a59b;
+                color: #8a2f22;
+                font-size: .9rem;
+                text-align: center;
+              "
+            ></p>
 
-    <section id="registerPanel" hidden>
-  <h1 class="auth__title" style="font-family: 'League Spartan', sans-serif; font-size: 4.1rem; text-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.25);">Selamat Datang</h1>
-  <p class="auth__sub" style="font-family: 'Manrope', sans-serif; font-size: 1.3rem;">Buat akun untuk bergabung dengan SIMEVENT</p>
-  <p id="registerError" role="alert" hidden style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fbe9e7;border:1px solid #e4a59b;color:#8a2f22;font-size:.9rem;text-align:center"></p>
 
-  <form class="auth__form form" id="registerForm" novalidate>
-    <div class="campo">
-      <!-- Label "Nama lengkap" dan "Jenis akun" dihapus agar sesuai screenshot -->
-      <input class="field" id="registerEmail" name="email" type="email" placeholder=" " autocomplete="email" required>
-      <label for="registerEmail">Masukkan Email</label>
-    </div>
-    
-    <div class="campo">
-      <input class="field" id="registerPassword" name="password" type="password" placeholder=" " autocomplete="new-password" required minlength="8">
-      <label for="registerPassword">Masukkan Kata Sandi</label>
-    </div>
-    
-    <div class="campo">
-      <input class="field" id="registerConfirm" name="confirm" type="password" placeholder=" " autocomplete="new-password" required minlength="8">
-      <label for="registerConfirm">Konfirmasi Kata Sandi</label>
-    </div>
+            <!-- Notifikasi login -->
+            <p
+              id="loginNotice"
+              role="status"
+              hidden
+              style="
+                margin: 12px 0;
+                padding: 10px 14px;
+                border-radius: 14px;
+                background: #e7f1e6;
+                border: 1px solid #b8d0b3;
+                color: #345a36;
+                font-size: .9rem;
+                text-align: center;
+              "
+            ></p>
 
-    <!-- Dropdown role disembunyikan/dihapus sementara karena tidak ada di desain -->
-    <!-- Jika masih dibutuhkan oleh JavaScript, Anda bisa membuatnya type="hidden" -->
-    <input type="hidden" id="registerRole" name="role" value="Peserta">
 
-    <button class="btn" type="submit">Continue</button>
-  </form>
+            <form
+              class="auth__form form"
+              id="loginForm"
+              method="post"
+              novalidate
+            >
 
-  <p class="switch">Sudah punya akun? <a href="#masuk" id="showLogin">Masuk sekarang</a></p>
+              {% csrf_token %}
 
-  <div class="atau" aria-hidden="true"><i></i>or<i></i></div>
 
-  <button class="btn-google" type="button">
-    <!-- SVG logo Google -->
-    <svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-    Continue with Google
-  </button>
-</section>
+              <div class="campo">
+
+                <input
+                  class="field"
+                  id="id_email"
+                  type="email"
+                  name="email"
+                  placeholder=" "
+                  autocomplete="email"
+                  required
+                  autofocus
+                >
+
+                <label for="id_email">
+                  Masukkan Email
+                </label>
+
+              </div>
+
+
+              <div class="campo">
+
+                <input
+                  class="field"
+                  id="id_password"
+                  type="password"
+                  name="password"
+                  placeholder=" "
+                  autocomplete="current-password"
+                  required
+                >
+
+                <label for="id_password">
+                  Masukkan Kata Sandi
+                </label>
+
+              </div>
+
+
+              <a
+                class="forgot"
+                href="#"
+                id="forgotPassword"
+              >
+                Lupa Password?
+              </a>
+
+
+              <button
+                class="btn"
+                type="submit"
+              >
+                Continue
+              </button>
+
+            </form>
+
+
+            <p class="switch">
+              Belum punya akun?
+
+              <a
+                href="#daftar"
+                id="showRegister"
+              >
+                Daftar sekarang
+              </a>
+            </p>
+
+
+            <div
+              class="atau"
+              aria-hidden="true"
+            >
+              <i></i>
+              or
+              <i></i>
+            </div>
+
+
+            <button
+              class="btn-google"
+              id="googleLogin"
+              type="button"
+            >
+
+              <svg
+                class="g-logo"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                />
+
+                <path
+                  fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                />
+
+                <path
+                  fill="#FBBC05"
+                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                />
+
+                <path
+                  fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                />
+
+              </svg>
+
+              Continue with Google
+
+            </button>
+
+          </section>
+          <section
+            id="registerPanel"
+            hidden
+          >
+
+            <h1
+              class="auth__title"
+              style="
+                font-family: 'League Spartan', sans-serif;
+                font-size: 4.1rem;
+                text-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.25);
+              "
+            >
+              Selamat Datang
+            </h1>
+
+
+            <p
+              class="auth__sub"
+              style="
+                font-family: 'Manrope', sans-serif;
+                font-size: 1.3rem;
+              "
+            >
+              Buat akun untuk bergabung dengan SIMEVENT
+            </p>
+
+
+            <p
+              id="registerError"
+              role="alert"
+              hidden
+              style="
+                margin: 12px 0;
+                padding: 10px 14px;
+                border-radius: 14px;
+                background: #fbe9e7;
+                border: 1px solid #e4a59b;
+                color: #8a2f22;
+                font-size: .9rem;
+                text-align: center;
+              "
+            ></p>
+
+
+            <form
+              class="auth__form form"
+              id="registerForm"
+              method="post"
+              novalidate
+            >
+
+              {% csrf_token %}
+
+
+              <div class="campo">
+
+                <input
+                  class="field"
+                  id="registerEmail"
+                  name="email"
+                  type="email"
+                  placeholder=" "
+                  autocomplete="email"
+                  required
+                >
+
+                <label for="registerEmail">
+                  Masukkan Email
+                </label>
+
+              </div>
+
+
+              <div class="campo">
+
+                <input
+                  class="field"
+                  id="registerPassword"
+                  name="password1"
+                  type="password"
+                  placeholder=" "
+                  autocomplete="new-password"
+                  required
+                  minlength="12"
+                >
+
+                <label for="registerPassword">
+                  Masukkan Kata Sandi
+                </label>
+
+              </div>
+
+
+              <div class="campo">
+
+                <input
+                  class="field"
+                  id="registerConfirm"
+                  name="password2"
+                  type="password"
+                  placeholder=" "
+                  autocomplete="new-password"
+                  required
+                  minlength="12"
+                >
+
+                <label for="registerConfirm">
+                  Konfirmasi Kata Sandi
+                </label>
+
+              </div>
+
+
+              <button
+                class="btn"
+                type="submit"
+              >
+                Continue
+              </button>
+
+            </form>
+
+
+            <p class="switch">
+              Sudah punya akun?
+
+              <a
+                href="#masuk"
+                id="showLogin"
+              >
+                Masuk sekarang
+              </a>
+            </p>
+
+
+            <div
+              class="atau"
+              aria-hidden="true"
+            >
+              <i></i>
+              or
+              <i></i>
+            </div>
+
+
+            <button
+              class="btn-google"
+              id="googleRegister"
+              type="button"
+            >
+
+              <svg
+                class="g-logo"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                />
+
+                <path
+                  fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                />
+
+                <path
+                  fill="#FBBC05"
+                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                />
+
+                <path
+                  fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                />
+
+              </svg>
+
+              Continue with Google
+
+            </button>
+
+          </section>
+
+        </div>
+
+      </section>
 
     </main>
 
-    
   </div>
-
-  
-
   <script>
-    // ===== Login sederhana (prototipe, sisi klien) =====
-    // Sesi disimpan di localStorage -> tetap login walau browser ditutup.
-    var SESSION_KEY = 'simevent_session';
-    var USERS_KEY = 'simevent_users';
-    var requestedEvent = new URLSearchParams(location.search).get('event');
-    var USERS = [
-      { email: 'budi.panitia@simevent.com', password: 'admin123',
-        name: 'Budi Santoso', role: 'Main Admin', redirect: 'panitia_page.html' },
-      { email: 'peserta@simevent.com', password: 'peserta123',
-        name: 'Peserta Event', role: 'Peserta', redirect: 'peserta_page.html' }
-    ];
 
-    function readUsers() {
-      var raw = localStorage.getItem(USERS_KEY);
-      if (!raw) return [];
-      var users = JSON.parse(raw);
-      if (!Array.isArray(users)) throw new Error('Data akun tidak valid.');
-      return users;
+    const loginPanel = document.getElementById("loginPanel");
+    const registerPanel = document.getElementById("registerPanel");
+
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    const loginError = document.getElementById("loginError");
+    const loginNotice = document.getElementById("loginNotice");
+    const registerError = document.getElementById("registerError");
+
+    function getCsrfToken(form) {
+      return form.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+      ).value;
     }
 
-    function readSession() {
-      try {
-        return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-      } catch (e) {
-        return null;
+    function extractErrors(data) {
+
+      if (!data || !data.errors) {
+        return "Terjadi kesalahan. Silakan coba lagi.";
       }
-    }
 
-    function destination(user) {
-      if (user.role === 'Peserta') {
-        return 'peserta_page.html' + (requestedEvent ? '?event=' + encodeURIComponent(requestedEvent) : '');
-      }
-      return user.redirect;
-    }
+      const messages = [];
 
-    function saveSession(user) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        email: user.email, name: user.name, role: user.role,
-        redirect: user.redirect, loginAt: new Date().toISOString()
-      }));
+      Object.values(data.errors).forEach(function (errors) {
+
+        errors.forEach(function (error) {
+
+          if (error.message) {
+            messages.push(error.message);
+          }
+
+        });
+
+      });
+
+      return messages.join(" ");
     }
 
     function showAuthPanel(panel) {
-      document.getElementById('loginPanel').hidden = panel !== 'login';
-      document.getElementById('registerPanel').hidden = panel !== 'register';
-      document.getElementById('loginError').hidden = true;
-      document.getElementById('loginNotice').hidden = true;
-      document.getElementById('registerError').hidden = true;
-      history.replaceState(null, '', panel === 'register' ? '#daftar' : '#masuk');
+
+      const showRegister = panel === "register";
+
+      loginPanel.hidden = showRegister;
+      registerPanel.hidden = !showRegister;
+
+      loginError.hidden = true;
+      loginNotice.hidden = true;
+      registerError.hidden = true;
+
+      history.replaceState(
+        null,
+        "",
+        showRegister ? "#daftar" : "#masuk"
+      );
+
     }
 
-    document.getElementById('showRegister').addEventListener('click', function (event) {
-      event.preventDefault();
-      showAuthPanel('register');
-    });
-    document.getElementById('showLogin').addEventListener('click', function (event) {
-      event.preventDefault();
-      showAuthPanel('login');
-    });
-    if (location.hash === '#daftar') showAuthPanel('register');
-    var existingSession = readSession();
-    if (existingSession && existingSession.email && existingSession.redirect) {
-      location.replace(destination(existingSession));
+
+    document
+      .getElementById("showRegister")
+      .addEventListener("click", function (event) {
+
+        event.preventDefault();
+
+        showAuthPanel("register");
+
+      });
+
+
+    document
+      .getElementById("showLogin")
+      .addEventListener("click", function (event) {
+
+        event.preventDefault();
+
+        showAuthPanel("login");
+
+      });
+
+
+    if (location.hash === "#daftar") {
+      showAuthPanel("register");
     }
 
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (!e.currentTarget.reportValidity()) return;
-      var email = document.getElementById('id_email').value.trim().toLowerCase();
-      var pass  = document.getElementById('id_password').value;
-      var err   = document.getElementById('loginError');
-      var user;
-      try {
-        user = USERS.concat(readUsers()).find(function (u) { return u.email === email && u.password === pass; });
-      } catch (storageError) {
-        err.textContent = 'Data akun tidak bisa dibaca dari penyimpanan browser.';
-        err.hidden = false;
-        return;
-      }
+    loginForm.addEventListener(
+      "submit",
+      async function (event) {
 
-      if (!user) {
-        err.textContent = 'Email atau kata sandi salah.';
-        err.hidden = false;
-        return;
-      }
-      try {
-        saveSession(user);
-      } catch (ex) {
-        err.textContent = 'Login tidak bisa disimpan oleh browser. Izinkan penyimpanan lokal lalu coba lagi.';
-        err.hidden = false;
-        return;
-      }
-      location.href = destination(user);
-    });
+        event.preventDefault();
 
-    document.getElementById('registerForm').addEventListener('submit', function (event) {
-      event.preventDefault();
-      var name = document.getElementById('registerName').value.trim();
-      var email = document.getElementById('registerEmail').value.trim().toLowerCase();
-      var role = document.getElementById('registerRole').value;
-      var password = document.getElementById('registerPassword').value;
-      var confirm = document.getElementById('registerConfirm').value;
-      var error = document.getElementById('registerError');
-      var form = event.currentTarget;
+        loginError.hidden = true;
+        loginNotice.hidden = true;
 
-      if (!form.reportValidity()) return;
-      if (password !== confirm) {
-        error.textContent = 'Konfirmasi kata sandi belum sama.';
-        error.hidden = false;
-        return;
-      }
-      var redirects = { Peserta: 'peserta_page.html', Panitia: 'panitia_page.html' };
-      if (!Object.prototype.hasOwnProperty.call(redirects, role)) {
-        error.textContent = 'Pilih jenis akun Peserta atau Panitia.';
-        error.hidden = false;
-        return;
-      }
-      var user = { name: name, email: email, password: password, role: role, redirect: redirects[role] };
-      try {
-        var users = readUsers();
-        if (USERS.concat(users).some(function (registeredUser) { return registeredUser.email === email; })) {
-          error.textContent = 'Email ini sudah terdaftar. Silakan masuk.';
-          error.hidden = false;
+
+        if (!loginForm.reportValidity()) {
           return;
         }
-        users.push(user);
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      } catch (storageError) {
-        error.textContent = 'Akun tidak bisa disimpan oleh browser. Izinkan penyimpanan lokal lalu coba lagi.';
-        error.hidden = false;
-        return;
+
+
+        const body = new URLSearchParams();
+
+        body.append(
+          "email",
+          document
+            .getElementById("id_email")
+            .value
+            .trim()
+        );
+
+        body.append(
+          "password",
+          document
+            .getElementById("id_password")
+            .value
+        );
+
+
+        try {
+
+          const response = await fetch(
+            "{% url 'accounts:login' %}",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/x-www-form-urlencoded",
+
+                "X-CSRFToken":
+                  getCsrfToken(loginForm)
+              },
+
+              body: body.toString()
+            }
+          );
+
+
+          const data = await response.json();
+
+
+          if (!response.ok) {
+
+            loginError.textContent =
+              extractErrors(data);
+
+            loginError.hidden = false;
+
+            return;
+          }
+
+
+          /* Login berhasil.
+             Session sekarang tersimpan oleh Django,
+             bukan localStorage.
+          */
+          window.location.href =
+            "{% url 'after_login' %}";
+
+
+        } catch (error) {
+
+          loginError.textContent =
+            "Tidak dapat terhubung ke server.";
+
+          loginError.hidden = false;
+
+        }
+
       }
-      if (role === 'Peserta') {
-        document.getElementById('id_email').value = email;
-        document.getElementById('id_password').value = '';
-        form.reset();
-        showAuthPanel('login');
-        var notice = document.getElementById('loginNotice');
-        notice.textContent = 'Akun berhasil dibuat. Silakan masuk dengan email dan kata sandi Anda.';
-        notice.hidden = false;
-        document.getElementById('id_password').focus();
-        return;
+    );
+
+    registerForm.addEventListener(
+      "submit",
+      async function (event) {
+
+        event.preventDefault();
+
+        registerError.hidden = true;
+
+
+        if (!registerForm.reportValidity()) {
+          return;
+        }
+
+
+        const email =
+          document
+            .getElementById("registerEmail")
+            .value
+            .trim();
+
+
+        const password1 =
+          document
+            .getElementById("registerPassword")
+            .value;
+
+
+        const password2 =
+          document
+            .getElementById("registerConfirm")
+            .value;
+
+
+        if (password1 !== password2) {
+
+          registerError.textContent =
+            "Konfirmasi kata sandi belum sama.";
+
+          registerError.hidden = false;
+
+          return;
+        }
+
+
+        const body = new URLSearchParams();
+
+        body.append(
+          "email",
+          email
+        );
+
+        body.append(
+          "password1",
+          password1
+        );
+
+        body.append(
+          "password2",
+          password2
+        );
+
+
+        try {
+
+          const response = await fetch(
+            "{% url 'accounts:register' %}",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/x-www-form-urlencoded",
+
+                "X-CSRFToken":
+                  getCsrfToken(registerForm)
+              },
+
+              body: body.toString()
+            }
+          );
+
+
+          const data = await response.json();
+
+
+          if (!response.ok) {
+
+            registerError.textContent =
+              extractErrors(data);
+
+            registerError.hidden = false;
+
+            return;
+          }
+
+          registerForm.reset();
+          showAuthPanel("login");
+          document.getElementById(
+            "id_email"
+          ).value = email;
+
+          loginNotice.textContent =
+            "Akun berhasil dibuat. Silakan masuk menggunakan email dan kata sandi Anda.";
+
+          loginNotice.hidden = false;
+
+          document.getElementById(
+            "id_password"
+          ).focus();
+
+
+        } catch (error) {
+
+          registerError.textContent =
+            "Tidak dapat terhubung ke server.";
+
+          registerError.hidden = false;
+
+        }
+
       }
-      try {
-        saveSession(user);
-      } catch (storageError) {
-        error.textContent = 'Akun berhasil dibuat, tetapi sesi masuk tidak bisa disimpan. Silakan masuk dengan akun baru.';
-        error.hidden = false;
-        return;
-      }
-      location.href = destination(user);
-    });
+    );
+
+    document
+      .getElementById("forgotPassword")
+      .addEventListener("click", function (event) {
+
+        event.preventDefault();
+
+        loginNotice.textContent =
+          "Fitur lupa password belum tersedia.";
+
+        loginNotice.hidden = false;
+
+      });
+
+
+    function googleNotAvailable() {
+
+      const visibleNotice =
+        registerPanel.hidden
+          ? loginNotice
+          : registerError;
+
+
+      visibleNotice.textContent =
+        "Login dengan Google belum tersedia.";
+
+      visibleNotice.hidden = false;
+
+    }
+
+
+    document
+      .getElementById("googleLogin")
+      .addEventListener(
+        "click",
+        googleNotAvailable
+      );
+
+
+    document
+      .getElementById("googleRegister")
+      .addEventListener(
+        "click",
+        googleNotAvailable
+      );
+
   </script>
+
+  {% if request.user.is_authenticated %}
+    <script>
+      window.location.replace(
+        "{% url 'after_login' %}"
+      );
+    </script>
+  {% endif %}
+
 </body>
 </html>
