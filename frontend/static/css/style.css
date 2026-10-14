@@ -1,7 +1,14 @@
 /* =========================================================
    SIMEVENT – Landing page (desain desktop 1440px)
-   Palet: #3F422E olive · #9F886F taupe · #D78B30 oranye · #F5E6C5 krem
    ========================================================= */
+html {
+  font-size: min(calc(100vw / 90), calc(100vh / 63.75));
+}
+
+.auth__panel {
+  width: 33.5rem;
+  margin: 0 auto;
+}
 
 :root {
   --olive: #3F422E;
@@ -22,9 +29,16 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+
   font-family: var(--font-body);
   color: var(--olive);
   background: var(--cream);
@@ -43,14 +57,13 @@ button, input { font: inherit; }
 
 :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
 
-/* Latar halaman: gradasi radial dari desain */
 .page {
   position: relative;
   background: url("../img/bg.svg") center top / 100% 100% no-repeat, var(--cream);
   overflow-x: clip;
 }
 
-/* ---------- Tombol ---------- */
+/* ---------- Tombol Dasar ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   height: 48px; padding: 0 24px; border-radius: 999px;
@@ -63,12 +76,16 @@ button, input { font: inherit; }
 .btn--outline { height: 46px; border-color: var(--orange); color: var(--olive); }
 .btn--outline:hover { background: var(--orange); color: #fff; }
 .btn--sm { height: 40px; padding: 0 18px; font-size: 14px; gap: 6px; }
-.btn--sm .icon { width: 18px; height: 18px; }
+.event-card__foot .btn--dark:hover {
+  background: #fff;
+  color: var(--olive);
+  border-color: #fff;
+}
 .btn--cta {
   height: 64px; padding: 0 48px; font: 700 24px/1 var(--font-head);
   background: var(--olive); color: var(--orange); box-shadow: var(--shadow-card);
 }
-.btn--cta:hover { background: var(--olive-ink); color: #E69A40; }
+.btn--cta:hover { background: var(--orange); color: var(--olive); }
 
 /* ---------- Navbar ---------- */
 .site-header {
@@ -78,7 +95,7 @@ button, input { font: inherit; }
 .navbar {
   max-width: 1112px; min-height: 80px; margin: 0 auto;
   display: flex; align-items: center; flex-wrap: nowrap; gap: 12px 0;
-  padding: 0 43px 0 44px;
+  padding: 0 20px 0 44px;
   background: rgba(245, 230, 197, .39);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-radius: 40px;
@@ -86,8 +103,10 @@ button, input { font: inherit; }
 }
 .navbar__brand { flex: none; }
 .navbar__brand img { width: 272px; height: auto; }
+
+/* INI BAGIAN YANG TIDAK SENGAJA TERHAPUS SEBELUMNYA */
 .navbar__menu {
-  display: flex; gap: 16px; margin-left: 91px; padding: 8px 17px;
+  display: flex; gap: 16px; margin-left: auto; padding: 8px 17px;
   background: rgba(255, 255, 255, .2);
   -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
   border-radius: 28px;
@@ -100,11 +119,66 @@ button, input { font: inherit; }
 }
 .navbar__menu a:hover,
 .navbar__menu a.is-active { background: var(--cream); color: var(--olive); }
-.navbar__actions { display: flex; align-items: center; gap: 25px; margin-left: 21px; }
-.navbar__actions .btn { width: 88px; height: 48px; padding: 0; font-size: 15px; }
-.navbar__actions .btn--outline { width: 86px; height: 46px; }
+/* ==================================================== */
 
-/* ---------- Hero ---------- */
+/* =========================================
+   TOMBOL NAVBAR (MASUK & DAFTAR)
+   Berlaku untuk: landing_page.html, jelajah.html, tentang.html (class .btn--outline / .btn--dark)
+   dan templates/partials/navbar.html (class .btn-masuk / .btn-daftar)
+========================================= */
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 12px;
+  margin-right: 0;           /* jarak ke tepi navbar diatur oleh padding kanan .navbar */
+  flex: none;                /* jangan ikut mengecil / meluber saat ruang sempit */
+}
+
+/* Ukuran sama untuk kedua tombol, sejajar dengan menu */
+.navbar__actions .btn,
+.navbar__actions .btn-nav {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 46px; padding: 0 24px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  font: 700 15px/1 var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+/* --- MASUK: awal = transparan + garis oranye | hover = hijau zaitun, teks krem --- */
+.navbar__actions .btn--outline,
+.navbar__actions .btn-masuk {
+  background: transparent;
+  color: var(--olive);
+  border-color: var(--orange);
+}
+.navbar__actions .btn--outline:hover,
+.navbar__actions .btn-masuk:hover {
+  background: var(--olive);
+  color: var(--cream);
+  border-color: var(--olive);
+}
+
+/* --- DAFTAR: awal = hijau zaitun, teks krem | hover = oranye, teks zaitun --- */
+.navbar__actions .btn--dark,
+.navbar__actions .btn-daftar {
+  background: var(--olive);
+  color: var(--cream);
+  border-color: var(--olive);
+}
+.navbar__actions .btn--dark:hover,
+.navbar__actions .btn-daftar:hover {
+  background: var(--orange);
+  color: var(--olive-ink);
+  border-color: var(--orange);
+}
+
+/* --- KODE SISANYA DARI FILE ANDA --- */
+.jj-back-home, .tt-back-home { display: inline-block; margin: 14px 0; color: #7a6a4f; font-size: 14px; font-weight: 700; }
+
 .hero { position: relative; padding-top: 325px; }
 .hero__photo {
   position: absolute; top: 0; left: 0; z-index: 0;
@@ -114,14 +188,12 @@ button, input { font: inherit; }
   -webkit-mask: linear-gradient(to bottom, #000, transparent) top / 100% 79.9% no-repeat;
           mask: linear-gradient(to bottom, #000, transparent) top / 100% 79.9% no-repeat;
 }
-/* pudar ke krem di bawah hero */
 .hero::before {
   content: ""; position: absolute; left: 0; right: 0; top: 864px; height: 320px; z-index: 0;
   background: linear-gradient(to bottom, rgba(245, 230, 197, 0), rgba(245, 230, 197, .7) 55%, rgba(245, 230, 197, 0));
   pointer-events: none;
 }
 .hero > :not(.hero__photo) { position: relative; z-index: 1; }
-
 .hero__content { text-align: center; padding: 0 24px; }
 .hero h1 {
   max-width: 1120px; margin: 0 auto;
@@ -149,7 +221,6 @@ button, input { font: inherit; }
 .stats__num .icon { width: 42px; height: 42px; filter: drop-shadow(0 4px 4px rgba(0,0,0,.25)); }
 .stats__label { font: 400 22px/28px var(--font-body); }
 
-/* ---------- Panel kategori ---------- */
 .categories {
   display: flex; justify-content: center; gap: 8px;
   max-width: 1113px; margin: 99px auto 0; padding: 29px 40px 52px;
@@ -171,14 +242,12 @@ button, input { font: inherit; }
 .category span { font: 400 16px/20px var(--font-body); }
 .category:hover { background: var(--cream-card); border-color: var(--orange); }
 
-/* ---------- Section umum ---------- */
 .section { max-width: 1232px; margin: 0 auto; padding: 0 24px; }
 .section__title {
   font: 700 48px/58px var(--font-head); color: rgba(63, 66, 46, .69);
   text-shadow: var(--shadow-text);
 }
 
-/* ---------- Rekomendasi event ---------- */
 .events { margin-top: 55px; }
 .events__grid {
   display: grid; grid-template-columns: repeat(4, 296px); gap: 16px;
@@ -218,17 +287,21 @@ button, input { font: inherit; }
 .status i { display: block; width: 8px; height: 8px; border-radius: 50%; }
 .status--live { color: #17603F; }
 .status--live i { background: #1F8A5B; box-shadow: 0 0 0 3.5px rgba(31, 138, 91, .28); margin: 0 3px; }
-.status--soon { color: #8A5A12; height: 28px; }
+.status--soon { color: #8A5A12; }
 .status--soon i { background: var(--orange); margin: 0 3px; }
 
-.event-card__title { max-width: 210px; min-height: 56px; margin-top: 4px; font: 700 22px/28px var(--font-head); }
+.event-card__title {
+  max-width: 100%; height: 56px; margin-top: 4px;     /* tinggi tetap = 2 baris, semua card sama */
+  font: 700 22px/28px var(--font-head);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  overflow: hidden; text-overflow: ellipsis;          /* judul > 2 baris dipotong jadi "..." */
+}
 .event-card__meta { margin-top: 13px; display: grid; gap: 7px; }
 .event-card__meta li { display: flex; align-items: center; gap: 8px; height: 24px; font: 400 16px/1 var(--font-body); color: var(--muted); }
 .event-card__meta .icon { width: 18px; height: 18px; }
 .event-card__foot { margin-top: 2px; display: flex; align-items: center; justify-content: space-between; }
 .price { font: 700 24px/1 var(--font-head); color: var(--orange); }
 
-/* ---------- Mengapa SIMEVENT + Kata Mereka ---------- */
 .why { max-width: 1232px; margin: 105px auto 77px; padding: 0 24px; }
 .why__box {
   display: grid; grid-template-columns: 536px 1fr; gap: 45px;
@@ -258,16 +331,16 @@ button, input { font: inherit; }
 
 .testi-grid {
   width: 100%; max-width: 568px; margin-top: 32px;
-  display: grid; grid-template-columns: 240px 1fr; grid-auto-rows: 128px; gap: 8px;
+  display: grid; grid-template-columns: 220px 1fr; grid-auto-rows: 124px; gap: 8px;
 }
 .testi {
   position: relative; display: flex; flex-direction: column; overflow: hidden;
-  padding: 14px 16px; border-radius: 24px; color: #fff;
-  background: linear-gradient(120deg, var(--taupe), rgba(57, 49, 40, .8));
+  padding: 12px 28px 12px 24px; border-radius: 24px; color: #fff;
+  background: linear-gradient(100deg, #6B5D4F 0%, var(--taupe) 68%, #85735E 100%);
   box-shadow: var(--shadow-card);
 }
 .testi__stars { display: flex; gap: 1px; color: #FFD501; font-size: 14px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
-.testi blockquote { margin-top: 6px; font: 700 13px/16px var(--font-head); text-shadow: var(--shadow-text); }
+.testi blockquote { margin-top: 5px; font: 700 12px/14px var(--font-head); text-shadow: var(--shadow-text); }
 .testi figcaption { margin-top: auto; display: flex; align-items: center; gap: 6px; }
 .testi figcaption > span:last-child { display: flex; flex-direction: column; }
 .testi b { font: 700 9px/11px var(--font-head); }
@@ -275,10 +348,9 @@ button, input { font: inherit; }
 .testi__avatar { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--orange); color: var(--cream); }
 .testi__avatar .icon { width: 12px; height: 12px; }
 
-/* kartu ke-3 = besar */
-.testi:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; padding: 20px 24px; }
+.testi:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; padding: 18px 24px 22px; }
 .testi:nth-child(3) .testi__stars { font-size: 28px; gap: 0; }
-.testi:nth-child(3) blockquote { margin-top: 14px; font-size: 24px; line-height: 28px; }
+.testi:nth-child(3) blockquote { margin-top: 12px; font-size: 24px; line-height: 28px; }
 .testi:nth-child(3) figcaption { gap: 12px; }
 .testi:nth-child(3) b { font-size: 16px; line-height: 20px; }
 .testi:nth-child(3) small { font-size: 16px; line-height: 20px; }
@@ -290,7 +362,6 @@ button, input { font: inherit; }
 .cta__text span { color: var(--orange); }
 .cta .btn { margin-top: 40px; }
 
-/* ---------- Footer ---------- */
 .footer { background: #F1ECE0; color: var(--muted); }
 .footer__inner { max-width: 1264px; margin: 0 auto; padding: 56px 24px 0; }
 .footer__grid { display: grid; grid-template-columns: 435px 256px 275px 1fr; padding-bottom: 54px; }
@@ -310,14 +381,20 @@ button, input { font: inherit; }
 .footer__bottom div { display: flex; gap: 18px; }
 .footer__bottom a:hover { color: var(--orange); }
 
-/* =========================================================
-   Responsif (desain utama = desktop; ini hanya penyesuaian)
-   ========================================================= */
 @media (max-width: 1320px) {
-  .events__grid { grid-template-columns: repeat(2, 296px); margin-inline: 0; }
+  .events__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-inline: 0; }
+}
+@media (max-width: 900px) {
+  .events__grid { grid-template-columns: repeat(2, minmax(0, 296px)); justify-content: center; gap: 16px; }
+  .auth { --u: 1px; grid-template-columns: 1fr; justify-items: center; align-content: center; gap: 36px; padding: 40px 24px; background: #9F886F; }
+  .auth::before { display: none; }
+  .auth__logo img { width: 280px; }
+  .auth__panel { width: 100%; max-width: 420px; padding-top: 0; }
+  .auth__title { font-size: 40px; }
 }
 @media (max-width: 1100px) {
   .navbar { flex-wrap: wrap; justify-content: space-between; padding: 16px 28px; }
+  .jj-site-header .navbar, .tt-site-header .navbar { flex-wrap: wrap; }
   .navbar__menu { order: 3; width: 100%; margin: 0; justify-content: center; flex-wrap: wrap; }
   .navbar__actions { margin: 0; }
   .hero { padding-top: 260px; }
@@ -356,11 +433,6 @@ button, input { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
-/* =========================================================
-   Halaman Masuk (desain 1440 x 1020)
-   Semua ukuran memakai --u (= 1px desain) sehingga blob, logo, dan form
-   mengecil/membesar bersama mengikuti ukuran jendela.
-   ========================================================= */
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -373,8 +445,15 @@ button, input { font: inherit; }
   display: grid; grid-template-columns: minmax(0, 1fr) calc(676 * var(--u)); align-items: center;
 }
 .auth::before {
-  content: ""; position: absolute; inset: 0; z-index: 0;
+  content: "";
+  position: absolute;
+  inset: -120px -180px -160px 0;
+  z-index: 0;
+
   background: url("../img/login-blob.svg") right center / cover no-repeat;
+
+  transform: translate(150px, 90px);
+  pointer-events: none;
 }
 .auth__logo, .auth__panel { position: relative; z-index: 1; }
 .auth__logo { justify-self: center; padding: 0 16px; }
@@ -411,12 +490,59 @@ button, input { font: inherit; }
 }
 .auth__alt { margin-top: calc(24 * var(--u)); text-align: center; font: 400 calc(22 * var(--u))/1.3 var(--font-body); }
 .auth__link { display: block; margin-top: calc(10 * var(--u)); text-align: center; font: 400 max(13px, calc(15 * var(--u)))/1.3 var(--font-body); text-decoration: underline; }
-.auth__forgot:hover, .auth__link:hover { color: var(--cream); }
+.auth__home { display: block; margin-top: calc(20 * var(--u)); text-align: center; font: 600 max(13px, calc(15 * var(--u)))/1.3 var(--font-body); }
+.auth__forgot:hover, .auth__link:hover, .auth__home:hover { color: var(--cream); }
 
-@media (max-width: 900px) {
-  .auth { --u: 1px; grid-template-columns: 1fr; justify-items: center; align-content: center; gap: 36px; padding: 40px 24px; background: #9F886F; }
-  .auth::before { display: none; }
-  .auth__logo img { width: 280px; }
-  .auth__panel { width: 100%; max-width: 420px; padding-top: 0; }
-  .auth__title { font-size: 40px; }
+.blob { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.panel { position: relative; z-index: 1; }
+
+:root {
+  --krem: #F5E6C5;
+  --coklat: #9F886F;
+  --oranye: #D78B30;
+  --teks-gelap: #5F5243;
 }
+
+.form { margin-top: 3.4rem; display: flex; flex-direction: column; }
+.campo { position: relative; width: 100%; margin-bottom: 1.56rem; }
+.field {
+  width: 100%; height: 4.56rem; padding: 0 2.3rem;
+  border: 3px solid var(--krem); border-radius: 1.5rem;
+  background: var(--krem); color: #4d4538; font-weight: 300; font-size: 1.25rem;
+  outline: none; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.campo label {
+  position: absolute; top: 50%; left: 2.36rem; padding: 0 0.55rem 0 0;
+  transform: translateY(-50%); background: transparent; color: rgba(111, 101, 86, 0.54);
+  font-weight: 300; font-size: 1.25rem; line-height: 1.2; pointer-events: none;
+  transition: top 0.15s, left 0.15s, padding 0.15s, color 0.15s, background-color 0.15s;
+}
+.field:focus, .field:not(:placeholder-shown) { background: transparent; border-color: #fff; color: #fff; }
+.field:focus + label, .field:not(:placeholder-shown) + label {
+  top: 0; left: 1.6rem; padding: 0 0.55rem; background: var(--coklat); color: rgba(245, 230, 197, 0.85);
+}
+.switch { margin-top: 1.5rem; text-align: center; font-size: 1rem; color: #fff;}
+.switch a { color: var(--teks-gelap); text-decoration: underline; }
+.atau {
+  display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.45rem;
+  font-size: 0.875rem; line-height: 1.2; color: #fff;
+}
+.atau i { display: block; width: 11.25rem; height: 1px; background: #fff; }
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  width: 100%; height: 4.63rem; margin-top: 1.56rem; border: 0; border-radius: 1.5rem;
+  background: var(--krem); color: rgba(111, 101, 86, 0.54); font-weight: 300; font-size: 1.25rem; cursor: pointer;
+}
+.btn-google { transition: background-color .2s ease, color .2s ease; }
+.btn-google:hover { background: #fff; color: #6F6556; }   /* hover Google: putih, teks lebih jelas */
+.g-logo { width: 1.35rem; height: 1.35rem; }
+
+/* Tombol Continue (form Masuk & Daftar): awal = oranye + teks putih | hover = krem + teks oranye */
+.form .btn {
+  width: 100%; height: 4.63rem; padding: 0; border: 0; border-radius: 1.5rem;
+  background: var(--oranye); color: #fff;
+  font: 600 1.375rem/1 var(--font-body); cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+.form .btn:hover { background: var(--krem); color: var(--oranye); }
+.forgot { align-self: flex-end; margin-top: 0.5rem; margin-bottom: 1rem; font-size: 1rem; color: #fff; text-decoration: underline; }

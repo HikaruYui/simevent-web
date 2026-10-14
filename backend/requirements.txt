@@ -1,0 +1,8 @@
+# Fungsi file: Daftar dependency Python beserta versi yang digunakan backend SIMEVENT.
+
+Django==5.2.17
+psycopg[binary]==3.3.6
+asgiref==3.12.1
+sqlparse==0.6.0
+Pillow==12.3.0
+qrcode==8.2
