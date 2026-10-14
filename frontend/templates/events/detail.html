@@ -1,0 +1,16 @@
+{% extends "landing_page.html" %}
+{% block content %}
+<section class="section event-detail" aria-labelledby="event-title">
+  <a href="{% url 'jelajah' %}">← Kembali ke Jelajah</a>
+  <article class="event-card">
+    <span class="chip chip--cream">{{ event.event_type.name }}</span>
+    <h1 id="event-title">{{ event.title }}</h1>
+    <p>{{ event.start_datetime|date:"j M Y H:i" }} – {{ event.end_datetime|date:"j M Y H:i" }} WITA</p>
+    <p>{{ event.get_delivery_mode_display }}{% if event.venue %} · {{ event.venue }}{% endif %}</p>
+    <p>{{ event.get_status_display }} · Kapasitas {{ event.capacity }} peserta</p>
+    <p>{% if event.price == 0 %}Gratis{% else %}Rp{{ event.price|floatformat:"0g" }}{% endif %}</p>
+    <div class="event-detail__description">{{ event.description|linebreaksbr }}</div>
+    <p>Pendaftaran: {{ event.registration_open|date:"j M Y H:i" }} – {{ event.registration_close|date:"j M Y H:i" }} WITA</p>
+  </article>
+</section>
+{% endblock %}

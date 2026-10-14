@@ -1,0 +1,11 @@
+{# Navigasi memakai session Django; logout hanya melalui POST dengan CSRF. #}
+{% if request.user.is_authenticated %}
+  <a class="btn btn--outline" href="{% url 'after_login' %}">Akun</a>
+  <form method="post" action="{% url 'logout_page' %}">
+    {% csrf_token %}
+    <button class="btn btn--dark" type="submit">Keluar</button>
+  </form>
+{% else %}
+  <a class="btn btn--outline" href="{% url 'login_page' %}">Masuk</a>
+  <a class="btn btn--dark" href="{% url 'login_page' %}#daftar">Daftar</a>
+{% endif %}
