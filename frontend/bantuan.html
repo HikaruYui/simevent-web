@@ -1,0 +1,451 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Bantuan | SIMEVENT</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bantuan.css' %}">
+</head>
+
+
+<body>
+
+  <div class="page bt-page">
+
+    <header class="site-header bt-site-header">
+
+      <nav
+        class="navbar"
+        aria-label="Navigasi utama"
+      >
+
+        <a
+          class="navbar__brand"
+          href="{% url 'landing' %}"
+          aria-label="SIMEVENT, ke beranda"
+        >
+          <img
+            src="{% static 'img/logo.svg' %}"
+            alt="SIMEVENT"
+          >
+        </a>
+
+
+        <ul class="navbar__menu">
+
+          <li>
+            <a href="{% url 'landing' %}">
+              Beranda
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'jelajah' %}">
+              Jelajah
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="{% url 'tentang' %}"
+            >
+              Tentang
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'bantuan' %}" class="is-active" aria-current="page">
+              Bantuan
+            </a>
+          </li>
+
+        </ul>
+
+
+        <div class="navbar__actions">
+          {% include "partials/session_actions.html" %}
+        </div>
+
+      </nav>
+
+    </header>
+
+    <main class="bt">
+
+      <!-- Breadcrumb -->
+      <div class="bt__crumb">
+        <a href="{% url 'landing' %}">Beranda</a>
+        <span aria-hidden="true">›</span>
+        <b>Bantuan</b>
+      </div>
+
+
+      <!-- Judul + pencarian -->
+      <section class="bt-hero" aria-labelledby="bt-judul">
+
+        <h1 id="bt-judul">Ada yang Bisa Kami <span>Bantu?</span></h1>
+
+        <p class="bt-hero__sub">
+          Cari jawaban seputar pendaftaran, pembayaran, presensi,
+          sertifikat, dan pengelolaan event di SIMEVENT.
+        </p>
+
+        <form class="bt-search" role="search" id="faqSearchForm">
+          <svg class="bt-search__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+          <label class="sr-only" for="faqSearch">Cari pertanyaan bantuan</label>
+          <input
+            id="faqSearch"
+            type="search"
+            placeholder="Cari pertanyaan bantuan"
+            autocomplete="off"
+          >
+        </form>
+
+        <div class="bt-popular">
+          <span>Populer:</span>
+          <ul>
+            <li><button type="button" data-term="mendaftar">Cara mendaftar event</button></li>
+            <li><button type="button" data-term="sertifikat">Sertifikat</button></li>
+            <li><button type="button" data-term="tiket">E-Tiket</button></li>
+            <li><button type="button" data-term="kata sandi">Lupa Kata Sandi</button></li>
+          </ul>
+        </div>
+
+      </section>
+
+
+      <!-- FAQ -->
+      <section class="bt-faq" id="faq" aria-labelledby="bt-faq-judul">
+
+        <h2 id="bt-faq-judul">FAQ</h2>
+        <p class="bt-faq__sub">Kumpulan pertanyaan yang sering ditanyakan</p>
+
+        <div class="bt-tabs" role="group" aria-label="Kategori pertanyaan">
+          <button type="button" class="is-active" data-filter="semua" aria-pressed="true">Semua</button>
+          <button type="button" data-filter="pembayaran" aria-pressed="false">Pembayaran &amp; Tiket</button>
+          <button type="button" data-filter="akun" aria-pressed="false">Akun &amp; Pendaftaran</button>
+          <button type="button" data-filter="kehadiran" aria-pressed="false">Kehadiran &amp; Sertifikat</button>
+          <button type="button" data-filter="penyelenggara" aria-pressed="false">Penyelenggara</button>
+        </div>
+
+        <div class="bt-list" id="faqList">
+
+          <details class="bt-item" data-cat="akun">
+            <summary>
+              <span>Bagaimana cara mendaftar ke sebuah event di SIMEVENT?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Masuk ke akun Anda, buka halaman <a href="{% url 'jelajah' %}">Jelajah</a>, pilih event yang diminati, lalu klik tombol daftar pada halaman detail event. Tiket Anda akan tersimpan di halaman Event Saya.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="akun">
+            <summary>
+              <span>Apakah wajib memiliki akun untuk mendaftar?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Ya. Akun diperlukan agar pendaftaran, tiket, presensi, dan sertifikat Anda tercatat dalam satu tempat. Anda bisa membuatnya lewat tombol <a href="{% url 'login_page' %}#daftar">Daftar</a> di pojok kanan atas.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="akun">
+            <summary>
+              <span>Jika lupa kata sandi akun, apa yang harus dilakukan?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Fitur pemulihan kata sandi mandiri masih disiapkan. Untuk sementara, kirimkan pesan lewat formulir di bawah atau email ke <a href="mailto:halo@simevent.id">halo@simevent.id</a> dan tim kami akan membantu.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="pembayaran">
+            <summary>
+              <span>Dimana saya bisa menemukan E-Tiket saya?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Setelah masuk, buka dashboard peserta lalu pilih Event Saya. E-Tiket berisi kode QR yang akan dipindai panitia saat presensi di hari acara.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="pembayaran">
+            <summary>
+              <span>Metode pembayaran apa saja yang tersedia?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Biaya dan cara pembayaran ditampilkan pada halaman detail masing-masing event dan mengikuti ketentuan penyelenggara.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="pembayaran">
+            <summary>
+              <span>Apakah tiket yang sudah dipesan bisa dibatalkan dan refund?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Pendaftaran dapat dibatalkan dari halaman Event Saya. Ketentuan pengembalian dana mengikuti kebijakan penyelenggara masing-masing event.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="kehadiran">
+            <summary>
+              <span>Bagaimana cara mendapatkan sertifikat digital?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Hadiri event dan lakukan presensi dengan menunjukkan E-Tiket. Setelah kehadiran Anda tercatat, sertifikat dapat dilihat pada halaman Sertifikat di dashboard peserta.</p>
+            </div>
+          </details>
+
+          <details class="bt-item" data-cat="penyelenggara">
+            <summary>
+              <span>Bagaimana cara membuat dan mengelola event?</span>
+              <i class="bt-item__chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></i>
+            </summary>
+            <div class="bt-item__body">
+              <p>Masuk sebagai penyelenggara, lalu buka dashboard panitia untuk membuat event, memantau peserta, dan memindai tiket saat presensi.</p>
+            </div>
+          </details>
+
+          <p class="bt-empty" id="faqEmpty" hidden>
+            Belum ada pertanyaan yang cocok. Coba kata kunci lain atau tanyakan langsung lewat formulir di bawah.
+          </p>
+
+        </div>
+      </section>
+
+
+      <!-- Hubungi kami -->
+      <section class="bt-contact" id="hubungi" aria-labelledby="bt-contact-judul">
+
+        <div class="bt-contact__info">
+          <h2 id="bt-contact-judul">Belum ketemu jawabannya?</h2>
+          <p class="bt-contact__lead">Tim kami siap membantu, ceritakan kendalamu</p>
+
+          <ul>
+            <li>
+              <span class="bt-contact__ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+              </span>
+              <a href="mailto:halo@simevent.id">halo@simevent.id</a>
+            </li>
+            <li>
+              <span class="bt-contact__ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              </span>
+              <span>Senin - Jumat, 09.00 - 17.00 WITA</span>
+            </li>
+            <li>
+              <span class="bt-contact__ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <span>Samarinda, Kalimantan Timur</span>
+            </li>
+          </ul>
+        </div>
+
+        <form class="bt-form" id="contactForm" novalidate>
+
+          <div class="bt-form__row">
+            <label for="cfNama">Nama</label>
+            <input id="cfNama" name="nama" type="text" autocomplete="name" required>
+          </div>
+
+          <div class="bt-form__row">
+            <label for="cfEmail">Email</label>
+            <input id="cfEmail" name="email" type="email" autocomplete="email" required>
+          </div>
+
+          <div class="bt-form__row">
+            <label for="cfPesan">Pesan</label>
+            <textarea id="cfPesan" name="pesan" rows="1" required></textarea>
+          </div>
+
+          <p class="bt-form__note" id="contactNote" role="status" hidden></p>
+
+          <button type="submit" class="bt-form__btn">Kirim Pesan</button>
+
+        </form>
+
+      </section>
+
+    </main>
+
+
+    <footer class="footer bt-footer" id="bantuan">
+
+      <div class="footer__inner">
+
+        <div class="footer__grid">
+
+          <div class="footer__brand">
+            <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
+            <p>
+              Platform pendaftaran dan pembuatan event formal.
+              Menghubungkan peserta, penyelenggara, dan komunitas
+              dalam satu sistem.
+            </p>
+          </div>
+
+          <div>
+            <h3>Kategori Event</h3>
+            <ul>
+              <li><a href="{% url 'jelajah' %}?kategori=conference">Konferensi</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=workshop">Workshop</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=seminar">Seminar</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=webinar">Webinar</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>SIMEVENT</h3>
+            <ul>
+              <li><a href="{% url 'tentang' %}">Tentang Kami</a></li>
+              <li><a href="{% url 'bantuan' %}">Bantuan</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Kontak dan Alamat</h3>
+            <ul class="footer__contact">
+              <li>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                <a href="mailto:halo@simevent.id">halo@simevent.id</a>
+              </li>
+              <li>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Samarinda, Kalimantan Timur</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="footer__bottom">
+          <p>&copy; 2026 SIMEVENT | All Right Reserved</p>
+          <div>
+            <a href="#">Kebijakan Privasi</a>
+            <a href="#">Syarat &amp; Ketentuan</a>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+
+  <script>
+    (function () {
+
+      var list = document.getElementById("faqList");
+      var items = Array.prototype.slice.call(list.querySelectorAll(".bt-item"));
+      var tabs = Array.prototype.slice.call(document.querySelectorAll(".bt-tabs button"));
+      var search = document.getElementById("faqSearch");
+      var empty = document.getElementById("faqEmpty");
+      var activeFilter = "semua";
+
+      function applyFilter() {
+        var term = search.value.trim().toLowerCase();
+        var shown = 0;
+
+        items.forEach(function (item) {
+          var okCat = activeFilter === "semua" || item.dataset.cat === activeFilter;
+          var okText = !term || item.textContent.toLowerCase().indexOf(term) !== -1;
+          var visible = okCat && okText;
+
+          item.hidden = !visible;
+          if (visible) { shown++; }
+        });
+
+        empty.hidden = shown !== 0;
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          activeFilter = tab.dataset.filter;
+
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.classList.toggle("is-active", on);
+            t.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+
+          applyFilter();
+        });
+      });
+
+      search.addEventListener("input", applyFilter);
+
+      document.getElementById("faqSearchForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        document.getElementById("faq").scrollIntoView({ behavior: "smooth" });
+      });
+
+      document.querySelectorAll(".bt-popular button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          search.value = btn.dataset.term;
+          activeFilter = "semua";
+
+          tabs.forEach(function (t) {
+            var on = t.dataset.filter === "semua";
+            t.classList.toggle("is-active", on);
+            t.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+
+          applyFilter();
+          document.getElementById("faq").scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+
+      /* Formulir kontak: belum ada endpoint backend, jadi pesan dikirim
+         lewat aplikasi email pengguna (mailto) ke alamat tim SIMEVENT. */
+      var form = document.getElementById("contactForm");
+      var note = document.getElementById("contactNote");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (!form.reportValidity()) { return; }
+
+        var nama = form.nama.value.trim();
+        var email = form.email.value.trim();
+        var pesan = form.pesan.value.trim();
+
+        var subject = "Bantuan SIMEVENT dari " + nama;
+        var body = pesan + "\n\n--\n" + nama + "\n" + email;
+
+        window.location.href =
+          "mailto:halo@simevent.id" +
+          "?subject=" + encodeURIComponent(subject) +
+          "&body=" + encodeURIComponent(body);
+
+        note.textContent = "Aplikasi email Anda akan terbuka. Kirim emailnya untuk menyelesaikan pesan.";
+        note.hidden = false;
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
