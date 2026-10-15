@@ -97,7 +97,12 @@ def tentang(request):
         request,
         "tentang.html",
     )
-
+@require_GET
+def bantuan(request):
+    return render(
+        request,
+        "bantuan.html",
+    )
 
 @never_cache
 @require_GET

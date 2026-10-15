@@ -16,6 +16,12 @@ urlpatterns = [
         name="tentang",
     ),
 
+        path(
+        "bantuan/",
+        views.bantuan,
+        name="bantuan",
+    ),
+
     path(
         "jelajah/",
         views.jelajah,
