@@ -41,7 +41,7 @@ class AttendanceService:
         token = form.cleaned_data["token"]
         ticket = Ticket.objects.filter(
             token=token, registration__event_id=event_id,
-        ).select_related("registration").first()
+        ).select_related("registration__payment").first()
         if ticket is None:
             raise ValidationError("Invalid ticket.")
 
@@ -56,10 +56,14 @@ class AttendanceService:
         )
         ticket = Ticket.objects.filter(
             token=token, registration__event=event,
-        ).select_related("registration").first()
+        ).select_related("registration__payment").first()
         if (
             ticket is None or not ticket.is_active
             or ticket.registration.status != RegistrationStatus.REGISTERED
+            or (
+                hasattr(ticket.registration, "payment")
+                and ticket.registration.payment.status != ticket.registration.payment.Status.APPROVED
+            )
             or not users[ticket.registration.participant_id].is_active
         ):
             raise ValidationError("Invalid ticket.")

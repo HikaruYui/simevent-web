@@ -170,6 +170,8 @@ class User(AbstractUser):
         "email",
         unique=True,
     )
+    nim = models.CharField("NIM", max_length=30, blank=True)
+    prodi = models.CharField("Program studi", max_length=150, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -219,11 +221,18 @@ class User(AbstractUser):
     def role(self):
         if self.has_perm("accounts.manage_platform"):
             return "ADMIN"
-
         if self.has_perm("accounts.access_organizer"):
             return "ORGANIZER"
-
         return "PARTICIPANT"
+
+    @property
+    def profile_complete(self):
+        return all((
+            self.first_name.strip(),
+            self.last_name.strip(),
+            self.nim.strip(),
+            self.prodi.strip(),
+        ))
 
     def __str__(self):
         return self.email
