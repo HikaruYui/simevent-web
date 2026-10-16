@@ -1,1439 +1,225 @@
+{% extends 'peserta/base_peserta.html' %}
 {% load static %}
+{% block ptitle %}Dashboard Peserta{% endblock %}
+{% block peserta %}
+<style>
+#achievementModal {
+  position: fixed;
+  inset: 0;
+  width: min(1072px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100vh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  overflow-y: auto;
+  border-radius: 28px;
+  background: #fffaf0;
+  color: #1b3a5c;
+  box-shadow: 0 25px 60px rgba(35, 31, 25, 0.3);
+}
+#achievementModal::backdrop {
+  background: rgba(35, 31, 25, 0.42);
+}
+</style>
+<div id="participantDashboard" class="mx-auto max-w-[1440px] space-y-5">
+  <section class="participant-card relative min-h-[130px] overflow-hidden rounded-[28px] px-5 py-3 sm:px-6 sm:py-4">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.42),transparent_45%)]"></div>
+    <div class="relative z-10 flex items-center justify-between gap-3 sm:gap-6">
+      <div class="max-w-xl">
+        <p class="text-sm font-semibold text-stone-700 sm:text-base">Halo,</p>
+        <h1 class="mt-1 font-display text-3xl font-extrabold text-[#8b510d] sm:text-5xl">{{ request.user.get_full_name|default:request.user.email }}</h1>
+        <p class="mt-2 text-sm text-stone-700 sm:text-base">Terus ikuti event menarik dan raih lebih banyak pengalaman!</p>
+      </div>
+      <div class="relative hidden h-28 w-28 shrink-0 items-center justify-center sm:flex">
+        <img src="{% static 'img/participant-hero.svg' %}" alt="" class="relative z-10 h-full w-full object-contain">
+      </div>
+    </div>
+  </section>
 
-<!DOCTYPE html>
-<html lang="id" class="h-full">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SIMEVENT - Dashboard Peserta</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
-    <link
-        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: [
-                            "Manrope",
-                            "sans-serif"
-                        ],
-
-                        display: [
-                            "Plus Jakarta Sans",
-                            "Manrope",
-                            "sans-serif"
-                        ],
-                    },
-
-                    colors: {
-                        brand: {
-                            cream: "#F3E2BF",
-                            creamLight: "#FBF3E4",
-                            sand: "#E6D2A9",
-                            tan: "#CDB68E",
-                            orange: "#DB9743",
-                            orangeDeep: "#B8721F",
-                            goldLight: "#F3D9A6",
-                            bronze: "#8B6A44",
-                            olive: "#3F422E",
-                            oliveDark: "#2C2E1F",
-                            ink: "#5F5944",
-                            muted: "#70664F",
-                        }
-                    }
-                }
-            }
-        };
-    </script>
-
-    <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #F3E2BF;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #CDB68E;
-            border-radius: 9999px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #DB9743;
-        }
-
-        html,
-        body {
-            height: 100%;
-            overflow-x: hidden;
-        }
-
-        @supports (height: 100dvh) {
-            body {
-                height: 100dvh;
-            }
-        }
-
-        body {
-            background:
-                radial-gradient(
-                    1200px 600px at 100% 100%,
-                    rgba(219, 151, 67, .55),
-                    transparent 60%
-                ),
-                radial-gradient(
-                    900px 500px at 0% 100%,
-                    rgba(251, 243, 228, .9),
-                    transparent 60%
-                ),
-                linear-gradient(
-                    160deg,
-                    #D9CDB0 0%,
-                    #EBD7AE 45%,
-                    #F3E2BF 100%
-                );
-
-            background-attachment: fixed;
-        }
-
-        .text-gradient-brand {
-            background: linear-gradient(
-                90deg,
-                #E7BB7F,
-                #DB9743 40%,
-                #8A7A5A 70%,
-                #3F422E
-            );
-
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-    </style>
-</head>
-
-
-<body
-    class="h-full text-brand-olive font-sans antialiased flex flex-col"
->
-
-    <!-- =====================================================
-         TOP NAVIGATION
-         ===================================================== -->
-    <header
-        class="w-full bg-brand-tan/80 backdrop-blur-md border-b border-white/40 shadow-lg shadow-brand-orange/10 sticky top-0 z-30"
-    >
-
-        <div
-            class="px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2"
-        >
-
-            <!-- Logo -->
-            <div class="flex items-center gap-3">
-
-                <button
-                    id="menuBtn"
-                    type="button"
-                    onclick="toggleSidebar()"
-                    aria-label="Buka menu"
-                    class="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-brand-olive hover:bg-white/50 transition-all"
-                >
-                    <i class="fa-solid fa-bars text-lg"></i>
-                </button>
-
-
-                <a
-                    href="{% url 'landing' %}"
-                    aria-label="SIMEVENT, ke beranda"
-                >
-                    <img
-                        src="{% static 'img/logo.svg' %}"
-                        alt="SIMEVENT"
-                        class="h-7 sm:h-9 w-auto object-contain"
-                    >
-                </a>
-
-            </div>
-
-
-            <!-- Actions -->
-            <div
-                class="flex items-center gap-1 sm:gap-3 lg:gap-6"
-            >
-
-                <!-- Notification -->
-                <button
-                    type="button"
-                    onclick="toggleModal('notificationModal')"
-                    class="relative flex items-center gap-2 px-3 py-2 rounded-full text-brand-olive hover:text-brand-orangeDeep hover:bg-white/50 transition-all group"
-                >
-
-                    <div class="relative">
-
-                        <i
-                            class="fa-regular fa-bell text-lg group-hover:scale-110 transition-transform"
-                        ></i>
-
-                        <span
-                            class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand-orangeDeep rounded-full animate-ping"
-                        ></span>
-
-                        <span
-                            class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand-orange rounded-full"
-                        ></span>
-
-                    </div>
-
-                    <span
-                        class="text-sm font-medium hidden md:inline"
-                    >
-                        Notifikasi
-                    </span>
-
-                </button>
-
-
-                <!-- Logout Django -->
-                <form
-                    method="post"
-                    action="{% url 'logout_page' %}"
-                >
-
-                    {% csrf_token %}
-
-                    <button
-                        type="submit"
-                        class="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-olive hover:bg-brand-oliveDark border border-brand-olive text-brand-creamLight hover:text-white text-sm font-semibold transition-all shadow-sm"
-                    >
-                        <i
-                            class="fa-solid fa-power-off text-brand-goldLight"
-                        ></i>
-
-                        <span class="hidden md:inline">
-                            Log Out
-                        </span>
-                    </button>
-
-                </form>
-
-            </div>
-
+  <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan peserta">
+    <div class="participant-card rounded-[22px] p-4">
+      <div class="flex items-center gap-4">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-regular fa-calendar-check"></i></span>
+        <div>
+          <p class="text-sm font-bold text-stone-700">Event Diikuti</p>
+          <p class="font-display text-3xl font-extrabold text-brand-olive">{{ total_registrations }}</p>
+          <p class="text-xs text-stone-600">Total event terdaftar</p>
         </div>
-
-    </header>
-
-
-    <!-- =====================================================
-         SIDEBAR + CONTENT
-         ===================================================== -->
-    <div class="flex flex-1 overflow-hidden">
-
-        <!-- Mobile Overlay -->
-        <div
-            id="sidebarOverlay"
-            onclick="toggleSidebar(false)"
-            class="fixed inset-0 bg-brand-olive/40 backdrop-blur-sm z-40 hidden md:hidden"
-        ></div>
-
-
-        <!-- Sidebar -->
-        <aside
-            id="sidebar"
-            class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] -translate-x-full overflow-y-auto bg-brand-creamLight md:bg-brand-creamLight/70 md:backdrop-blur-md border-r border-brand-tan/50 flex flex-col justify-between p-4 shrink-0 transition-transform duration-300 md:static md:z-auto md:translate-x-0 md:w-20 md:p-3 lg:w-64 lg:p-4 md:overflow-visible"
-        >
-
-            <div class="space-y-6">
-
-                <!-- Mobile Close -->
-                <div
-                    class="flex items-center justify-between md:hidden"
-                >
-
-                    <span
-                        class="font-display font-bold text-brand-olive"
-                    >
-                        Menu
-                    </span>
-
-                    <button
-                        type="button"
-                        onclick="toggleSidebar(false)"
-                        aria-label="Tutup menu"
-                        class="w-9 h-9 rounded-full hover:bg-brand-sand/60 text-brand-olive"
-                    >
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-
-                </div>
-
-
-                <!-- Menu Utama -->
-                <nav class="space-y-2">
-
-                    <div
-                        class="px-3 block md:hidden lg:block text-[11px] font-semibold text-brand-muted/80 uppercase tracking-wider"
-                    >
-                        Menu Utama
-                    </div>
-
-
-                    <a
-                        href="#participant-home"
-                        class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start bg-brand-orange/25 border border-brand-orange/60 text-brand-olive font-semibold shadow-inner group"
-                    >
-
-                        <i
-                            class="fa-solid fa-house text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"
-                        ></i>
-
-                        <span
-                            class="inline md:hidden lg:inline text-sm"
-                        >
-                            Dashboard
-                        </span>
-
-                    </a>
-
-
-                    <a
-                        href="#event-saya"
-                        class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start text-brand-muted hover:text-brand-olive hover:bg-brand-sand/50 border border-transparent hover:border-brand-orange/30 transition-all group"
-                    >
-
-                        <i
-                            class="fa-regular fa-calendar-check text-brand-muted group-hover:text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"
-                        ></i>
-
-                        <span
-                            class="inline md:hidden lg:inline text-sm font-medium"
-                        >
-                            Event Saya
-                        </span>
-
-                    </a>
-
-                </nav>
-
-
-                <!-- Sertifikat -->
-                <div
-                    class="pt-4 border-t border-brand-tan/50"
-                >
-
-                    <div
-                        class="px-3 block md:hidden lg:block text-[11px] font-semibold text-brand-muted/80 uppercase tracking-wider mb-2"
-                    >
-                        Sertifikat Event
-                    </div>
-
-
-                    <nav class="space-y-2">
-
-                        <a
-                            href="#sertifikat"
-                            class="flex items-center gap-3 px-3.5 py-3 rounded-2xl md:justify-center lg:justify-start text-brand-muted hover:text-brand-olive hover:bg-brand-sand/50 border border-transparent hover:border-brand-orange/30 transition-all group"
-                        >
-
-                            <i
-                                class="fa-solid fa-award text-brand-muted group-hover:text-brand-orangeDeep text-lg group-hover:scale-110 transition-transform"
-                            ></i>
-
-                            <span
-                                class="inline md:hidden lg:inline text-sm font-medium"
-                            >
-                                Sertifikat Saya
-                            </span>
-
-                        </a>
-
-                    </nav>
-
-                </div>
-
-            </div>
-
-        </aside>
-
-
-        <!-- =================================================
-             MAIN CONTENT
-             ================================================= -->
-        <main
-            id="participantMain"
-            class="flex-1 min-w-0 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6"
-        >
-
-            <!-- =============================================
-                 PROFILE
-                 ============================================= -->
-            <section
-                id="participant-home"
-                class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-creamLight via-brand-goldLight/70 to-brand-orange/70 border border-white/50 shadow-2xl shadow-brand-orange/20 p-5 sm:p-8"
-            >
-
-                <div
-                    class="absolute -top-24 -right-24 w-72 h-72 bg-brand-orange/20 rounded-full blur-3xl pointer-events-none"
-                ></div>
-
-                <div
-                    class="absolute -bottom-24 -left-24 w-72 h-72 bg-brand-olive/10 rounded-full blur-3xl pointer-events-none"
-                ></div>
-
-
-                <div
-                    class="relative z-10 flex flex-col xl:flex-row items-center xl:items-start justify-between gap-6"
-                >
-
-                    <div
-                        class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left"
-                    >
-
-                        <!-- Avatar -->
-                        <div class="relative shrink-0">
-
-                            <div
-                                class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-brand-orange to-brand-goldLight p-1 shadow-lg"
-                            >
-
-                                <div
-                                    class="w-full h-full bg-brand-olive rounded-[14px] overflow-hidden flex items-center justify-center"
-                                >
-                                    <i
-                                        class="fa-solid fa-user text-4xl text-brand-goldLight"
-                                    ></i>
-                                </div>
-
-                            </div>
-
-                            <span
-                                class="absolute -bottom-1 -right-1 bg-brand-olive text-brand-goldLight text-[10px] font-bold px-2 py-0.5 rounded-full shadow border border-white"
-                            >
-                                USER
-                            </span>
-
-                        </div>
-
-
-                        <!-- Profile Info -->
-                        <div class="space-y-1">
-
-                            <div
-                                class="flex items-center justify-center sm:justify-start gap-3 flex-wrap"
-                            >
-
-                                <h2
-                                    class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive tracking-tight"
-                                >
-                                    {{ request.user.get_full_name|default:request.user.email }}
-                                </h2>
-
-                                <span
-                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-brand-olive text-brand-goldLight border border-brand-olive"
-                                >
-                                    Peserta
-                                </span>
-
-                            </div>
-
-
-                            <p
-                                class="text-brand-orangeDeep text-sm flex items-center justify-center sm:justify-start gap-2 font-mono"
-                            >
-
-                                <i
-                                    class="fa-regular fa-envelope"
-                                ></i>
-
-                                <span class="break-all">
-                                    {{ request.user.email }}
-                                </span>
-
-                            </p>
-
-
-                            <p
-                                class="text-brand-muted text-xs flex items-center justify-center sm:justify-start gap-1.5"
-                            >
-
-                                <i
-                                    class="fa-regular fa-clock"
-                                ></i>
-
-                                <span>
-                                    Login terakhir:
-                                    {% if request.user.last_login %}
-                                        {{ request.user.last_login|date:"j M Y, H:i" }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </span>
-
-                            </p>
-
-
-                            <p
-                                class="text-brand-ink text-sm max-w-xl pt-1"
-                            >
-
-                                <i
-                                    class="fa-solid fa-quote-left text-brand-orange/60 text-xs mr-1"
-                                ></i>
-
-                                Temukan dan ikuti berbagai event menarik
-                                bersama SIMEVENT.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Cari Event -->
-                    <div
-                        class="shrink-0 w-full sm:w-auto"
-                    >
-
-                        <a
-                            href="{% url 'jelajah' %}"
-                            class="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-brand-olive hover:bg-brand-oliveDark text-brand-creamLight font-bold text-sm tracking-wide shadow-xl shadow-brand-olive/30 transition-all active:scale-95"
-                        >
-
-                            <i
-                                class="fa-solid fa-magnifying-glass"
-                            ></i>
-
-                            <span>
-                                Cari Event Baru
-                            </span>
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 EVENT + METRIC
-                 ============================================= -->
-            <div
-                class="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6"
-            >
-
-                <!-- Event Saya -->
-                <section
-                    id="event-saya"
-                    class="xl:col-span-7 min-w-0 bg-white/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-6 shadow-xl flex flex-col justify-between"
-                >
-
-                    <div>
-
-                        <div
-                            class="flex items-center justify-between mb-5"
-                        >
-
-                            <div
-                                class="flex items-center gap-2.5"
-                            >
-
-                                <div
-                                    class="w-3 h-3 rounded-full bg-brand-orange"
-                                ></div>
-
-                                <h3
-                                    class="font-display text-xl font-bold text-brand-olive tracking-wide"
-                                >
-                                    Event Saya
-                                </h3>
-
-                            </div>
-
-
-                            <!-- Dummy Demo -->
-                            <span
-                                class="text-xs text-brand-muted bg-brand-sand/60 px-3 py-1 rounded-full border border-brand-tan/70"
-                            >
-                                3 Event
-                            </span>
-
-                        </div>
-
-
-                        <div class="overflow-x-auto">
-
-                            <table
-                                class="w-full min-w-[520px] text-left text-sm text-brand-ink"
-                            >
-
-                                <thead
-                                    class="text-xs uppercase bg-brand-sand/70 text-brand-olive border-b border-brand-tan/70"
-                                >
-
-                                    <tr>
-                                        <th
-                                            class="py-3 px-3 rounded-l-xl"
-                                        >
-                                            Nama Event
-                                        </th>
-
-                                        <th
-                                            class="py-3 px-3 whitespace-nowrap"
-                                        >
-                                            Tanggal
-                                        </th>
-
-                                        <th
-                                            class="py-3 px-3 whitespace-nowrap"
-                                        >
-                                            Status
-                                        </th>
-
-                                        <th
-                                            class="py-3 px-3 rounded-r-xl text-right"
-                                        >
-                                            Aksi
-                                        </th>
-                                    </tr>
-
-                                </thead>
-
-
-                                <tbody
-                                    class="divide-y divide-brand-tan/40"
-                                >
-
-                                    <!-- Dummy Event 1 -->
-                                    <tr
-                                        class="hover:bg-brand-sand/30 transition-colors"
-                                    >
-
-                                        <td
-                                            class="py-3.5 px-3 font-semibold text-brand-olive"
-                                        >
-
-                                            Festival Seni Budaya 2026
-
-                                            <span
-                                                class="block text-xs font-normal text-brand-muted"
-                                            >
-                                                Konferensi
-                                            </span>
-
-                                        </td>
-
-
-                                        <td
-                                            class="py-3.5 px-3 font-mono text-xs whitespace-nowrap"
-                                        >
-                                            25 Okt 2026
-                                        </td>
-
-
-                                        <td class="py-3.5 px-3">
-
-                                            <span
-                                                class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-olive/10 text-brand-olive border border-brand-olive/40"
-                                            >
-                                                Terdaftar
-                                            </span>
-
-                                        </td>
-
-
-                                        <td
-                                            class="py-3.5 px-3 text-right"
-                                        >
-
-                                            <button
-                                                type="button"
-                                                onclick="alert('Membuka E-Ticket demo...')"
-                                                class="px-2.5 py-1 rounded-full bg-brand-sand/80 hover:bg-brand-olive hover:text-white text-xs font-semibold text-brand-olive transition-colors"
-                                            >
-                                                E-Ticket
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
-
-
-                                    <!-- Dummy Event 2 -->
-                                    <tr
-                                        class="hover:bg-brand-sand/30 transition-colors"
-                                    >
-
-                                        <td
-                                            class="py-3.5 px-3 font-semibold text-brand-olive"
-                                        >
-
-                                            National Tech Conference
-
-                                            <span
-                                                class="block text-xs font-normal text-brand-muted"
-                                            >
-                                                Konferensi
-                                            </span>
-
-                                        </td>
-
-
-                                        <td
-                                            class="py-3.5 px-3 font-mono text-xs whitespace-nowrap"
-                                        >
-                                            12 Nov 2026
-                                        </td>
-
-
-                                        <td class="py-3.5 px-3">
-
-                                            <span
-                                                class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-olive/10 text-brand-olive border border-brand-olive/40"
-                                            >
-                                                Terdaftar
-                                            </span>
-
-                                        </td>
-
-
-                                        <td
-                                            class="py-3.5 px-3 text-right"
-                                        >
-
-                                            <button
-                                                type="button"
-                                                onclick="alert('Membuka E-Ticket demo...')"
-                                                class="px-2.5 py-1 rounded-full bg-brand-sand/80 hover:bg-brand-olive hover:text-white text-xs font-semibold text-brand-olive transition-colors"
-                                            >
-                                                E-Ticket
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
-
-
-                                    <!-- Dummy Event 3 -->
-                                    <tr
-                                        class="hover:bg-brand-sand/30 transition-colors"
-                                    >
-
-                                        <td
-                                            class="py-3.5 px-3 font-semibold text-brand-olive"
-                                        >
-
-                                            Workshop UI/UX Design
-
-                                            <span
-                                                class="block text-xs font-normal text-brand-muted"
-                                            >
-                                                Workshop
-                                            </span>
-
-                                        </td>
-
-
-                                        <td
-                                            class="py-3.5 px-3 font-mono text-xs whitespace-nowrap"
-                                        >
-                                            05 Des 2026
-                                        </td>
-
-
-                                        <td class="py-3.5 px-3">
-
-                                            <span
-                                                class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-green-100 text-green-800 border border-green-300"
-                                            >
-                                                Selesai
-                                            </span>
-
-                                        </td>
-
-
-                                        <td
-                                            class="py-3.5 px-3 text-right"
-                                        >
-
-                                            <button
-                                                type="button"
-                                                onclick="alert('Membuka detail event demo...')"
-                                                class="px-2.5 py-1 rounded-full bg-brand-sand/80 hover:bg-brand-olive hover:text-white text-xs font-semibold text-brand-olive transition-colors"
-                                            >
-                                                Detail
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="mt-4 pt-4 border-t border-brand-tan/50 flex justify-end"
-                    >
-
-                        <a
-                            href="#event-saya"
-                            class="text-xs font-semibold text-brand-orangeDeep flex items-center gap-1"
-                        >
-                            <span>
-                                Lihat Semua Event
-                            </span>
-
-                            <i
-                                class="fa-solid fa-arrow-right"
-                            ></i>
-                        </a>
-
-                    </div>
-
-                </section>
-
-
-                <!-- =========================================
-                     DUMMY METRIC
-                     ========================================= -->
-                <div
-                    class="xl:col-span-5 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-2 gap-3 sm:gap-4"
-                >
-
-                    <!-- Event Saya -->
-                    <div
-                        class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group"
-                    >
-
-                        <div
-                            class="flex items-center justify-between"
-                        >
-
-                            <span
-                                class="text-xs font-semibold text-brand-muted uppercase tracking-wider"
-                            >
-                                Event Saya
-                            </span>
-
-                            <div
-                                class="w-8 h-8 rounded-xl bg-brand-orange/15 flex items-center justify-center text-brand-orangeDeep"
-                            >
-                                <i
-                                    class="fa-regular fa-calendar"
-                                ></i>
-                            </div>
-
-                        </div>
-
-
-                        <div class="mt-4">
-
-                            <h4
-                                class="text-3xl font-display font-extrabold text-brand-olive"
-                            >
-                                3
-                            </h4>
-
-                            <p
-                                class="text-xs text-brand-muted mt-1"
-                            >
-                                Event terdaftar
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Kehadiran -->
-                    <div
-                        class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group"
-                    >
-
-                        <div
-                            class="flex items-center justify-between"
-                        >
-
-                            <span
-                                class="text-xs font-semibold text-brand-muted uppercase tracking-wider"
-                            >
-                                Kehadiran
-                            </span>
-
-                            <div
-                                class="w-8 h-8 rounded-xl bg-brand-olive/10 flex items-center justify-center text-brand-olive"
-                            >
-                                <i
-                                    class="fa-solid fa-user-check"
-                                ></i>
-                            </div>
-
-                        </div>
-
-
-                        <div class="mt-4">
-
-                            <h4
-                                class="text-3xl font-display font-extrabold text-brand-olive"
-                            >
-                                2
-                            </h4>
-
-                            <p
-                                class="text-xs text-brand-muted mt-1"
-                            >
-                                Event telah dihadiri
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Achievement -->
-                    <div
-                        class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group"
-                    >
-
-                        <div
-                            class="flex items-center justify-between"
-                        >
-
-                            <span
-                                class="text-xs font-semibold text-brand-muted uppercase tracking-wider"
-                            >
-                                Achievement
-                            </span>
-
-                            <div
-                                class="w-8 h-8 rounded-xl bg-brand-orange/15 flex items-center justify-center text-brand-orangeDeep"
-                            >
-                                <i
-                                    class="fa-solid fa-trophy"
-                                ></i>
-                            </div>
-
-                        </div>
-
-
-                        <div class="mt-4">
-
-                            <h4
-                                class="text-3xl font-display font-extrabold text-brand-orangeDeep"
-                            >
-                                4
-                            </h4>
-
-                            <p
-                                class="text-xs text-brand-muted mt-1"
-                            >
-                                Achievement diperoleh
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Sertifikat -->
-                    <div
-                        class="bg-gradient-to-br from-white/70 to-brand-goldLight/60 rounded-3xl border border-brand-tan/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between hover:border-brand-orange/60 transition-all group"
-                    >
-
-                        <div
-                            class="flex items-center justify-between"
-                        >
-
-                            <span
-                                class="text-xs font-semibold text-brand-muted uppercase tracking-wider"
-                            >
-                                Sertifikat
-                            </span>
-
-                            <div
-                                class="w-8 h-8 rounded-xl bg-brand-bronze/15 flex items-center justify-center text-brand-bronze"
-                            >
-                                <i
-                                    class="fa-solid fa-award"
-                                ></i>
-                            </div>
-
-                        </div>
-
-
-                        <div class="mt-4">
-
-                            <h4
-                                class="text-3xl font-display font-extrabold text-brand-olive"
-                            >
-                                2
-                            </h4>
-
-                            <p
-                                class="text-xs text-brand-muted mt-1"
-                            >
-                                Sertifikat tersedia
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =============================================
-                 SERTIFIKAT DUMMY
-                 ============================================= -->
-            <section
-                id="sertifikat"
-                class="bg-white/60 rounded-3xl border border-brand-tan/50 p-5 sm:p-6 shadow-xl"
-            >
-
-                <div
-                    class="flex items-center justify-between mb-4"
-                >
-
-                    <div>
-
-                        <p
-                            class="text-xs font-semibold uppercase tracking-wider text-brand-orangeDeep"
-                        >
-                            Koleksi Digital
-                        </p>
-
-                        <h3
-                            class="font-display text-lg font-bold text-brand-olive"
-                        >
-                            Sertifikat Saya
-                        </h3>
-
-                    </div>
-
-
-                    <span
-                        class="text-xs text-brand-muted bg-brand-sand/60 px-3 py-1 rounded-full border border-brand-tan/70"
-                    >
-                        2 Sertifikat
-                    </span>
-
-                </div>
-
-
-                <div
-                    class="grid grid-cols-1 md:grid-cols-2 gap-3"
-                >
-
-                    <article
-                        class="rounded-2xl border border-brand-tan/50 bg-white/60 p-4 flex items-center justify-between gap-4"
-                    >
-
-                        <div>
-
-                            <h4
-                                class="font-bold text-brand-olive"
-                            >
-                                Workshop UI/UX Design
-                            </h4>
-
-                            <p
-                                class="text-xs text-brand-muted mt-1"
-                            >
-                                Sertifikat Digital SIMEVENT
-                            </p>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            onclick="alert('Mengunduh sertifikat demo...')"
-                            class="rounded-full bg-brand-olive px-4 py-2 text-xs font-bold text-white"
-                        >
-                            Lihat
-                        </button>
-
-                    </article>
-
-
-                    <article
-                        class="rounded-2xl border border-brand-tan/50 bg-white/60 p-4 flex items-center justify-between gap-4"
-                    >
-
-                        <div>
-
-                            <h4
-                                class="font-bold text-brand-olive"
-                            >
-                                Seminar Nasional Pendidikan
-                            </h4>
-
-                            <p
-                                class="text-xs text-brand-muted mt-1"
-                            >
-                                Sertifikat Digital SIMEVENT
-                            </p>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            onclick="alert('Mengunduh sertifikat demo...')"
-                            class="rounded-full bg-brand-olive px-4 py-2 text-xs font-bold text-white"
-                        >
-                            Lihat
-                        </button>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 AKTIVITAS DUMMY
-                 ============================================= -->
-            <section
-                class="bg-white/60 rounded-3xl border border-brand-tan/50 p-6 shadow-xl"
-            >
-
-                <div
-                    class="flex items-center justify-between mb-4"
-                >
-
-                    <h3
-                        class="font-display text-lg font-bold text-brand-olive flex items-center gap-2"
-                    >
-
-                        <i
-                            class="fa-solid fa-clock-rotate-left text-brand-orangeDeep"
-                        ></i>
-
-                        <span>
-                            Aktivitas Terbaru
-                        </span>
-
-                    </h3>
-
-
-                    <span
-                        class="text-xs text-brand-muted"
-                    >
-                        Demo
-                    </span>
-
-                </div>
-
-
-                <div class="space-y-3">
-
-                    <div
-                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-brand-sand/40 border border-brand-tan/50 text-sm"
-                    >
-
-                        <div
-                            class="flex items-center gap-3"
-                        >
-
-                            <div
-                                class="w-8 h-8 rounded-full bg-brand-olive/15 text-brand-olive flex items-center justify-center shrink-0"
-                            >
-                                <i
-                                    class="fa-solid fa-calendar-check text-xs"
-                                ></i>
-                            </div>
-
-
-                            <div>
-
-                                <p
-                                    class="text-brand-olive font-medium"
-                                >
-                                    Pendaftaran berhasil
-                                </p>
-
-                                <p
-                                    class="text-xs text-brand-muted"
-                                >
-                                    Festival Seni Budaya 2026
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <span
-                            class="text-xs text-brand-muted/80 font-mono"
-                        >
-                            2 menit lalu
-                        </span>
-
-                    </div>
-
-
-                    <div
-                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-brand-sand/40 border border-brand-tan/50 text-sm"
-                    >
-
-                        <div
-                            class="flex items-center gap-3"
-                        >
-
-                            <div
-                                class="w-8 h-8 rounded-full bg-brand-orange/20 text-brand-orangeDeep flex items-center justify-center shrink-0"
-                            >
-                                <i
-                                    class="fa-solid fa-ticket text-xs"
-                                ></i>
-                            </div>
-
-
-                            <div>
-
-                                <p
-                                    class="text-brand-olive font-medium"
-                                >
-                                    E-Ticket tersedia
-                                </p>
-
-                                <p
-                                    class="text-xs text-brand-muted"
-                                >
-                                    National Tech Conference
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <span
-                            class="text-xs text-brand-muted/80 font-mono"
-                        >
-                            15 menit lalu
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
-
+      </div>
     </div>
 
-
-    <!-- =====================================================
-         NOTIFICATION MODAL
-         ===================================================== -->
-    <div
-        id="notificationModal"
-        class="fixed inset-0 bg-brand-olive/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4"
-    >
-
-        <div
-            class="bg-brand-creamLight border border-brand-tan/70 rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 shadow-2xl space-y-3"
-        >
-
-            <div
-                class="flex items-center justify-between border-b border-brand-tan/50 pb-2"
-            >
-
-                <h3
-                    class="text-base font-bold text-brand-olive flex items-center gap-2"
-                >
-
-                    <i
-                        class="fa-regular fa-bell text-brand-orangeDeep"
-                    ></i>
-
-                    <span>
-                        Notifikasi Peserta
-                    </span>
-
-                </h3>
-
-
-                <button
-                    type="button"
-                    onclick="toggleModal('notificationModal')"
-                    class="text-brand-muted hover:text-brand-olive"
-                >
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-
-            </div>
-
-
-            <!-- Dummy notification -->
-            <div
-                class="rounded-xl border border-brand-tan/70 bg-brand-sand/60 p-3"
-            >
-
-                <p
-                    class="text-sm font-semibold text-brand-olive"
-                >
-                    Event segera dimulai
-                </p>
-
-                <p
-                    class="text-xs text-brand-muted mt-1"
-                >
-                    Festival Seni Budaya 2026 akan berlangsung
-                    dalam beberapa hari.
-                </p>
-
-            </div>
-
+    <div class="participant-card rounded-[22px] p-4">
+      <div class="flex items-center gap-4">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-solid fa-award"></i></span>
+        <div>
+          <p class="text-sm font-bold text-stone-700">Sertifikat Diraih</p>
+          <p class="font-display text-3xl font-extrabold text-brand-olive">{{ certificate_count }}</p>
+          <p class="text-xs text-stone-600">Sertifikat siap dilihat</p>
         </div>
-
+      </div>
     </div>
 
+    <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="participant-card block w-full rounded-[22px] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lg">
+      <div class="flex items-center gap-4">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full {% if current_level %}bg-[#f4d7a5] text-[#8b510d]{% else %}bg-stone-200 text-stone-500{% endif %} text-3xl"><i class="fa-solid fa-medal"></i></span>
+        <div>
+          <span class="block text-sm font-bold text-stone-700">Achievement</span>
+          <span class="block font-display text-[2rem] font-extrabold text-brand-olive">{{ current_level.name|default:"Perak" }}</span>
+          <span class="block text-xs text-stone-600">{% if current_level %}Level aktif{% else %}Ikuti {{ next_threshold }} event untuk {{ next_level.name }}{% endif %}</span>
+        </div>
+      </div>
+    </button>
 
-    <!-- =====================================================
-         UI JAVASCRIPT
-         ===================================================== -->
-    <script>
-        function toggleModal(modalId) {
-            const modal =
-                document.getElementById(modalId);
+    <div class="participant-card rounded-[22px] p-4">
+      <div class="flex items-center gap-4">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-solid fa-check"></i></span>
+        <div>
+          <p class="text-sm font-bold text-stone-700">Kehadiran</p>
+          <p class="font-display text-3xl font-extrabold text-brand-olive">{{ attendance_rate }}%</p>
+          <p class="text-xs text-stone-600">Tingkat kehadiran</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            if (!modal) {
-                return;
-            }
+  <section>
+    <div class="mb-3 flex items-center justify-between gap-3">
+      <h2 class="font-display text-2xl font-extrabold text-brand-orangeDeep">Event Saya</h2>
+      <a href="{% url 'peserta_daftar_event' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
+    </div>
 
-            if (modal.classList.contains("hidden")) {
-                modal.classList.remove("hidden");
-                modal.classList.add("flex");
-            } else {
-                modal.classList.remove("flex");
-                modal.classList.add("hidden");
-            }
-        }
+    <div class="participant-card overflow-hidden rounded-[22px]">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[720px] text-left text-sm">
+          <thead class="bg-[#efe0bf]/80 text-brand-orangeDeep">
+            <tr>
+              <th class="px-5 py-3 text-left font-extrabold">Nama Event</th>
+              <th class="px-4 py-3 text-left font-extrabold">Tanggal</th>
+              <th class="px-4 py-3 text-left font-extrabold">Status</th>
+              <th class="px-5 py-3 text-left font-extrabold">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-amber-100">
+            {% for registration in registrations|slice:':5' %}
+            <tr>
+              <td class="px-5 py-3 font-bold text-brand-olive">{{ registration.event.title }}</td>
+              <td class="px-4 py-3 whitespace-nowrap text-stone-700">{{ registration.event.start_datetime|date:"j M Y" }}</td>
+              <td class="px-4 py-3">
+                {% if registration.event.status == "COMPLETED" or registration.event.end_datetime <= now %}
+                  <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Selesai</span>
+                {% elif registration.event.start_datetime <= now %}
+                  <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">Sedang Berlangsung</span>
+                {% else %}
+                  <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700">Akan Datang</span>
+                {% endif %}
+              </td>
+              <td class="px-5 py-3">
+                {% if registration.certificate_ready %}
+                  <a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline inline-flex rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
+                {% else %}
+                  <a href="{% url 'detail_event' registration.event.slug %}" class="participant-outline inline-flex rounded-lg px-3 py-2 text-sm font-bold">Lihat Detail</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="px-5 py-10 text-center text-stone-500">Belum ada event terdaftar. <a class="font-bold text-brand-orangeDeep underline" href="{% url 'peserta_daftar_event' %}">Cari event</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
+  <section class="grid gap-4 lg:grid-cols-2">
+    <div class="participant-card achievement-summary-card overflow-hidden rounded-[22px]">
+      <div class="flex items-center justify-between border-b border-amber-100 px-5 py-4">
+        <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="font-display text-left text-lg font-extrabold text-brand-orangeDeep"><i class="fa-solid fa-trophy mr-2"></i>Achievement Terbaru</button>
+        <a href="{% url 'peserta_achievement' %}" data-achievement-all class="relative z-10 text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
+      </div>
+      <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="flex w-full items-center gap-4 p-5 text-left transition hover:bg-amber-50/50">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-solid fa-medal"></i></span>
+        <div>
+          <p class="font-bold text-brand-olive">{{ current_level.name|default:"Event Explorer" }}</p>
+          <p class="mt-1 text-sm text-stone-600">Mengikuti {{ attended_count }} event</p>
+          <p class="mt-1 text-xs text-stone-500">{% if current_level %}Level tercapai{% else %}{{ progress_remaining }} event lagi untuk Perak{% endif %}</p>
+        </button>
+      </div>
+    </div>
 
-        function toggleSidebar(force) {
-            const sidebar =
-                document.getElementById("sidebar");
+    <div class="participant-card overflow-hidden rounded-[22px]">
+      <div class="flex items-center justify-between border-b border-amber-100 px-5 py-4">
+        <h2 class="font-display text-lg font-extrabold text-brand-orangeDeep"><i class="fa-solid fa-file-lines mr-2"></i>Sertifikat Terbaru</h2>
+        <a href="{% url 'peserta_sertifikat' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
+      </div>
+      {% if latest_certificate %}
+      <div class="flex flex-wrap items-center gap-4 p-5">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-xl border border-amber-200 bg-white text-3xl text-[#8b510d]"><i class="fa-solid fa-certificate"></i></span>
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-bold text-brand-olive">{{ latest_certificate.event.title }}</p>
+          <p class="mt-1 text-sm text-stone-600">{{ latest_certificate.event.organizer.get_full_name|default:latest_certificate.event.organizer.email }}</p>
+          <p class="mt-1 text-sm text-stone-500">{{ latest_certificate.event.start_datetime|date:"j M Y" }}</p>
+        </div>
+        <a href="{% url 'peserta_sertifikat_detail' latest_certificate.pk %}" class="participant-outline rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
+      </div>
+      {% else %}
+      <p class="p-5 text-sm text-stone-500">Sertifikat yang sudah diterbitkan akan muncul di sini.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
 
-            const overlay =
-                document.getElementById(
-                    "sidebarOverlay"
-                );
+<dialog id="achievementModal" aria-labelledby="achievementModalTitle">
+  <section class="p-5 sm:p-8">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 id="achievementModalTitle" class="font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl"><i class="fa-solid fa-trophy mr-2"></i>Achievement Saya</h2>
+        <p class="mt-2 text-sm text-stone-600">Ikuti lebih banyak event untuk naik ke level berikutnya dan raih penghargaan.</p>
+      </div>
+      <button type="button" onclick="this.closest('dialog').close()" aria-label="Tutup" class="p-2 text-2xl text-brand-orangeDeep"><i class="fa-solid fa-xmark"></i></button>
+    </div>
 
-            if (!sidebar || !overlay) {
-                return;
-            }
+    <div class="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {% for level in levels %}
+      <div class="relative text-center">
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full border-4 {% if attended_count >= level.required %}border-amber-300 bg-amber-100 text-amber-600{% else %}border-stone-200 bg-stone-100 text-stone-400{% endif %} text-2xl">
+          <i class="fa-solid {{ level.icon }}"></i>
+        </div>
+        <p class="mt-2 font-extrabold text-brand-olive">{{ level.name }}</p>
+        <p class="text-xs text-stone-500">{{ level.required }} event</p>
+      </div>
+      {% endfor %}
+    </div>
 
-            const open =
-                typeof force === "boolean"
-                    ? force
-                    : sidebar.classList.contains(
-                        "-translate-x-full"
-                    );
+    <div class="mt-7 grid gap-4 md:grid-cols-[1.6fr_1fr]">
+      <div class="rounded-[20px] bg-[#f4e7c2]/80 p-5">
+        <h3 class="font-extrabold text-brand-olive">Progress ke {{ next_level.name }}</h3>
+        <div class="mt-4 flex items-center gap-4">
+          <div class="h-3 flex-1 overflow-hidden rounded-full bg-amber-200">
+            <div class="h-full rounded-full bg-amber-600" style="width:{{ progress_percent }}%"></div>
+          </div>
+          <strong class="text-brand-olive">{{ attended_count }} / {{ next_threshold }}</strong>
+        </div>
+        <p class="mt-3 text-sm text-stone-600">Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.</p>
+      </div>
 
-            sidebar.classList.toggle(
-                "-translate-x-full",
-                !open
-            );
-
-            overlay.classList.toggle(
-                "hidden",
-                !open
-            );
-        }
-
-
-        document
-            .querySelectorAll("#sidebar a")
-            .forEach((link) => {
-
-                link.addEventListener(
-                    "click",
-                    () => toggleSidebar(false)
-                );
-
-            });
-
-
-        window.addEventListener(
-            "resize",
-            () => {
-
-                if (window.innerWidth >= 768) {
-                    toggleSidebar(false);
-                }
-
-            }
-        );
-
-
-        document.addEventListener(
-            "keydown",
-            (event) => {
-
-                if (event.key === "Escape") {
-
-                    toggleSidebar(false);
-
-                    const notificationModal =
-                        document.getElementById(
-                            "notificationModal"
-                        );
-
-                    if (
-                        notificationModal &&
-                        notificationModal.classList.contains(
-                            "flex"
-                        )
-                    ) {
-                        toggleModal(
-                            "notificationModal"
-                        );
-                    }
-                }
-
-            }
-        );
-    </script>
-
-</body>
-</html>
+      <div class="rounded-[20px] bg-white/80 p-5">
+        <h3 class="font-extrabold text-brand-olive">Benefit Setiap Level</h3>
+        <ul class="mt-3 space-y-2 text-sm text-stone-600">
+          {% for level in levels %}
+          <li class="flex items-center gap-3">
+            <span class="grid h-8 w-8 place-items-center rounded-full {% if attended_count >= level.required %}bg-amber-200 text-amber-700{% else %}bg-stone-100 text-stone-400{% endif %}"><i class="fa-solid {{ level.icon }}"></i></span>
+            <span>
+              <b>{{ level.name }}</b><br>
+              <span class="text-xs">{{ level.required }} event</span>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+    </dialog>
+  </div>
+</div>
+{% endblock %}

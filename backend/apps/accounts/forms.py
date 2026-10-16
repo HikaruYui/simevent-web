@@ -35,6 +35,22 @@ class RegistrationForm(UserCreationForm):
         return email
 
 
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "nim", "prodi")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field in self.Meta.fields:
+            value = cleaned_data.get(field, "")
+            if not value or not value.strip():
+                self.add_error(field, "Lengkapi biodata ini.")
+            else:
+                cleaned_data[field] = value.strip()
+        return cleaned_data
+
+
 class EmailAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(
         label="Email",
@@ -46,14 +62,3 @@ class AccountChangeForm(UserChangeForm):
     class Meta:
         model = User
         fields = "__all__"
-
-
-# Kalau udah butuh fitur edit profil
-# class ProfileForm(forms.ModelForm):
-#     class Meta:
-#         model = User
-#         fields = (
-#             "first_name",
-#             "last_name",
-#             "email",
-#         )

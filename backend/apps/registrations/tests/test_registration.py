@@ -90,6 +90,31 @@ class RegistrationTests(TestCase):
         with self.assertRaises(ValidationError):
             self.register()
 
+    def test_profile_completion_is_required_before_free_or_paid_registration(self):
+        type(self.participant).objects.filter(pk=self.participant.pk).update(nim="")
+        with self.assertRaises(ValidationError):
+            self.register()
+        Event.objects.filter(pk=self.event.pk).update(price=10000)
+        with self.assertRaises(ValidationError):
+            RegistrationService(self.participant).start_paid_registration(self.event.pk)
+        self.assertFalse(Registration.objects.exists())
+
+    def test_paid_registration_waits_for_payment_review_before_ticket(self):
+        Event.objects.filter(pk=self.event.pk).update(price=25000)
+        registration = RegistrationService(self.participant).start_paid_registration(self.event.pk)
+        self.assertEqual(registration.payment.amount, 25000)
+        self.assertEqual(registration.payment.status, registration.payment.Status.AWAITING_PROOF)
+        self.assertFalse(Ticket.objects.filter(registration=registration).exists())
+
+        payment = registration.payment
+        payment.status = payment.Status.UNDER_REVIEW
+        payment.submitted_at = timezone.now()
+        payment.save(update_fields=["status", "submitted_at"])
+        from apps.registrations.payments import PaymentService
+        reviewed = PaymentService(self.owner).review(payment.pk, approve=True)
+        self.assertEqual(reviewed.status, payment.Status.APPROVED)
+        self.assertTrue(registration.ticket.is_valid)
+
     def test_cancel_at_start_rejected_but_cancelled_event_can_be_cleaned_up(self):
         registration = self.register()
         with patch("apps.registrations.services.timezone.now", return_value=self.event.start_datetime):

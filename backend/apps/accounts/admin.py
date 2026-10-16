@@ -31,6 +31,8 @@ class AccountAdmin(UserAdmin):
         "email",
         "first_name",
         "last_name",
+        "nim",
+        "prodi",
     )
 
     fieldsets = (
@@ -48,6 +50,8 @@ class AccountAdmin(UserAdmin):
             "fields": (
                 "first_name",
                 "last_name",
+                "nim",
+                "prodi",
             )
         },
     ),

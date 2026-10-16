@@ -5,10 +5,11 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.achievements.models import Achievement
 from apps.accounts.models import User
 from apps.events.models import Event, EventAccess, EventStatus
 from apps.events.tests.support import event_data, setup_users
-from apps.registrations.models import Registration
+from apps.registrations.models import Attendance, Registration
 
 
 class LandingIntegrationTests(TestCase):
@@ -108,3 +109,66 @@ class LandingIntegrationTests(TestCase):
             self.client.force_login(user)
             response = self.client.get(reverse("after_login"))
             self.assertRedirects(response, reverse(destination), fetch_redirect_response=False)
+
+    def test_participant_pages_render_for_authenticated_participant(self):
+        self.client.force_login(self.participant)
+        event = self.event(title="Participant page sample event")
+        Registration.objects.create(event=event, participant=self.participant)
+        Achievement.objects.create(
+            code="five-events",
+            name="Event Enthusiast",
+            required_count=5,
+        )
+        paths = (
+            "peserta_dashboard",
+            "peserta_daftar_event",
+            "peserta_sertifikat",
+            "peserta_achievement",
+        )
+        for name in paths:
+            with self.subTest(page=name):
+                response = self.client.get(reverse(name))
+                self.assertEqual(response.status_code, 200)
+        dashboard = self.client.get(reverse("peserta_dashboard"))
+        self.assertEqual(dashboard.context["total_registrations"], 1)
+        self.assertEqual(dashboard.context["attended_count"], 0)
+        self.assertContains(dashboard, "Achievement Saya")
+        self.assertContains(self.client.get(reverse("peserta_daftar_event")), event.title)
+        self.assertContains(self.client.get(reverse("peserta_achievement")), "Event Enthusiast")
+
+    def test_achievement_level_progress_uses_attended_event_thresholds(self):
+        self.client.force_login(self.participant)
+        now = timezone.now()
+        for index in range(10):
+            start = now - timedelta(days=index + 3)
+            data = event_data(
+                start_datetime=start,
+                end_datetime=start + timedelta(hours=2),
+                registration_open=start - timedelta(days=10),
+                registration_close=start - timedelta(days=1),
+            )
+            data["event_type_id"] = data.pop("event_type")
+            event = Event.objects.create(
+                organizer=self.owner,
+                slug=f"attended-{index}",
+                status=EventStatus.COMPLETED,
+                **data,
+            )
+            registration = Registration.objects.create(
+                event=event,
+                participant=self.participant,
+            )
+            Attendance.objects.create(
+                registration=registration,
+                verified_by=self.owner,
+            )
+            if index == 5:
+                response = self.client.get(reverse("peserta_dashboard"))
+                self.assertEqual(response.context["current_level"]["name"], "Perak")
+                self.assertEqual(response.context["next_level"]["name"], "Emas")
+                self.assertEqual(response.context["progress_remaining"], 4)
+
+        response = self.client.get(reverse("peserta_dashboard"))
+        self.assertEqual(response.context["current_level"]["name"], "Emas")
+        self.assertEqual(response.context["next_level"]["name"], "Platinum")
+        self.assertEqual(response.context["progress_remaining"], 15)

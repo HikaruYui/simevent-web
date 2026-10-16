@@ -3,42 +3,118 @@
 {% block title %}{% block ptitle %}Dashboard Peserta{% endblock %} | SIMEVENT{% endblock %}
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
+{% block body_class %}participant-page{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#B8721F',goldLight:'#F3D9A6',bronze:'#8B6A44',olive:'#3F422E',oliveDark:'#2C2E1F',ink:'#5F5944',muted:'#70664F'}}}}}</script>
-<style>body{background:linear-gradient(160deg,#D9CDB0 0%,#EBD7AE 45%,#F3E2BF 100%) fixed}.rate{display:flex;flex-direction:row-reverse;justify-content:flex-end}.rate input{display:none}.rate label{font-size:2rem;color:#CDB68E;cursor:pointer}.rate input:checked~label,.rate label:hover,.rate label:hover~label{color:#DB9743}
-@media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:fixed;inset:0;margin:auto;height:fit-content}}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#8B510D',goldLight:'#F3D9A6',olive:'#3F422E',ink:'#17365D',muted:'#70664F'}}}}}
+</script>
+<style>
+:root {
+  --participant-shell: #f3e2b4;
+  --participant-shell-strong: #e1cb8d;
+  --participant-card: rgba(255, 250, 240, 0.78);
+  --participant-card-strong: rgba(255, 247, 233, 0.92);
+  --participant-border: rgba(174, 120, 49, 0.28);
+  --participant-accent: #c88d3a;
+  --participant-accent-deep: #8b510d;
+  --participant-olive: #3d422d;
+  --participant-ink: #1b3a5c;
+  --participant-muted: #6e6258;
+}
+html { font-size: 16px; }
+html, body, .page, .page>main {
+  min-height: 100%;
+  background: linear-gradient(180deg, #f2e3b6 0%, #f7efd4 52%, #efe0b0 100%);
+}
+body.participant-page, .participant-page .page, .participant-page .page>main {
+  min-height: 100vh;
+}
+.participant-page .page { overflow-x: hidden; }
+.participant-shell {
+  color: var(--participant-ink);
+}
+.participant-sidebar {
+  background: rgba(233, 214, 170, 0.82);
+  border-right: 1px solid rgba(144, 104, 46, 0.25);
+  box-shadow: inset -1px 0 0 rgba(161, 120, 64, 0.14);
+}
+.participant-card {
+  background: rgba(255, 249, 242, 0.8);
+  border: 1px solid var(--participant-border);
+  box-shadow: 0 6px 10px rgba(142, 100, 47, 0.04);
+}
+.participant-button {
+  background: linear-gradient(180deg, rgba(204, 160, 87, 0.98), rgba(168, 108, 24, 0.92));
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.39);
+}
+.participant-button:hover { background: linear-gradient(180deg, #cf8a2d, #8a4d0c); }
+.participant-outline {
+  border: 1px solid rgba(156, 111, 45, 0.54);
+  color: #8b510d;
+  background: rgba(255,255,255,0.48);
+}
+.participant-outline:hover { background: rgba(255, 233, 188, 0.4); }
+.participant-user-chip {
+  background: linear-gradient(135deg, rgba(233, 197, 126, 0.6), rgba(255, 252, 244, 0.92));
+}
+.participant-sidebar nav a {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  font-size: 1.05rem;
+  transition: all 0.2s ease;
+}
+.participant-sidebar nav a i {
+  width: 1.4rem;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .participant-sidebar {
+    width: 260px!important;
+    min-height: 100vh;
+    padding: 18px 16px 14px!important;
+  }
+  .participant-main {
+    padding: 22px 18px 18px!important;
+  }
+}
+</style>
 {% endblock %}
 {% block content %}
-<div class="min-h-screen flex flex-col text-brand-olive">
- <header class="bg-brand-tan/80 backdrop-blur border-b border-white/40 shadow-lg sticky top-0 z-30">
-  <div class="px-4 lg:px-8 h-16 flex items-center justify-between">
-   <a href="{% url 'beranda' %}"><img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" class="h-8"></a>
-   <div class="flex items-center gap-5 text-sm font-medium">
-    <a href="{% url 'jelajah' %}"><i class="fa-solid fa-compass mr-1"></i>Jelajah</a>
-    <span><i class="fa-regular fa-bell mr-1"></i>Notifikasi</span>
-    <a href="{% url 'keluar' %}"><i class="fa-solid fa-power-off mr-1"></i>Log Out</a>
-   </div>
-  </div>
- </header>
- <div class="flex flex-1 flex-col md:flex-row">
-  <aside class="md:w-56 shrink-0 bg-brand-creamLight/90 border-r border-white/40 p-4 flex md:flex-col justify-between gap-2">
-   <nav class="flex md:flex-col gap-1 text-sm font-semibold">
-    {% url 'peserta_dashboard' as u1 %}{% url 'peserta_event' as u2 %}{% url 'peserta_sertifikat' as u3 %}
-    <a href="{{ u1 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u1 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-solid fa-table-columns w-5"></i>Dashboard</a>
-    <a href="{{ u2 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u2 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-regular fa-calendar-check w-5"></i>Event Saya</a>
-    <a href="{{ u3 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u3 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-solid fa-award w-5"></i>Sertifikat</a>
-   </nav>
-   <nav class="hidden md:block text-sm font-medium space-y-1 border-t border-brand-tan/50 pt-3">
-    <a href="#" class="block px-3 py-2.5 rounded-xl hover:bg-brand-sand/60"><i class="fa-solid fa-headset w-5"></i>Pusat Bantuan</a>
-    <a href="#" class="block px-3 py-2.5 rounded-xl hover:bg-brand-sand/60"><i class="fa-solid fa-gear w-5"></i>Pengaturan</a>
-   </nav>
+<div class="participant-shell min-h-screen md:flex">
+  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px] md:rounded-r-[18px] md:p-5">
+    <div>
+      <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="mb-9 block border-b border-amber-100 px-2 pb-5">
+        <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" class="h-10 w-auto object-contain object-left">
+      </a>
+      <nav class="flex gap-2 overflow-x-auto md:flex-col" aria-label="Menu peserta">
+        {% url 'peserta_dashboard' as dashboard_url %}
+        {% url 'peserta_daftar_event' as daftar_event_url %}
+        {% url 'peserta_sertifikat' as sertifikat_url %}
+        {% url 'peserta_achievement' as achievement_url %}
+        <a href="{{ dashboard_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-solid fa-house mr-3 w-6 text-lg"></i>Dashboard</a>
+        <a href="{{ daftar_event_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-regular fa-calendar-check mr-3 w-6 text-lg"></i>Daftar Event</a>
+        <a href="{{ sertifikat_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-solid fa-award mr-3 w-6 text-lg"></i>Sertifikat Saya</a>
+        <a href="{{ achievement_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-solid fa-trophy mr-3 w-6 text-lg"></i>Achievement</a>
+      </nav>
+    </div>
+    <div class="mt-4 flex items-center justify-between gap-3 border-t border-amber-200 pt-4">
+      <div class="participant-user-chip flex min-w-0 flex-1 items-center gap-3 rounded-full px-2 py-2">
+        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#d9a552] text-lg font-extrabold text-[#fffaf4] shadow-inner ring-2 ring-white">{{ request.user.get_full_name|default:request.user.email|first|upper }}</div>
+        <span class="truncate text-sm font-bold text-brand-olive">{{ request.user.get_full_name|default:request.user.email }}</span>
+      </div>
+      <form method="post" action="{% url 'logout_page' %}" class="shrink-0">{% csrf_token %}<button type="submit" aria-label="Logout" title="Logout" class="rounded-full border border-amber-300 bg-white/70 p-2 text-[#8b510d] transition hover:text-red-700"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></form>
+    </div>
   </aside>
-  <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-5">
-   {% for m in messages %}<div class="rounded-xl px-4 py-3 text-sm font-semibold bg-white/80 border border-brand-tan">{{ m }}</div>{% endfor %}
-   {% block peserta %}{% endblock %}
+  <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+    {% for message in messages %}<div class="mb-4 rounded-xl border border-amber-300 bg-white/80 px-4 py-3 text-sm font-semibold">{{ message }}</div>{% endfor %}
+    {% block peserta %}{% endblock %}
   </main>
- </div>
 </div>
 {% endblock %}
