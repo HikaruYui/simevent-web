@@ -16,6 +16,12 @@ urlpatterns = [
         name="tentang",
     ),
 
+        path(
+        "bantuan/",
+        views.bantuan,
+        name="bantuan",
+    ),
+
     path(
         "jelajah/",
         views.jelajah,
@@ -93,5 +99,25 @@ urlpatterns = [
         "peserta/",
         views.peserta_dashboard,
         name="peserta_dashboard",
+    ),
+    path(
+        "peserta/daftar-event/",
+        views.peserta_daftar_event,
+        name="peserta_daftar_event",
+    ),
+    path(
+        "peserta/sertifikat/",
+        views.peserta_sertifikat,
+        name="peserta_sertifikat",
+    ),
+    path(
+        "peserta/sertifikat/<int:pk>/",
+        views.peserta_sertifikat_detail,
+        name="peserta_sertifikat_detail",
+    ),
+    path(
+        "peserta/achievement/",
+        views.peserta_achievement,
+        name="peserta_achievement",
     ),
 ]
