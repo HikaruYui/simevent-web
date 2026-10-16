@@ -1,9 +1,19 @@
 {% extends 'peserta/base_peserta.html' %}
 {% block ptitle %}Daftar Event{% endblock %}
 {% block peserta %}
-<div class="mx-auto max-w-[1440px] space-y-4">
+<div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
+ <style>
+  .event-poster { position: relative; isolation: isolate; }
+  .event-poster--art::before, .event-poster--art::after { position: absolute; z-index: 0; content: ""; border-radius: 9999px; background: rgba(255,255,255,.12); pointer-events: none; }
+  .event-poster--art::before { width: 150px; height: 150px; right: -38px; top: -64px; }
+  .event-poster--art::after { width: 90px; height: 90px; right: 60px; bottom: -50px; }
+  .event-poster[data-kind="workshop"] { background: linear-gradient(135deg,#2824a5,#4d45ee 58%,#168de7); }
+  .event-poster[data-kind="conference"] { background: linear-gradient(135deg,#071b3d,#123c78 60%,#1368a8); }
+  .event-poster[data-kind="seminar"] { background: linear-gradient(135deg,#05b8db,#51ddf2 58%,#077fc9); color: #07385a; }
+  .event-poster[data-kind="webinar"] { background: linear-gradient(135deg,#5c2d91,#9b59b6 58%,#e27c97); }
+ </style>
  <div class="text-sm text-stone-500"><a href="{% url 'peserta_dashboard' %}" class="hover:underline">Dashboard</a><i class="fa-solid fa-chevron-right mx-2 text-xs"></i><b class="text-brand-ink">Daftar Event</b></div>
- <header><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></header>
+ <header class="participant-page-intro relative overflow-hidden rounded-[24px] px-6 py-5 sm:px-8 sm:py-6"><div class="relative z-10"><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div><i class="pointer-events-none absolute -right-4 -top-8 fa-regular fa-calendar-check text-[9rem] text-amber-500/10" aria-hidden="true"></i></header>
  <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(250px,1fr)_repeat(3,minmax(140px,190px))]">
   <label class="flex min-h-[50px] items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-brand-orangeDeep"></i><input id="eventSearch" type="search" class="w-full bg-transparent text-sm outline-none" placeholder="Cari event berdasarkan nama, kategori, atau penyelenggara..."></label>
   <label class="flex min-h-[50px] items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3"><i class="fa-regular fa-calendar text-brand-orangeDeep"></i><select id="eventTime" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Waktu</option><option value="upcoming">Akan Datang</option><option value="this-month">Bulan Ini</option><option value="next-month">Bulan Depan</option><option value="past">Event Sebelumnya</option></select></label>
@@ -12,9 +22,17 @@
  </div>
  <div class="space-y-3">
   {% for event in events %}
-  <article class="participant-card event-row grid gap-4 rounded-2xl p-3 sm:p-4 md:grid-cols-[220px_minmax(0,1fr)_minmax(235px,290px)] md:items-center" data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}" data-category="{{ event.event_type.name|lower }}" data-status="{{ event.ui_status }}" data-date="{{ event.start_datetime|date:'Y-m-d' }}">
-   <a href="{% url 'detail_event' event.slug %}" class="flex h-32 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[#3155a5] to-[#13264d] text-center text-white sm:h-[122px]">
-    {% if event.banner %}<img src="{{ event.banner.url }}" alt="Banner {{ event.title }}" class="h-full w-full object-cover">{% else %}<span class="px-4 font-display text-xl font-extrabold">{{ event.event_type.name|upper }}<br><span class="text-sm font-semibold">{{ event.title|truncatechars:48 }}</span></span>{% endif %}
+  <article class="participant-card event-row grid gap-4 rounded-2xl p-4 sm:p-5 md:grid-cols-[240px_minmax(0,1fr)_minmax(235px,290px)] md:items-center" data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}" data-category="{{ event.event_type.name|lower }}" data-status="{{ event.ui_status }}" data-date="{{ event.start_datetime|date:'Y-m-d' }}">
+   <a href="{% url 'detail_event' event.slug %}" class="event-poster {% if not event.banner %}event-poster--art{% endif %} flex h-36 items-center justify-center overflow-hidden rounded-xl text-center text-white" data-kind="{{ event.event_type.code|lower }}">
+    {% if event.banner %}<img src="{{ event.banner.url }}" alt="Banner {{ event.title }}" class="h-full w-full object-cover">{% else %}
+    <span class="relative flex h-full w-full items-center justify-between overflow-hidden px-4 py-3 text-left">
+     <span class="relative z-10 max-w-[72%]">
+      <span class="block text-[10px] font-extrabold uppercase tracking-[.18em] opacity-90">{{ event.event_type.name }}</span>
+      <span class="mt-1 block font-display text-lg font-extrabold leading-tight">{{ event.title|truncatechars:34 }}</span>
+      <span class="mt-2 block text-[10px] font-semibold opacity-85">Belajar bersama SIMEVENT</span>
+     </span>
+     <i class="relative z-10 fa-solid {% if event.event_type.code == 'WORKSHOP' %}fa-laptop-code{% elif event.event_type.code == 'CONFERENCE' %}fa-microchip{% elif event.event_type.code == 'SEMINAR' %}fa-shield-halved{% else %}fa-video{% endif %} text-5xl opacity-90 drop-shadow-lg" aria-hidden="true"></i>
+    </span>{% endif %}
    </a>
    <div class="min-w-0">
     <a href="{% url 'detail_event' event.slug %}" class="font-display text-xl font-extrabold leading-tight text-brand-ink hover:underline">{{ event.title }}</a>

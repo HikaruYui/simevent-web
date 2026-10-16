@@ -37,23 +37,111 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
 .participant-page .page { overflow-x: hidden; }
 .participant-shell {
   color: var(--participant-ink);
+  background-image:
+    radial-gradient(circle at 2% 12%, rgba(255,255,255,.5), transparent 20%),
+    radial-gradient(circle at 96% 86%, rgba(199,149,63,.12), transparent 22%),
+    radial-gradient(circle, rgba(151,105,42,.07) .8px, transparent 1px);
+  background-size: auto, auto, 25px 25px;
+}
+.participant-main {
+  position: relative;
+  isolation: isolate;
+}
+.participant-main::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 96% 5%, transparent 0 84px, rgba(191,145,67,.12) 85px 86px, transparent 87px),
+    radial-gradient(circle at 96% 5%, transparent 0 112px, rgba(191,145,67,.075) 113px 114px, transparent 115px),
+    radial-gradient(circle at 5% 68%, rgba(255,255,255,.38), transparent 18%);
+  content: "";
+  pointer-events: none;
 }
 .participant-sidebar {
-  background: rgba(233, 214, 170, 0.82);
-  border-right: 1px solid rgba(144, 104, 46, 0.25);
-  box-shadow: inset -1px 0 0 rgba(161, 120, 64, 0.14);
+  position: relative;
+  overflow: visible;
+  background: transparent;
+}
+.participant-sidebar > * { position: relative; z-index: 1; }
+.participant-sidebar-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.76);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 0% 100%, rgba(255,255,255,.5), transparent 38%),
+    linear-gradient(145deg, rgba(255,250,238,.9), rgba(250,239,216,.83));
+  box-shadow: 0 8px 24px rgba(135,96,42,.07), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.participant-sidebar-panel::after {
+  position: absolute;
+  right: -72px;
+  bottom: -22px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgba(185,139,66,.12);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.4), transparent 68%);
+  box-shadow: 0 0 0 18px rgba(185,139,66,.035), 0 0 0 38px rgba(185,139,66,.025), 0 0 0 62px rgba(185,139,66,.02);
+  content: "";
+  pointer-events: none;
+}
+.participant-sidebar-panel > * { position: relative; z-index: 1; }
+.participant-sidebar-brand {
+  position: relative;
+  display: block;
+  width: 180px;
+  height: 40px;
+  --participant-logo-mask: none;
+}
+.participant-sidebar-brand::before {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, #3f422e 0, #9f7546 28px, #d78b30 56px, #f5e6c5 84px, #d78b30 112px, #3f422e 140px);
+  background-size: 140px 100%;
+  background-position: 0 50%;
+  content: "";
+  animation: participant-logo-gradient 5.5s linear infinite;
+  mask-image: var(--participant-logo-mask);
+  mask-mode: alpha;
+  mask-repeat: no-repeat;
+  mask-position: left center;
+  mask-size: contain;
+  -webkit-mask-image: var(--participant-logo-mask);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  -webkit-mask-size: contain;
+  pointer-events: none;
+}
+@keyframes participant-logo-gradient {
+  from { background-position: 0 50%; }
+  to { background-position: 140px 50%; }
 }
 .participant-card {
   background: rgba(255, 249, 242, 0.8);
   border: 1px solid var(--participant-border);
   box-shadow: 0 6px 10px rgba(142, 100, 47, 0.04);
 }
-.participant-button {
-  background: linear-gradient(180deg, rgba(204, 160, 87, 0.98), rgba(168, 108, 24, 0.92));
-  color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.39);
+.participant-page-intro {
+  border: 1px solid rgba(255,255,255,.8);
+  background: linear-gradient(112deg, rgba(255,251,242,.97), rgba(245,228,193,.88));
+  box-shadow: 0 8px 24px rgba(142,100,47,.06), inset 0 1px 0 rgba(255,255,255,.8);
 }
-.participant-button:hover { background: linear-gradient(180deg, #cf8a2d, #8a4d0c); }
+.event-row, .certificate-row, .achievement-row {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.event-row:hover, .certificate-row:hover, .achievement-row:hover {
+  transform: translateY(-2px);
+  border-color: rgba(194,143,62,.42);
+  box-shadow: 0 10px 20px rgba(142,100,47,.09);
+}
+.participant-button {
+  background: linear-gradient(180deg, #d7b36f, #c69b50);
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(164,117,45,.16), inset 0 1px 0 rgba(255,255,255,0.55);
+}
+.participant-button:hover { background: linear-gradient(180deg, #d0a75d, #b98532); }
 .participant-outline {
   border: 1px solid rgba(156, 111, 45, 0.54);
   color: #8b510d;
@@ -61,55 +149,87 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
 }
 .participant-outline:hover { background: rgba(255, 233, 188, 0.4); }
 .participant-user-chip {
-  background: linear-gradient(135deg, rgba(233, 197, 126, 0.6), rgba(255, 252, 244, 0.92));
+  background: rgba(255,250,239,.26);
+  transition: background-color .2s ease;
 }
+.participant-user-chip:hover { background: rgba(255,250,239,.68); }
 .participant-sidebar nav a {
   display: flex;
   align-items: center;
   min-height: 54px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: normal;
   font-size: 1.05rem;
   transition: all 0.2s ease;
+}
+.participant-sidebar nav { width: 100%; min-width: 0; }
+.participant-sidebar nav a:not(.participant-button) {
+  border: 1px solid transparent;
+  color: #17365d;
+}
+.participant-sidebar nav a:not(.participant-button):hover {
+  background: rgba(255,250,239,.28);
+}
+.participant-sidebar nav a.participant-button {
+  border: 1px solid rgba(255,255,255,.42);
+  box-shadow: 0 8px 18px rgba(125,77,15,.2), inset 0 1px 0 rgba(255,255,255,.42);
 }
 .participant-sidebar nav a i {
   width: 1.4rem;
   text-align: center;
+  color: #8b510d;
 }
+.participant-sidebar nav a.participant-button i { color: #fff; }
 @media (min-width: 768px) {
   .participant-sidebar {
-    width: 260px!important;
-    min-height: 100vh;
-    padding: 18px 16px 14px!important;
+    width: 290px!important;
+    height: 100vh;
+    min-height: 760px;
+    padding: 16px 0 20px 6px!important;
+  }
+  .participant-sidebar-panel {
+    height: 78vh;
+    min-height: 590px;
+    max-height: 810px;
+    padding: 40px 14px 22px;
   }
   .participant-main {
-    padding: 22px 18px 18px!important;
+    width: 0;
+    max-width: calc(100% - 290px);
+    padding: 18px 24px 18px!important;
   }
+  .participant-sidebar nav { gap: 8px!important; overflow: visible!important; }
+  .participant-sidebar nav a { min-height: 64px; font-size: 1.125rem; }
+  .participant-sidebar > div:last-child { padding: 0 12px 8px; }
 }
 </style>
 {% endblock %}
 {% block content %}
 <div class="participant-shell min-h-screen md:flex">
-  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px] md:rounded-r-[18px] md:p-5">
-    <div>
-      <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="mb-9 block border-b border-amber-100 px-2 pb-5">
-        <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" class="h-10 w-auto object-contain object-left">
+  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px]">
+    <div class="participant-sidebar-panel">
+      <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4" style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')">
       </a>
       <nav class="flex gap-2 overflow-x-auto md:flex-col" aria-label="Menu peserta">
         {% url 'peserta_dashboard' as dashboard_url %}
         {% url 'peserta_daftar_event' as daftar_event_url %}
         {% url 'peserta_sertifikat' as sertifikat_url %}
         {% url 'peserta_achievement' as achievement_url %}
-        <a href="{{ dashboard_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-solid fa-house mr-3 w-6 text-lg"></i>Dashboard</a>
-        <a href="{{ daftar_event_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-regular fa-calendar-check mr-3 w-6 text-lg"></i>Daftar Event</a>
-        <a href="{{ sertifikat_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-solid fa-award mr-3 w-6 text-lg"></i>Sertifikat Saya</a>
-        <a href="{{ achievement_url }}" class="whitespace-nowrap rounded-xl px-3.5 py-3.5 text-base font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700 hover:bg-amber-100{% endif %}"><i class="fa-solid fa-trophy mr-3 w-6 text-lg"></i>Achievement</a>
+        <a href="{{ dashboard_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-house mr-3 w-7 text-2xl"></i>Dashboard</a>
+        <a href="{{ daftar_event_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-calendar-plus mr-3 w-7 text-2xl"></i>Daftar Event</a>
+        <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
+        <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
       </nav>
     </div>
-    <div class="mt-4 flex items-center justify-between gap-3 border-t border-amber-200 pt-4">
-      <div class="participant-user-chip flex min-w-0 flex-1 items-center gap-3 rounded-full px-2 py-2">
-        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#d9a552] text-lg font-extrabold text-[#fffaf4] shadow-inner ring-2 ring-white">{{ request.user.get_full_name|default:request.user.email|first|upper }}</div>
-        <span class="truncate text-sm font-bold text-brand-olive">{{ request.user.get_full_name|default:request.user.email }}</span>
-      </div>
-      <form method="post" action="{% url 'logout_page' %}" class="shrink-0">{% csrf_token %}<button type="submit" aria-label="Logout" title="Logout" class="rounded-full border border-amber-300 bg-white/70 p-2 text-[#8b510d] transition hover:text-red-700"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></form>
+    <div class="mt-4 border-t border-amber-200/80 pt-4">
+      <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip flex min-w-0 items-center gap-3 rounded-xl px-2 py-2">
+        <img src="{% static 'img/participant-avatar.svg' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover ring-2 ring-white">
+        <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
+        <i class="fa-solid fa-chevron-right ml-auto mr-2 text-xs text-brand-orangeDeep"></i>
+      </a>
+      <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
     </div>
   </aside>
   <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">

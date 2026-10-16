@@ -36,18 +36,65 @@ class RegistrationForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    full_name = forms.CharField(
+        label="Nama lengkap",
+        max_length=300,
+        required=False,
+    )
+
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "nim", "prodi")
+        fields = (
+            "first_name",
+            "last_name",
+            "ktp_number",
+            "gender",
+            "birth_place",
+            "birth_date",
+            "address",
+            "phone_number",
+        )
+        widgets = {
+            "birth_date": forms.DateInput(attrs={"type": "date"}),
+            "address": forms.Textarea(attrs={"rows": 3}),
+            "ktp_number": forms.TextInput(attrs={"inputmode": "numeric", "maxlength": "16"}),
+            "phone_number": forms.TelInput(attrs={"inputmode": "tel"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["full_name"].initial = self.instance.get_full_name().strip()
+        for field in self.fields.values():
+            field.required = True
+        self.fields["full_name"].required = False
+        self.fields["first_name"].required = False
+        self.fields["last_name"].required = False
+        self.fields["first_name"].widget = forms.HiddenInput()
+        self.fields["last_name"].widget = forms.HiddenInput()
 
     def clean(self):
         cleaned_data = super().clean()
+        full_name = (cleaned_data.get("full_name") or "").strip()
+        if full_name:
+            name_parts = full_name.split()
+            cleaned_data["first_name"] = name_parts[0]
+            cleaned_data["last_name"] = " ".join(name_parts[1:])
+        else:
+            cleaned_data["first_name"] = (cleaned_data.get("first_name") or "").strip()
+            cleaned_data["last_name"] = (cleaned_data.get("last_name") or "").strip()
+            if not cleaned_data["first_name"] and "first_name" not in self.errors:
+                self.add_error("first_name", "Masukkan nama lengkap.")
+
         for field in self.Meta.fields:
-            value = cleaned_data.get(field, "")
-            if not value or not value.strip():
+            if field in ("first_name", "last_name"):
+                continue
+            value = cleaned_data.get(field)
+            if isinstance(value, str):
+                value = value.strip()
+                cleaned_data[field] = value
+            if not value and field not in self.errors:
                 self.add_error(field, "Lengkapi biodata ini.")
-            else:
-                cleaned_data[field] = value.strip()
         return cleaned_data
 
 

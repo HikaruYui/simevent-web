@@ -2,12 +2,14 @@
 
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from apps.accounts.forms import ProfileForm
 from apps.accounts.permissions import require_organizer
 from apps.events.forms import AdminEventForm, EventForm
 from apps.events.models import Event, EventStatus, EventType
@@ -222,6 +224,13 @@ def detail_event(request, slug):
 # AUTENTIKASI
 # =========================================================
 
+def _participant_redirect(request):
+    if request.user.role in ("ADMIN", "ORGANIZER"):
+        return redirect("panitia_dashboard")
+    if not request.user.profile_complete:
+        return redirect("peserta_akun")
+    return None
+
 @never_cache
 @require_GET
 def login_page(request):
@@ -258,9 +267,46 @@ def after_login(request):
             "panitia_dashboard"
         )
 
-    return redirect(
-        "peserta_dashboard"
+    return redirect("peserta_dashboard" if request.user.profile_complete else "peserta_akun")
+
+
+@never_cache
+@require_http_methods(["GET", "POST"])
+@login_required(login_url="login_page")
+def peserta_akun(request):
+    if request.user.role in ("ADMIN", "ORGANIZER"):
+        return redirect("panitia_dashboard")
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Biodata berhasil disimpan. Akun Anda siap digunakan.")
+            return redirect("peserta_dashboard")
+    else:
+        form = ProfileForm(instance=request.user)
+
+    profile_values = (
+        request.user.first_name,
+        request.user.email,
+        request.user.ktp_number,
+        request.user.gender,
+        request.user.birth_place,
+        request.user.birth_date,
+        request.user.address,
+        request.user.phone_number,
     )
+    completed_profile_fields = sum(
+        bool(value.strip() if isinstance(value, str) else value)
+        for value in profile_values
+    )
+
+    return render(request, "peserta/akun.html", {
+        "form": form,
+        "profile_complete": request.user.profile_complete,
+        "completed_profile_fields": completed_profile_fields,
+        "profile_progress": round(completed_profile_fields * 100 / len(profile_values)),
+    })
 
 
 # =========================================================
@@ -271,13 +317,9 @@ def after_login(request):
 @require_GET
 @login_required(login_url="login_page")
 def peserta_dashboard(request):
-    if request.user.role in (
-        "ADMIN",
-        "ORGANIZER",
-    ):
-        return redirect(
-            "panitia_dashboard"
-        )
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
 
     now = timezone.now()
     registrations = list(
@@ -368,6 +410,7 @@ def peserta_dashboard(request):
         "next_level_display": dashboard_level_names[next_level["name"]],
         "next_threshold": next_threshold,
         "progress_percent": min(100, round(level_count * 100 / next_threshold)),
+        "track_segment": min(3, max(0, len(completed_levels) - 1)),
         "progress_remaining": max(0, next_threshold - level_count),
         "level_count": level_count,
         "feedback_ratings": (
@@ -385,8 +428,9 @@ def peserta_dashboard(request):
 @require_GET
 @login_required(login_url="login_page")
 def peserta_daftar_event(request):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
-        return redirect("panitia_dashboard")
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
 
     now = timezone.now()
     events = list(
@@ -424,8 +468,9 @@ def peserta_daftar_event(request):
 @require_GET
 @login_required(login_url="login_page")
 def peserta_sertifikat(request):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
-        return redirect("panitia_dashboard")
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
 
     has_template = CertificateTemplate.objects.filter(is_active=True).exists()
     registrations = list(
@@ -457,8 +502,9 @@ def peserta_sertifikat(request):
 @require_GET
 @login_required(login_url="login_page")
 def peserta_sertifikat_detail(request, pk):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
-        return redirect("panitia_dashboard")
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
     registration = get_object_or_404(
         Registration.objects.owned_by(request.user)
         .select_related("event", "event__organizer", "attendance", "feedback", "payment"),
@@ -484,8 +530,9 @@ def peserta_sertifikat_detail(request, pk):
 @require_GET
 @login_required(login_url="login_page")
 def peserta_achievement(request):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
-        return redirect("panitia_dashboard")
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
 
     totals = {
         row["event__event_type_id"]: row["total"]

@@ -96,6 +96,11 @@ urlpatterns = [
     ),
 
     path(
+        "peserta/akun/",
+        views.peserta_akun,
+        name="peserta_akun",
+    ),
+    path(
         "peserta/",
         views.peserta_dashboard,
         name="peserta_dashboard",

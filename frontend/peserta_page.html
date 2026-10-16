@@ -6,77 +6,366 @@
 #achievementModal {
   position: fixed;
   inset: 0;
-  width: min(1072px, calc(100% - 32px));
+  width: min(1188px, calc(100% - 32px));
   max-width: none;
-  max-height: calc(100vh - 48px);
+  max-height: min(90vh, 900px);
   margin: auto;
   padding: 0;
   border: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   border-radius: 28px;
-  background: #fffaf0;
+  background:
+    radial-gradient(circle at 8% 22%, rgba(218,176,96,.16) 0 2px, transparent 3px),
+    radial-gradient(circle at 15% 28%, rgba(255,255,255,.72) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 88% 18%, rgba(218,176,96,.12), transparent 26%),
+    radial-gradient(ellipse at 5% 100%, rgba(229,196,135,.15), transparent 32%),
+    repeating-linear-gradient(135deg, rgba(168,129,66,.018) 0 1px, transparent 1px 17px),
+    linear-gradient(135deg, #fffaf0, #fff8e9 58%, #fffaf1);
   color: #1b3a5c;
-  box-shadow: 0 25px 60px rgba(35, 31, 25, 0.3);
+  box-shadow: 0 28px 72px rgba(35, 31, 25, 0.34), 0 0 0 1px rgba(255,255,255,.55) inset;
 }
 #achievementModal::backdrop {
-  background: rgba(35, 31, 25, 0.42);
+  background: rgba(35, 31, 25, 0.49);
+  backdrop-filter: blur(1.5px);
+}
+#achievementModal > section {
+  position: relative;
+  isolation: isolate;
+}
+#achievementModal > section::before,
+#achievementModal > section::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+#achievementModal > section::before {
+  top: 52px;
+  right: -118px;
+  width: 310px;
+  height: 310px;
+  border: 1px solid rgba(189,145,72,.1);
+  border-radius: 50%;
+  box-shadow: 0 0 0 16px rgba(189,145,72,.025), 0 0 0 38px rgba(189,145,72,.018);
+}
+#achievementModal > section::after {
+  bottom: -144px;
+  left: -115px;
+  width: 340px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(216,174,97,.12), transparent 70%);
+}
+#achievementModal .achievement-level-marker {
+  position: relative;
+  box-shadow: 0 0 0 6px rgba(188,145,74,.045), 0 8px 18px rgba(93,79,59,.08);
+}
+#achievementModal .achievement-level-marker::before {
+  position: absolute;
+  inset: -9px;
+  border: 1px solid rgba(183,145,86,.13);
+  border-radius: inherit;
+  content: "";
+}
+#achievementModal .achievement-level-marker::after {
+  position: absolute;
+  top: -11px;
+  right: -9px;
+  color: #d8b56f;
+  content: "✦";
+  font-size: 13px;
+  opacity: .58;
+}
+#achievementModal .achievement-level-marker.is-locked {
+  box-shadow: 0 0 0 6px rgba(135,145,160,.045), 0 8px 18px rgba(93,79,59,.055);
+}
+#achievementModal .achievement-level-marker.is-locked::before { border-color: rgba(135,145,160,.14); }
+#achievementModal .achievement-progress-panel,
+#achievementModal .achievement-benefit-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(191,149,76,.12);
+}
+#achievementModal .achievement-progress-panel {
+  background:
+    radial-gradient(circle at 96% 6%, rgba(255,255,255,.55), transparent 90px),
+    radial-gradient(circle at 100% 100%, rgba(206,164,90,.13), transparent 160px),
+    rgba(244,231,194,.78);
+}
+#achievementModal .achievement-benefit-panel {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(221,184,111,.18), transparent 120px),
+    rgba(255,255,255,.8);
+}
+/* Medali rosette berlapis seperti lencana pada referensi. */
+#achievementModal .achievement-level-marker {
+  position: relative;
+  isolation: isolate;
+  width: 118px;
+  height: 142px;
+  margin-inline: auto;
+  box-shadow: none;
+  filter: drop-shadow(0 7px 8px rgba(93,79,59,.16));
+}
+#achievementModal .achievement-level-marker::before,
+#achievementModal .achievement-level-marker::after { content:none; }
+#achievementModal .achievement-medal-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+#achievementModal .achievement-medal-icon {
+  position: absolute;
+  z-index: 2;
+  top: 42.5%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  color: #fffdf4;
+  font-size: 34px;
+  filter: drop-shadow(0 2px 2px rgba(83,58,18,.32));
+}
+#achievementModal .achievement-medal--silver { --medal-highlight:#f9fbff; --medal-light:#e3e8ef; --medal-mid:#aeb8c7; --medal-deep:#778293; --medal-ink:#748092; --medal-ribbon:#aab4c2; --medal-ribbon-light:#e0e5ec; }
+#achievementModal .achievement-medal--gold { --medal-highlight:#fff9dd; --medal-light:#f8df9e; --medal-mid:#d9a441; --medal-deep:#a96d13; --medal-ink:#9b620d; --medal-ribbon:#c58520; --medal-ribbon-light:#f1cc72; }
+#achievementModal .achievement-medal--platinum { --medal-highlight:#fff; --medal-light:#e3e7ee; --medal-mid:#aeb6c3; --medal-deep:#747e8c; --medal-ink:#747d8c; --medal-ribbon:#9da7b4; --medal-ribbon-light:#e4e8ee; }
+#achievementModal .achievement-medal--legend { --medal-highlight:#fff2ff; --medal-light:#d8ceff; --medal-mid:#9a8ce0; --medal-deep:#6551c7; --medal-ink:#6d5ac2; --medal-ribbon:#7664d2; --medal-ribbon-light:#b8aaf2; }
+#achievementModal .achievement-level-marker.is-locked { opacity:.82; box-shadow:none; filter:grayscale(.16) drop-shadow(0 5px 7px rgba(93,79,59,.1)); }
+#achievementModal .achievement-level-marker.is-locked .achievement-medal-icon { color:#f9fafb; }
+#achievementModal .achievement-level-marker.is-unlocked { filter:drop-shadow(0 8px 11px rgba(183,126,34,.2)); }
+#achievementModal .achievement-level-label { display:inline-flex; min-width:84px; justify-content:center; border-radius:999px; padding:4px 13px; background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(243,231,207,.9)); box-shadow:inset 0 0 0 1px rgba(178,136,71,.12); }
+#achievementModal .achievement-level--silver { color:#657184; }
+#achievementModal .achievement-level--gold { color:#a36b14; }
+#achievementModal .achievement-level--platinum { color:#737d8b; }
+#achievementModal .achievement-level--legend { color:#7565c5; }
+#achievementModal .achievement-track { background:repeating-linear-gradient(90deg,#e8deca 0 20px,transparent 20px 25px); }
+#achievementModal .achievement-track-fill { background:repeating-linear-gradient(90deg,#b9832f 0 20px,#d5a551 20px 25px); }
+#achievementModal .achievement-levels,
+#achievementModal .achievement-progress-panel,
+#achievementModal .achievement-benefit-panel { min-width:0; }
+@media (max-width: 639px) {
+  #achievementModal { width:calc(100% - 20px); max-height:calc(100dvh - 24px); border-radius:22px; }
+  #achievementModal .achievement-level-marker { transform:scale(.86); transform-origin:top center; margin-bottom:-14px; }
+}
+.feedback-dialog {
+  width: min(620px, calc(100% - 32px));
+  max-height: calc(100vh - 40px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid rgba(174, 120, 49, 0.28);
+  border-radius: 24px;
+  color: #1b3a5c;
+  background: #fffaf0;
+  box-shadow: 0 25px 60px rgba(35, 31, 25, 0.3);
+}
+.feedback-dialog::backdrop { background: rgba(35, 31, 25, 0.42); }
+#participantDashboard .dashboard-hero {
+  isolation: isolate;
+  border: 1px solid rgba(255,255,255,.9);
+  background:
+    radial-gradient(ellipse at 89% 105%, rgba(220,190,130,.2), transparent 39%),
+    radial-gradient(ellipse at 3% 0%, rgba(255,255,255,.88), transparent 44%),
+    linear-gradient(112deg, #fffaf0 0%, #fbf1dd 58%, #f2dfb8 100%);
+  box-shadow: 0 12px 26px rgba(142,100,47,.08), inset 0 1px 0 rgba(255,255,255,.9);
+}
+#participantDashboard .dashboard-hero::before,
+#participantDashboard .dashboard-hero::after {
+  content: none;
+}
+#participantDashboard .dashboard-hero-illustration {
+  z-index: 1;
+}
+#participantDashboard .dashboard-hero-illustration::before {
+  content: none;
+}
+#participantDashboard .dashboard-hero-illustration img {
+  filter: drop-shadow(0 8px 10px rgba(132,91,37,.12));
+}
+#participantDashboard .dashboard-stat-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(190,143,71,.25);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(230,190,112,.14), transparent 36%),
+    linear-gradient(135deg, rgba(255,252,245,.97), rgba(255,247,233,.86));
+  box-shadow: 0 8px 18px rgba(142,100,47,.055), inset 0 1px 0 rgba(255,255,255,.92);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+#participantDashboard .dashboard-stat-card::before,
+#participantDashboard .dashboard-stat-card::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+#participantDashboard .dashboard-stat-card::before {
+  top: 0;
+  left: 22px;
+  width: 58px;
+  height: 3px;
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(90deg, #d9ad5e, #f3d9a6);
+}
+#participantDashboard .dashboard-stat-card::after {
+  top: -54px;
+  right: -48px;
+  width: 142px;
+  height: 142px;
+  border: 1px solid rgba(193,145,65,.15);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.2) 0 35%, transparent 36%);
+  box-shadow: 0 0 0 14px rgba(193,145,65,.035), 0 0 0 30px rgba(193,145,65,.022);
+}
+#participantDashboard .dashboard-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(142,100,47,.1), inset 0 1px 0 rgba(255,255,255,.92);
+}
+#participantDashboard .dashboard-stat-icon {
+  border: 1px solid rgba(255,255,255,.66);
+  background: linear-gradient(145deg, #ffe9ba, #e7bd70);
+  box-shadow: 0 5px 12px rgba(142,100,47,.12), inset 0 1px 0 rgba(255,255,255,.72);
+}
+#participantDashboard .dashboard-events-card,
+#participantDashboard .dashboard-summary-card {
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(225,183,103,.13), transparent 150px),
+    radial-gradient(circle at 0% 100%, rgba(245,222,180,.2), transparent 170px),
+    repeating-linear-gradient(135deg, rgba(187,142,67,.018) 0 1px, transparent 1px 13px);
+  border-color: rgba(190,143,71,.26);
+  box-shadow: 0 9px 20px rgba(142,100,47,.055), inset 0 1px 0 rgba(255,255,255,.88);
+}
+#participantDashboard .dashboard-events-card thead {
+  background: linear-gradient(90deg, rgba(242,225,190,.95), rgba(249,238,216,.95));
+}
+#participantDashboard .dashboard-events-card .dashboard-event-row {
+  transition: background-color .18s ease;
+}
+#participantDashboard .dashboard-events-card .dashboard-event-row:hover {
+  background: rgba(255,246,226,.72);
+}
+#participantDashboard .dashboard-section-heading {
+  position: relative;
+  padding-left: 14px;
+}
+#participantDashboard .dashboard-section-heading::before {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  width: 4px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #e6bd70, #a86c18);
+  content: "";
+}
+#participantDashboard .dashboard-summary-heading {
+  background:
+    radial-gradient(circle at 94% 20%, rgba(222,177,95,.2) 0 3px, transparent 4px),
+    radial-gradient(circle at 90% 85%, rgba(255,255,255,.55), transparent 58px),
+    linear-gradient(90deg, rgba(250,239,216,.94), rgba(255,250,240,.64));
+}
+#participantDashboard .dashboard-empty-icon {
+  background: linear-gradient(145deg, #fff0cf, #f0d49d);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 5px 12px rgba(142,100,47,.1);
+}
+#participantDashboard .dashboard-certificate-preview {
+  position: relative;
+  display: grid;
+  width: 68px;
+  height: 54px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #e7c784;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff, #fff7e9);
+  color: #c4872c;
+  box-shadow: 0 5px 12px rgba(142,100,47,.08);
+}
+#participantDashboard .dashboard-certificate-preview::before {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(203,151,59,.42);
+  border-radius: 7px;
+  content: "";
+}
+@media (prefers-reduced-motion: reduce) {
+  #participantDashboard .dashboard-stat-card { transition: none; }
+  #participantDashboard .dashboard-stat-card:hover { transform: none; }
+}
+@media (max-width: 639px) {
+  #participantDashboard .dashboard-hero::before {
+    top: -88px;
+    right: -35%;
+    width: 250px;
+    height: 210px;
+  }
+  #participantDashboard .dashboard-hero::after {
+    right: 20%;
+    width: 190px;
+  }
+  #participantDashboard .dashboard-hero-illustration img { opacity: .72; }
 }
 </style>
-<div id="participantDashboard" class="mx-auto max-w-[1440px] space-y-5">
-  <section class="participant-card relative min-h-[130px] overflow-hidden rounded-[28px] px-5 py-3 sm:px-6 sm:py-4">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.42),transparent_45%)]"></div>
-    <div class="relative z-10 flex items-center justify-between gap-3 sm:gap-6">
-      <div class="max-w-xl">
+<div id="participantDashboard" class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
+  <section class="participant-card dashboard-hero relative min-h-[152px] overflow-hidden rounded-[24px] px-5 py-3 sm:min-h-[174px] sm:px-6 lg:min-h-[184px] lg:px-7">
+    <div aria-hidden="true" class="dashboard-hero-illustration pointer-events-none absolute inset-y-0 right-0 flex w-[132px] items-end justify-end sm:w-[150px] lg:right-3 lg:w-[52%]">
+      <picture class="relative z-10 block h-[132px] w-[132px] sm:h-[150px] sm:w-[150px] lg:h-[180px] lg:w-full">
+        <source media="(min-width: 1024px)" srcset="{% static 'img/participant-dashboard-banner.svg' %}">
+        <img src="{% static 'img/participant-hero.svg' %}" alt="" class="h-full w-full object-contain object-bottom">
+      </picture>
+    </div>
+    <div class="relative z-10 flex min-h-[126px] items-center sm:min-h-[148px]">
+      <div class="max-w-[72%] sm:max-w-[62%]">
         <p class="text-sm font-semibold text-stone-700 sm:text-base">Halo,</p>
-        <h1 class="mt-1 font-display text-3xl font-extrabold text-[#8b510d] sm:text-5xl">{{ request.user.get_full_name|default:request.user.email }}</h1>
+        <h1 class="mt-1 break-words font-display text-3xl font-extrabold text-[#8b510d] sm:text-4xl">{{ request.user.get_full_name|default:request.user.email }}</h1>
         <p class="mt-2 text-sm text-stone-700 sm:text-base">Terus ikuti event menarik dan raih lebih banyak pengalaman!</p>
-      </div>
-      <div class="relative hidden h-28 w-28 shrink-0 items-center justify-center sm:flex">
-        <img src="{% static 'img/participant-hero.svg' %}" alt="" class="relative z-10 h-full w-full object-contain">
       </div>
     </div>
   </section>
 
   <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan peserta">
-    <div class="participant-card rounded-[22px] p-4">
+    <div class="participant-card dashboard-stat-card min-h-[144px] rounded-[22px] p-4 sm:p-5">
       <div class="flex items-center gap-4">
-        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-regular fa-calendar-check"></i></span>
+        <span class="dashboard-stat-icon grid h-20 w-20 shrink-0 place-items-center rounded-full text-4xl text-[#8b510d]"><i class="fa-regular fa-calendar-check"></i></span>
         <div>
-          <p class="text-sm font-bold text-stone-700">Event Diikuti</p>
-          <p class="font-display text-3xl font-extrabold text-brand-olive">{{ total_registrations }}</p>
+          <p class="text-base font-bold text-brand-ink">Event Diikuti</p>
+          <p class="font-display text-4xl font-extrabold text-brand-ink">{{ total_registrations }}</p>
           <p class="text-xs text-stone-600">Total event terdaftar</p>
         </div>
       </div>
     </div>
 
-    <div class="participant-card rounded-[22px] p-4">
+    <div class="participant-card dashboard-stat-card min-h-[144px] rounded-[22px] p-4 sm:p-5">
       <div class="flex items-center gap-4">
-        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-solid fa-award"></i></span>
+        <span class="dashboard-stat-icon grid h-20 w-20 shrink-0 place-items-center rounded-full text-4xl text-[#8b510d]"><i class="fa-solid fa-award"></i></span>
         <div>
-          <p class="text-sm font-bold text-stone-700">Sertifikat Diraih</p>
-          <p class="font-display text-3xl font-extrabold text-brand-olive">{{ certificate_count }}</p>
+          <p class="text-base font-bold text-brand-ink">Sertifikat Diraih</p>
+          <p class="font-display text-4xl font-extrabold text-brand-ink">{{ certificate_count }}</p>
           <p class="text-xs text-stone-600">Sertifikat siap dilihat</p>
         </div>
       </div>
     </div>
 
-    <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="participant-card block w-full rounded-[22px] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lg">
+    <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="participant-card dashboard-stat-card block min-h-[144px] w-full rounded-[22px] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lg sm:p-5">
       <div class="flex items-center gap-4">
-        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full {% if current_level %}bg-[#f4d7a5] text-[#8b510d]{% else %}bg-stone-200 text-stone-500{% endif %} text-3xl"><i class="fa-solid fa-medal"></i></span>
+        <span class="dashboard-stat-icon grid h-20 w-20 shrink-0 place-items-center rounded-full {% if current_level.color == 'gold' or current_level.color == 'legend' %}bg-gradient-to-br from-amber-200 to-amber-500 text-white{% elif current_level %}text-[#8b510d]{% else %}bg-stone-200 text-stone-500{% endif %} text-4xl"><i class="fa-solid {% if current_level %}fa-medal{% else %}fa-lock{% endif %}"></i></span>
         <div>
-          <span class="block text-sm font-bold text-stone-700">Achievement</span>
-          <span class="block font-display text-[2rem] font-extrabold text-brand-olive">{{ current_level.name|default:"Perak" }}</span>
-          <span class="block text-xs text-stone-600">{% if current_level %}Level aktif{% else %}Ikuti {{ next_threshold }} event untuk {{ next_level.name }}{% endif %}</span>
+          <span class="block text-base font-bold text-brand-ink">Achievement</span>
+          <span class="block font-display {% if current_level %}text-[2rem]{% else %}text-2xl{% endif %} font-extrabold text-brand-ink">{{ current_level_display }}</span>
+          <span class="block text-xs text-stone-600">{% if progress_remaining %}{% if current_level %}Capai {{ next_threshold }} event untuk {{ next_level_display }}{% else %}Ikuti {{ next_threshold }} event untuk {{ next_level_display }}{% endif %}{% else %}Semua level tercapai{% endif %}</span>
         </div>
       </div>
     </button>
 
-    <div class="participant-card rounded-[22px] p-4">
+    <div class="participant-card dashboard-stat-card min-h-[144px] rounded-[22px] p-4 sm:p-5">
       <div class="flex items-center gap-4">
-        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-solid fa-check"></i></span>
+        <span class="dashboard-stat-icon grid h-20 w-20 shrink-0 place-items-center rounded-full text-4xl text-[#8b510d]"><i class="fa-solid fa-check"></i></span>
         <div>
-          <p class="text-sm font-bold text-stone-700">Kehadiran</p>
-          <p class="font-display text-3xl font-extrabold text-brand-olive">{{ attendance_rate }}%</p>
+          <p class="text-base font-bold text-brand-ink">Kehadiran</p>
+          <p class="font-display text-4xl font-extrabold text-brand-ink">{{ attendance_rate }}%</p>
           <p class="text-xs text-stone-600">Tingkat kehadiran</p>
         </div>
       </div>
@@ -85,13 +374,13 @@
 
   <section>
     <div class="mb-3 flex items-center justify-between gap-3">
-      <h2 class="font-display text-2xl font-extrabold text-brand-orangeDeep">Event Saya</h2>
+      <h2 class="dashboard-section-heading font-display text-2xl font-extrabold text-brand-orangeDeep">Event Saya</h2>
       <a href="{% url 'peserta_daftar_event' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
     </div>
 
-    <div class="participant-card overflow-hidden rounded-[22px]">
+    <div class="participant-card dashboard-events-card overflow-hidden rounded-[22px]">
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[720px] text-left text-sm">
+        <table class="w-full min-w-[900px] text-left text-sm">
           <thead class="bg-[#efe0bf]/80 text-brand-orangeDeep">
             <tr>
               <th class="px-5 py-3 text-left font-extrabold">Nama Event</th>
@@ -102,10 +391,10 @@
           </thead>
           <tbody class="divide-y divide-amber-100">
             {% for registration in registrations|slice:':5' %}
-            <tr>
-              <td class="px-5 py-3 font-bold text-brand-olive">{{ registration.event.title }}</td>
-              <td class="px-4 py-3 whitespace-nowrap text-stone-700">{{ registration.event.start_datetime|date:"j M Y" }}</td>
-              <td class="px-4 py-3">
+            <tr class="dashboard-event-row">
+              <td class="px-5 py-4 font-bold text-brand-ink">{{ registration.event.title }}</td>
+              <td class="whitespace-nowrap px-4 py-4 text-brand-ink">{{ registration.event.start_datetime|date:"j M Y" }}</td>
+              <td class="px-4 py-4">
                 {% if registration.event.status == "COMPLETED" or registration.event.end_datetime <= now %}
                   <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Selesai</span>
                 {% elif registration.event.start_datetime <= now %}
@@ -115,16 +404,55 @@
                 {% endif %}
               </td>
               <td class="px-5 py-3">
+                <div class="flex flex-wrap gap-2">
                 {% if registration.certificate_ready %}
-                  <a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline inline-flex rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
+                  <a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline inline-flex min-w-[8rem] justify-center rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
+                  <a href="{% url 'registrations:certificate-pdf' registration.pk %}" class="participant-button inline-flex min-w-[8rem] justify-center rounded-lg px-3 py-2 text-sm font-bold">Unduh PDF</a>
+                {% elif registration.event.status == "COMPLETED" and registration.attendance and registration.attendance.status == "PRESENT" and not registration.feedback %}
+                  <button type="button" onclick="document.getElementById('feedbackDialog{{ registration.pk }}').showModal()" class="participant-outline inline-flex min-w-[8rem] justify-center rounded-lg px-3 py-2 text-sm font-bold">Isi Feedback</button>
                 {% else %}
-                  <a href="{% url 'detail_event' registration.event.slug %}" class="participant-outline inline-flex rounded-lg px-3 py-2 text-sm font-bold">Lihat Detail</a>
+                  <a href="{% url 'detail_event' registration.event.slug %}" class="participant-outline inline-flex min-w-[8rem] justify-center rounded-lg px-3 py-2 text-sm font-bold">Lihat Detail</a>
+                {% endif %}
+                </div>
+                {% if registration.event.status == "COMPLETED" and registration.attendance and registration.attendance.status == "PRESENT" and not registration.feedback %}
+                <dialog id="feedbackDialog{{ registration.pk }}" class="feedback-dialog">
+                  <form class="participant-feedback-form space-y-4 p-5 sm:p-7" method="post" action="{% url 'registrations:feedback' registration.pk %}">
+                    {% csrf_token %}
+                    <div class="flex items-start justify-between gap-3">
+                      <div><h3 class="font-display text-xl font-extrabold text-brand-orangeDeep">Feedback Event</h3><p class="mt-1 text-sm text-stone-600">{{ registration.event.title }}</p></div>
+                      <button type="button" onclick="this.closest('dialog').close()" aria-label="Tutup" class="text-2xl text-brand-orangeDeep"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      {% for field, label in feedback_ratings %}
+                      <label class="text-sm font-bold text-brand-ink">{{ label }}
+                        <select name="{{ field }}" required class="mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 font-normal">
+                          <option value="" selected disabled>Pilih nilai</option><option value="5">Sangat baik</option><option value="4">Baik</option><option value="3">Cukup</option><option value="2">Kurang</option><option value="1">Sangat kurang</option>
+                        </select>
+                      </label>
+                      {% endfor %}
+                    </div>
+                    <label class="block text-sm font-bold text-brand-ink">Komentar
+                      <textarea name="comment" rows="3" maxlength="2000" class="mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 font-normal" placeholder="Bagikan pengalaman Anda"></textarea>
+                    </label>
+                    <label class="block text-sm font-bold text-brand-ink">Saran
+                      <textarea name="suggestion" rows="2" maxlength="2000" class="mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 font-normal" placeholder="Apa yang bisa ditingkatkan?"></textarea>
+                    </label>
+                    <p class="feedback-error hidden rounded-lg bg-rose-50 p-3 text-sm text-rose-700" role="alert"></p>
+                    <div class="flex justify-end gap-2"><button type="button" onclick="this.closest('dialog').close()" class="participant-outline rounded-lg px-4 py-2 text-sm font-bold">Nanti</button><button type="submit" class="participant-button rounded-lg px-4 py-2 text-sm font-bold">Kirim Feedback</button></div>
+                  </form>
+                </dialog>
                 {% endif %}
               </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="4" class="px-5 py-10 text-center text-stone-500">Belum ada event terdaftar. <a class="font-bold text-brand-orangeDeep underline" href="{% url 'peserta_daftar_event' %}">Cari event</a></td>
+              <td colspan="4" class="px-5 py-5 text-center text-stone-500">
+                <div class="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+                  <span class="dashboard-empty-icon grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl text-brand-orangeDeep"><i class="fa-solid fa-calendar-plus"></i></span>
+                  <div class="sm:text-left"><span class="block font-bold text-brand-ink">Belum ada event terdaftar</span><span class="mt-0.5 block text-xs text-stone-500">Temukan acara yang sesuai dengan minat Anda.</span></div>
+                  <a class="participant-button inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold" href="{% url 'peserta_daftar_event' %}">Jelajahi Event <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                </div>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -134,29 +462,30 @@
   </section>
 
   <section class="grid gap-4 lg:grid-cols-2">
-    <div class="participant-card achievement-summary-card overflow-hidden rounded-[22px]">
-      <div class="flex items-center justify-between border-b border-amber-100 px-5 py-4">
+    <div class="participant-card dashboard-summary-card achievement-summary-card overflow-hidden rounded-[22px]">
+      <div class="dashboard-summary-heading flex items-center justify-between border-b border-amber-100 px-5 py-4">
         <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="font-display text-left text-lg font-extrabold text-brand-orangeDeep"><i class="fa-solid fa-trophy mr-2"></i>Achievement Terbaru</button>
         <a href="{% url 'peserta_achievement' %}" data-achievement-all class="relative z-10 text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
       </div>
       <button type="button" onclick="document.getElementById('achievementModal').showModal()" class="flex w-full items-center gap-4 p-5 text-left transition hover:bg-amber-50/50">
-        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#f4d7a5] text-3xl text-[#8b510d]"><i class="fa-solid fa-medal"></i></span>
+        <span class="dashboard-empty-icon grid h-16 w-16 shrink-0 place-items-center rounded-full {% if current_level %}text-[#8b510d]{% else %}text-stone-500{% endif %} text-3xl"><i class="fa-solid {% if current_level %}fa-medal{% else %}fa-lock{% endif %}"></i></span>
         <div>
-          <p class="font-bold text-brand-olive">{{ current_level.name|default:"Event Explorer" }}</p>
-          <p class="mt-1 text-sm text-stone-600">Mengikuti {{ attended_count }} event</p>
-          <p class="mt-1 text-xs text-stone-500">{% if current_level %}Level tercapai{% else %}{{ progress_remaining }} event lagi untuk Perak{% endif %}</p>
-        </button>
-      </div>
+          <p class="font-bold text-brand-olive">{% if current_level %}{{ current_level_display }}{% elif level_count == 0 %}Belum ada achievement{% else %}Menuju {{ next_level_display }}{% endif %}</p>
+          <p class="mt-1 text-sm text-stone-600">Mengikuti {{ level_count }} event</p>
+          <p class="mt-1 text-xs text-stone-500">{% if progress_remaining %}{{ progress_remaining }} event lagi untuk {{ next_level_display }}{% else %}Semua level tercapai{% endif %}</p>
+          {% if progress_remaining %}<div class="mt-2 flex items-center gap-3"><div class="h-2 flex-1 overflow-hidden rounded-full bg-amber-100"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:{{ progress_percent }}%"></div></div><span class="whitespace-nowrap text-[11px] font-bold text-brand-orangeDeep">{{ level_count }}/{{ next_threshold }}</span></div>{% endif %}
+        </div>
+      </button>
     </div>
 
-    <div class="participant-card overflow-hidden rounded-[22px]">
-      <div class="flex items-center justify-between border-b border-amber-100 px-5 py-4">
+    <div class="participant-card dashboard-summary-card overflow-hidden rounded-[22px]">
+      <div class="dashboard-summary-heading flex items-center justify-between border-b border-amber-100 px-5 py-4">
         <h2 class="font-display text-lg font-extrabold text-brand-orangeDeep"><i class="fa-solid fa-file-lines mr-2"></i>Sertifikat Terbaru</h2>
         <a href="{% url 'peserta_sertifikat' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
       </div>
       {% if latest_certificate %}
       <div class="flex flex-wrap items-center gap-4 p-5">
-        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-xl border border-amber-200 bg-white text-3xl text-[#8b510d]"><i class="fa-solid fa-certificate"></i></span>
+        <span class="certificate-miniature grid h-16 w-24 shrink-0 place-items-center rounded-xl border border-amber-200 p-1"><span class="grid h-full w-full place-items-center border border-amber-300 bg-white text-[9px] font-extrabold tracking-[.14em] text-rose-600">SIMEVENT<i class="fa-solid fa-award mt-1 text-lg text-amber-500"></i></span></span>
         <div class="min-w-0 flex-1">
           <p class="truncate font-bold text-brand-olive">{{ latest_certificate.event.title }}</p>
           <p class="mt-1 text-sm text-stone-600">{{ latest_certificate.event.organizer.get_full_name|default:latest_certificate.event.organizer.email }}</p>
@@ -165,7 +494,7 @@
         <a href="{% url 'peserta_sertifikat_detail' latest_certificate.pk %}" class="participant-outline rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
       </div>
       {% else %}
-      <p class="p-5 text-sm text-stone-500">Sertifikat yang sudah diterbitkan akan muncul di sini.</p>
+      <div class="flex min-h-[126px] items-center justify-center gap-4 p-5 text-sm text-stone-500"><span class="dashboard-certificate-preview"><i class="fa-solid fa-file-lines text-xl"></i></span><div><p class="font-bold text-brand-ink">Koleksi sertifikat masih kosong</p><p class="mt-1 text-xs leading-relaxed">Sertifikat akan muncul setelah event selesai dan persyaratan terpenuhi.</p></div></div>
       {% endif %}
     </div>
   </section>
@@ -181,45 +510,109 @@
       <button type="button" onclick="this.closest('dialog').close()" aria-label="Tutup" class="p-2 text-2xl text-brand-orangeDeep"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <div class="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div class="achievement-levels relative mt-7 grid grid-cols-2 gap-x-2 gap-y-5 sm:grid-cols-4 sm:gap-4">
+      <div class="pointer-events-none absolute left-[12.5%] right-[12.5%] top-[58px] hidden h-1.5 sm:flex" aria-hidden="true">
+        <span class="achievement-track relative flex-1 rounded-full"><span class="achievement-track-fill absolute inset-y-0 left-0 rounded-full" style="width:{% if track_segment > 0 %}100%{% elif track_segment == 0 %}{{ progress_percent }}%{% else %}0%{% endif %}"></span></span>
+        <span class="achievement-track relative flex-1 rounded-full"><span class="achievement-track-fill absolute inset-y-0 left-0 rounded-full" style="width:{% if track_segment > 1 %}100%{% elif track_segment == 1 %}{{ progress_percent }}%{% else %}0%{% endif %}"></span></span>
+        <span class="achievement-track relative flex-1 rounded-full"><span class="achievement-track-fill absolute inset-y-0 left-0 rounded-full" style="width:{% if track_segment > 2 %}100%{% elif track_segment == 2 %}{{ progress_percent }}%{% else %}0%{% endif %}"></span></span>
+      </div>
       {% for level in levels %}
-      <div class="relative text-center">
-        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full border-4 {% if attended_count >= level.required %}border-amber-300 bg-amber-100 text-amber-600{% else %}border-stone-200 bg-stone-100 text-stone-400{% endif %} text-2xl">
-          <i class="fa-solid {{ level.icon }}"></i>
+      <div class="relative z-10 text-center">
+        <div class="achievement-level-marker {% if level.name == 'Perak' %}achievement-medal--silver{% elif level.name == 'Emas' %}achievement-medal--gold{% elif level.name == 'Platinum' %}achievement-medal--platinum{% else %}achievement-medal--legend{% endif %} {% if level_count >= level.required %}is-unlocked{% else %}is-locked{% endif %}">
+          <svg class="achievement-medal-svg" viewBox="0 0 120 150" aria-hidden="true">
+            <defs>
+              <linearGradient id="medal-rim-{{ forloop.counter }}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="var(--medal-highlight)"/><stop offset=".38" stop-color="var(--medal-mid)"/><stop offset=".58" stop-color="var(--medal-light)"/><stop offset="1" stop-color="var(--medal-deep)"/></linearGradient>
+              <radialGradient id="medal-face-{{ forloop.counter }}" cx="34%" cy="24%" r="78%"><stop stop-color="var(--medal-highlight)"/><stop offset=".5" stop-color="var(--medal-light)"/><stop offset="1" stop-color="var(--medal-mid)"/></radialGradient>
+              <linearGradient id="medal-ribbon-{{ forloop.counter }}" x1="0" y1="0" x2="1" y2="0"><stop stop-color="var(--medal-deep)"/><stop offset=".48" stop-color="var(--medal-ribbon-light)"/><stop offset="1" stop-color="var(--medal-ribbon)"/></linearGradient>
+              <filter id="medal-shadow-{{ forloop.counter }}" x="-25%" y="-20%" width="150%" height="165%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="var(--medal-deep)" flood-opacity=".25"/></filter>
+            </defs>
+            <path d="M39 77 56 85 44 148 29 134 15 147 22 85Z" fill="url(#medal-ribbon-{{ forloop.counter }})" stroke="rgba(255,255,255,.62)" stroke-width="1.5"/>
+            <path d="m81 85 17-8 16 8 7 62-14-13-15 14Z" fill="url(#medal-ribbon-{{ forloop.counter }})" stroke="rgba(255,255,255,.62)" stroke-width="1.5"/>
+            <g filter="url(#medal-shadow-{{ forloop.counter }})">
+              <path d="M60 4c8 0 11 9 19 11 8 2 17-2 23 5s1 16 3 24c2 8 11 13 11 21s-9 13-11 21c-2 8 3 17-3 24s-15 3-23 5c-8 2-11 11-19 11s-11-9-19-11c-8-2-17 2-23-5s-1-16-3-24C13 78 4 73 4 65s9-13 11-21c2-8-3-17 3-24s15-3 23-5C49 13 52 4 60 4Z" fill="url(#medal-rim-{{ forloop.counter }})" stroke="rgba(255,255,255,.95)" stroke-width="2"/>
+              <path d="M60 13c7 0 9 7 16 9 7 2 14-1 19 4s2 12 4 19c2 7 9 10 9 17s-7 10-9 17c-2 7 1 14-4 19s-12 2-19 4c-7 2-9 9-16 9s-9-7-16-9c-7-2-14 1-19-4s-2-12-4-19c-2-7-9-10-9-17s7-10 9-17c2-7-1-14 4-19s12-2 19-4c7-2 9-9 16-9Z" fill="url(#medal-face-{{ forloop.counter }})" stroke="rgba(255,255,255,.82)" stroke-width="1.5"/>
+              <circle cx="60" cy="65" r="32" fill="url(#medal-rim-{{ forloop.counter }})" stroke="rgba(255,255,255,.88)" stroke-width="2"/>
+              <circle cx="60" cy="65" r="26" fill="url(#medal-face-{{ forloop.counter }})" stroke="rgba(255,255,255,.66)" stroke-width="1.5"/>
+              <circle cx="60" cy="65" r="21" fill="none" stroke="var(--medal-deep)" stroke-opacity=".22" stroke-width="1.2"/>
+            </g>
+            <path d="m14 34 2.4 5.3 5.6 1-4.1 4 .9 5.7-4.8-2.7-4.8 2.7.9-5.7-4.1-4 5.6-1L14 34Zm93 9 1.7 3.8 4 .7-2.9 2.8.7 4-3.5-1.9-3.6 1.9.7-4-2.9-2.8 4-.7L107 43Z" fill="var(--medal-highlight)" opacity=".72"/>
+            <circle cx="24" cy="66" r="2" fill="var(--medal-highlight)" opacity=".75"/><circle cx="101" cy="29" r="2" fill="var(--medal-highlight)" opacity=".8"/>
+          </svg>
+          <i class="achievement-medal-icon fa-solid {% if level_count >= level.required %}fa-star{% else %}fa-lock{% endif %}"></i>
         </div>
-        <p class="mt-2 font-extrabold text-brand-olive">{{ level.name }}</p>
+        <p class="mt-1 font-extrabold"><span class="achievement-level-label {% if level.name == 'Perak' %}achievement-level--silver{% elif level.name == 'Emas' %}achievement-level--gold{% elif level.name == 'Platinum' %}achievement-level--platinum{% else %}achievement-level--legend{% endif %}">{{ level.name }}</span></p>
         <p class="text-xs text-stone-500">{{ level.required }} event</p>
+        <p class="mt-1 text-[11px] font-bold {% if level_count >= level.required %}text-emerald-700{% else %}text-stone-500{% endif %}">{% if level_count >= level.required %}Tercapai{% else %}Perlu {{ level.required }} event{% endif %}</p>
       </div>
       {% endfor %}
     </div>
 
     <div class="mt-7 grid gap-4 md:grid-cols-[1.6fr_1fr]">
-      <div class="rounded-[20px] bg-[#f4e7c2]/80 p-5">
-        <h3 class="font-extrabold text-brand-olive">Progress ke {{ next_level.name }}</h3>
+      <div class="achievement-progress-panel rounded-[20px] p-5">
+        <h3 class="font-extrabold text-brand-olive">Progress {% if progress_remaining %}ke {{ next_level.name }}{% else %}achievement{% endif %}</h3>
         <div class="mt-4 flex items-center gap-4">
-          <div class="h-3 flex-1 overflow-hidden rounded-full bg-amber-200">
-            <div class="h-full rounded-full bg-amber-600" style="width:{{ progress_percent }}%"></div>
+          <div class="achievement-track h-3 flex-1 overflow-hidden rounded-full">
+            <div class="achievement-track-fill h-full rounded-full transition-all" style="width:{{ progress_percent }}%"></div>
           </div>
-          <strong class="text-brand-olive">{{ attended_count }} / {{ next_threshold }}</strong>
+          <strong class="whitespace-nowrap text-brand-olive">{{ level_count }} / {{ next_threshold }}</strong>
         </div>
-        <p class="mt-3 text-sm text-stone-600">Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.</p>
+        <p class="mt-3 text-sm text-stone-600">{% if progress_remaining %}Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.{% else %}Selamat, Anda telah mencapai seluruh level achievement!{% endif %}</p>
       </div>
 
-      <div class="rounded-[20px] bg-white/80 p-5">
-        <h3 class="font-extrabold text-brand-olive">Benefit Setiap Level</h3>
-        <ul class="mt-3 space-y-2 text-sm text-stone-600">
-          {% for level in levels %}
-          <li class="flex items-center gap-3">
-            <span class="grid h-8 w-8 place-items-center rounded-full {% if attended_count >= level.required %}bg-amber-200 text-amber-700{% else %}bg-stone-100 text-stone-400{% endif %}"><i class="fa-solid {{ level.icon }}"></i></span>
-            <span>
-              <b>{{ level.name }}</b><br>
-              <span class="text-xs">{{ level.required }} event</span>
-            </span>
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
-    </dialog>
-  </div>
-</div>
+      <div class="achievement-benefit-panel flex gap-4 rounded-[20px] p-5">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-amber-100 text-2xl text-amber-700"><i class="fa-solid fa-gift"></i></span>
+        <div>
+          <h3 class="font-extrabold text-brand-olive">Benefit Level {{ next_level.name }}</h3>
+          <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-stone-600">
+            {% if next_level.name == "Emas" %}
+            <li>Badge Emas di profil</li><li>Sertifikat spesial</li><li>Akses ke event eksklusif</li>
+            {% elif next_level.name == "Platinum" %}
+            <li>Badge Platinum di profil</li><li>Akses prioritas ke event eksklusif</li>
+            {% elif next_level.name == "Legenda" %}
+            <li>Badge Legenda di profil</li><li>Semua benefit level sebelumnya</li><li>Reward spesial</li>
+            {% else %}
+            <li>Badge Perak di profil</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</dialog>
+<script>
+const achievementModal = document.getElementById('achievementModal');
+achievementModal.addEventListener('click', (event) => {
+ if (event.target === achievementModal) achievementModal.close();
+});
+document.querySelectorAll('.participant-feedback-form').forEach((form) => {
+ form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = form.querySelector('[type="submit"]');
+  const errorBox = form.querySelector('.feedback-error');
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Mengirim...';
+  errorBox.classList.add('hidden');
+  try {
+   const response = await fetch(form.action, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
+    body: new FormData(form),
+   });
+   const result = await response.json();
+   if (!response.ok) {
+    const messages = Object.values(result.errors || {}).flat();
+    throw new Error(messages.join(' ') || result.error || 'Feedback gagal dikirim.');
+   }
+   window.location.reload();
+  } catch (error) {
+   errorBox.textContent = error.message;
+   errorBox.classList.remove('hidden');
+   button.disabled = false;
+   button.textContent = originalText;
+  }
+ });
+});
+</script>
 {% endblock %}
