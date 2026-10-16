@@ -33,7 +33,7 @@ class RegistrationService:
     def register(self, event_id):
         actor = self._lock_actor()
         if not actor.profile_complete:
-            raise ValidationError("Lengkapi nama lengkap, NIM, dan program studi di dashboard sebelum mendaftar.")
+            raise ValidationError("Lengkapi biodata di halaman Akun Saya sebelum mendaftar.")
         event = get_object_or_404(Event.objects.public().select_for_update(), pk=event_id)
         now = timezone.now()
         if event.status != EventStatus.PUBLISHED:
@@ -71,7 +71,7 @@ class RegistrationService:
     def start_paid_registration(self, event_id):
         actor = self._lock_actor()
         if not actor.profile_complete:
-            raise ValidationError("Lengkapi nama lengkap, NIM, dan program studi di dashboard sebelum mendaftar.")
+            raise ValidationError("Lengkapi biodata di halaman Akun Saya sebelum mendaftar.")
         event = get_object_or_404(Event.objects.public().select_for_update(), pk=event_id)
         now = timezone.now()
         if (

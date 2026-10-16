@@ -116,6 +116,12 @@ def profile(request):
         "full_name": user.get_full_name(),
         "nim": user.nim,
         "prodi": user.prodi,
+        "ktp_number": user.ktp_number,
+        "gender": user.gender,
+        "birth_place": user.birth_place,
+        "birth_date": user.birth_date.isoformat() if user.birth_date else None,
+        "address": user.address,
+        "phone_number": user.phone_number,
         "profile_complete": user.profile_complete,
         "role": user.role,
     })

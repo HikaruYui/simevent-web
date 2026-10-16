@@ -62,7 +62,7 @@
       register.reset();
       showPanel('login');
       const notice = document.getElementById('loginNotice');
-      notice.textContent = 'Akun peserta berhasil dibuat. Silakan masuk.';
+      notice.textContent = 'Akun peserta berhasil dibuat. Silakan masuk, lalu lengkapi biodata di halaman Akun Saya.';
       notice.hidden = false;
       document.getElementById('id_password').focus();
     });
