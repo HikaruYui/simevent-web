@@ -325,14 +325,24 @@ def peserta_dashboard(request):
         {"name": "Platinum", "required": 25, "icon": "fa-lock", "color": "platinum"},
         {"name": "Legenda", "required": 50, "icon": "fa-lock", "color": "legend"},
     )
+    # Level participant follows the number of active event registrations, as
+    # shown by the dashboard. Attendance remains the source for certificates
+    # and the separate, configurable achievement records below.
+    level_count = len(registrations)
     completed_levels = [
-        level for level in levels if len(attended) >= level["required"]
+        level for level in levels if level_count >= level["required"]
     ]
     current_level = completed_levels[-1] if completed_levels else None
     next_level = next(
-        (level for level in levels if len(attended) < level["required"]),
+        (level for level in levels if level_count < level["required"]),
         levels[-1],
     )
+    dashboard_level_names = {
+        "Perak": "Silver",
+        "Emas": "Gold",
+        "Platinum": "Platinum",
+        "Legenda": "Legend",
+    }
     next_threshold = next_level["required"]
     attendance_rate = (
         round(len(attended) * 100 / len(completed_registrations))
@@ -351,10 +361,21 @@ def peserta_dashboard(request):
         "levels": levels,
         "completed_levels": completed_levels,
         "current_level": current_level,
+        "current_level_display": dashboard_level_names.get(
+            current_level["name"] if current_level else "", "Belum Ada",
+        ),
         "next_level": next_level,
+        "next_level_display": dashboard_level_names[next_level["name"]],
         "next_threshold": next_threshold,
-        "progress_percent": min(100, round(len(attended) * 100 / next_threshold)),
-        "progress_remaining": max(0, next_threshold - len(attended)),
+        "progress_percent": min(100, round(level_count * 100 / next_threshold)),
+        "progress_remaining": max(0, next_threshold - level_count),
+        "level_count": level_count,
+        "feedback_ratings": (
+            ("overall_rating", "Penilaian keseluruhan"),
+            ("material_rating", "Materi"),
+            ("speaker_rating", "Pembicara"),
+            ("organization_rating", "Penyelenggaraan"),
+        ),
         "latest_certificate": certificates[0] if certificates else None,
         "now": now,
     })
@@ -494,6 +515,11 @@ def peserta_achievement(request):
         )
         achievement.is_completed = achievement.progress >= achievement.required_count
 
+    level_count = (
+        Registration.objects.owned_by(request.user)
+        .filter(status=RegistrationStatus.REGISTERED)
+        .values("event_id").distinct().count()
+    )
     levels = (
         {"name": "Perak", "required": 5, "icon": "fa-star"},
         {"name": "Emas", "required": 10, "icon": "fa-lock"},
@@ -501,14 +527,15 @@ def peserta_achievement(request):
         {"name": "Legenda", "required": 50, "icon": "fa-lock"},
     )
     for level in levels:
-        level["completed"] = total_attended >= level["required"]
-        level["progress"] = min(total_attended, level["required"])
+        level["completed"] = level_count >= level["required"]
+        level["progress"] = min(level_count, level["required"])
     completed_count = sum(item["completed"] for item in levels)
 
     return render(request, "peserta/achievement.html", {
         "achievements": achievements,
         "levels": levels,
         "attended_count": total_attended,
+        "level_count": level_count,
         "completed_count": completed_count,
         "completed_percentage": round(completed_count * 100 / len(levels)),
     })
