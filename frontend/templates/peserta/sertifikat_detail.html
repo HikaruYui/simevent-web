@@ -1,15 +1,37 @@
 {% extends 'peserta/base_peserta.html' %}
 {% load static %}
-{% block ptitle %}Sertifikat{% endblock %}
+{% block ptitle %}Isi Sertifikat{% endblock %}
 {% block peserta %}
-{% with e=sertifikat.registrasi.event %}
-<div class="cert max-w-3xl mx-auto bg-white border-[10px] border-double border-brand-orange p-8 sm:p-12 text-center">
- <img src="{% static 'img/logo.svg' %}" class="h-10 mx-auto" alt="SIMEVENT">
- <p class="text-xs tracking-widest text-brand-muted mt-3">SERTIFIKAT KEHADIRAN</p><p class="mt-5">Diberikan kepada</p>
- <div class="font-display text-3xl font-extrabold text-brand-orange my-3 border-b-2 border-brand-sand inline-block px-8">{{ user.get_full_name|default:user.username }}</div>
- <p>atas partisipasinya dalam<br><b>{{ e.judul }}</b><br>{{ e.tanggal|date:"j F Y" }} · {{ e.lokasi }}</p>
- <p class="text-xs text-brand-muted mt-5">Penyelenggara: {{ e.penyelenggara }}<br>No. {{ sertifikat.nomor }}</p>
+<div class="mx-auto max-w-5xl">
+ <a href="{% url 'peserta_sertifikat' %}" class="mb-4 inline-flex items-center text-sm font-bold text-brand-orangeDeep hover:underline"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Sertifikat Saya</a>
+ <article class="certificate-print relative overflow-hidden rounded-xl border-[10px] border-double border-amber-500 bg-[#fffdf7] p-8 text-center shadow-xl sm:border-[14px] sm:p-14">
+  <div class="pointer-events-none absolute inset-3 border border-amber-200"></div>
+  <div class="relative">
+   <img src="{% static 'img/logo.svg' %}" class="mx-auto h-10" alt="SIMEVENT">
+   <p class="mt-7 text-xs font-bold tracking-[.3em] text-stone-500">SERTIFIKAT KEHADIRAN</p>
+   <h1 class="mt-3 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Sertifikat</h1>
+   <p class="mt-6 text-sm text-stone-600">Diberikan kepada</p>
+   <p class="my-3 inline-block border-b-2 border-amber-300 px-5 pb-2 font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl">{{ request.user.get_full_name|default:request.user.email }}</p>
+   <p class="mx-auto mt-3 max-w-2xl leading-7 text-stone-700">Atas partisipasi dan kehadirannya pada event</p>
+   <h2 class="mt-2 font-display text-2xl font-extrabold text-brand-ink sm:text-3xl">{{ registration.event.title }}</h2>
+   <p class="mt-3 text-sm text-stone-600">{{ registration.event.start_datetime|date:"j F Y" }} · {{ registration.event.venue|default:registration.event.get_delivery_mode_display }}</p>
+   <div class="mt-8 flex flex-col items-center justify-between gap-6 text-sm sm:flex-row">
+    <div><p class="font-bold">{{ registration.event.organizer.get_full_name|default:registration.event.organizer.email }}</p><p class="text-xs text-stone-500">Penyelenggara</p></div>
+    <div class="grid h-16 w-16 place-items-center rounded-full bg-amber-100 text-3xl text-amber-600"><i class="fa-solid fa-award"></i></div>
+    <div><p class="font-bold">SIMEVENT-{{ registration.pk|stringformat:"06d" }}</p><p class="text-xs text-stone-500">Nomor sertifikat</p></div>
+   </div>
+  </div>
+ </article>
+ <div class="mt-5 flex flex-wrap justify-center gap-3 print:hidden">
+  <button onclick="window.print()" class="participant-button rounded-lg px-5 py-3 text-sm font-bold"><i class="fa-solid fa-print mr-2"></i>Cetak / Simpan PDF</button>
+  {% if has_certificate_template %}<a href="{% url 'registrations:certificate-pdf' registration.pk %}" class="participant-outline rounded-lg px-5 py-3 text-sm font-bold"><i class="fa-solid fa-download mr-2"></i>Unduh PDF Resmi</a>{% endif %}
+ </div>
 </div>
-<div class="text-center mt-4"><button onclick="print()" class="px-4 py-2 rounded-full text-sm font-bold bg-brand-orange text-white">Cetak / Simpan PDF</button> <a href="{% url 'peserta_sertifikat' %}" class="px-4 py-2 rounded-full text-sm font-bold bg-white">Kembali</a></div>
-{% endwith %}
+<style>
+@media print {
+ body * { visibility: hidden !important; }
+ .certificate-print, .certificate-print * { visibility: visible !important; }
+ .certificate-print { position: fixed; inset: 0; margin: auto; width: 100%; box-shadow: none; }
+}
+</style>
 {% endblock %}
