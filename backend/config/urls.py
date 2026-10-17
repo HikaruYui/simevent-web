@@ -59,6 +59,13 @@ urlpatterns = [
         name="panitia_dashboard",
     ),
 
+    path("ketua-panitia/", views.eo_dashboard, name="eo_dashboard"),
+    path("ketua-panitia/event/", views.eo_event, name="eo_event"),
+    path("ketua-panitia/peserta/", views.eo_peserta, name="eo_peserta"),
+    path("ketua-panitia/pendapatan/", views.eo_pendapatan, name="eo_pendapatan"),
+    path("ketua-panitia/log-aktivitas/", views.eo_log, name="eo_log"),
+    path("ketua-panitia/support/", views.eo_support, name="eo_support"),
+
     path(
         "panitia/event/<int:pk>/",
         views.panitia_event_detail,
