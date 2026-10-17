@@ -259,10 +259,12 @@ def logout_page(request):
 @require_GET
 @login_required(login_url="login_page")
 def after_login(request):
-    if request.user.role in (
-        "ADMIN",
-        "ORGANIZER",
-    ):
+    if request.user.role == "ORGANIZER":
+        return redirect(
+            "eo_dashboard"
+        )
+
+    if request.user.role == "ADMIN":
         return redirect(
             "panitia_dashboard"
         )
@@ -676,6 +678,26 @@ def panitia_dashboard(request):
         },
     )
 
+
+# =========================================================
+# DASHBOARD KETUA PANITIA (data contoh, belum dari database)
+# =========================================================
+
+def _ketua_panitia(template):
+    @never_cache
+    @require_GET
+    @login_required(login_url="login_page")
+    def view(request):
+        require_organizer(request.user)
+        return render(request, f"ketua_panitia/{template}.html")
+    return view
+
+eo_dashboard = _ketua_panitia("dashboard")
+eo_event = _ketua_panitia("event")
+eo_peserta = _ketua_panitia("peserta")
+eo_pendapatan = _ketua_panitia("pendapatan")
+eo_log = _ketua_panitia("log_aktivitas")
+eo_support = _ketua_panitia("support")
 
 @never_cache
 @require_GET

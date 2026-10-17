@@ -1,0 +1,26 @@
+{% extends "ketua_panitia/base_ketua_panitia.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_key %}dashboard{% endblock %}
+{% block nav_dashboard %} class="is-active" aria-current="page"{% endblock %}
+{% block fab %}{% endblock %}
+{% block content %}
+<header class="eo-head"><h1>Dashboard Ketua Panitia</h1></header>
+<section class="kpi-grid" aria-label="Ringkasan">
+  <article class="card kpi"><p class="kpi__label">Total Pendapatan</p><p class="kpi__value"><span id="kpiPendapatan">0</span></p><p class="kpi__delta"><span id="deltaPendapatan"></span></p><div class="kpi__spark" id="sparkPendapatan"></div></article>
+  <article class="card kpi"><p class="kpi__label">Tiket Terjual</p><p class="kpi__value"><span id="kpiTiket">0</span></p><p class="kpi__delta"><span id="deltaTiket"></span></p><div class="kpi__spark" id="sparkTiket"></div></article>
+  <article class="card kpi kpi--split"><p class="kpi__label">Event Aktif</p>
+    <div class="kpi__pair"><div><span id="evBerlangsung" class="kpi__num kpi__num--orange">0</span><span class="kpi__cap kpi__cap--orange">Sedang Berlangsung</span></div><i></i><div><span id="evMendatang" class="kpi__num">0</span><span class="kpi__cap">Mendatang</span></div></div></article>
+  <article class="card kpi kpi--split"><p class="kpi__label">Ticket Support</p>
+    <div class="kpi__pair"><div><span id="tkDiaudit" class="kpi__num kpi__num--orange">0</span><span class="kpi__cap kpi__cap--orange">Sedang Diaudit</span></div><i></i><div><span id="tkSelesai" class="kpi__num">0</span><span class="kpi__cap">Selesai</span></div></div></article>
+</section>
+<section class="dash-row">
+  <div><h2 class="sec-title sec-title--out">Grafik Kehadiran</h2>
+  <article class="card chart-card"><div class="chart-card__plot" id="attendancePlot"></div>
+    <div class="chart-card__filters">
+    <label class="pill-select"><span class="sr-only">Event</span><select id="selEvent"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label>
+    <label class="pill-select"><span class="sr-only">Metrik</span><select id="selMetrik"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label></div></article></div>
+  <div><h2 class="sec-title sec-title--out"><span>Log Aktivitas</span><a href="{% url 'eo_log' %}" id="logToggle">Lihat semua &rarr;</a></h2>
+  <article class="card log-card" id="logCard"><ul class="log-list" id="logList"></ul>
+    <button type="button" class="fab" data-open-new-event><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Event baru</button></article></div>
+</section>
+{% endblock %}
