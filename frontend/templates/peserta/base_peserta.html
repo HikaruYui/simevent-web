@@ -66,6 +66,8 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
 .participant-sidebar > * { position: relative; z-index: 1; }
 .participant-sidebar-panel {
   position: relative;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.76);
   border-radius: 20px;
@@ -184,25 +186,35 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
 .participant-sidebar nav a.participant-button i { color: #fff; }
 @media (min-width: 768px) {
   .participant-sidebar {
-    width: 290px!important;
-    height: 100vh;
-    min-height: 760px;
-    padding: 16px 0 20px 6px!important;
+    position: fixed !important;
+    top: 16px !important;
+    bottom: 16px !important;
+    left: 6px !important;
+    display: block !important;
+    width: 304px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    z-index: 50 !important;
   }
   .participant-sidebar-panel {
-    height: 78vh;
-    min-height: 590px;
-    max-height: 810px;
-    padding: 40px 14px 22px;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 40px 14px 22px !important;
   }
   .participant-main {
-    width: 0;
-    max-width: calc(100% - 290px);
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 326px !important;
     padding: 18px 24px 18px!important;
   }
   .participant-sidebar nav { gap: 8px!important; overflow: visible!important; }
   .participant-sidebar nav a { min-height: 64px; font-size: 1.125rem; }
-  .participant-sidebar > div:last-child { padding: 0 12px 8px; }
+  .participant-sidebar-panel > div:last-child { margin-top: auto !important; flex: 0 0 auto !important; padding: 14px 4px 0 !important; }
 }
 </style>
 {% endblock %}
@@ -222,14 +234,14 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
         <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
         <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
       </nav>
-    </div>
-    <div class="mt-4 border-t border-amber-200/80 pt-4">
+      <div class="mt-4 border-t border-amber-200/80 pt-4">
       <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip flex min-w-0 items-center gap-3 rounded-xl px-2 py-2">
         <img src="{% static 'img/participant-avatar.svg' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover ring-2 ring-white">
         <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
         <i class="fa-solid fa-chevron-right ml-auto mr-2 text-xs text-brand-orangeDeep"></i>
       </a>
       <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
+      </div>
     </div>
   </aside>
   <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
