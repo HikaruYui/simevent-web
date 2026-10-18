@@ -18,7 +18,14 @@ def setup_users():
     call_command("bootstrap_roles", stdout=StringIO())
     users = []
     for name in ("owner", "other", "participant", "admin"):
-        user = User.objects.create_user(f"{name}@events.example", "Event-test-password-123!")
+        user = User.objects.create_user(
+            f"{name}@events.example",
+            "Event-test-password-123!",
+            first_name=name.title(),
+            last_name="Participant",
+            nim=f"2026{name}",
+            prodi="Informatika",
+        )
         if name in ("owner", "other"):
             user.groups.add(Group.objects.get(name="Organizer"))
         if name == "admin":

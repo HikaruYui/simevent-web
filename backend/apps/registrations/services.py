@@ -32,6 +32,8 @@ class RegistrationService:
     @transaction.atomic
     def register(self, event_id):
         actor = self._lock_actor()
+        if not actor.profile_complete:
+            raise ValidationError("Lengkapi biodata di halaman Akun Saya sebelum mendaftar.")
         event = get_object_or_404(Event.objects.public().select_for_update(), pk=event_id)
         now = timezone.now()
         if event.status != EventStatus.PUBLISHED:
@@ -39,7 +41,7 @@ class RegistrationService:
         if not event.registration_open <= now < event.registration_close:
             raise ValidationError("Registration is not open.")
         if now >= event.start_datetime or event.price != 0:
-            raise ValidationError("Only upcoming free events accept registration.")
+            raise ValidationError("Gunakan alur pembayaran untuk event berbayar.")
 
         registration = Registration.objects.filter(participant=actor, event=event).first()
         if registration and registration.status == RegistrationStatus.REGISTERED:
@@ -63,6 +65,59 @@ class RegistrationService:
                 registration=registration,
                 defaults={"token": uuid4(), "is_active": True},
             )
+        return registration
+
+    @transaction.atomic
+    def start_paid_registration(self, event_id):
+        actor = self._lock_actor()
+        if not actor.profile_complete:
+            raise ValidationError("Lengkapi biodata di halaman Akun Saya sebelum mendaftar.")
+        event = get_object_or_404(Event.objects.public().select_for_update(), pk=event_id)
+        now = timezone.now()
+        if (
+            event.status != EventStatus.PUBLISHED
+            or not event.registration_open <= now < event.registration_close
+            or now >= event.start_datetime
+            or event.price <= 0
+        ):
+            raise ValidationError("Event berbayar ini tidak dapat menerima pendaftaran saat ini.")
+
+        registration = Registration.objects.filter(participant=actor, event=event).first()
+        if registration and registration.status == RegistrationStatus.REGISTERED:
+            payment = getattr(registration, "payment", None)
+            if payment and payment.status != payment.Status.APPROVED:
+                return registration
+            raise ValidationError("Anda sudah terdaftar.")
+        if event.registrations.active().count() >= event.capacity:
+            raise ValidationError("Event ini sudah penuh.")
+
+        if registration is None:
+            registration = Registration.objects.create(
+                participant=actor, event=event, registered_at=now,
+            )
+        else:
+            registration.status = RegistrationStatus.REGISTERED
+            registration.registered_at = now
+            registration.cancelled_at = None
+            registration.save(update_fields=[
+                "status", "registered_at", "cancelled_at", "updated_at",
+            ])
+            Ticket.objects.filter(registration=registration).update(is_active=False)
+
+        from .models import Payment
+
+        Payment.objects.update_or_create(
+            registration=registration,
+            defaults={
+                "amount": event.price,
+                "status": Payment.Status.AWAITING_PROOF,
+                "proof": "",
+                "submitted_at": None,
+                "reviewed_by": None,
+                "reviewed_at": None,
+                "review_note": "",
+            },
+        )
         return registration
 
     @transaction.atomic

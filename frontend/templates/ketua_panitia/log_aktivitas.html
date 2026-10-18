@@ -1,0 +1,12 @@
+{% extends "ketua_panitia/base_ketua_panitia.html" %}
+{% block title %}Log Aktivitas{% endblock %}
+{% block page_key %}log{% endblock %}
+{% block nav_log %} class="is-active" aria-current="page"{% endblock %}
+{% block content %}
+<header class="eo-head"><h1>Log Aktivitas</h1></header>
+<div class="toolbar" style="padding:20px 0 6px;border-bottom:0;gap:12px 16px">
+  <label class="search" style="flex:1 1 240px;max-width:300px;height:40px"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari aktivitas</span><input id="lgSearch" type="search" placeholder="Cari aktivitas..."></label>
+  <div class="tabs" id="lgTabs" role="group" aria-label="Filter kategori aktivitas"></div>
+</div>
+<article class="card" style="margin-top:14px;padding:18px 22px"><ul class="log-list" id="lgList" style="max-height:none;padding-bottom:0"></ul></article>
+{% endblock %}

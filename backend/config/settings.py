@@ -1,17 +1,14 @@
 # Fungsi file: Konfigurasi Django, PostgreSQL, autentikasi, waktu, static/media, dan keamanan.
-
 # Konfigurasi utama: PostgreSQL, installed apps, custom user, security, timezone, static/media.
-
 import os
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
-if not SECRET_KEY:
-    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY in the environment.")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "halo123")
+# if not SECRET_KEY:
+#     raise ImproperlyConfigured("Set DJANGO_SECRET_KEY in the environment.")
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 INSTALLED_APPS = [
@@ -39,7 +36,11 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [{
     "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [BASE_DIR / "templates"],
+    "DIRS": [
+        BASE_DIR / "templates",
+        BASE_DIR.parent / "frontend" / "templates",
+        BASE_DIR.parent / "frontend",
+    ],
     "APP_DIRS": True,
     "OPTIONS": {"context_processors": [
         "django.template.context_processors.request",
@@ -70,8 +71,10 @@ LANGUAGE_CODE = "id"
 TIME_ZONE = "Asia/Makassar"
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    BASE_DIR.parent / "frontend" / "static",
+]
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

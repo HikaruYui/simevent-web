@@ -6,8 +6,8 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.decorators.http import require_GET, require_POST
-from .forms import EmailAuthenticationForm, RegistrationForm
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from .forms import EmailAuthenticationForm, ProfileForm, RegistrationForm
 from .models import User
 
 
@@ -90,7 +90,7 @@ def sign_out(request):
 
 
 @never_cache
-@require_GET
+@require_http_methods(["GET", "POST"])
 def profile(request):
     if not request.user.is_authenticated:
         return JsonResponse(
@@ -100,9 +100,28 @@ def profile(request):
 
     user = request.user
 
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=user)
+        if not form.is_valid():
+            return JsonResponse(
+                {"errors": form.errors.get_json_data()},
+                status=400,
+            )
+        user = form.save()
+
     return JsonResponse({
         "email": user.email,
         "first_name": user.first_name,
         "last_name": user.last_name,
+        "full_name": user.get_full_name(),
+        "nim": user.nim,
+        "prodi": user.prodi,
+        "ktp_number": user.ktp_number,
+        "gender": user.gender,
+        "birth_place": user.birth_place,
+        "birth_date": user.birth_date.isoformat() if user.birth_date else None,
+        "address": user.address,
+        "phone_number": user.phone_number,
+        "profile_complete": user.profile_complete,
         "role": user.role,
     })

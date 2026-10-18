@@ -98,6 +98,23 @@ class AccountTests(TestCase):
         self.assertEqual(self.client.post(reverse("accounts:logout")).status_code, 200)
         self.assertEqual(self.client.get(reverse("accounts:profile")).status_code, 401)
 
+    def test_profile_requires_and_saves_complete_student_biodata(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("accounts:profile"))
+        self.assertFalse(response.json()["profile_complete"])
+        invalid = self.client.post(reverse("accounts:profile"), {
+            "first_name": "Andi", "last_name": "", "nim": "123", "prodi": "Informatika",
+        })
+        self.assertEqual(invalid.status_code, 400)
+        response = self.client.post(reverse("accounts:profile"), {
+            "first_name": " Andi ", "last_name": " Mahendra ",
+            "nim": "2026001", "prodi": " Informatika ",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["profile_complete"])
+        self.assertEqual(response.json()["full_name"], "Andi Mahendra")
+        self.assertEqual(response.json()["nim"], "2026001")
+
     def test_login_rotates_session(self):
         session = self.client.session
         session["before_login"] = True
@@ -188,4 +205,3 @@ class AccountTests(TestCase):
         form = form_class(data=self.registration_data())
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.save().role, "PARTICIPANT")
-

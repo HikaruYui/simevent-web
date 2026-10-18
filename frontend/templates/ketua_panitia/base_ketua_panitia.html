@@ -1,0 +1,115 @@
+{% load static %}<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · SIMEVENT Ketua Panitia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=4">
+  <style>
+    :root { --side-w: clamp(210px, 14.5vw, 244px); }
+    .sr-only {
+      position: absolute !important; top: 0 !important; left: 0 !important; display: block !important;
+      width: 1px !important; height: 1px !important; margin: -1px !important; padding: 0 !important;
+      overflow: hidden !important; clip: rect(0 0 0 0) !important; clip-path: inset(50%) !important;
+      white-space: nowrap !important; border: 0 !important; pointer-events: none !important;
+    }
+    .eo { display: block !important; min-height: 100vh !important; padding-left: var(--side-w) !important; }
+    .eo-side {
+      position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; z-index: 20 !important;
+      width: var(--side-w) !important; height: 100vh !important; height: 100dvh !important;
+      display: flex !important; flex-direction: column !important; justify-content: space-between !important;
+      padding: 26px 20px 20px !important; background: var(--white) !important; overflow-y: auto !important;
+    }
+    .eo-side__brand { display: inline-flex !important; align-items: center !important; padding: 0 8px !important; }
+    .eo-side__brand img { width: min(100%, 156px) !important; height: auto !important; }
+    .eo-nav {
+      display: grid !important; gap: 4px !important;
+      margin-top: clamp(20px, 3vh, 36px) !important; margin-bottom: auto !important;
+      align-content: start !important; flex: 0 0 auto !important;
+    }
+    .eo-nav a {
+      display: flex !important; align-items: center !important; gap: 12px !important;
+      height: 40px !important; padding: 0 12px !important; border-radius: 12px !important;
+      font: 600 14px/1 var(--font-head) !important; color: var(--muted) !important;
+    }
+    .eo-nav a .icon { width: 18px !important; height: 18px !important; }
+    .eo-nav a:hover { background: var(--cream-card) !important; color: var(--olive) !important; }
+    .eo-nav a.is-active { background: var(--cream) !important; color: var(--olive) !important; font-weight: 700 !important; }
+    .eo-user { margin-top: 24px !important; padding: 14px 8px 0 !important; border-top: 1px solid var(--taupe) !important; }
+    .eo-user b {
+      display: block !important; font: 700 15px/1.3 var(--font-head) !important;
+      font-size: 15px !important; color: var(--olive) !important;
+      white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+    }
+    .eo-user p { margin-top: 2px !important; font: 600 12px/1.35 var(--font-body) !important; color: var(--muted) !important; }
+    .eo-user button {
+      display: inline-flex !important; align-items: center !important; gap: 8px !important; margin-top: 12px !important;
+      padding: 4px 0 !important; border: 0 !important; background: none !important;
+      font: 700 13.5px/1 var(--font-head) !important; color: var(--olive) !important;
+    }
+    .eo-user button .icon { width: 17px !important; height: 17px !important; }
+    @media (max-width: 960px) {
+      .eo { padding-left: 0 !important; }
+      .eo-side { position: static !important; width: 100% !important; height: auto !important; flex-direction: row !important; flex-wrap: wrap !important; padding: 16px 20px !important; }
+      .eo-nav { display: flex !important; flex-wrap: wrap !important; margin: 0 !important; order: 3 !important; width: 100% !important; }
+      .eo-user { display: flex !important; align-items: center !important; gap: 12px !important; padding: 0 !important; border: 0 !important; margin: 0 0 0 auto !important; }
+      .eo-user p, .eo-user b { display: none !important; }
+      .eo-user button { margin: 0 !important; }
+    }
+  </style>
+</head>
+<body data-page="{% block page_key %}dashboard{% endblock %}">
+{% include "ketua_panitia/_icons.html" %}
+<div class="eo">
+  <aside class="eo-side">
+    <a class="eo-side__brand" href="{% url 'eo_dashboard' %}" aria-label="SIMEVENT">
+      <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" height="36">
+    </a>
+    <nav class="eo-nav" aria-label="Menu ketua panitia">
+      <a href="{% url 'eo_dashboard' %}" {% block nav_dashboard %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Dashboard</a>
+      <a href="{% url 'eo_event' %}" {% block nav_event %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Kelola Event</a>
+      <a href="{% url 'eo_peserta' %}" {% block nav_peserta %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg>Peserta</a>
+      <a href="{% url 'eo_pendapatan' %}" {% block nav_pendapatan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-wallet"/></svg>Pendapatan</a>
+      <a href="{% url 'eo_log' %}" {% block nav_log %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-log"/></svg>Log Aktivitas</a>
+      <a href="{% url 'eo_support' %}" {% block nav_support %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg>Support</a>
+      <a href="#" aria-disabled="true" title="Belum tersedia"><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
+    </nav>
+    <div class="eo-user">
+      <b>{{ request.user.get_full_name|default:"Senku Sartika" }}</b><p>Ketua Panitia</p>
+      <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
+        <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="eo-main">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+{% block fab %}<button type="button" class="fab fab--fixed" data-open-new-event><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Event baru</button>{% endblock %}
+
+<dialog class="dlg" id="newEventDlg" aria-labelledby="neTitle">
+  <form method="dialog" novalidate>
+    <div class="dlg__head"><h2 id="neTitle">Event baru</h2><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
+    <div class="dlg__body">
+      <div class="field"><label for="neNama">Nama event</label><input id="neNama" name="nama" type="text" maxlength="80"></div>
+      <div class="field"><label for="neJenis">Jenis</label>
+        <select id="neJenis" name="jenis"><option>Seminar</option><option>Workshop</option><option>Konferensi</option><option>Webinar</option><option>Pelatihan</option></select></div>
+      <div class="field"><label for="neTanggal">Tanggal</label><input id="neTanggal" name="tanggal" type="date"></div>
+      <div class="field"><label for="neLokasi">Lokasi</label><input id="neLokasi" name="lokasi" type="text" maxlength="80"></div>
+      <div class="field"><label for="neKuota">Kuota</label><input id="neKuota" name="kuota" type="number" min="1" value="100"></div>
+      <div class="field"><label for="neHarga">Harga tiket (Rp, 0 = gratis)</label><input id="neHarga" name="harga" type="number" min="0" value="0"></div>
+    </div>
+    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Simpan</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="{% static 'js/ketua_panitia_data.js' %}"></script>
+<script src="{% static 'js/ketua_panitia.js' %}"></script>
+</body>
+</html>
