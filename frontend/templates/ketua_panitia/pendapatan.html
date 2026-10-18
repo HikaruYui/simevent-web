@@ -1,0 +1,12 @@
+{% extends "ketua_panitia/base_ketua_panitia.html" %}
+{% block title %}Pendapatan{% endblock %}
+{% block page_key %}pendapatan{% endblock %}
+{% block nav_pendapatan %} class="is-active" aria-current="page"{% endblock %}
+{% block content %}
+<header class="eo-head"><h1>Pendapatan</h1></header>
+<section class="stat-row"><article class="card stat"><p class="stat__label">Total pendapatan</p><p class="stat__value" id="pdTotal"></p><p class="stat__note" id="pdDelta"></p></article>
+<article class="card stat"><p class="stat__label">Rata-rata per tiket</p><p class="stat__value" id="pdAvg"></p><p class="stat__note stat__note--muted">Pendapatan / tiket terjual</p></article>
+<article class="card stat"><p class="stat__label">Event terlaris</p><p class="stat__value" id="pdTop" style="font-size:20px"></p><p class="stat__note stat__note--muted" id="pdTopNote"></p></article></section>
+<article class="card chart-card chart-card--bar"><h2 class="sec-title">Pendapatan per bulan</h2><div class="chart-card__plot" id="pdChart"></div></article>
+<div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th class="num">Tiket</th><th class="num">Harga</th><th class="num">Pendapatan</th><th>Kontribusi</th></tr></thead><tbody id="pdBody"></tbody><tfoot id="pdFoot"></tfoot></table></div>
+{% endblock %}

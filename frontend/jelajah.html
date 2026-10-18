@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,30 +8,65 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/style.css">
-  <link rel="stylesheet" href="static/css/jelajah.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/jelajah.css' %}">
 </head>
 <body>
   <div class="page jj-page">
     <header class="site-header jj-site-header">
       <nav class="navbar" aria-label="Navigasi utama">
-        <a class="navbar__brand" href="landing_page.html" aria-label="SIMEVENT, ke beranda">
-          <img src="static/img/logo.svg" alt="SIMEVENT">
+        <a
+          class="navbar__brand"
+          href="{% url 'landing' %}"
+          aria-label="SIMEVENT, ke beranda"
+        >
+          <img
+            src="{% static 'img/logo.svg' %}"
+            alt="SIMEVENT"
+          >
         </a>
         <ul class="navbar__menu">
-          <li><a href="landing_page.html">Beranda</a></li>
-          <li><a href="jelajah.html" class="is-active" aria-current="page">Jelajah</a></li>
-          <li><a href="tentang.html">Tentang</a></li>
-          <li><a href="#bantuan">Bantuan</a></li>
+          <li>
+            <a href="{% url 'landing' %}">
+              Beranda
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="{% url 'jelajah' %}"
+              class="is-active"
+              aria-current="page"
+            >
+              Jelajah
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'tentang' %}">
+              Tentang
+            </a>
+          </li>
+
+          <li>
+  <a href="{% url 'bantuan' %}">
+    Bantuan
+  </a>
+</li>
         </ul>
         <div class="navbar__actions">
-          <a class="btn btn--outline" href="masuk-preview.html">Masuk</a>
-          <a class="btn btn--dark" href="masuk-preview.html#daftar">Daftar</a>
+          {% include "partials/session_actions.html" %}
         </div>
       </nav>
     </header>
     <main class="jj">
-      <div class="jj__crumb"><a href="landing_page.html">Beranda</a> / <b>Jelajah Event</b></div>
+      <div class="jj__crumb">
+        <a href="{% url 'landing' %}">
+          Beranda
+        </a>
+        /
+        <b>Jelajah Event</b>
+      </div>
       <h1>Jelajah Berbagai Event Menarik</h1>
       <p class="jj__sub">Telusuri seminar, workshop, konferensi, webinar, dan sosialisasi dari penyelenggara kampus dan komunitas, lalu dapatkan sertifikat digital untuk setiap event yang kamu hadiri.</p>
 
@@ -38,20 +74,17 @@
         <div class="jj-toolbar">
           <label class="sr-only" for="jj-category">Kategori event</label>
           <select id="jj-category" class="jj-toolbar-select jj-category-select">
-            <option value="">Kategori</option>
-            <option value="konferensi">Konferensi</option>
-            <option value="workshop">Workshop</option>
-            <option value="kuliah umum">Kuliah Umum</option>
-            <option value="seminar">Seminar</option>
-            <option value="pelatihan">Pelatihan</option>
-            <option value="webinar">Webinar</option>
-            <option value="sosialisasi">Sosialisasi</option>
+            <option value="">Semua Kategori</option>
+            {% for category in kategori_list %}
+            <option value="{{ category.code|lower }}">{{ category.name }}</option>
+            {% endfor %}
           </select>
           <label class="sr-only" for="jj-status">Status event</label>
           <select id="jj-status" class="jj-toolbar-select">
             <option value="">Status</option>
             <option value="soon">Akan datang</option>
             <option value="live">Sedang berlangsung</option>
+            <option value="done">Selesai</option>
           </select>
           <label class="sr-only" for="jj-price">Biaya event</label>
           <select id="jj-price" class="jj-toolbar-select">
@@ -82,24 +115,49 @@
       <div class="footer__inner">
         <div class="footer__grid">
           <div class="footer__brand">
-            <img src="static/img/logo.svg" alt="SIMEVENT">
+            <img
+              src="{% static 'img/logo.svg' %}"
+              alt="SIMEVENT"
+            >
             <p>Platform pendaftaran dan pembuatan event formal. Menghubungkan peserta, penyelenggara, dan komunitas dalam satu sistem.</p>
           </div>
           <div>
             <h3>Kategori Event</h3>
             <ul>
-              <li><a href="jelajah.html?kategori=konferensi">Konferensi</a></li>
-              <li><a href="jelajah.html?kategori=workshop">Workshop</a></li>
-              <li><a href="jelajah.html?kategori=seminar">Seminar</a></li>
-              <li><a href="jelajah.html?kategori=webinar">Webinar</a></li>
-              <li><a href="jelajah.html?kategori=sosialisasi">Sosialisasi</a></li>
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=conference">
+                  Konferensi
+                </a>
+              </li>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=workshop">
+                  Workshop
+                </a>
+              </li>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=seminar">
+                  Seminar
+                </a>
+              </li>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=webinar">
+                  Webinar
+                </a>
+              </li>
             </ul>
           </div>
           <div>
             <h3>SIMEVENT</h3>
             <ul>
-              <li><a href="tentang.html">Tentang Kami</a></li>
-              <li><a href="#bantuan">Bantuan</a></li>
+              <li>
+                <a href="{% url 'tentang' %}">
+                  Tentang Kami
+                </a>
+              </li>
+              <li><a href="{% url 'bantuan' %}">Bantuan</a></li>
             </ul>
           </div>
           <div>
@@ -117,6 +175,7 @@
       </div>
     </footer>
   </div>
+  {{ event_data|json_script:"backend-events" }}
   <script>
     const grid = document.getElementById('jj-grid');
     const search = document.getElementById('jj-search');
@@ -129,44 +188,289 @@
     const priceSelect = document.getElementById('jj-price');
     const resetButton = document.getElementById('jj-reset');
     const pageSize = 8;
-    const events = [
-      { id: 'conference-meja-bundar', category: 'konferensi', status: 'live', date: '2026-11-06', dateLabel: '6 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'workshop-uiux', category: 'workshop', status: 'soon', date: '2026-11-10', dateLabel: '10 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'seminar-pendidikan', category: 'seminar', status: 'live', date: '2026-11-09', dateLabel: '9 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'forum-kalimantan', category: 'konferensi', status: 'live', date: '2026-11-04', dateLabel: '4 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'conference-meja-bundar-2', category: 'konferensi', status: 'live', date: '2026-11-06', dateLabel: '6 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'workshop-uiux-2', category: 'workshop', status: 'soon', date: '2026-11-10', dateLabel: '10 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'seminar-pendidikan-2', category: 'seminar', status: 'live', date: '2026-11-09', dateLabel: '9 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'forum-kalimantan-2', category: 'konferensi', status: 'live', date: '2026-11-04', dateLabel: '4 Nov 2026', amount: 145000, title: 'Konferensi Meja Bundar' },
-      { id: 'seminar-teknologi', category: 'seminar', status: 'soon', date: '2026-11-12', dateLabel: '12 Nov 2026', amount: 0, title: 'Seminar Nasional Pendidikan' },
-      { id: 'kelas-kepemimpinan', category: 'pelatihan', status: 'soon', date: '2026-11-14', dateLabel: '14 Nov 2026', amount: 145000, title: 'Pelatihan Kepemimpinan Mahasiswa' },
-      { id: 'webinar-inovasi', category: 'webinar', status: 'live', date: '2026-11-16', dateLabel: '16 Nov 2026', amount: 0, title: 'Webinar Inovasi Digital' },
-      { id: 'kuliah-umum', category: 'kuliah umum', status: 'soon', date: '2026-11-18', dateLabel: '18 Nov 2026', amount: 0, title: 'Kuliah Umum Masa Depan Teknologi' },
-      { id: 'sosialisasi-kampus', category: 'sosialisasi', status: 'live', date: '2026-11-20', dateLabel: '20 Nov 2026', amount: 0, title: 'Sosialisasi Program Kampus' },
-      { id: 'workshop-desain', category: 'workshop', status: 'soon', date: '2026-11-22', dateLabel: '22 Nov 2026', amount: 145000, title: 'Workshop Desain Pengalaman Digital' },
-      { id: 'konferensi-inovasi', category: 'konferensi', status: 'live', date: '2026-11-24', dateLabel: '24 Nov 2026', amount: 145000, title: 'Forum Inovasi Kalimantan' },
-      { id: 'seminar-komunitas', category: 'seminar', status: 'soon', date: '2026-11-26', dateLabel: '26 Nov 2026', amount: 0, title: 'Seminar Kolaborasi Komunitas' }
-    ];
+    const dummyEvents = [
+  {
+    id: 'conference-meja-bundar',
+    slug: 'conference-meja-bundar',
+    category: 'conference',
+    categoryName: 'Konferensi',
+    status: 'live',
+    date: '2026-11-06',
+    dateLabel: '6 Nov 2026',
+    amount: 145000,
+    title: 'Konferensi Meja Bundar',
+    venue: 'Hotel Mercure',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'workshop-uiux',
+    slug: 'workshop-uiux',
+    category: 'workshop',
+    categoryName: 'Workshop',
+    status: 'soon',
+    date: '2026-11-10',
+    dateLabel: '10 Nov 2026',
+    amount: 145000,
+    title: 'Workshop UI/UX untuk Pemula',
+    venue: 'Hotel Mercure',
+    organizer: 'Andi Pratama',
+    bannerUrl: ''
+  },
+  {
+    id: 'seminar-pendidikan',
+    slug: 'seminar-pendidikan',
+    category: 'seminar',
+    categoryName: 'Seminar',
+    status: 'live',
+    date: '2026-11-09',
+    dateLabel: '9 Nov 2026',
+    amount: 0,
+    title: 'Seminar Nasional Pendidikan',
+    venue: 'Hotel Mercure',
+    organizer: 'Dr. Rina Kartika',
+    bannerUrl: ''
+  },
+  {
+    id: 'forum-kalimantan',
+    slug: 'forum-kalimantan',
+    category: 'conference',
+    categoryName: 'Konferensi',
+    status: 'live',
+    date: '2026-11-04',
+    dateLabel: '4 Nov 2026',
+    amount: 145000,
+    title: 'Forum Inovasi Kalimantan',
+    venue: 'Hotel Mercure',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'conference-meja-bundar-2',
+    slug: 'conference-meja-bundar-2',
+    category: 'conference',
+    categoryName: 'Konferensi',
+    status: 'live',
+    date: '2026-11-06',
+    dateLabel: '6 Nov 2026',
+    amount: 145000,
+    title: 'Konferensi Teknologi Nusantara 2026',
+    venue: 'Convention Hall',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'workshop-uiux-2',
+    slug: 'workshop-uiux-2',
+    category: 'workshop',
+    categoryName: 'Workshop',
+    status: 'soon',
+    date: '2026-11-10',
+    dateLabel: '10 Nov 2026',
+    amount: 145000,
+    title: 'Workshop Product Design',
+    venue: 'Creative Hub',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'seminar-pendidikan-2',
+    slug: 'seminar-pendidikan-2',
+    category: 'seminar',
+    categoryName: 'Seminar',
+    status: 'live',
+    date: '2026-11-09',
+    dateLabel: '9 Nov 2026',
+    amount: 145000,
+    title: 'Seminar Transformasi Pendidikan Digital',
+    venue: 'Auditorium Kampus',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'forum-kalimantan-2',
+    slug: 'forum-kalimantan-2',
+    category: 'conference',
+    categoryName: 'Konferensi',
+    status: 'live',
+    date: '2026-11-04',
+    dateLabel: '4 Nov 2026',
+    amount: 145000,
+    title: 'Konferensi Inovasi Kalimantan',
+    venue: 'Hotel Mercure',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'seminar-teknologi',
+    slug: 'seminar-teknologi',
+    category: 'seminar',
+    categoryName: 'Seminar',
+    status: 'soon',
+    date: '2026-11-12',
+    dateLabel: '12 Nov 2026',
+    amount: 0,
+    title: 'Seminar Teknologi Nasional',
+    venue: 'Auditorium Kampus',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'kelas-kepemimpinan',
+    slug: 'kelas-kepemimpinan',
+    category: 'workshop',
+    categoryName: 'Workshop',
+    status: 'soon',
+    date: '2026-11-14',
+    dateLabel: '14 Nov 2026',
+    amount: 145000,
+    title: 'Pelatihan Kepemimpinan Mahasiswa',
+    venue: 'Aula Kampus',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'webinar-inovasi',
+    slug: 'webinar-inovasi',
+    category: 'webinar',
+    categoryName: 'Webinar',
+    status: 'live',
+    date: '2026-11-16',
+    dateLabel: '16 Nov 2026',
+    amount: 0,
+    title: 'Webinar Inovasi Digital',
+    venue: 'Online',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'kuliah-umum',
+    slug: 'kuliah-umum',
+    category: 'seminar',
+    categoryName: 'Seminar',
+    status: 'soon',
+    date: '2026-11-18',
+    dateLabel: '18 Nov 2026',
+    amount: 0,
+    title: 'Kuliah Umum Masa Depan Teknologi',
+    venue: 'Auditorium Kampus',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'sosialisasi-kampus',
+    slug: 'sosialisasi-kampus',
+    category: 'seminar',
+    categoryName: 'Seminar',
+    status: 'live',
+    date: '2026-11-20',
+    dateLabel: '20 Nov 2026',
+    amount: 0,
+    title: 'Sosialisasi Program Kampus',
+    venue: 'Aula Kampus',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'workshop-desain',
+    slug: 'workshop-desain',
+    category: 'workshop',
+    categoryName: 'Workshop',
+    status: 'soon',
+    date: '2026-11-22',
+    dateLabel: '22 Nov 2026',
+    amount: 145000,
+    title: 'Workshop Desain Pengalaman Digital',
+    venue: 'Creative Hub',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'konferensi-inovasi',
+    slug: 'konferensi-inovasi',
+    category: 'conference',
+    categoryName: 'Konferensi',
+    status: 'live',
+    date: '2026-11-24',
+    dateLabel: '24 Nov 2026',
+    amount: 145000,
+    title: 'Forum Inovasi Kalimantan',
+    venue: 'Hotel Mercure',
+    organizer: 'Panitia SIMEVENT',
+    bannerUrl: ''
+  },
+  {
+    id: 'seminar-komunitas',
+    slug: 'seminar-komunitas',
+    category: 'seminar',
+    categoryName: 'Seminar',
+    status: 'soon',
+    date: '2026-11-26',
+    dateLabel: '26 Nov 2026',
+    amount: 0,
+    title: 'Seminar Kolaborasi Komunitas',
+    venue: 'Auditorium Kampus',
+    organizer: 'SIMEVENT',
+    bannerUrl: ''
+  }
+];
+    const backendEvents = JSON.parse(
+      document.getElementById('backend-events').textContent
+    );
+
+    const events = backendEvents;
     const parameters = new URLSearchParams(location.search);
     let currentPage = 1;
     search.value = parameters.get('q') || '';
     const selectedCategory = parameters.get('kategori');
     if (selectedCategory) categorySelect.value = selectedCategory;
 
+    const fallbackBannerUrl = "{% static 'img/hero.jpg' %}";
+
     function createCard(event) {
-      const categoryName = event.category.replace(/\b\w/g, character => character.toUpperCase());
-      const statusName = event.status === 'live' ? 'Sedang Berlangsung' : 'Akan Datang';
-      const price = event.amount ? `Rp${event.amount.toLocaleString('id-ID')}` : 'Gratis';
       const card = document.createElement('article');
-      card.className = 'jj-event-card';
+      card.className = 'event-card';
       card.innerHTML = `
-        <div class="jj-event-card__visual"><span class="jj-event-card__category">${categoryName}</span><time class="jj-event-card__date" datetime="${event.date}">${event.dateLabel}</time></div>
-        <div class="jj-event-card__body">
-          <span class="jj-event-card__status jj-event-card__status--${event.status}"><i></i>${statusName}</span>
-          <h2>${event.title}</h2>
-          <p class="jj-event-card__location"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Hotel Mercure</p>
-          <div class="jj-event-card__footer"><strong>${price}</strong><a href="masuk-preview.html?event=${event.id}">Daftar <span aria-hidden="true">→</span></a></div>
-        </div>`;
+        <div class="event-card__img" aria-hidden="true"></div>
+        <div class="event-card__chips">
+          <span class="chip chip--cream"></span>
+          <time class="chip chip--white"></time>
+        </div>
+        <span class="status"><i></i></span>
+        <h2 class="event-card__title"></h2>
+        <ul class="event-card__meta">
+          <li><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></li>
+          <li><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></li>
+        </ul>
+        <div class="event-card__foot">
+          <span class="price"></span>
+          <a class="btn btn--dark btn--sm" href="{% url 'peserta_daftar_event' %}">Lihat Event</a>
+        </div>
+      `;
+
+      const statusNames = {
+        live: 'Sedang Berlangsung',
+        soon: 'Akan Datang',
+        done: 'Selesai',
+      };
+      const image = card.querySelector('.event-card__img');
+      image.style.backgroundImage = `url("${event.bannerUrl || fallbackBannerUrl}")`;
+      card.querySelector('.chip--cream').textContent = event.categoryName || event.category;
+      const date = card.querySelector('time');
+      date.dateTime = event.date;
+      date.textContent = event.dateLabel;
+      const status = card.querySelector('.status');
+      status.classList.add(`status--${event.status}`);
+      status.append(document.createTextNode(` ${statusNames[event.status] || 'Status tidak diketahui'}`));
+      card.querySelector('.event-card__title').textContent = event.title;
+      const meta = card.querySelectorAll('.event-card__meta li');
+      meta[0].append(document.createTextNode(` ${event.venue || 'Online'}`));
+      meta[1].append(document.createTextNode(` ${event.organizer}`));
+      card.querySelector('.price').textContent = event.amount
+        ? `Rp${event.amount.toLocaleString('id-ID')}`
+        : 'Gratis';
+      card.querySelector('.event-card__foot a').href =
+        `/jelajah/${encodeURIComponent(event.slug)}/`;
       return card;
     }
 
@@ -199,7 +503,7 @@
     function filterEvents() {
       const query = search.value.trim().toLocaleLowerCase('id');
       const visible = events.filter(event => {
-        const searchText = `${event.title} ${event.category} Hotel Mercure`.toLocaleLowerCase('id');
+        const searchText = `${event.title} ${event.categoryName} ${event.venue} ${event.organizer}`.toLocaleLowerCase('id');
         return searchText.includes(query)
           && (!categorySelect.value || categorySelect.value === event.category)
           && (!statusSelect.value || statusSelect.value === event.status)
@@ -208,7 +512,8 @@
       if (sort.value === 'tanggal') visible.sort((a, b) => a.date.localeCompare(b.date));
       if (sort.value === 'harga') visible.sort((a, b) => a.amount - b.amount);
       count.textContent = `${visible.length} event ditemukan`;
-      empty.hidden = visible.length > 0;
+      empty.hidden = events.length === 0 || visible.length > 0;
+      noEvents.hidden = events.length > 0;
       const pageCount = Math.ceil(visible.length / pageSize);
       currentPage = Math.min(currentPage, Math.max(pageCount, 1));
       const start = (currentPage - 1) * pageSize;
@@ -225,11 +530,100 @@
       statusSelect.value = '';
       priceSelect.value = 'semua';
       sort.value = 'relevan';
-      search.value = '';
+            search.value = '';
       history.replaceState(null, '', location.pathname);
       currentPage = 1;
+      document.querySelectorAll('.jj-toolbar-select').forEach(select => select._syncDropdown());
       filterEvents();
     });
+
+    /* ---------- Dropdown kustom: membungkus tiap <select> toolbar ---------- */
+    const chevron = '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+    document.querySelectorAll('.jj-toolbar-select').forEach(select => {
+      const wrap = document.createElement('div');
+      wrap.className = 'jj-dd';
+      select.before(wrap);
+      wrap.append(select);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'jj-dd__btn';
+      button.setAttribute('aria-haspopup', 'listbox');
+      button.setAttribute('aria-expanded', 'false');
+      const labelText = document.querySelector(`label[for="${select.id}"]`)?.textContent.trim();
+      if (labelText) button.setAttribute('aria-label', labelText);
+
+      const menu = document.createElement('ul');
+      menu.className = 'jj-dd__menu';
+      menu.setAttribute('role', 'listbox');
+      [...select.options].slice(1).forEach(option => {   /* opsi pertama (placeholder) tidak ditampilkan di daftar */
+        const item = document.createElement('li');
+        item.setAttribute('role', 'option');
+        item.dataset.value = option.value;
+        item.textContent = option.textContent;
+        menu.append(item);
+      });
+      wrap.append(button, menu);
+
+      const items = () => [...menu.children];
+      const setFocus = index => {
+        items().forEach((item, i) => item.classList.toggle('is-focus', i === index));
+      };
+      const sync = () => {
+        const selected = select.options[select.selectedIndex];
+        button.innerHTML = `<span>${selected.textContent}</span>${chevron}`;
+        items().forEach(item => item.setAttribute('aria-selected', String(item.dataset.value === select.value)));
+      };
+      const open = () => {
+        document.querySelectorAll('.jj-dd.is-open').forEach(other => other !== wrap && other.classList.remove('is-open'));
+        wrap.classList.add('is-open');
+        button.setAttribute('aria-expanded', 'true');
+        setFocus(select.selectedIndex - 1);
+      };
+      const close = () => {
+        wrap.classList.remove('is-open');
+        button.setAttribute('aria-expanded', 'false');
+        setFocus(-1);
+      };
+      const choose = value => {
+        if (select.value !== value) {
+          select.value = value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        sync();
+        close();
+        button.focus();
+      };
+
+      select._syncDropdown = sync;
+      button.addEventListener('click', () => wrap.classList.contains('is-open') ? close() : open());
+      menu.addEventListener('click', event => {
+        const item = event.target.closest('li');
+        if (!item) return;
+        /* klik opsi yang sudah aktif = batalkan filter (kembali ke placeholder) */
+        choose(item.dataset.value === select.value ? select.options[0].value : item.dataset.value);
+      });
+      button.addEventListener('keydown', event => {
+        const list = items();
+        let current = list.findIndex(item => item.classList.contains('is-focus'));
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          if (!wrap.classList.contains('is-open')) { open(); return; }
+          current = (current + (event.key === 'ArrowDown' ? 1 : -1) + list.length) % list.length;
+          setFocus(current);
+        } else if (event.key === 'Enter' && wrap.classList.contains('is-open') && current > -1) {
+          event.preventDefault();
+          choose(list[current].dataset.value);
+        } else if (event.key === 'Escape') {
+          close();
+        }
+      });
+      sync();
+    });
+    document.addEventListener('click', event => {
+      document.querySelectorAll('.jj-dd.is-open').forEach(dd => { if (!dd.contains(event.target)) dd.classList.remove('is-open'); });
+    });
+
     filterEvents();
   </script>
 </body>

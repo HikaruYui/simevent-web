@@ -1,11 +1,84 @@
 {% extends 'peserta/base_peserta.html' %}
-{% block ptitle %}Sertifikat{% endblock %}
+{% block ptitle %}Sertifikat Saya{% endblock %}
 {% block peserta %}
-<div class="bg-brand-creamLight/90 rounded-3xl p-6 shadow-lg">
- <h3 class="font-display text-xl font-bold">Sertifikat Saya</h3>
- <div class="divide-y divide-brand-tan/40">
- {% for s in sertifikat %}<div class="py-4 flex items-center justify-between gap-3"><div><div class="font-semibold">{{ s.registrasi.event.judul }}</div><div class="text-xs text-brand-muted">No. {{ s.nomor }} · {{ s.diklaim|date:"j M Y" }}</div></div><a class="px-4 py-2 rounded-full text-sm font-bold bg-brand-orange text-white" href="{% url 'sertifikat_detail' s.pk %}">Lihat</a></div>
- {% empty %}<p class="py-8 text-center text-sm text-brand-muted">Belum ada sertifikat. Ikuti event, kirim feedback, lalu klaim di menu Event Saya.</p>{% endfor %}
+<div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
+ <header class="participant-page-intro relative overflow-hidden rounded-[24px] p-6 sm:min-h-[170px] sm:p-8">
+  <div class="relative z-10 max-w-2xl">
+   <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
+   <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Sertifikat Saya</h1>
+   <p class="mt-2">Koleksi sertifikat dari event yang telah Anda ikuti.</p>
+  </div>
+  <div class="pointer-events-none absolute -right-4 -top-6 hidden h-44 w-64 items-center justify-center rounded-full bg-amber-100/60 lg:flex" aria-hidden="true">
+   <div class="relative grid h-32 w-44 place-items-center rounded-lg border-2 border-amber-300 bg-white/90 shadow-md">
+    <span class="absolute inset-2 border border-amber-100"></span>
+    <span class="relative mt-2 text-xs font-extrabold tracking-[.2em] text-rose-600">SIMEVENT</span>
+    <span class="relative -mt-4 h-1 w-24 rounded-full bg-amber-200"></span>
+    <span class="relative -mt-5 h-1 w-16 rounded-full bg-amber-100"></span>
+    <i class="absolute -bottom-3 -right-3 fa-solid fa-award text-5xl text-amber-500 drop-shadow"></i>
+   </div>
+  </div>
+ </header>
+ <div class="participant-card grid gap-3 rounded-2xl p-3 sm:grid-cols-[minmax(220px,1fr)_190px_190px] sm:p-4">
+  <label class="flex items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-stone-400"></i><input id="certificateSearch" type="search" class="w-full bg-transparent outline-none" placeholder="Cari nama event..."></label>
+  <label class="flex items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3"><i class="fa-solid fa-filter text-brand-orangeDeep"></i><select id="certificateStatus" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Status</option><option value="ready">Sertifikat Diterbitkan</option><option value="waiting">Belum Tersedia</option></select></label>
+  <label class="flex items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3"><i class="fa-solid fa-arrow-down-wide-short text-brand-orangeDeep"></i><select id="certificateSort" class="w-full bg-transparent text-sm outline-none"><option value="newest">Urutkan: Terbaru</option><option value="oldest">Urutkan: Terlama</option></select></label>
  </div>
+ <div id="certificateList" class="space-y-3">
+  {% for registration in registrations %}
+  <article class="participant-card certificate-row grid gap-4 rounded-2xl p-5 sm:grid-cols-[200px_minmax(0,1fr)_minmax(240px,300px)] sm:items-center" data-name="{{ registration.event.title|lower }}" data-ready="{% if registration.certificate_ready %}ready{% else %}waiting{% endif %}" data-date="{{ registration.event.start_datetime|date:'Y-m-d' }}">
+   <div class="certificate-preview grid h-36 place-items-center rounded-xl p-2"><div class="relative grid h-full w-full place-items-center border border-amber-300 bg-white text-center shadow-sm"><span class="absolute inset-1 border border-amber-100"></span><span class="relative text-[10px] font-extrabold tracking-[.2em] text-rose-600">SIMEVENT</span><i class="relative -mt-5 fa-solid fa-award text-3xl text-amber-500"></i><span class="absolute bottom-2 text-[8px] font-bold tracking-[.15em] text-amber-700">SERTIFIKAT</span></div></div>
+   <div class="min-w-0">
+    <h2 class="font-display text-xl font-extrabold text-brand-ink">{{ registration.event.title }}</h2>
+    <p class="mt-1 text-sm text-stone-600">{{ registration.event.organizer.get_full_name|default:registration.event.organizer.email }}</p>
+    <p class="mt-2 text-sm"><i class="fa-regular fa-calendar mr-2 text-stone-500"></i>{{ registration.event.start_datetime|date:"j M Y" }}</p>
+    <p class="mt-1 text-sm"><i class="fa-solid fa-location-dot mr-2 text-stone-500"></i>{{ registration.event.venue|default:registration.event.get_delivery_mode_display }}</p>
+   </div>
+   <div class="space-y-3">
+    {% if registration.certificate_ready %}
+    <span class="inline-flex rounded-full bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800"><i class="fa-solid fa-circle-check mr-2"></i>Sertifikat Diterbitkan</span>
+    <p class="text-xs text-stone-600">Diterbitkan setelah kehadiran dan feedback terverifikasi.</p>
+    <div class="flex gap-2"><a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline flex-1 rounded-lg px-3 py-2 text-center text-sm font-bold"><i class="fa-solid fa-eye mr-1"></i>Lihat Sertifikat</a><a href="{% url 'registrations:certificate-pdf' registration.pk %}" class="participant-button flex-1 rounded-lg px-3 py-2 text-center text-sm font-bold"><i class="fa-solid fa-download mr-1"></i>Unduh PDF</a></div>
+    {% elif registration.event.status == "COMPLETED" %}
+    <span class="inline-flex rounded-full bg-rose-100 px-3 py-2 text-sm font-bold text-rose-700"><i class="fa-solid fa-clock mr-2"></i>Sertifikat Belum Tersedia</span>
+    <p class="text-xs text-stone-500">{% if not registration.attendance or registration.attendance.status != "PRESENT" %}Sertifikat hanya untuk peserta yang hadir.{% elif not registration.feedback %}Kirim feedback untuk membuka sertifikat.{% elif not has_certificate_template %}Template sertifikat belum diatur oleh panitia.{% else %}Selesaikan persyaratan event untuk menerbitkan sertifikat.{% endif %}</p>
+    {% else %}
+    <span class="inline-flex rounded-full bg-amber-100 px-3 py-2 text-sm font-bold text-amber-900"><i class="fa-solid fa-hourglass-half mr-2"></i>Menunggu Event Selesai</span>
+    <p class="text-xs text-stone-500">Sertifikat akan tersedia setelah event selesai dan kehadiran terverifikasi.</p>
+    {% endif %}
+   </div>
+  </article>
+  {% empty %}
+  <div class="participant-card rounded-2xl p-10 text-center text-stone-500">Belum ada event terdaftar. Sertifikat akan muncul setelah Anda mengikuti event.</div>
+  {% endfor %}
+  <p id="certificateEmpty" class="participant-card hidden rounded-2xl p-8 text-center text-stone-500">Tidak ada sertifikat yang sesuai dengan pencarian.</p>
+ </div>
+ <p class="pt-1 text-sm text-stone-600">Menampilkan <span id="certificateVisibleCount">{{ registrations|length }}</span> dari {{ registrations|length }} sertifikat</p>
 </div>
+<script>
+const certificateSearch = document.getElementById('certificateSearch');
+const certificateStatus = document.getElementById('certificateStatus');
+const certificateSort = document.getElementById('certificateSort');
+const certificateList = document.getElementById('certificateList');
+const certificateRows = [...document.querySelectorAll('.certificate-row')];
+function updateCertificates() {
+ const query = certificateSearch.value.trim().toLocaleLowerCase('id');
+ let visible = 0;
+ certificateRows.forEach((row) => {
+  const show = row.dataset.name.includes(query)
+   && (!certificateStatus.value || row.dataset.ready === certificateStatus.value);
+  row.hidden = !show;
+  if (show) visible += 1;
+ });
+ certificateRows.sort((left, right) => {
+  const delta = left.dataset.date.localeCompare(right.dataset.date);
+  return certificateSort.value === 'oldest' ? delta : -delta;
+ }).forEach((row) => certificateList.append(row));
+ document.getElementById('certificateVisibleCount').textContent = visible;
+ document.getElementById('certificateEmpty').classList.toggle('hidden', visible !== 0);
+}
+certificateSearch.addEventListener('input', updateCertificates);
+certificateStatus.addEventListener('change', updateCertificates);
+certificateSort.addEventListener('change', updateCertificates);
+updateCertificates();
+</script>
 {% endblock %}

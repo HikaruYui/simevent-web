@@ -100,6 +100,7 @@
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.functions import Lower
 
@@ -170,6 +171,28 @@ class User(AbstractUser):
         "email",
         unique=True,
     )
+    nim = models.CharField("NIM", max_length=30, blank=True)
+    prodi = models.CharField("Program studi", max_length=150, blank=True)
+    ktp_number = models.CharField(
+        "Nomor KTP",
+        max_length=16,
+        blank=True,
+        validators=[RegexValidator(r"^\d{16}$", "Nomor KTP harus terdiri dari 16 digit.")],
+    )
+    gender = models.CharField(
+        "Jenis kelamin",
+        max_length=1,
+        blank=True,
+        choices=(
+            ("L", "Laki-laki"),
+            ("P", "Perempuan"),
+            ("O", "Lainnya"),
+        ),
+    )
+    birth_place = models.CharField("Tempat lahir", max_length=100, blank=True)
+    birth_date = models.DateField("Tanggal lahir", null=True, blank=True)
+    address = models.TextField("Alamat", blank=True)
+    phone_number = models.CharField("Nomor HP", max_length=20, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -219,11 +242,21 @@ class User(AbstractUser):
     def role(self):
         if self.has_perm("accounts.manage_platform"):
             return "ADMIN"
-
         if self.has_perm("accounts.access_organizer"):
             return "ORGANIZER"
-
         return "PARTICIPANT"
+
+    @property
+    def profile_complete(self):
+        return all((
+            self.first_name.strip(),
+            self.ktp_number.strip(),
+            self.gender,
+            self.birth_place.strip(),
+            self.birth_date,
+            self.address.strip(),
+            self.phone_number.strip(),
+        ))
 
     def __str__(self):
         return self.email

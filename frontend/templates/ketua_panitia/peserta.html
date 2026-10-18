@@ -1,0 +1,13 @@
+{% extends "ketua_panitia/base_ketua_panitia.html" %}
+{% block title %}Peserta{% endblock %}
+{% block page_key %}peserta{% endblock %}
+{% block nav_peserta %} class="is-active" aria-current="page"{% endblock %}
+{% block content %}
+<header class="eo-head"><h1>Peserta</h1></header>
+<div class="toolbar"><label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari peserta</span><input id="psSearch" type="search" placeholder="Cari nama atau email..."></label>
+<label class="pill-select"><span class="sr-only">Event</span><select id="psEvent"><option value="">Semua event</option></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label>
+<label class="pill-select"><span class="sr-only">Status</span><select id="psStatus"><option value="">Semua status</option><option value="hadir">Hadir</option><option value="terdaftar">Terdaftar</option></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label>
+<div class="toolbar__grow"></div><button type="button" class="btn btn--ghost" id="psCsv"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Unduh CSV</button></div>
+<div class="table-wrap"><table class="tbl"><thead><tr><th>No</th><th>Peserta</th><th>Event</th><th>Terdaftar</th><th>Status</th></tr></thead><tbody id="psBody"></tbody></table></div>
+<div class="pager"><span id="psInfo"></span><span id="psPage"></span><button type="button" class="btn btn--ghost" id="psPrev">Sebelumnya</button><button type="button" class="btn btn--ghost" id="psNext">Berikutnya</button></div>
+{% endblock %}

@@ -13,9 +13,8 @@
     </ul>
 
     <div class="navbar__actions">
-      {# Ganti dengan {% if user.is_authenticated %} ... nama user / Logout {% else %} ... bila sudah ada auth #}
-      <a class="btn btn--outline" href="{% url 'masuk' %}">Masuk</a>
-      <a class="btn btn--dark" href="{% url 'daftar' %}">Daftar</a>
-    </div>
+  <a href="/masuk" class="btn-nav btn-masuk">Masuk</a>
+  <a href="/daftar" class="btn-nav btn-daftar">Daftar</a>
+</div>
   </nav>
 </header>

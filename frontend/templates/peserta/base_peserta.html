@@ -3,42 +3,250 @@
 {% block title %}{% block ptitle %}Dashboard Peserta{% endblock %} | SIMEVENT{% endblock %}
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
+{% block body_class %}participant-page{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#B8721F',goldLight:'#F3D9A6',bronze:'#8B6A44',olive:'#3F422E',oliveDark:'#2C2E1F',ink:'#5F5944',muted:'#70664F'}}}}}</script>
-<style>body{background:linear-gradient(160deg,#D9CDB0 0%,#EBD7AE 45%,#F3E2BF 100%) fixed}.rate{display:flex;flex-direction:row-reverse;justify-content:flex-end}.rate input{display:none}.rate label{font-size:2rem;color:#CDB68E;cursor:pointer}.rate input:checked~label,.rate label:hover,.rate label:hover~label{color:#DB9743}
-@media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:fixed;inset:0;margin:auto;height:fit-content}}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#8B510D',goldLight:'#F3D9A6',olive:'#3F422E',ink:'#17365D',muted:'#70664F'}}}}}
+</script>
+<style>
+:root {
+  --participant-shell: #f3e2b4;
+  --participant-shell-strong: #e1cb8d;
+  --participant-card: rgba(255, 250, 240, 0.78);
+  --participant-card-strong: rgba(255, 247, 233, 0.92);
+  --participant-border: rgba(174, 120, 49, 0.28);
+  --participant-accent: #c88d3a;
+  --participant-accent-deep: #8b510d;
+  --participant-olive: #3d422d;
+  --participant-ink: #1b3a5c;
+  --participant-muted: #6e6258;
+}
+html { font-size: 16px; }
+html, body, .page, .page>main {
+  min-height: 100%;
+  background: linear-gradient(180deg, #f2e3b6 0%, #f7efd4 52%, #efe0b0 100%);
+}
+body.participant-page, .participant-page .page, .participant-page .page>main {
+  min-height: 100vh;
+}
+.participant-page .page { overflow-x: hidden; }
+.participant-shell {
+  color: var(--participant-ink);
+  background-image:
+    radial-gradient(circle at 2% 12%, rgba(255,255,255,.5), transparent 20%),
+    radial-gradient(circle at 96% 86%, rgba(199,149,63,.12), transparent 22%),
+    radial-gradient(circle, rgba(151,105,42,.07) .8px, transparent 1px);
+  background-size: auto, auto, 25px 25px;
+}
+.participant-main {
+  position: relative;
+  isolation: isolate;
+}
+.participant-main::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 96% 5%, transparent 0 84px, rgba(191,145,67,.12) 85px 86px, transparent 87px),
+    radial-gradient(circle at 96% 5%, transparent 0 112px, rgba(191,145,67,.075) 113px 114px, transparent 115px),
+    radial-gradient(circle at 5% 68%, rgba(255,255,255,.38), transparent 18%);
+  content: "";
+  pointer-events: none;
+}
+.participant-sidebar {
+  position: relative;
+  overflow: visible;
+  background: transparent;
+}
+.participant-sidebar > * { position: relative; z-index: 1; }
+.participant-sidebar-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.76);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 0% 100%, rgba(255,255,255,.5), transparent 38%),
+    linear-gradient(145deg, rgba(255,250,238,.9), rgba(250,239,216,.83));
+  box-shadow: 0 8px 24px rgba(135,96,42,.07), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.participant-sidebar-panel::after {
+  position: absolute;
+  right: -72px;
+  bottom: -22px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgba(185,139,66,.12);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.4), transparent 68%);
+  box-shadow: 0 0 0 18px rgba(185,139,66,.035), 0 0 0 38px rgba(185,139,66,.025), 0 0 0 62px rgba(185,139,66,.02);
+  content: "";
+  pointer-events: none;
+}
+.participant-sidebar-panel > * { position: relative; z-index: 1; }
+.participant-sidebar-brand {
+  position: relative;
+  display: block;
+  width: 180px;
+  height: 40px;
+  --participant-logo-mask: none;
+}
+.participant-sidebar-brand::before {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, #3f422e 0, #9f7546 28px, #d78b30 56px, #f5e6c5 84px, #d78b30 112px, #3f422e 140px);
+  background-size: 140px 100%;
+  background-position: 0 50%;
+  content: "";
+  animation: participant-logo-gradient 5.5s linear infinite;
+  mask-image: var(--participant-logo-mask);
+  mask-mode: alpha;
+  mask-repeat: no-repeat;
+  mask-position: left center;
+  mask-size: contain;
+  -webkit-mask-image: var(--participant-logo-mask);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  -webkit-mask-size: contain;
+  pointer-events: none;
+}
+@keyframes participant-logo-gradient {
+  from { background-position: 0 50%; }
+  to { background-position: 140px 50%; }
+}
+.participant-card {
+  background: rgba(255, 249, 242, 0.8);
+  border: 1px solid var(--participant-border);
+  box-shadow: 0 6px 10px rgba(142, 100, 47, 0.04);
+}
+.participant-page-intro {
+  border: 1px solid rgba(255,255,255,.8);
+  background: linear-gradient(112deg, rgba(255,251,242,.97), rgba(245,228,193,.88));
+  box-shadow: 0 8px 24px rgba(142,100,47,.06), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.event-row, .certificate-row, .achievement-row {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.event-row:hover, .certificate-row:hover, .achievement-row:hover {
+  transform: translateY(-2px);
+  border-color: rgba(194,143,62,.42);
+  box-shadow: 0 10px 20px rgba(142,100,47,.09);
+}
+.participant-button {
+  background: linear-gradient(180deg, #d7b36f, #c69b50);
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(164,117,45,.16), inset 0 1px 0 rgba(255,255,255,0.55);
+}
+.participant-button:hover { background: linear-gradient(180deg, #d0a75d, #b98532); }
+.participant-outline {
+  border: 1px solid rgba(156, 111, 45, 0.54);
+  color: #8b510d;
+  background: rgba(255,255,255,0.48);
+}
+.participant-outline:hover { background: rgba(255, 233, 188, 0.4); }
+.participant-user-chip {
+  background: rgba(255,250,239,.26);
+  transition: background-color .2s ease;
+}
+.participant-user-chip:hover { background: rgba(255,250,239,.68); }
+.participant-sidebar nav a {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: normal;
+  font-size: 1.05rem;
+  transition: all 0.2s ease;
+}
+.participant-sidebar nav { width: 100%; min-width: 0; }
+.participant-sidebar nav a:not(.participant-button) {
+  border: 1px solid transparent;
+  color: #17365d;
+}
+.participant-sidebar nav a:not(.participant-button):hover {
+  background: rgba(255,250,239,.28);
+}
+.participant-sidebar nav a.participant-button {
+  border: 1px solid rgba(255,255,255,.42);
+  box-shadow: 0 8px 18px rgba(125,77,15,.2), inset 0 1px 0 rgba(255,255,255,.42);
+}
+.participant-sidebar nav a i {
+  width: 1.4rem;
+  text-align: center;
+  color: #8b510d;
+}
+.participant-sidebar nav a.participant-button i { color: #fff; }
+@media (min-width: 768px) {
+  .participant-sidebar {
+    position: fixed !important;
+    top: 16px !important;
+    bottom: 16px !important;
+    left: 6px !important;
+    display: block !important;
+    width: 304px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    z-index: 50 !important;
+  }
+  .participant-sidebar-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 40px 14px 22px !important;
+  }
+  .participant-main {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 326px !important;
+    padding: 18px 24px 18px!important;
+  }
+  .participant-sidebar nav { gap: 8px!important; overflow: visible!important; }
+  .participant-sidebar nav a { min-height: 64px; font-size: 1.125rem; }
+  .participant-sidebar-panel > div:last-child { margin-top: auto !important; flex: 0 0 auto !important; padding: 14px 4px 0 !important; }
+}
+</style>
 {% endblock %}
 {% block content %}
-<div class="min-h-screen flex flex-col text-brand-olive">
- <header class="bg-brand-tan/80 backdrop-blur border-b border-white/40 shadow-lg sticky top-0 z-30">
-  <div class="px-4 lg:px-8 h-16 flex items-center justify-between">
-   <a href="{% url 'beranda' %}"><img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" class="h-8"></a>
-   <div class="flex items-center gap-5 text-sm font-medium">
-    <a href="{% url 'jelajah' %}"><i class="fa-solid fa-compass mr-1"></i>Jelajah</a>
-    <span><i class="fa-regular fa-bell mr-1"></i>Notifikasi</span>
-    <a href="{% url 'keluar' %}"><i class="fa-solid fa-power-off mr-1"></i>Log Out</a>
-   </div>
-  </div>
- </header>
- <div class="flex flex-1 flex-col md:flex-row">
-  <aside class="md:w-56 shrink-0 bg-brand-creamLight/90 border-r border-white/40 p-4 flex md:flex-col justify-between gap-2">
-   <nav class="flex md:flex-col gap-1 text-sm font-semibold">
-    {% url 'peserta_dashboard' as u1 %}{% url 'peserta_event' as u2 %}{% url 'peserta_sertifikat' as u3 %}
-    <a href="{{ u1 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u1 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-solid fa-table-columns w-5"></i>Dashboard</a>
-    <a href="{{ u2 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u2 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-regular fa-calendar-check w-5"></i>Event Saya</a>
-    <a href="{{ u3 }}" class="px-3 py-2.5 rounded-xl {% if request.path == u3 %}bg-brand-olive text-brand-goldLight{% else %}hover:bg-brand-sand/60{% endif %}"><i class="fa-solid fa-award w-5"></i>Sertifikat</a>
-   </nav>
-   <nav class="hidden md:block text-sm font-medium space-y-1 border-t border-brand-tan/50 pt-3">
-    <a href="#" class="block px-3 py-2.5 rounded-xl hover:bg-brand-sand/60"><i class="fa-solid fa-headset w-5"></i>Pusat Bantuan</a>
-    <a href="#" class="block px-3 py-2.5 rounded-xl hover:bg-brand-sand/60"><i class="fa-solid fa-gear w-5"></i>Pengaturan</a>
-   </nav>
+<div class="participant-shell min-h-screen md:flex">
+  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px]">
+    <div class="participant-sidebar-panel">
+      <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4" style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')">
+      </a>
+      <nav class="flex gap-2 overflow-x-auto md:flex-col" aria-label="Menu peserta">
+        {% url 'peserta_dashboard' as dashboard_url %}
+        {% url 'peserta_daftar_event' as daftar_event_url %}
+        {% url 'peserta_sertifikat' as sertifikat_url %}
+        {% url 'peserta_achievement' as achievement_url %}
+        <a href="{{ dashboard_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-house mr-3 w-7 text-2xl"></i>Dashboard</a>
+        <a href="{{ daftar_event_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-calendar-plus mr-3 w-7 text-2xl"></i>Daftar Event</a>
+        <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
+        <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
+      </nav>
+      <div class="mt-4 border-t border-amber-200/80 pt-4">
+      <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip flex min-w-0 items-center gap-3 rounded-xl px-2 py-2">
+        <img src="{% static 'img/participant-avatar.svg' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover ring-2 ring-white">
+        <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
+        <i class="fa-solid fa-chevron-right ml-auto mr-2 text-xs text-brand-orangeDeep"></i>
+      </a>
+      <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
+      </div>
+    </div>
   </aside>
-  <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-5">
-   {% for m in messages %}<div class="rounded-xl px-4 py-3 text-sm font-semibold bg-white/80 border border-brand-tan">{{ m }}</div>{% endfor %}
-   {% block peserta %}{% endblock %}
+  <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+    {% for message in messages %}<div class="mb-4 rounded-xl border border-amber-300 bg-white/80 px-4 py-3 text-sm font-semibold">{{ message }}</div>{% endfor %}
+    {% block peserta %}{% endblock %}
   </main>
- </div>
 </div>
 {% endblock %}
