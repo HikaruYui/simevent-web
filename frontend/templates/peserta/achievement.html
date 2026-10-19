@@ -2,40 +2,163 @@
 {% load static %}
 {% block ptitle %}Achievement{% endblock %}
 {% block peserta %}
+<style>
+#achievementProgress {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(191,149,76,.16);
+  background:
+    radial-gradient(circle at 8% 22%, rgba(218,176,96,.13) 0 2px, transparent 3px),
+    radial-gradient(circle at 15% 28%, rgba(255,255,255,.72) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 88% 18%, rgba(218,176,96,.1), transparent 26%),
+    repeating-linear-gradient(135deg, rgba(168,129,66,.018) 0 1px, transparent 1px 17px),
+    linear-gradient(135deg, #fffaf0, #fff8e9 58%, #fffaf1);
+}
+#achievementProgress::before,
+#achievementProgress::after { position:absolute; z-index:-1; content:""; pointer-events:none; }
+#achievementProgress::before {
+  top: 34px; right: -118px; width: 310px; height: 310px;
+  border: 1px solid rgba(189,145,72,.1); border-radius: 50%;
+  box-shadow: 0 0 0 16px rgba(189,145,72,.025), 0 0 0 38px rgba(189,145,72,.018);
+}
+#achievementProgress::after {
+  bottom: -144px; left: -115px; width: 340px; height: 240px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(216,174,97,.12), transparent 70%);
+}
+#achievementProgress .achievement-level-marker {
+  position: relative; isolation: isolate; width: 118px; height: 142px; margin-inline: auto;
+  filter: drop-shadow(0 7px 8px rgba(93,79,59,.16));
+}
+#achievementProgress .achievement-medal-svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+#achievementProgress .achievement-medal-icon {
+  position:absolute; z-index:2; top:42.5%; left:50%; transform:translate(-50%,-50%);
+  color:#fffdf4; font-size:34px; filter:drop-shadow(0 2px 2px rgba(83,58,18,.32));
+}
+#achievementProgress .achievement-medal--silver { --medal-highlight:#f9fbff; --medal-light:#e3e8ef; --medal-mid:#aeb8c7; --medal-deep:#778293; --medal-ribbon:#aab4c2; --medal-ribbon-light:#e0e5ec; }
+#achievementProgress .achievement-medal--gold { --medal-highlight:#fff9dd; --medal-light:#f8df9e; --medal-mid:#d9a441; --medal-deep:#a96d13; --medal-ribbon:#c58520; --medal-ribbon-light:#f1cc72; }
+#achievementProgress .achievement-medal--platinum { --medal-highlight:#fff; --medal-light:#e2f8ff; --medal-mid:#83c2dc; --medal-deep:#28718e; --medal-ribbon:#438fad; --medal-ribbon-light:#c9f1ff; }
+#achievementProgress .achievement-medal--legend { --medal-highlight:#fff2ff; --medal-light:#d8ceff; --medal-mid:#9a8ce0; --medal-deep:#6551c7; --medal-ribbon:#7664d2; --medal-ribbon-light:#b8aaf2; }
+#achievementProgress .achievement-level-marker.is-locked { opacity:.82; filter:grayscale(.16) drop-shadow(0 5px 7px rgba(93,79,59,.1)); }
+#achievementProgress .achievement-level-marker.is-locked .achievement-medal-icon { color:#f9fafb; }
+#achievementProgress .achievement-level-marker.is-unlocked { filter:drop-shadow(0 8px 11px rgba(183,126,34,.2)); }
+#achievementProgress .achievement-level-marker.achievement-medal--platinum.is-locked { filter:saturate(.82) drop-shadow(0 5px 8px rgba(69,157,190,.18)); }
+#achievementProgress .achievement-level-marker.achievement-medal--platinum.is-unlocked { filter:drop-shadow(0 0 7px rgba(126,224,255,.72)) drop-shadow(0 8px 12px rgba(39,119,151,.3)); }
+#achievementProgress .achievement-level-marker.achievement-medal--platinum::before {
+  position:absolute; z-index:3; top:5px; right:17px; width:18px; height:18px;
+  content:""; background:linear-gradient(135deg,#fff 8%,#c4f5ff 48%,#58c6eb 78%,#fff 100%);
+  clip-path:polygon(50% 0,61% 37%,100% 50%,61% 63%,50% 100%,39% 63%,0 50%,39% 37%);
+  filter:drop-shadow(0 0 5px rgba(98,211,247,.95));
+  animation:platinum-glint 2.8s ease-in-out infinite;
+}
+#achievementProgress .achievement-level-marker.achievement-medal--platinum::after {
+  position:absolute; z-index:3; top:36px; left:17px; width:9px; height:9px;
+  content:""; background:#fff; clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);
+  filter:drop-shadow(0 0 4px rgba(117,224,255,.95)); animation:platinum-glint 2.8s ease-in-out .7s infinite;
+}
+#achievementProgress .achievement-level-marker.achievement-medal--platinum.is-locked::before,
+#achievementProgress .achievement-level-marker.achievement-medal--platinum.is-locked::after { animation:none; opacity:.48; }
+#achievementProgress .achievement-level-label { display:inline-flex; min-width:84px; justify-content:center; border-radius:999px; padding:4px 13px; background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(243,231,207,.9)); box-shadow:inset 0 0 0 1px rgba(178,136,71,.12); }
+#achievementProgress .achievement-level--silver { color:#657184; }
+#achievementProgress .achievement-level--gold { color:#a36b14; }
+#achievementProgress .achievement-level--platinum { color:#317b98; background:linear-gradient(180deg,#f5fdff,#d9f3fb); box-shadow:inset 0 0 0 1px rgba(70,155,185,.28),0 3px 10px rgba(69,157,190,.12); }
+#achievementProgress .achievement-level--legend { color:#7565c5; }
+#achievementProgress .achievement-track { background:repeating-linear-gradient(90deg,#e8deca 0 20px,transparent 20px 25px); }
+#achievementProgress .achievement-track-fill { background:repeating-linear-gradient(90deg,#b9832f 0 20px,#d5a551 20px 25px); }
+#achievementProgress .achievement-levels,
+#achievementProgress .achievement-progress-panel,
+#achievementProgress .achievement-benefit-panel { min-width:0; }
+#achievementProgress .achievement-progress-panel,
+#achievementProgress .achievement-benefit-panel { position:relative; overflow:hidden; border:1px solid rgba(191,149,76,.12); }
+#achievementProgress .achievement-progress-panel { background:radial-gradient(circle at 96% 6%, rgba(255,255,255,.55), transparent 90px), radial-gradient(circle at 100% 100%, rgba(206,164,90,.13), transparent 160px), rgba(244,231,194,.78); }
+#achievementProgress .achievement-benefit-panel { background:radial-gradient(circle at 100% 0%, rgba(221,184,111,.18), transparent 120px), rgba(255,255,255,.8); }
+@keyframes platinum-glint { 0%,100% { opacity:.45; transform:scale(.78) rotate(0deg); } 48% { opacity:1; transform:scale(1.16) rotate(18deg); } }
+@media (prefers-reduced-motion: reduce) {
+  #achievementProgress .achievement-medal--platinum::before,
+  #achievementProgress .achievement-medal--platinum::after { animation:none; }
+}
+@media (max-width: 639px) {
+  #achievementProgress .achievement-level-marker { transform:scale(.86); transform-origin:top center; margin-bottom:-14px; }
+}
+</style>
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
- <div class="text-sm text-stone-500"><a href="{% url 'peserta_dashboard' %}" class="hover:underline">Dashboard</a><i class="fa-solid fa-chevron-right mx-2 text-xs"></i><b class="text-brand-ink">Achievement</b></div>
- <header class="participant-page-intro relative overflow-hidden rounded-[24px] p-6 sm:min-h-[170px] sm:p-8">
-  <div class="relative z-10 max-w-2xl">
-   <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Achievement</h1>
+ <header class="participant-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
+  <div class="relative z-10 max-w-2xl lg:max-w-[52%] xl:max-w-[56%]">
+   <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
+   <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Achievement</h1>
    <p class="mt-2">Selesaikan event pilihan dan raih semua penghargaan!</p>
   </div>
-  <div class="pointer-events-none absolute -right-2 -top-4 hidden h-40 w-64 items-center justify-center lg:flex" aria-hidden="true">
-   <img src="{% static 'img/participant-hero-banner.svg' %}" alt="" class="h-full w-full object-contain">
+  <div class="pointer-events-none absolute right-0 top-1/2 hidden h-[107px] w-[280px] -translate-y-1/2 items-center justify-center lg:flex xl:h-[170px] xl:w-[444px]" aria-hidden="true">
+   <img src="{% static 'img/achievement-hero.png' %}?v=2" alt="" class="h-full w-full object-cover">
   </div>
  </header>
- <section class="participant-card grid gap-5 rounded-2xl p-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]">
-  <div>
-   <h2 class="font-display text-lg font-extrabold">Progress Level Saya</h2>
-   <div class="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-4">
+ <section id="achievementProgress" class="rounded-[28px] p-5 sm:p-8">
+  <div class="relative z-10">
+   <div>
+    <h2 class="font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl"><i class="fa-solid fa-trophy mr-2"></i>Achievement Saya</h2>
+    <p class="mt-2 text-sm text-stone-600">Ikuti lebih banyak event untuk naik ke level berikutnya dan raih penghargaan.</p>
+   </div>
+
+   <div class="achievement-levels relative mt-7 grid grid-cols-2 gap-x-2 gap-y-5 sm:grid-cols-4 sm:gap-4">
+    <div class="pointer-events-none absolute left-[12.5%] right-[12.5%] top-[58px] hidden h-1.5 sm:flex" aria-hidden="true">
+     <span class="achievement-track relative flex-1 rounded-full"><span class="achievement-track-fill absolute inset-y-0 left-0 rounded-full" style="width:{% if track_segment > 0 %}100%{% elif track_segment == 0 %}{{ progress_percent }}%{% else %}0%{% endif %}"></span></span>
+     <span class="achievement-track relative flex-1 rounded-full"><span class="achievement-track-fill absolute inset-y-0 left-0 rounded-full" style="width:{% if track_segment > 1 %}100%{% elif track_segment == 1 %}{{ progress_percent }}%{% else %}0%{% endif %}"></span></span>
+     <span class="achievement-track relative flex-1 rounded-full"><span class="achievement-track-fill absolute inset-y-0 left-0 rounded-full" style="width:{% if track_segment > 2 %}100%{% elif track_segment == 2 %}{{ progress_percent }}%{% else %}0%{% endif %}"></span></span>
+    </div>
     {% for level in levels %}
-    <div class="text-center">
-     <span class="mx-auto grid h-16 w-16 place-items-center rounded-full border-4 {% if level.completed %}border-amber-400 bg-amber-100 text-amber-600{% else %}border-slate-200 bg-slate-100 text-slate-400{% endif %} text-2xl"><i class="fa-solid {% if level.completed %}fa-star{% else %}fa-lock{% endif %}"></i></span>
-     <p class="mt-2 font-extrabold">{{ level.name }}</p>
-     <p class="text-xs text-stone-600">{{ level.required }} event</p>
-     <p class="mt-1 text-xs font-semibold {% if level.completed %}text-emerald-700{% else %}text-stone-500{% endif %}">{% if level.completed %}Tercapai{% else %}{{ level.progress }}/{{ level.required }} event{% endif %}</p>
-     <div class="mx-auto mt-2 h-1.5 max-w-24 overflow-hidden rounded-full bg-stone-200"><div class="h-full rounded-full bg-amber-600" style="width:{% widthratio level.progress level.required 100 %}%"></div></div>
+    <div class="relative z-10 text-center">
+     <div class="achievement-level-marker achievement-medal--{% if level.name == 'Perak' %}silver{% elif level.name == 'Emas' %}gold{% elif level.name == 'Platinum' %}platinum{% else %}legend{% endif %} {% if level_count >= level.required %}is-unlocked{% else %}is-locked{% endif %}">
+      <svg class="achievement-medal-svg" viewBox="0 0 120 150" aria-hidden="true">
+       <defs>
+        <linearGradient id="achievement-medal-rim-{{ forloop.counter }}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="var(--medal-highlight)"/><stop offset=".38" stop-color="var(--medal-mid)"/><stop offset=".58" stop-color="var(--medal-light)"/><stop offset="1" stop-color="var(--medal-deep)"/></linearGradient>
+        <radialGradient id="achievement-medal-face-{{ forloop.counter }}" cx="34%" cy="24%" r="78%"><stop stop-color="var(--medal-highlight)"/><stop offset=".5" stop-color="var(--medal-light)"/><stop offset="1" stop-color="var(--medal-mid)"/></radialGradient>
+        <linearGradient id="achievement-medal-ribbon-{{ forloop.counter }}" x1="0" y1="0" x2="1" y2="0"><stop stop-color="var(--medal-deep)"/><stop offset=".48" stop-color="var(--medal-ribbon-light)"/><stop offset="1" stop-color="var(--medal-ribbon)"/></linearGradient>
+        <filter id="achievement-medal-shadow-{{ forloop.counter }}" x="-25%" y="-20%" width="150%" height="165%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="var(--medal-deep)" flood-opacity=".25"/></filter>
+       </defs>
+       <path d="M39 77 56 85 44 148 29 134 15 147 22 85Z" fill="url(#achievement-medal-ribbon-{{ forloop.counter }})" stroke="rgba(255,255,255,.62)" stroke-width="1.5"/>
+       <path d="m81 85 17-8 16 8 7 62-14-13-15 14Z" fill="url(#achievement-medal-ribbon-{{ forloop.counter }})" stroke="rgba(255,255,255,.62)" stroke-width="1.5"/>
+       <g filter="url(#achievement-medal-shadow-{{ forloop.counter }})">
+        <path d="M60 4c8 0 11 9 19 11 8 2 17-2 23 5s1 16 3 24c2 8 11 13 11 21s-9 13-11 21c-2 8 3 17-3 24s-15 3-23 5c-8 2-11 11-19 11s-11-9-19-11c-8-2-17 2-23-5s-1-16-3-24C13 78 4 73 4 65s9-13 11-21c2-8-3-17 3-24s15-3 23-5C49 13 52 4 60 4Z" fill="url(#achievement-medal-rim-{{ forloop.counter }})" stroke="rgba(255,255,255,.95)" stroke-width="2"/>
+        <path d="M60 13c7 0 9 7 16 9 7 2 14-1 19 4s2 12 4 19c2 7 9 10 9 17s-7 10-9 17c-2 7 1 14-4 19s-12 2-19 4c-7 2-9 9-16 9s-9-7-16-9c-7-2-14 1-19-4s-2-12-4-19c-2-7-9-10-9-17s7-10 9-17c2-7-1-14 4-19s12-2 19-4c7-2 9-9 16-9Z" fill="url(#achievement-medal-face-{{ forloop.counter }})" stroke="rgba(255,255,255,.82)" stroke-width="1.5"/>
+        <circle cx="60" cy="65" r="32" fill="url(#achievement-medal-rim-{{ forloop.counter }})" stroke="rgba(255,255,255,.88)" stroke-width="2"/>
+        <circle cx="60" cy="65" r="26" fill="url(#achievement-medal-face-{{ forloop.counter }})" stroke="rgba(255,255,255,.66)" stroke-width="1.5"/>
+        <circle cx="60" cy="65" r="21" fill="none" stroke="var(--medal-deep)" stroke-opacity=".22" stroke-width="1.2"/>
+       </g>
+       <path d="m14 34 2.4 5.3 5.6 1-4.1 4 .9 5.7-4.8-2.7-4.8 2.7.9-5.7-4.1-4 5.6-1L14 34Zm93 9 1.7 3.8 4 .7-2.9 2.8.7 4-3.5-1.9-3.6 1.9.7-4-2.9-2.8 4-.7L107 43Z" fill="var(--medal-highlight)" opacity=".72"/>
+       <circle cx="24" cy="66" r="2" fill="var(--medal-highlight)" opacity=".75"/><circle cx="101" cy="29" r="2" fill="var(--medal-highlight)" opacity=".8"/>
+      </svg>
+      <i class="achievement-medal-icon fa-solid {% if level_count >= level.required %}fa-star{% else %}fa-lock{% endif %}"></i>
+     </div>
+     <p class="mt-1 font-extrabold"><span class="achievement-level-label achievement-level--{% if level.name == 'Perak' %}silver{% elif level.name == 'Emas' %}gold{% elif level.name == 'Platinum' %}platinum{% else %}legend{% endif %}">{{ level.name }}</span></p>
+     <p class="text-xs text-stone-500">{{ level.required }} event</p>
+     <p class="mt-1 text-[11px] font-bold {% if level_count >= level.required %}text-emerald-700{% else %}text-stone-500{% endif %}">{% if level_count >= level.required %}Tercapai{% else %}Perlu {{ level.required }} event{% endif %}</p>
     </div>
     {% endfor %}
    </div>
+
+   <div class="mt-7 grid gap-4 md:grid-cols-[1.6fr_1fr]">
+    <div class="achievement-progress-panel rounded-[20px] p-5">
+     <h3 class="font-extrabold text-brand-olive">Progress {% if progress_remaining %}ke {{ next_level.name }}{% else %}achievement{% endif %}</h3>
+     <div class="mt-4 flex items-center gap-4">
+      <div class="achievement-track h-3 flex-1 overflow-hidden rounded-full"><div class="achievement-track-fill h-full rounded-full transition-all" style="width:{{ progress_percent }}%"></div></div>
+      <strong class="whitespace-nowrap text-brand-olive">{{ level_count }} / {{ next_threshold }}</strong>
+     </div>
+     <p class="mt-3 text-sm text-stone-600">{% if progress_remaining %}Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.{% else %}Selamat, Anda telah mencapai seluruh level achievement!{% endif %}</p>
+    </div>
+    <div class="achievement-benefit-panel flex gap-4 rounded-[20px] p-5">
+     <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-amber-100 text-2xl text-amber-700"><i class="fa-solid fa-gift"></i></span>
+     <div>
+      <h3 class="font-extrabold text-brand-olive">Benefit Level {{ next_level.name }}</h3>
+      <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-stone-600">
+       {% if next_level.name == "Emas" %}<li>Badge Emas di profil</li><li>Sertifikat spesial</li><li>Akses ke event eksklusif</li>
+       {% elif next_level.name == "Platinum" %}<li>Badge Platinum di profil</li><li>Akses prioritas ke event eksklusif</li>
+       {% elif next_level.name == "Legenda" %}<li>Badge Legenda di profil</li><li>Semua benefit level sebelumnya</li><li>Reward spesial</li>
+       {% else %}<li>Badge Perak di profil</li>{% endif %}
+      </ul>
+     </div>
+    </div>
+   </div>
   </div>
-  <aside class="rounded-2xl bg-amber-50 p-4">
-   <h2 class="font-extrabold">Benefit Setiap Level</h2>
-   <ul class="mt-3 space-y-3 text-sm">
-    {% for level in levels %}
-    <li class="flex items-center gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-full {% if level.completed %}bg-amber-200 text-amber-700{% else %}bg-slate-100 text-slate-400{% endif %}"><i class="fa-solid {% if level.completed %}fa-star{% else %}fa-lock{% endif %}"></i></span><span><b>{{ level.name }}</b><br><span class="text-xs text-stone-600">{% if level.name == "Perak" %}Badge di profil{% elif level.name == "Emas" %}Badge profil dan sertifikat spesial{% elif level.name == "Platinum" %}Akses ke event eksklusif{% else %}Semua benefit dan reward spesial{% endif %}</span></span></li>
-    {% endfor %}
-   </ul>
-  </aside>
  </section>
 
  <div class="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(270px,0.8fr)]">

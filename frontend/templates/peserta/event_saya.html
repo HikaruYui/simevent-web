@@ -1,8 +1,11 @@
 {% extends 'peserta/base_peserta.html' %}
 {% block ptitle %}Event Saya{% endblock %}
 {% block peserta %}
-<div class="bg-brand-creamLight/90 rounded-3xl p-6 shadow-lg">
- <h3 class="font-display text-xl font-bold">Event Saya</h3>
- <div class="divide-y divide-brand-tan/40">{% for r in registrasi %}{% include 'peserta/_registrasi_item.html' %}{% empty %}<p class="py-8 text-center text-sm text-brand-muted">Belum ada event terdaftar.</p>{% endfor %}</div>
+<div class="mx-auto w-full max-w-[1440px] space-y-5">
+ <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
+ <div class="bg-brand-creamLight/90 rounded-3xl p-6 shadow-lg">
+  <h3 class="font-display text-xl font-bold">Event Saya</h3>
+  <div class="divide-y divide-brand-tan/40">{% for r in registrasi %}{% include 'peserta/_registrasi_item.html' %}{% empty %}<p class="py-8 text-center text-sm text-brand-muted">Belum ada event terdaftar.</p>{% endfor %}</div>
+ </div>
 </div>
 {% endblock %}
