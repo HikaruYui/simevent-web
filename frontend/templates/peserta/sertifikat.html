@@ -1,6 +1,14 @@
 {% extends 'peserta/base_peserta.html' %}
 {% block ptitle %}Sertifikat Saya{% endblock %}
 {% block peserta %}
+<style>
+.certificate-picker { position:relative; }
+.certificate-picker-menu { position:absolute; top:calc(100% + 8px); left:0; z-index:50; width:max-content; min-width:100%; overflow:hidden; border:1px solid #D7BD88; border-radius:12px; background:#fffdf7; box-shadow:0 12px 24px rgba(63,66,46,.18); }
+.certificate-picker-option { display:block; width:100%; padding:9px 12px; color:#1b3a5c; text-align:left; white-space:nowrap; }
+.certificate-picker-option[aria-selected="true"] { background:#3F422E; color:#D7BD88; box-shadow:inset 3px 0 #D7BD88; font-weight:700; }
+.certificate-picker-option:hover:not([aria-selected="true"]), .certificate-picker-option:focus-visible { background:#D7BD88; color:#3F422E; outline:none; }
+.certificate-picker-trigger:focus-visible { border-radius:6px; outline:2px solid #D7BD88; outline-offset:2px; }
+</style>
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <header class="participant-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
   <div class="relative z-10 max-w-2xl">
@@ -20,8 +28,29 @@
  </header>
  <div class="participant-card grid gap-3 rounded-2xl p-3 sm:grid-cols-[minmax(220px,1fr)_190px_190px] sm:p-4">
   <label class="flex items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-stone-400"></i><input id="certificateSearch" type="search" class="w-full bg-transparent outline-none" placeholder="Cari nama event..."></label>
-  <label class="flex items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3"><i class="fa-solid fa-filter text-brand-orangeDeep"></i><select id="certificateStatus" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Status</option><option value="ready">Sertifikat Diterbitkan</option><option value="waiting">Belum Tersedia</option></select></label>
-  <label class="flex items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3"><i class="fa-solid fa-arrow-down-wide-short text-brand-orangeDeep"></i><select id="certificateSort" class="w-full bg-transparent text-sm outline-none"><option value="newest">Urutkan: Terbaru</option><option value="oldest">Urutkan: Terlama</option></select></label>
+  <div id="certificateStatusPicker" class="certificate-picker relative flex min-w-0 items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3">
+   <i class="fa-solid fa-filter text-brand-orangeDeep" aria-hidden="true"></i>
+   <select id="certificateStatus" class="sr-only" tabindex="-1" aria-hidden="true"><option value="">Semua Status</option><option value="ready">Sertifikat Diterbitkan</option><option value="waiting">Belum Tersedia</option></select>
+   <button id="certificateStatusTrigger" type="button" class="certificate-picker-trigger flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm text-brand-ink" aria-haspopup="listbox" aria-expanded="false" aria-controls="certificateStatusMenu">
+    <span id="certificateStatusLabel">Semua Status</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+   </button>
+   <div id="certificateStatusMenu" class="certificate-picker-menu hidden" role="listbox" aria-label="Filter status sertifikat">
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="" aria-selected="true">Semua Status</button>
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="ready" aria-selected="false">Sertifikat Diterbitkan</button>
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="waiting" aria-selected="false">Belum Tersedia</button>
+   </div>
+  </div>
+  <div id="certificateSortPicker" class="certificate-picker relative flex min-w-0 items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3">
+   <i class="fa-solid fa-arrow-down-wide-short text-brand-orangeDeep" aria-hidden="true"></i>
+   <select id="certificateSort" class="sr-only" tabindex="-1" aria-hidden="true"><option value="newest">Urutkan: Terbaru</option><option value="oldest">Urutkan: Terlama</option></select>
+   <button id="certificateSortTrigger" type="button" class="certificate-picker-trigger flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm text-brand-ink" aria-haspopup="listbox" aria-expanded="false" aria-controls="certificateSortMenu">
+    <span id="certificateSortLabel">Urutkan: Terbaru</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+   </button>
+   <div id="certificateSortMenu" class="certificate-picker-menu hidden" role="listbox" aria-label="Urutkan sertifikat">
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="newest" aria-selected="true">Urutkan: Terbaru</button>
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="oldest" aria-selected="false">Urutkan: Terlama</button>
+   </div>
+  </div>
  </div>
  <div id="certificateList" class="space-y-3">
   {% for registration in registrations %}
@@ -60,6 +89,44 @@ const certificateStatus = document.getElementById('certificateStatus');
 const certificateSort = document.getElementById('certificateSort');
 const certificateList = document.getElementById('certificateList');
 const certificateRows = [...document.querySelectorAll('.certificate-row')];
+function setupCertificatePicker(selectId, pickerId, triggerId, menuId, labelId) {
+ const select = document.getElementById(selectId);
+ const picker = document.getElementById(pickerId);
+ const trigger = document.getElementById(triggerId);
+ const menu = document.getElementById(menuId);
+ const label = document.getElementById(labelId);
+ const options = [...menu.querySelectorAll('[data-option-value]')];
+ function closeMenu() {
+  menu.classList.add('hidden');
+  trigger.setAttribute('aria-expanded', 'false');
+ }
+ trigger.addEventListener('click', () => {
+  const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+  menu.classList.toggle('hidden', isOpen);
+  trigger.setAttribute('aria-expanded', String(!isOpen));
+ });
+ options.forEach((option) => {
+  option.addEventListener('click', () => {
+   select.value = option.dataset.optionValue;
+   label.textContent = option.textContent.trim();
+   options.forEach((item) => item.setAttribute('aria-selected', String(item === option)));
+   select.dispatchEvent(new Event('change', { bubbles: true }));
+   closeMenu();
+   trigger.focus();
+  });
+ });
+ document.addEventListener('click', (event) => {
+  if (!picker.contains(event.target)) closeMenu();
+ });
+ document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && trigger.getAttribute('aria-expanded') === 'true') {
+   closeMenu();
+   trigger.focus();
+  }
+ });
+}
+setupCertificatePicker('certificateStatus', 'certificateStatusPicker', 'certificateStatusTrigger', 'certificateStatusMenu', 'certificateStatusLabel');
+setupCertificatePicker('certificateSort', 'certificateSortPicker', 'certificateSortTrigger', 'certificateSortMenu', 'certificateSortLabel');
 function updateCertificates() {
  const query = certificateSearch.value.trim().toLocaleLowerCase('id');
  let visible = 0;
