@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="650 0 310 230" fill="none">
+  <defs>
+    <linearGradient id="pesutBody" x1="710" y1="43" x2="872" y2="220" gradientUnits="userSpaceOnUse"><stop stop-color="#536B73"/><stop offset=".32" stop-color="#84999B"/><stop offset=".68" stop-color="#B9C8C2"/><stop offset="1" stop-color="#71878B"/></linearGradient>
+    <linearGradient id="pesutBelly" x1="724" y1="117" x2="810" y2="220" gradientUnits="userSpaceOnUse"><stop stop-color="#F2EAD9"/><stop offset="1" stop-color="#C7D1CC"/></linearGradient>
+    <linearGradient id="pesutFin" x1="850" y1="92" x2="882" y2="177" gradientUnits="userSpaceOnUse"><stop stop-color="#B8C9C5"/><stop offset=".55" stop-color="#899FA0"/><stop offset="1" stop-color="#667D82"/></linearGradient>
+    <linearGradient id="crownGold" x1="735" y1="10" x2="794" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE58A"/><stop offset=".45" stop-color="#E9B63D"/><stop offset="1" stop-color="#B9791F"/></linearGradient>
+    <radialGradient id="pesutGlow" cx="0" cy="0" r="1" gradientTransform="matrix(84 91 -82 76 743 65)" gradientUnits="userSpaceOnUse"><stop stop-color="#F2FAF5" stop-opacity=".72"/><stop offset="1" stop-color="#F2FAF5" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="805" cy="125" r="110" fill="#FFF9EC" opacity=".72"/>
+  <circle cx="805" cy="125" r="91" stroke="#E7C879" stroke-width="2" opacity=".28"/>
+  <path d="M765 193c-19 2-37-8-55-22 3 20 15 34 35 39-14 5-23 13-29 23 24-1 45-10 65-26l-16-14Z" fill="url(#pesutBody)"/>
+  <path d="M758 230c5-35 22-60 49-77 17-11 38-14 55-4 29 17 47 44 57 81H758Z" fill="url(#pesutBody)"/>
+  <path d="M778 230c7-28 20-48 39-64 18 11 34 14 52 11 16 11 28 29 36 53H778Z" fill="url(#pesutBelly)"/>
+  <path d="M832 166c17-27 24-46 39-57 4 23-4 43-21 60" fill="#607780"/>
+  <path d="M842 169c13-13 20-31 26-52 4-14 10-25 19-29 7-3 14 1 14 8 0 6-4 13-8 20 8-6 16-5 19 1 3 6-1 12-7 19 8-2 13 2 12 8-1 7-9 15-18 21-13 9-27 17-43 22l-14-18Z" fill="url(#pesutFin)" stroke="#647A80" stroke-width="1.8"/>
+  <path d="M877 105c-3 13-7 25-12 37m27-18c-6 11-13 20-22 28" stroke="#DCE5DE" stroke-linecap="round" stroke-width="2.5" opacity=".62"/>
+  <path d="M900 90c5 3 7 8 5 13" stroke="#E6EFEB" stroke-linecap="round" stroke-width="2" opacity=".7"/>
+  <path d="M704 91c1-31 21-54 52-61 34-8 70 7 86 35 17 29 9 64-16 83-17 14-39 19-61 13-17-4-30-14-39-28-13 1-27-3-38-11-11-8-15-18-10-26 5-8 15-10 26-5Z" fill="url(#pesutBody)" stroke="#647A80" stroke-width="2"/>
+  <path d="M710 101c-12-5-22-4-29 2-5 5-2 12 6 17 10 6 22 8 34 6-6-7-10-16-11-25Z" fill="url(#pesutBelly)"/>
+  <path d="M716 70c13-17 33-27 55-27 28 0 51 14 63 36-15-13-34-19-54-17-23 2-43 12-56 29-6 8-10 17-12 27-4-17-2-34 4-48Z" fill="url(#pesutGlow)"/>
+  <ellipse cx="727" cy="91" rx="7" ry="9" fill="#F4F3EA"/><ellipse cx="729" cy="92" rx="4" ry="6" fill="#24333A"/><circle cx="730" cy="90" r="1.8" fill="#fff"/>
+  <path d="M684 112c12 8 26 10 40 7" stroke="#52686E" stroke-linecap="round" stroke-width="3.5"/>
+  <g transform="translate(152 -2) scale(.82 .82)">
+    <path d="m719 53 5-34 22 22 20-34 19 34 23-22 3 35c-28 9-62 9-92-1Z" fill="url(#crownGold)" stroke="#A96E1A" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M721 52c27 8 59 8 88 0l2 12c-31 10-62 10-91 0l1-12Z" fill="#D99A2B" stroke="#A96E1A" stroke-width="2"/>
+    <circle cx="724" cy="17" r="4.5" fill="#FFE9A0"/><circle cx="766" cy="8" r="4.5" fill="#FFE9A0"/><circle cx="808" cy="18" r="4.5" fill="#FFE9A0"/>
+    <path d="m765 48 6 7 7-7-7-7-6 7Z" fill="#EAF7F4" stroke="#A96E1A" stroke-width="1.5"/>
+  </g>
+</svg>

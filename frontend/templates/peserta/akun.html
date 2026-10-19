@@ -187,11 +187,10 @@
 </style>
 
 <div id="participantAccount" class="mx-auto w-full max-w-[1440px] space-y-5">
-  <div class="text-sm text-stone-500"><a href="{% url 'peserta_dashboard' %}" class="hover:underline">Dashboard</a><i class="fa-solid fa-chevron-right mx-2 text-xs text-amber-700"></i><b class="text-brand-ink">Akun Saya</b></div>
-
   <section class="account-hero relative overflow-hidden rounded-[26px] px-5 py-6 sm:px-8 sm:py-7">
     <div class="relative z-10 flex items-center justify-between gap-4">
       <div class="max-w-2xl">
+        <a href="{% url 'peserta_dashboard' %}" class="mb-4 flex w-fit items-center text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
         <span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/65 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[.14em] text-brand-orangeDeep"><i class="fa-solid fa-id-card"></i>{% if profile_complete %}Profil peserta{% else %}Satu langkah lagi{% endif %}</span>
         <h1 class="mt-3 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">{% if profile_complete %}Akun Saya{% else %}Lengkapi Biodata{% endif %}</h1>
         <p class="mt-2 max-w-xl text-sm leading-relaxed text-stone-700 sm:text-base">Isi data diri dengan benar agar pendaftaran event, tiket, dan sertifikat tercatat atas nama Anda.</p>

@@ -4,6 +4,8 @@
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <style>
   .event-poster { position: relative; isolation: isolate; }
+  .event-page-intro { transform: none; }
+  @media (min-width: 768px) { .event-page-intro { transform: translateY(-2px); } }
   .event-poster--art::before, .event-poster--art::after { position: absolute; z-index: 0; content: ""; border-radius: 9999px; background: rgba(255,255,255,.12); pointer-events: none; }
   .event-poster--art::before { width: 150px; height: 150px; right: -38px; top: -64px; }
   .event-poster--art::after { width: 90px; height: 90px; right: 60px; bottom: -50px; }
@@ -12,8 +14,7 @@
   .event-poster[data-kind="seminar"] { background: linear-gradient(135deg,#05b8db,#51ddf2 58%,#077fc9); color: #07385a; }
   .event-poster[data-kind="webinar"] { background: linear-gradient(135deg,#5c2d91,#9b59b6 58%,#e27c97); }
  </style>
- <div class="text-sm text-stone-500"><a href="{% url 'peserta_dashboard' %}" class="hover:underline">Dashboard</a><i class="fa-solid fa-chevron-right mx-2 text-xs"></i><b class="text-brand-ink">Daftar Event</b></div>
- <header class="participant-page-intro relative overflow-hidden rounded-[24px] px-6 py-5 sm:px-8 sm:py-6"><div class="relative z-10"><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div><i class="pointer-events-none absolute -right-4 -top-8 fa-regular fa-calendar-check text-[9rem] text-amber-500/10" aria-hidden="true"></i></header>
+ <header class="participant-page-intro event-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7"><div class="relative z-10"><a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a><h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div><i class="pointer-events-none absolute -right-4 -top-8 fa-regular fa-calendar-check text-[9rem] text-amber-500/10" aria-hidden="true"></i></header>
  <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(250px,1fr)_repeat(3,minmax(140px,190px))]">
   <label class="flex min-h-[50px] items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-brand-orangeDeep"></i><input id="eventSearch" type="search" class="w-full bg-transparent text-sm outline-none" placeholder="Cari event berdasarkan nama, kategori, atau penyelenggara..."></label>
   <label class="flex min-h-[50px] items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3"><i class="fa-regular fa-calendar text-brand-orangeDeep"></i><select id="eventTime" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Waktu</option><option value="upcoming">Akan Datang</option><option value="this-month">Bulan Ini</option><option value="next-month">Bulan Depan</option><option value="past">Event Sebelumnya</option></select></label>
