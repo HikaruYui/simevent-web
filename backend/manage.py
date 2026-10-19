@@ -3,6 +3,10 @@
 
 import os
 import sys
+from dotenv import load_dotenv
+
+# Muat variabel lingkungan dari file .env
+load_dotenv()
 
 from django.core.management import execute_from_command_line
 

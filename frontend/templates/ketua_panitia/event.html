@@ -5,8 +5,52 @@
 {% block fab %}{% endblock %}
 {% block content %}
 <header class="eo-head"><h1>Kelola Event</h1></header>
-<div class="toolbar"><label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari event</span><input id="evSearch" type="search" placeholder="Cari event..."></label><div class="toolbar__grow"></div><button type="button" class="btn" data-open-new-event>Event baru</button></div>
-<div class="tabs" id="evTabs" role="group" aria-label="Filter status"></div>
+<header class="eo-head">
+  <h1>Kelola Event</h1>
+</header>
+
+<div class="event-toolbar">
+  <div class="event-filter-row">
+    <label class="search">
+      <svg class="icon" aria-hidden="true">
+        <use href="#i-search"/>
+      </svg>
+      <span class="sr-only">Cari event</span>
+      <input
+        id="evSearch"
+        type="search"
+        placeholder="Cari event..."
+      >
+    </label>
+
+    <div
+      class="tabs"
+      id="evTabs"
+      role="group"
+      aria-label="Filter status"
+    ></div>
+  </div>
+
+  <button type="button" class="btn" data-open-new-event>
+    Event baru
+  </button>
+</div>
+
+<div class="table-wrap">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Tanggal</th>
+        <th>Tiket</th>
+        <th class="num">Harga</th>
+        <th>Status</th>
+        <th><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody id="evBody"></tbody>
+  </table>
+</div>
 <div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Tanggal</th><th>Tiket</th><th class="num">Harga</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="evBody"></tbody></table></div>
 <dialog class="dlg" id="detailDlg" aria-labelledby="detailTitle"><div class="dlg__head"><h2 id="detailTitle"></h2><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div><div class="dlg__body"><dl class="detail-grid" id="detailBody"></dl></div><div class="dlg__foot"><button type="button" class="btn" data-close>Tutup</button></div></dialog>
 {% endblock %}

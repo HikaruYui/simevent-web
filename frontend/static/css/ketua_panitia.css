@@ -133,12 +133,35 @@ img, svg { display: block; max-width: 100%; }
 .kpi__spark svg { width: 100%; height: 100%; overflow: visible; }
 
 .kpi--split { display: flex; flex-direction: column; }
-.kpi__pair { display: grid; grid-template-columns: 1fr 1px 1fr; align-items: stretch; flex: 1; margin-top: 12px; }
-.kpi__pair > div { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
-.kpi__pair i { background: var(--olive); opacity: .55; margin: 4px 0; }
-.kpi__num { font: 700 44px/1 var(--font-head); }
+.kpi__pair { 
+  display: grid; 
+  grid-template-columns: 1fr 1px 1fr; 
+  align-items: start;             /* Bikin angka '4' di kiri dan kanan sejajar dari atas */
+  flex: 1; 
+  margin-top: 16px; 
+}
+.kpi__pair > div { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: start; 
+  gap: 8px; 
+  padding: 0 12px;                /* Kasih jarak/ruang biar gak nempel ke garis tengah */
+  text-align: center; 
+}
+.kpi__pair i { 
+  background: var(--olive); 
+  opacity: .35; 
+  height: 80px;                   /* Panjang garis pembatas dibuat pas di tengah */
+  margin: 0;
+}
+.kpi__num { font: 700 40px/1 var(--font-head); }
 .kpi__num--orange { color: var(--orange-deep); }
-.kpi__cap { font: 500 15px/1.25 var(--font-body); color: var(--olive); }
+.kpi__cap { 
+  font: 500 13px/1.3 var(--font-body); 
+  color: var(--olive); 
+  word-break: normal;             /* Mencegah teks terpotong aneh */
+}
 .kpi__cap--orange { color: var(--orange-deep); }
 
 /* ---------- Dashboard: grafik + log ---------- */
@@ -218,6 +241,7 @@ img, svg { display: block; max-width: 100%; }
   display: flex; align-items: center; gap: 10px; flex: 1 1 260px; max-width: 420px;
   height: 44px; padding: 0 16px; border-radius: 999px; background: var(--cream-card);
 }
+
 .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 15px/1 var(--font-body); }
 .search input::placeholder { color: var(--muted); opacity: .85; }
 .search:focus-within { box-shadow: 0 0 0 3px var(--orange); }
@@ -289,7 +313,14 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 720px; }
 .stat__value { margin-top: 8px; font: 700 30px/1.15 var(--font-head); }
 .stat__note { margin-top: 6px; font: 600 13px/1.3 var(--font-body); color: var(--good); }
 .stat__note--muted { color: var(--muted); }
-.block { margin-top: 32px; }
+/* Menambah jarak aman antara 3 card atas dengan grafik/tabel di bawahnya */
+.stat-row {
+  margin-bottom: 32px !important; /* Memberikan jarak bawah pada 3 card atas */
+}
+
+.block {
+  margin-top: 36px !important;    /* Mendorong kotak grafik ke bawah agar tidak tumpang tindih */
+}
 .chart-card--bar { min-height: 340px; }
 
 /* ---------- Support ---------- */
@@ -376,3 +407,117 @@ dialog.dlg::backdrop { background: rgba(42, 44, 30, .55); backdrop-filter: blur(
 .sec-title--out { margin: 0 8px 14px; }
 .sec-title--out { font: 700 clamp(22px, 1.7vw, 32px)/1.2 var(--font-head); }
 .chart-card .chart-card__filters { margin: 14px 0 0; }
+
+/* Memberikan jarak bawah pada card grafik agar tabel di bawahnya terdorong rapi */
+.chart-card--bar, 
+.chart-card {
+  margin-bottom: 36px !important;
+}
+
+/* Jarak aman antar blok elemen */
+.block {
+  margin-top: 36px !important;
+  margin-bottom: 36px !important;
+}
+
+/* Merapikan modal / dialog Tambah Event Baru */
+.dialog, 
+.dlg, 
+.modal-content {
+  padding-bottom: 24px !important; /* Memberikan ruang napas di bagian bawah modal */
+}
+
+/* Mengatur jarak form group / input terakhir (Harga Tiket) */
+.form-group:last-of-type,
+.dlg .field:last-child,
+.dialog input:last-of-type {
+  margin-bottom: 24px !important; /* Jarak antara input harga tiket dan tombol aksi */
+}
+
+/* Geser tombol dari pinggir kanan & beri padding aman di dalam modal */
+.dialog-actions,
+.dlg__foot,
+.modal-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-top: 20px !important;
+  margin-bottom: 12px !important;
+  padding-right: 24px !important; /* Memberikan jarak dari pinggir kanan modal */
+  padding-left: 24px !important;  /* Menjaga keseimbangan jarak kiri */
+}
+
+/* Toolbar Kelola Event */
+.event-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px 0 20px;
+}
+
+/* Pencarian dan filter dalam satu baris */
+.event-filter-row {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 16px;
+}
+
+/* Kolom pencarian */
+.event-filter-row .search {
+  flex: 0 1 320px;
+  width: 320px;
+  min-width: 200px;
+  max-width: 320px;
+  margin: 0;
+}
+
+/* Filter status di samping pencarian */
+.event-filter-row .tabs {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+}
+
+.event-filter-row .tabs button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Tombol Event baru */
+.event-toolbar > .btn {
+  flex-shrink: 0;
+}
+
+/* Layar lebih kecil */
+@media (max-width: 1100px) {
+  .event-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .event-filter-row {
+    flex-wrap: wrap;
+  }
+
+  .event-filter-row .search {
+    flex: 1 1 240px;
+    width: auto;
+    max-width: none;
+  }
+
+  .event-filter-row .tabs {
+    flex-wrap: wrap;
+  }
+
+  .event-toolbar > .btn {
+    align-self: flex-start;
+  }
+}
