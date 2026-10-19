@@ -32,6 +32,8 @@
 #achievementModal > section {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
+  border-radius: inherit;
 }
 #achievementModal > section::before,
 #achievementModal > section::after {
@@ -130,15 +132,31 @@
 }
 #achievementModal .achievement-medal--silver { --medal-highlight:#f9fbff; --medal-light:#e3e8ef; --medal-mid:#aeb8c7; --medal-deep:#778293; --medal-ink:#748092; --medal-ribbon:#aab4c2; --medal-ribbon-light:#e0e5ec; }
 #achievementModal .achievement-medal--gold { --medal-highlight:#fff9dd; --medal-light:#f8df9e; --medal-mid:#d9a441; --medal-deep:#a96d13; --medal-ink:#9b620d; --medal-ribbon:#c58520; --medal-ribbon-light:#f1cc72; }
-#achievementModal .achievement-medal--platinum { --medal-highlight:#fff; --medal-light:#e3e7ee; --medal-mid:#aeb6c3; --medal-deep:#747e8c; --medal-ink:#747d8c; --medal-ribbon:#9da7b4; --medal-ribbon-light:#e4e8ee; }
+#achievementModal .achievement-medal--platinum { --medal-highlight:#fff; --medal-light:#e2f8ff; --medal-mid:#83c2dc; --medal-deep:#28718e; --medal-ink:#317b98; --medal-ribbon:#438fad; --medal-ribbon-light:#c9f1ff; }
 #achievementModal .achievement-medal--legend { --medal-highlight:#fff2ff; --medal-light:#d8ceff; --medal-mid:#9a8ce0; --medal-deep:#6551c7; --medal-ink:#6d5ac2; --medal-ribbon:#7664d2; --medal-ribbon-light:#b8aaf2; }
 #achievementModal .achievement-level-marker.is-locked { opacity:.82; box-shadow:none; filter:grayscale(.16) drop-shadow(0 5px 7px rgba(93,79,59,.1)); }
 #achievementModal .achievement-level-marker.is-locked .achievement-medal-icon { color:#f9fafb; }
 #achievementModal .achievement-level-marker.is-unlocked { filter:drop-shadow(0 8px 11px rgba(183,126,34,.2)); }
+#achievementModal .achievement-level-marker.achievement-medal--platinum.is-locked { filter:saturate(.82) drop-shadow(0 5px 8px rgba(69,157,190,.18)); }
+#achievementModal .achievement-level-marker.achievement-medal--platinum.is-unlocked { filter:drop-shadow(0 0 7px rgba(126,224,255,.72)) drop-shadow(0 8px 12px rgba(39,119,151,.3)); }
+#achievementModal .achievement-level-marker.achievement-medal--platinum::before {
+  position:absolute; z-index:3; top:5px; right:17px; width:18px; height:18px;
+  content:""; background:linear-gradient(135deg,#fff 8%,#c4f5ff 48%,#58c6eb 78%,#fff 100%);
+  clip-path:polygon(50% 0,61% 37%,100% 50%,61% 63%,50% 100%,39% 63%,0 50%,39% 37%);
+  filter:drop-shadow(0 0 5px rgba(98,211,247,.95));
+  animation:platinum-glint 2.8s ease-in-out infinite;
+}
+#achievementModal .achievement-level-marker.achievement-medal--platinum::after {
+  position:absolute; z-index:3; top:36px; left:17px; width:9px; height:9px;
+  content:""; background:#fff; clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);
+  filter:drop-shadow(0 0 4px rgba(117,224,255,.95)); animation:platinum-glint 2.8s ease-in-out .7s infinite;
+}
+#achievementModal .achievement-level-marker.achievement-medal--platinum.is-locked::before,
+#achievementModal .achievement-level-marker.achievement-medal--platinum.is-locked::after { animation:none; opacity:.48; }
 #achievementModal .achievement-level-label { display:inline-flex; min-width:84px; justify-content:center; border-radius:999px; padding:4px 13px; background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(243,231,207,.9)); box-shadow:inset 0 0 0 1px rgba(178,136,71,.12); }
 #achievementModal .achievement-level--silver { color:#657184; }
 #achievementModal .achievement-level--gold { color:#a36b14; }
-#achievementModal .achievement-level--platinum { color:#737d8b; }
+#achievementModal .achievement-level--platinum { color:#317b98; background:linear-gradient(180deg,#f5fdff,#d9f3fb); box-shadow:inset 0 0 0 1px rgba(70,155,185,.28),0 3px 10px rgba(69,157,190,.12); }
 #achievementModal .achievement-level--legend { color:#7565c5; }
 #achievementModal .achievement-track { background:repeating-linear-gradient(90deg,#e8deca 0 20px,transparent 20px 25px); }
 #achievementModal .achievement-track-fill { background:repeating-linear-gradient(90deg,#b9832f 0 20px,#d5a551 20px 25px); }
@@ -182,6 +200,46 @@
 }
 #participantDashboard .dashboard-hero-illustration img {
   filter: drop-shadow(0 8px 10px rgba(132,91,37,.12));
+}
+#participantDashboard .dashboard-events-table { table-layout: fixed; }
+#participantDashboard .dashboard-events-table th:nth-child(1) { width: 32%; }
+#participantDashboard .dashboard-events-table th:nth-child(2) { width: 17%; }
+#participantDashboard .dashboard-events-table th:nth-child(3) { width: 20%; }
+#participantDashboard .dashboard-events-table th:nth-child(4) { width: 31%; }
+@media (max-width: 1023px) {
+  #participantDashboard .dashboard-events-table,
+  #participantDashboard .dashboard-events-table tbody { display: block; width: 100%; }
+  #participantDashboard .dashboard-events-table thead { display: none; }
+  #participantDashboard .dashboard-events-table tbody { display: grid; gap: .75rem; padding: .75rem; }
+  #participantDashboard .dashboard-events-table tbody tr {
+    display: grid; gap: .45rem; padding: .8rem; border: 1px solid rgba(190,143,71,.2);
+    border-radius: 14px; background: rgba(255,255,255,.42);
+  }
+  #participantDashboard .dashboard-events-table td {
+    display: grid; grid-template-columns: minmax(82px,.36fr) minmax(0,1fr); gap: .65rem;
+    min-width: 0; padding: .15rem .2rem !important; white-space: normal !important; overflow-wrap: anywhere;
+  }
+  #participantDashboard .dashboard-events-table td::before {
+    content: attr(data-label); color: #8b510d; font-size: .78rem; font-weight: 800;
+  }
+  #participantDashboard .dashboard-events-table td:last-child { display: block; }
+  #participantDashboard .dashboard-events-table td:last-child::before { display: block; margin: 0 0 .45rem .2rem; }
+  #participantDashboard .dashboard-events-table td:last-child > .flex { display: flex; flex-wrap: wrap; gap: .5rem; }
+  #participantDashboard .dashboard-events-table td:last-child > .flex a,
+  #participantDashboard .dashboard-events-table td:last-child > .flex button { flex: 1 1 125px; min-width: 0 !important; }
+  #participantDashboard .dashboard-events-table td[colspan="4"] { display: block; }
+  #participantDashboard .dashboard-events-table td[colspan="4"]::before { content: none; }
+  #participantDashboard .dashboard-events-table td[colspan="4"] > div { align-items: flex-start; }
+  #participantDashboard .dashboard-events-table td[colspan="4"] > div a { align-self: flex-start; }
+}
+#participantDashboard .dashboard-hero-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: participant-sparkle 2.8s ease-in-out infinite;
+}
+@keyframes participant-sparkle {
+  0%, 100% { opacity: .55; transform: scale(.86); }
+  50% { opacity: 1; transform: scale(1.08); }
 }
 #participantDashboard .dashboard-stat-card {
   position: relative;
@@ -294,6 +352,9 @@
 @media (prefers-reduced-motion: reduce) {
   #participantDashboard .dashboard-stat-card { transition: none; }
   #participantDashboard .dashboard-stat-card:hover { transform: none; }
+  #participantDashboard .dashboard-hero-sparkle { animation: none; }
+  #achievementModal .achievement-medal--platinum::before,
+  #achievementModal .achievement-medal--platinum::after { animation:none; }
 }
 @media (max-width: 639px) {
   #participantDashboard .dashboard-hero::before {
@@ -310,12 +371,21 @@
 }
 </style>
 <div id="participantDashboard" class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
-  <section class="participant-card dashboard-hero relative min-h-[152px] overflow-hidden rounded-[24px] px-5 py-3 sm:min-h-[174px] sm:px-6 lg:min-h-[184px] lg:px-7">
-    <div aria-hidden="true" class="dashboard-hero-illustration pointer-events-none absolute inset-y-0 right-0 flex w-[132px] items-end justify-end sm:w-[150px] lg:right-3 lg:w-[52%]">
-      <picture class="relative z-10 block h-[132px] w-[132px] sm:h-[150px] sm:w-[150px] lg:h-[180px] lg:w-full">
-        <source media="(min-width: 1024px)" srcset="{% static 'img/participant-dashboard-banner.svg' %}">
-        <img src="{% static 'img/participant-hero.svg' %}" alt="" class="h-full w-full object-contain object-bottom">
-      </picture>
+  <section class="participant-card dashboard-hero participant-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
+    <div aria-hidden="true" class="dashboard-hero-illustration pointer-events-none absolute inset-y-0 right-0 z-10 flex w-[190px] items-end justify-end overflow-hidden sm:w-[220px] lg:right-3 lg:w-[300px]">
+      <div class="relative h-full w-full">
+        <svg class="absolute inset-0 z-0 h-full w-full" viewBox="0 0 300 184" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 135c24-28 48-47 81-62m-77 76c28-27 49-41 77-51" stroke="#D5A84F" stroke-width="2" stroke-linecap="round" opacity=".28"/>
+          <circle cx="27" cy="83" r="4" fill="#D8AC58" opacity=".62"/>
+          <circle cx="78" cy="29" r="3" fill="#D8AC58" opacity=".55"/>
+          <circle cx="270" cy="54" r="12" fill="#E8D3A6" opacity=".42"/>
+          <circle cx="280" cy="112" r="3" fill="#D8AC58" opacity=".62"/>
+          <path class="dashboard-hero-sparkle" d="m46 43 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z" fill="#E5BD63" opacity=".8"/>
+          <path class="dashboard-hero-sparkle" style="animation-delay:.9s" d="m257 83 2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5 2.5-6Z" fill="#E5BD63" opacity=".75"/>
+          <path d="m244 38 5-7m-1 15 8-4m19 37 7-4" stroke="#D4A447" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+        </svg>
+        <img src="{% static 'img/Maskot Pesut Biru Melambaikan Tangan.png' %}?v=1" alt="" class="relative z-10 h-full w-full object-cover" style="object-position: 55% center">
+      </div>
     </div>
     <div class="relative z-10 flex min-h-[126px] items-center sm:min-h-[148px]">
       <div class="max-w-[72%] sm:max-w-[62%]">
@@ -379,8 +449,7 @@
     </div>
 
     <div class="participant-card dashboard-events-card overflow-hidden rounded-[22px]">
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[900px] text-left text-sm">
+        <table class="dashboard-events-table w-full text-left text-sm">
           <thead class="bg-[#efe0bf]/80 text-brand-orangeDeep">
             <tr>
               <th class="px-5 py-3 text-left font-extrabold">Nama Event</th>
@@ -392,9 +461,9 @@
           <tbody class="divide-y divide-amber-100">
             {% for registration in registrations|slice:':5' %}
             <tr class="dashboard-event-row">
-              <td class="px-5 py-4 font-bold text-brand-ink">{{ registration.event.title }}</td>
-              <td class="whitespace-nowrap px-4 py-4 text-brand-ink">{{ registration.event.start_datetime|date:"j M Y" }}</td>
-              <td class="px-4 py-4">
+              <td data-label="Nama Event" class="px-5 py-4 font-bold text-brand-ink">{{ registration.event.title }}</td>
+              <td data-label="Tanggal" class="whitespace-nowrap px-4 py-4 text-brand-ink">{{ registration.event.start_datetime|date:"j M Y" }}</td>
+              <td data-label="Status" class="px-4 py-4">
                 {% if registration.event.status == "COMPLETED" or registration.event.end_datetime <= now %}
                   <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Selesai</span>
                 {% elif registration.event.start_datetime <= now %}
@@ -403,7 +472,7 @@
                   <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700">Akan Datang</span>
                 {% endif %}
               </td>
-              <td class="px-5 py-3">
+              <td data-label="Aksi" class="px-5 py-3">
                 <div class="flex flex-wrap gap-2">
                 {% if registration.certificate_ready %}
                   <a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline inline-flex min-w-[8rem] justify-center rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
@@ -457,7 +526,6 @@
             {% endfor %}
           </tbody>
         </table>
-      </div>
     </div>
   </section>
 
