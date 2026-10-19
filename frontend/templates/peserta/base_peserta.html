@@ -126,9 +126,20 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   box-shadow: 0 6px 10px rgba(142, 100, 47, 0.04);
 }
 .participant-page-intro {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 152px;
+  padding-block: 12px;
   border: 1px solid rgba(255,255,255,.8);
   background: linear-gradient(112deg, rgba(255,251,242,.97), rgba(245,228,193,.88));
   box-shadow: 0 8px 24px rgba(142,100,47,.06), inset 0 1px 0 rgba(255,255,255,.8);
+}
+@media (min-width: 640px) {
+  .participant-page-intro { min-height: 174px; }
+}
+@media (min-width: 1024px) {
+  .participant-page-intro { min-height: 184px; }
 }
 .event-row, .certificate-row, .achievement-row {
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
@@ -224,7 +235,7 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
     <div class="participant-sidebar-panel">
       <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4" style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')">
       </a>
-      <nav class="flex gap-2 overflow-x-auto md:flex-col" aria-label="Menu peserta">
+      <nav class="grid grid-cols-2 gap-2 md:flex md:flex-col" aria-label="Menu peserta">
         {% url 'peserta_dashboard' as dashboard_url %}
         {% url 'peserta_daftar_event' as daftar_event_url %}
         {% url 'peserta_sertifikat' as sertifikat_url %}

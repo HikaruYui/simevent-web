@@ -579,6 +579,13 @@ def peserta_achievement(request):
         level["completed"] = level_count >= level["required"]
         level["progress"] = min(level_count, level["required"])
     completed_count = sum(item["completed"] for item in levels)
+    completed_levels = [level for level in levels if level["completed"]]
+    next_level = next(
+        (level for level in levels if level_count < level["required"]),
+        levels[-1],
+    )
+    next_threshold = next_level["required"]
+    progress_percent = min(100, round(level_count * 100 / next_threshold))
 
     return render(request, "peserta/achievement.html", {
         "achievements": achievements,
@@ -587,6 +594,12 @@ def peserta_achievement(request):
         "level_count": level_count,
         "completed_count": completed_count,
         "completed_percentage": round(completed_count * 100 / len(levels)),
+        "completed_levels": completed_levels,
+        "next_level": next_level,
+        "next_threshold": next_threshold,
+        "progress_percent": progress_percent,
+        "progress_remaining": max(0, next_threshold - level_count),
+        "track_segment": min(3, max(0, len(completed_levels) - 1)),
     })
 
 
