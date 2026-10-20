@@ -192,15 +192,6 @@
 #participantDashboard .dashboard-hero::after {
   content: none;
 }
-#participantDashboard .dashboard-hero-illustration {
-  z-index: 1;
-}
-#participantDashboard .dashboard-hero-illustration::before {
-  content: none;
-}
-#participantDashboard .dashboard-hero-illustration img {
-  filter: drop-shadow(0 8px 10px rgba(132,91,37,.12));
-}
 #participantDashboard .dashboard-events-table { table-layout: fixed; }
 #participantDashboard .dashboard-events-table th:nth-child(1) { width: 32%; }
 #participantDashboard .dashboard-events-table th:nth-child(2) { width: 17%; }
@@ -232,15 +223,6 @@
   #participantDashboard .dashboard-events-table td[colspan="4"] > div { align-items: flex-start; }
   #participantDashboard .dashboard-events-table td[colspan="4"] > div a { align-self: flex-start; }
 }
-#participantDashboard .dashboard-hero-sparkle {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: participant-sparkle 2.8s ease-in-out infinite;
-}
-@keyframes participant-sparkle {
-  0%, 100% { opacity: .55; transform: scale(.86); }
-  50% { opacity: 1; transform: scale(1.08); }
-}
 #participantDashboard .dashboard-stat-card {
   position: relative;
   isolation: isolate;
@@ -252,20 +234,11 @@
   box-shadow: 0 8px 18px rgba(142,100,47,.055), inset 0 1px 0 rgba(255,255,255,.92);
   transition: transform .2s ease, box-shadow .2s ease;
 }
-#participantDashboard .dashboard-stat-card::before,
 #participantDashboard .dashboard-stat-card::after {
   position: absolute;
   z-index: -1;
   content: "";
   pointer-events: none;
-}
-#participantDashboard .dashboard-stat-card::before {
-  top: 0;
-  left: 22px;
-  width: 58px;
-  height: 3px;
-  border-radius: 0 0 8px 8px;
-  background: linear-gradient(90deg, #d9ad5e, #f3d9a6);
 }
 #participantDashboard .dashboard-stat-card::after {
   top: -54px;
@@ -352,7 +325,6 @@
 @media (prefers-reduced-motion: reduce) {
   #participantDashboard .dashboard-stat-card { transition: none; }
   #participantDashboard .dashboard-stat-card:hover { transform: none; }
-  #participantDashboard .dashboard-hero-sparkle { animation: none; }
   #achievementModal .achievement-medal--platinum::before,
   #achievementModal .achievement-medal--platinum::after { animation:none; }
 }
@@ -367,26 +339,12 @@
     right: 20%;
     width: 190px;
   }
-  #participantDashboard .dashboard-hero-illustration img { opacity: .72; }
+  #participantDashboard .participant-hero-illustration img { opacity: .72; }
 }
 </style>
 <div id="participantDashboard" class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
-  <section class="participant-card dashboard-hero participant-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
-    <div aria-hidden="true" class="dashboard-hero-illustration pointer-events-none absolute inset-y-0 right-0 z-10 flex w-[190px] items-end justify-end overflow-hidden sm:w-[220px] lg:right-3 lg:w-[300px]">
-      <div class="relative h-full w-full">
-        <svg class="absolute inset-0 z-0 h-full w-full" viewBox="0 0 300 184" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 135c24-28 48-47 81-62m-77 76c28-27 49-41 77-51" stroke="#D5A84F" stroke-width="2" stroke-linecap="round" opacity=".28"/>
-          <circle cx="27" cy="83" r="4" fill="#D8AC58" opacity=".62"/>
-          <circle cx="78" cy="29" r="3" fill="#D8AC58" opacity=".55"/>
-          <circle cx="270" cy="54" r="12" fill="#E8D3A6" opacity=".42"/>
-          <circle cx="280" cy="112" r="3" fill="#D8AC58" opacity=".62"/>
-          <path class="dashboard-hero-sparkle" d="m46 43 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z" fill="#E5BD63" opacity=".8"/>
-          <path class="dashboard-hero-sparkle" style="animation-delay:.9s" d="m257 83 2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5 2.5-6Z" fill="#E5BD63" opacity=".75"/>
-          <path d="m244 38 5-7m-1 15 8-4m19 37 7-4" stroke="#D4A447" stroke-width="2" stroke-linecap="round" opacity=".55"/>
-        </svg>
-        <img src="{% static 'img/Maskot Pesut Biru Melambaikan Tangan.png' %}?v=1" alt="" class="relative z-10 h-full w-full object-cover" style="object-position: 55% center">
-      </div>
-    </div>
+  <section class="participant-card dashboard-hero participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
+    {% include 'peserta/_pesut_hero_art.html' %}
     <div class="relative z-10 flex min-h-[126px] items-center sm:min-h-[148px]">
       <div class="max-w-[72%] sm:max-w-[62%]">
         <p class="text-sm font-semibold text-stone-700 sm:text-base">Halo,</p>

@@ -82,15 +82,13 @@
 }
 </style>
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
- <header class="participant-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
+ <header class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
   <div class="relative z-10 max-w-2xl lg:max-w-[52%] xl:max-w-[56%]">
    <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
    <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Achievement</h1>
    <p class="mt-2">Selesaikan event pilihan dan raih semua penghargaan!</p>
   </div>
-  <div class="pointer-events-none absolute right-0 top-1/2 hidden h-[107px] w-[280px] -translate-y-1/2 items-center justify-center lg:flex xl:h-[170px] xl:w-[444px]" aria-hidden="true">
-   <img src="{% static 'img/achievement-hero.png' %}?v=2" alt="" class="h-full w-full object-cover">
-  </div>
+  {% include 'peserta/_pesut_hero_art.html' %}
  </header>
  <section id="achievementProgress" class="rounded-[28px] p-5 sm:p-8">
   <div class="relative z-10">

@@ -3,27 +3,6 @@
 {% block ptitle %}Akun Saya{% endblock %}
 {% block peserta %}
 <style>
-#participantAccount .account-hero {
-  border: 1px solid rgba(255,255,255,.88);
-  background:
-    radial-gradient(circle at 83% 19%, rgba(255,255,255,.9) 0 2px, transparent 3px),
-    radial-gradient(circle at 77% 67%, rgba(221,176,92,.25), transparent 22%),
-    radial-gradient(ellipse at 93% 100%, rgba(196,211,157,.42), transparent 38%),
-    linear-gradient(112deg, #fffaf0 0%, #f6edcf 62%, #e9efcf 100%);
-  box-shadow: 0 12px 26px rgba(142,100,47,.08), inset 0 1px 0 rgba(255,255,255,.9);
-}
-#participantAccount .account-hero::after {
-  position: absolute;
-  top: -96px;
-  right: 17%;
-  width: 230px;
-  height: 230px;
-  border: 1px solid rgba(130,151,82,.14);
-  border-radius: 50%;
-  box-shadow: 0 0 0 17px rgba(130,151,82,.03), 0 0 0 36px rgba(193,145,65,.025);
-  content: "";
-  pointer-events: none;
-}
 #participantAccount .account-card {
   border: 1px solid rgba(157,160,105,.27);
   background: linear-gradient(145deg, rgba(255,253,247,.98), rgba(249,247,226,.9));
@@ -187,20 +166,13 @@
 </style>
 
 <div id="participantAccount" class="mx-auto w-full max-w-[1440px] space-y-5">
-  <section class="account-hero relative overflow-hidden rounded-[26px] px-5 py-6 sm:px-8 sm:py-7">
-    <div class="relative z-10 flex items-center justify-between gap-4">
-      <div class="max-w-2xl">
-        <a href="{% url 'peserta_dashboard' %}" class="mb-4 flex w-fit items-center text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
-        <span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/65 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[.14em] text-brand-orangeDeep"><i class="fa-solid fa-id-card"></i>{% if profile_complete %}Profil peserta{% else %}Satu langkah lagi{% endif %}</span>
-        <h1 class="mt-3 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">{% if profile_complete %}Akun Saya{% else %}Lengkapi Biodata{% endif %}</h1>
-        <p class="mt-2 max-w-xl text-sm leading-relaxed text-stone-700 sm:text-base">Isi data diri dengan benar agar pendaftaran event, tiket, dan sertifikat tercatat atas nama Anda.</p>
-      </div>
-      <div class="relative hidden h-28 w-40 shrink-0 items-center justify-center sm:flex md:h-36 md:w-52">
-        <i class="fa-solid fa-star absolute left-2 top-4 text-xl text-amber-500/80"></i>
-        <i class="fa-solid fa-sparkles absolute right-2 top-3 text-2xl text-amber-600/60"></i>
-        <img src="{% static 'img/participant-hero-banner.svg' %}" alt="" class="relative z-10 h-full w-full object-contain">
-      </div>
+  <section class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
+    <div class="relative z-10 max-w-[72%] sm:max-w-[62%]">
+      <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
+      <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">{% if profile_complete %}Akun Saya{% else %}Lengkapi Biodata{% endif %}</h1>
+      <p class="mt-2 text-sm leading-relaxed text-stone-700 sm:text-base">Isi data diri dengan benar agar pendaftaran event, tiket, dan sertifikat tercatat atas nama Anda.</p>
     </div>
+    {% include 'peserta/_pesut_hero_art.html' %}
   </section>
 
   {% if not profile_complete %}

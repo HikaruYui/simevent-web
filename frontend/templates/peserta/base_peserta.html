@@ -135,6 +135,32 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   background: linear-gradient(112deg, rgba(255,251,242,.97), rgba(245,228,193,.88));
   box-shadow: 0 8px 24px rgba(142,100,47,.06), inset 0 1px 0 rgba(255,255,255,.8);
 }
+.participant-hero {
+  isolation: isolate;
+  border: 1px solid rgba(255,255,255,.9);
+  background:
+    radial-gradient(ellipse at 89% 105%, rgba(220,190,130,.2), transparent 39%),
+    radial-gradient(ellipse at 3% 0%, rgba(255,255,255,.88), transparent 44%),
+    linear-gradient(112deg, #fffaf0 0%, #fbf1dd 58%, #f2dfb8 100%);
+  box-shadow: 0 12px 26px rgba(142,100,47,.08), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.participant-hero-illustration { z-index:1; }
+.participant-hero-illustration img { filter:drop-shadow(0 8px 10px rgba(132,91,37,.12)); }
+.participant-hero-sparkle {
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:participant-mascot-sparkle 2.8s ease-in-out infinite;
+}
+@keyframes participant-mascot-sparkle {
+  0%,100% { opacity:.55; transform:scale(.86); }
+  50% { opacity:1; transform:scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .participant-hero-sparkle { animation:none; }
+}
+@media (max-width: 639px) {
+  .participant-hero-illustration img { opacity:.72; }
+}
 @media (min-width: 640px) {
   .participant-page-intro { min-height: 174px; }
 }
@@ -221,7 +247,7 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
     width: auto !important;
     max-width: none !important;
     margin-left: 326px !important;
-    padding: 18px 24px 18px!important;
+    padding: 16px 24px 18px!important;
   }
   .participant-sidebar nav { gap: 8px!important; overflow: visible!important; }
   .participant-sidebar nav a { min-height: 64px; font-size: 1.125rem; }
@@ -245,13 +271,13 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
         <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
         <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
       </nav>
-      <div class="mt-4 border-t border-amber-200/80 pt-4">
-      <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip flex min-w-0 items-center gap-3 rounded-xl px-2 py-2">
+      <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
         <img src="{% static 'img/participant-avatar.svg' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover ring-2 ring-white">
         <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
         <i class="fa-solid fa-chevron-right ml-auto mr-2 text-xs text-brand-orangeDeep"></i>
       </a>
-      <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
+      <div>
+        <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
       </div>
     </div>
   </aside>

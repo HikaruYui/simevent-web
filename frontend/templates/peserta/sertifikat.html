@@ -10,21 +10,13 @@
 .certificate-picker-trigger:focus-visible { border-radius:6px; outline:2px solid #D7BD88; outline-offset:2px; }
 </style>
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
- <header class="participant-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
+ <header class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
   <div class="relative z-10 max-w-2xl">
    <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
    <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Sertifikat Saya</h1>
    <p class="mt-2">Koleksi sertifikat dari event yang telah Anda ikuti.</p>
   </div>
-  <div class="pointer-events-none absolute -right-4 -top-6 hidden h-44 w-64 items-center justify-center rounded-full bg-amber-100/60 lg:flex" aria-hidden="true">
-   <div class="relative grid h-32 w-44 place-items-center rounded-lg border-2 border-amber-300 bg-white/90 shadow-md">
-    <span class="absolute inset-2 border border-amber-100"></span>
-    <span class="relative mt-2 text-xs font-extrabold tracking-[.2em] text-rose-600">SIMEVENT</span>
-    <span class="relative -mt-4 h-1 w-24 rounded-full bg-amber-200"></span>
-    <span class="relative -mt-5 h-1 w-16 rounded-full bg-amber-100"></span>
-    <i class="absolute -bottom-3 -right-3 fa-solid fa-award text-5xl text-amber-500 drop-shadow"></i>
-   </div>
-  </div>
+  {% include 'peserta/_pesut_hero_art.html' %}
  </header>
  <div class="participant-card grid gap-3 rounded-2xl p-3 sm:grid-cols-[minmax(220px,1fr)_190px_190px] sm:p-4">
   <label class="flex items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-stone-400"></i><input id="certificateSearch" type="search" class="w-full bg-transparent outline-none" placeholder="Cari nama event..."></label>
@@ -141,7 +133,7 @@ function updateCertificates() {
   return certificateSort.value === 'oldest' ? delta : -delta;
  }).forEach((row) => certificateList.append(row));
  document.getElementById('certificateVisibleCount').textContent = visible;
- document.getElementById('certificateEmpty').classList.toggle('hidden', visible !== 0);
+ document.getElementById('certificateEmpty').classList.toggle('hidden', visible !== 0 || certificateRows.length === 0);
 }
 certificateSearch.addEventListener('input', updateCertificates);
 certificateStatus.addEventListener('change', updateCertificates);
