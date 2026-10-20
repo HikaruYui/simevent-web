@@ -711,6 +711,7 @@ eo_peserta = _ketua_panitia("peserta")
 eo_pendapatan = _ketua_panitia("pendapatan")
 eo_log = _ketua_panitia("log_aktivitas")
 eo_support = _ketua_panitia("support")
+eo_pengaturan = _ketua_panitia("pengaturan")
 
 @never_cache
 @require_GET

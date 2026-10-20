@@ -472,7 +472,216 @@
   }
 
   /* ---------- Mulai ---------- */
-  var pages = { dashboard: pageDashboard, event: pageEvent, peserta: pagePeserta, pendapatan: pagePendapatan, log: pageLog, support: pageSupport };  
+  /* ---------- Halaman: Pengaturan ---------- */
+  function pagePengaturan() {
+    var PERAN = {
+      lapangan:   { nama: "Panitia Lapangan", info: "Melihat daftar peserta dan melakukan check-in tiket saat acara. Bisa mengganti kata sandinya sendiri.",
+                    poin: ["Melihat daftar peserta", "Check-in tiket", "Ganti kata sandi"] },
+      dokumentasi:{ nama: "Tim Dokumentasi",  info: "Melihat event dan mengunggah foto kegiatan yang langsung muncul di akun peserta.",                      
+                    poin: ["Melihat daftar event", "Unggah foto kegiatan ke peserta", "Ganti kata sandi"] }
+    };
+    var STATUS = { aktif: ["hadir", "Aktif"], tertunda: ["mendatang", "Menunggu"], ditangguhkan: ["selesai", "Ditangguhkan"] };
+    var team = [
+      { id: 1, nama: "Siti Rahma",       email: "siti.rahma@mail.com",   peran: "lapangan",    akses: "semua", status: "aktif",        terakhir: "Hari ini" },
+      { id: 2, nama: "Rafi Hidayat",     email: "rafi.hidayat@mail.com", peran: "lapangan",    akses: [1, 2],  status: "aktif",        terakhir: "Kemarin" },
+      { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "dokumentasi", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
+      { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "dokumentasi", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
+    ];
+    var invites = [
+      { id: 11, email: "putri.amelia@mail.com", peran: "lapangan",    kirim: "2 hari lalu", sisa: 5 },
+      { id: 12, email: "agus.salim@mail.com",   peran: "dokumentasi", kirim: "6 hari lalu", sisa: 1 }
+    ];
+    var NOTIF = [
+      { k: "daftar",  t: "Pendaftaran peserta baru",       d: "Setiap ada peserta yang mendaftar ke eventmu.", on: true },
+      { k: "bayar",   t: "Pembayaran diterima",            d: "Ringkasan saat tiket berbayar terjual.",        on: true },
+      { k: "support", t: "Balasan tiket support",          d: "Saat admin platform membalas atau menutup tiket.", on: true },
+      { k: "h1",      t: "Pengingat H-1 event",            d: "Satu hari sebelum event dimulai.",              on: true },
+      { k: "tim",     t: "Anggota tim bergabung atau keluar", d: "Saat undangan diterima atau akses dicabut.", on: false }
+    ];
+
+    /* ----- Tab (hash) ----- */
+    var tabs = $$("#setNav a"), panels = $$("[data-panel]");
+    function showTab() {
+      var name = (location.hash || "#tim").slice(1);
+      if (!$("#panel-" + name)) { name = "tim"; }
+      panels.forEach(function (p) { p.hidden = p.dataset.panel !== name; });
+      tabs.forEach(function (a) {
+        var on = a.dataset.tab === name;
+        a.classList.toggle("is-active", on);
+        if (on) { a.setAttribute("aria-current", "page"); } else { a.removeAttribute("aria-current"); }
+      });
+    }
+    window.addEventListener("hashchange", showTab);
+    showTab();
+
+    /* ----- Dialog konfirmasi ----- */
+    var cf = $("#confirmDlg"), cfAction = null;
+    function confirmBox(title, text, okLabel, action) {
+      $("#cfTitle").textContent = title; $("#cfText").textContent = text;
+      $("#cfOk").textContent = okLabel; cfAction = action; cf.showModal();
+    }
+    $$("[data-close]", cf).forEach(function (b) { b.addEventListener("click", function () { cf.close(); }); });
+    $("form", cf).addEventListener("submit", function (ev) { ev.preventDefault(); cf.close(); if (cfAction) { cfAction(); } });
+
+    /* ----- Profil ----- */
+    function initials(n) { return n.trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; }
+    $("#avatarInit").textContent = initials($("#avatarName").textContent);
+    $("#profilForm").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var f = ev.target, nama = f.nama.value.trim();
+      $$("small.err", f).forEach(function (s) { s.remove(); });
+      if (nama.length < 3) {
+        var s = document.createElement("small"); s.className = "err"; s.textContent = "Nama minimal 3 karakter.";
+        f.nama.closest(".field").appendChild(s); f.nama.focus(); return;
+      }
+      $("#avatarName").textContent = nama; $("#avatarInit").textContent = initials(nama);
+      toast("Profil diperbarui. Ini data contoh, belum tersimpan ke database.");
+    });
+
+    /* ----- Kata sandi ----- */
+    var pw = { lama: $("#pwLama"), baru: $("#pwBaru"), ulang: $("#pwUlang") };
+    function pwState() {
+      var b = pw.baru.value, r = {
+        len: b.length >= 12,
+        mix: /[a-z]/.test(b) && /[A-Z]/.test(b) && /\d/.test(b),
+        old: b.length > 0 && b !== pw.lama.value,
+        same: b.length > 0 && b === pw.ulang.value
+      };
+      $$("#pwRules li").forEach(function (li) {
+        var ok = r[li.dataset.rule];
+        li.classList.toggle("is-ok", ok);
+        li.querySelector("i").textContent = ok ? "\u2713" : "\u2022";
+        li.setAttribute("aria-label", li.textContent.replace(/^[\u2713\u2022]/, "") + (ok ? ": terpenuhi" : ": belum"));
+      });
+      return r;
+    }
+    ["lama", "baru", "ulang"].forEach(function (k) { pw[k].addEventListener("input", pwState); });
+    pwState();
+    $$("[data-eye]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var inp = btn.parentNode.querySelector("input"), show = inp.type === "password";
+        inp.type = show ? "text" : "password";
+        btn.setAttribute("aria-pressed", show ? "true" : "false");
+        btn.setAttribute("aria-label", show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
+        btn.classList.toggle("is-on", show);
+      });
+    });
+    $("#pwForm").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      $$("small.err", ev.target).forEach(function (s) { s.remove(); });
+      var r = pwState(), msg = "";
+      if (!pw.lama.value) { msg = "Isi kata sandi saat ini."; pw.lama.focus(); }
+      else if (!(r.len && r.mix && r.old && r.same)) { msg = "Kata sandi baru belum memenuhi semua syarat."; pw.baru.focus(); }
+      if (msg) {
+        var s = document.createElement("small"); s.className = "err"; s.textContent = msg;
+        $("#pwRules").after(s); return;
+      }
+      ev.target.reset(); pwState();
+      toast("Kata sandi diubah. Ini data contoh, belum tersimpan ke database.");
+    });
+
+    /* ----- Tim ----- */
+    function eventNames(a) {
+      if (a === "semua") { return "Semua event"; }
+      return a.map(function (id) { var e = eventById(id); return e ? e.nama : ""; }).filter(Boolean).join(", ") || "Belum dipilih";
+    }
+    function renderTim() {
+      var aktif = team.filter(function (m) { return m.status === "aktif"; }).length;
+      var tang = team.filter(function (m) { return m.status === "ditangguhkan"; }).length;
+      var nc = $("#setNotifCount"); if (nc) { nc.textContent = invites.length; nc.hidden = !invites.length; }
+      $("#timStats").innerHTML = [["Anggota aktif", aktif, "dari " + team.length + " anggota"], ["Undangan tertunda", invites.length, "belum diterima"], ["Ditangguhkan", tang, "tidak bisa masuk"]].map(function (s) {
+        return '<article class="card stat"><p class="stat__label">' + s[0] + '</p><p class="stat__value">' + s[1] + '</p><p class="stat__note stat__note--muted">' + s[2] + "</p></article>";
+      }).join("");
+      $("#timBody").innerHTML = team.length ? team.map(function (m) {
+        var st = STATUS[m.status];
+        var opts = Object.keys(PERAN).map(function (k) { return '<option value="' + k + '"' + (k === m.peran ? " selected" : "") + ">" + PERAN[k].nama + "</option>"; }).join("");
+        return '<tr><td><span class="cell-title">' + esc(m.nama) + '</span><span class="cell-sub">' + esc(m.email) + " &middot; " + esc(m.terakhir) + "</span></td>" +
+          '<td><label class="pill-select sm"><span class="sr-only">Peran ' + esc(m.nama) + '</span><select data-role="' + m.id + '">' + opts + '</select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label></td>' +
+          "<td>" + esc(eventNames(m.akses)) + "</td><td>" + chip(st[0], st[1]) + "</td>" +
+          '<td class="act"><button type="button" class="btn btn--ghost sm" data-toggle="' + m.id + '">' + (m.status === "ditangguhkan" ? "Aktifkan" : "Tangguhkan") + '</button> <button type="button" class="btn btn--ghost sm" data-remove="' + m.id + '">Cabut akses</button></td></tr>';
+      }).join("") : '<tr><td colspan="5"><p class="tbl-empty">Belum ada anggota. Undang panitia pertamamu.</p></td></tr>';
+      $("#invList").innerHTML = invites.length ? invites.map(function (i) {
+        return '<li class="inv"><div><b>' + esc(i.email) + "</b><small>" + esc(PERAN[i.peran].nama) + " &middot; dikirim " + esc(i.kirim) + " &middot; " + (i.sisa <= 1 ? "kedaluwarsa besok" : "berlaku " + i.sisa + " hari lagi") + '</small></div><div class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Kirim ulang</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></div></li>';
+      }).join("") : '<li><p class="tbl-empty">Tidak ada undangan tertunda.</p></li>';
+    }
+    function member(id) { return team.filter(function (m) { return String(m.id) === String(id); })[0]; }
+    $("#timBody").addEventListener("change", function (ev) {
+      var s = ev.target.closest("[data-role]"); if (!s) { return; }
+      var m = member(s.dataset.role); m.peran = s.value;
+      toast("Peran " + m.nama + " diubah menjadi " + PERAN[m.peran].nama + ". Data contoh.");
+    });
+    $("#timBody").addEventListener("click", function (ev) {
+      var t = ev.target.closest("[data-toggle]"), r = ev.target.closest("[data-remove]");
+      if (t) {
+        var m = member(t.dataset.toggle);
+        if (m.status === "ditangguhkan") { m.status = "aktif"; renderTim(); toast(m.nama + " diaktifkan kembali."); }
+        else { confirmBox("Tangguhkan " + m.nama + "?", "Dia tidak bisa masuk ke dashboard sampai kamu mengaktifkannya lagi. Datanya tetap tersimpan.", "Tangguhkan", function () { m.status = "ditangguhkan"; renderTim(); toast(m.nama + " ditangguhkan."); }); }
+      }
+      if (r) {
+        var x = member(r.dataset.remove);
+        confirmBox("Cabut akses " + x.nama + "?", "Dia dikeluarkan dari tim dan harus diundang ulang untuk bisa masuk lagi.", "Cabut akses", function () { team = team.filter(function (q) { return q.id !== x.id; }); renderTim(); toast("Akses " + x.nama + " dicabut."); });
+      }
+    });
+    $("#invList").addEventListener("click", function (ev) {
+      var a = ev.target.closest("[data-resend]"), c = ev.target.closest("[data-cancel]"), k = ev.target.closest("[data-copy]");
+      if (k) {
+        var link = location.origin + "/undangan/contoh-" + k.dataset.copy + "/";
+        if (navigator.clipboard) { navigator.clipboard.writeText(link).then(function () { toast("Tautan undangan disalin (contoh)."); }, function () { toast("Tautan contoh: " + link); }); }
+        else { toast("Tautan contoh: " + link); }
+      }
+      if (a) { invites.forEach(function (i) { if (String(i.id) === a.dataset.resend) { i.sisa = 7; i.kirim = "baru saja"; } }); renderTim(); toast("Undangan dikirim ulang. Berlaku 7 hari."); }
+      if (c) { invites = invites.filter(function (i) { return String(i.id) !== c.dataset.cancel; }); renderTim(); toast("Undangan dibatalkan."); }
+    });
+
+    /* undang */
+    var dlg = $("#inviteDlg"), form = $("#inviteForm"), evList = $("#ivEventList");
+    $("#ivPeran").innerHTML = Object.keys(PERAN).map(function (k, i) {
+      return '<label class="role-card"><input type="radio" name="peran" value="' + k + '"' + (i === 0 ? " checked" : "") + '><span><b>' + PERAN[k].nama + "</b><small>" + esc(PERAN[k].info) + "</small><em>" + PERAN[k].poin.map(esc).join(" &middot; ") + "</em></span></label>";
+    }).join("");
+    evList.innerHTML = E.events.filter(function (e) { return e.status !== "selesai"; }).map(function (e) {
+      return '<label class="iv-check"><input type="checkbox" name="ev" value="' + e.id + '"> ' + esc(e.nama) + "</label>";
+    }).join("");
+    $$("input[name=akses]", form).forEach(function (r) { r.addEventListener("change", function () { evList.hidden = form.akses.value !== "pilih"; }); });
+    $("#inviteBtn").addEventListener("click", function () {
+      form.reset(); evList.hidden = true; $$("small.err", form).forEach(function (x) { x.remove(); }); dlg.showModal(); $("#ivEmail").focus();
+    });
+    $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
+    dlg.addEventListener("click", function (ev) { if (ev.target === dlg) { dlg.close(); } });
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      $$("small.err", form).forEach(function (x) { x.remove(); });
+      var emails = form.email.value.split(/[\s,;]+/).map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean);
+      var picked = $$("input[name=ev]:checked", form).map(function (c) { return parseInt(c.value, 10); });
+      var err = "", field = form.email;
+      var bad = emails.filter(function (x) { return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x); });
+      var dup = emails.filter(function (x, i) { return emails.indexOf(x) !== i || team.some(function (m) { return m.email === x; }) || invites.some(function (q) { return q.email === x; }); });
+      if (!emails.length) { err = "Isi minimal satu email."; }
+      else if (bad.length) { err = "Email tidak valid: " + bad.join(", "); }
+      else if (dup.length) { err = "Sudah ada di tim atau undangan: " + dup.join(", "); }
+      else if (emails.length > 10) { err = "Maksimal 10 email sekali undang."; }
+      else if (form.akses.value === "pilih" && !picked.length) { err = "Pilih minimal satu event."; field = null; }
+      if (err) {
+        var m = document.createElement("small"); m.className = "err"; m.textContent = err;
+        (field ? field.closest(".field") : evList.parentNode).appendChild(m); if (field) { field.focus(); } return;
+      }
+      emails.forEach(function (x, i) { invites.unshift({ id: Date.now() + i, email: x, peran: form.peran.value, kirim: "baru saja", sisa: 7 }); });
+      dlg.close(); renderTim();
+      toast(emails.length + " undangan dikirim sebagai " + PERAN[form.peran.value].nama + ". Ini data contoh, belum ada email yang terkirim.");
+    });
+    renderTim();
+
+    /* ----- Notifikasi ----- */
+    $("#togList").innerHTML = NOTIF.map(function (n) {
+      return '<li class="tog"><div><b id="tg-' + n.k + '">' + esc(n.t) + "</b><small>" + esc(n.d) + '</small></div><button type="button" class="switch" role="switch" aria-labelledby="tg-' + n.k + '" aria-checked="' + n.on + '" data-k="' + n.k + '"><i></i></button></li>';
+    }).join("");
+    $("#togList").addEventListener("click", function (ev) {
+      var b = ev.target.closest(".switch"); if (!b) { return; }
+      var on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on ? "true" : "false");
+      toast("Pengaturan notifikasi disimpan (data contoh).");
+    });
+  }
+
+  var pages = { dashboard: pageDashboard, event: pageEvent, peserta: pagePeserta, pendapatan: pagePendapatan, log: pageLog, support: pageSupport, pengaturan: pagePengaturan };  
   var fn = pages[document.body.dataset.page];
   if (fn) { fn(); }
   initNewEvent();
