@@ -4,7 +4,6 @@
 {% block nav_event %} class="is-active" aria-current="page"{% endblock %}
 {% block fab %}{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Kelola Event</h1></header>
 <header class="eo-head">
   <h1>Kelola Event</h1>
 </header>
@@ -51,6 +50,5 @@
     <tbody id="evBody"></tbody>
   </table>
 </div>
-<div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Tanggal</th><th>Tiket</th><th class="num">Harga</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="evBody"></tbody></table></div>
 <dialog class="dlg" id="detailDlg" aria-labelledby="detailTitle"><div class="dlg__head"><h2 id="detailTitle"></h2><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div><div class="dlg__body"><dl class="detail-grid" id="detailBody"></dl></div><div class="dlg__foot"><button type="button" class="btn" data-close>Tutup</button></div></dialog>
 {% endblock %}

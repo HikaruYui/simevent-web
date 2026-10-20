@@ -75,7 +75,7 @@
       <a href="{% url 'eo_pendapatan' %}" {% block nav_pendapatan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-wallet"/></svg>Pendapatan</a>
       <a href="{% url 'eo_log' %}" {% block nav_log %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-log"/></svg>Log Aktivitas</a>
       <a href="{% url 'eo_support' %}" {% block nav_support %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg>Support</a>
-      <a href="#" aria-disabled="true" title="Belum tersedia"><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
+      <a href="{% url 'eo_pengaturan' %}" {% block nav_pengaturan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
     </nav>
     <div class="eo-user">
       <b>{{ request.user.get_full_name|default:"Senku Sartika" }}</b><p>Ketua Panitia</p>

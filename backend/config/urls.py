@@ -65,6 +65,7 @@ urlpatterns = [
     path("ketua-panitia/pendapatan/", views.eo_pendapatan, name="eo_pendapatan"),
     path("ketua-panitia/log-aktivitas/", views.eo_log, name="eo_log"),
     path("ketua-panitia/support/", views.eo_support, name="eo_support"),
+    path("ketua-panitia/pengaturan/", views.eo_pengaturan, name="eo_pengaturan"),
 
     path(
         "panitia/event/<int:pk>/",
