@@ -75,9 +75,11 @@
           <label class="sr-only" for="jj-category">Kategori event</label>
           <select id="jj-category" class="jj-toolbar-select jj-category-select">
             <option value="">Semua Kategori</option>
-            {% for category in kategori_list %}
-            <option value="{{ category.code|lower }}">{{ category.name }}</option>
-            {% endfor %}
+            <option value="conference">Konferensi</option>
+            <option value="workshop">Workshop</option>
+            <option value="seminar">Seminar</option>
+            <option value="webinar">Webinar</option>
+            <option value="sosialisasi">Sosialisasi</option>
           </select>
           <label class="sr-only" for="jj-status">Status event</label>
           <select id="jj-status" class="jj-toolbar-select">
@@ -124,29 +126,11 @@
           <div>
             <h3>Kategori Event</h3>
             <ul>
-              <li>
-                <a href="{% url 'jelajah' %}?kategori=conference">
-                  Konferensi
-                </a>
-              </li>
-
-              <li>
-                <a href="{% url 'jelajah' %}?kategori=workshop">
-                  Workshop
-                </a>
-              </li>
-
-              <li>
-                <a href="{% url 'jelajah' %}?kategori=seminar">
-                  Seminar
-                </a>
-              </li>
-
-              <li>
-                <a href="{% url 'jelajah' %}?kategori=webinar">
-                  Webinar
-                </a>
-              </li>
+              <li><a href="{% url 'jelajah' %}?kategori=conference">Konferensi</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=workshop">Workshop</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=seminar">Seminar</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=webinar">Webinar</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=sosialisasi">Sosialisasi</a></li>
             </ul>
           </div>
           <div>
@@ -188,242 +172,57 @@
     const priceSelect = document.getElementById('jj-price');
     const resetButton = document.getElementById('jj-reset');
     const pageSize = 8;
-    const dummyEvents = [
-  {
-    id: 'conference-meja-bundar',
-    slug: 'conference-meja-bundar',
-    category: 'conference',
-    categoryName: 'Konferensi',
-    status: 'live',
-    date: '2026-11-06',
-    dateLabel: '6 Nov 2026',
-    amount: 145000,
-    title: 'Konferensi Meja Bundar',
-    venue: 'Hotel Mercure',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'workshop-uiux',
-    slug: 'workshop-uiux',
-    category: 'workshop',
-    categoryName: 'Workshop',
-    status: 'soon',
-    date: '2026-11-10',
-    dateLabel: '10 Nov 2026',
-    amount: 145000,
-    title: 'Workshop UI/UX untuk Pemula',
-    venue: 'Hotel Mercure',
-    organizer: 'Andi Pratama',
-    bannerUrl: ''
-  },
-  {
-    id: 'seminar-pendidikan',
-    slug: 'seminar-pendidikan',
-    category: 'seminar',
-    categoryName: 'Seminar',
-    status: 'live',
-    date: '2026-11-09',
-    dateLabel: '9 Nov 2026',
-    amount: 0,
-    title: 'Seminar Nasional Pendidikan',
-    venue: 'Hotel Mercure',
-    organizer: 'Dr. Rina Kartika',
-    bannerUrl: ''
-  },
-  {
-    id: 'forum-kalimantan',
-    slug: 'forum-kalimantan',
-    category: 'conference',
-    categoryName: 'Konferensi',
-    status: 'live',
-    date: '2026-11-04',
-    dateLabel: '4 Nov 2026',
-    amount: 145000,
-    title: 'Forum Inovasi Kalimantan',
-    venue: 'Hotel Mercure',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'conference-meja-bundar-2',
-    slug: 'conference-meja-bundar-2',
-    category: 'conference',
-    categoryName: 'Konferensi',
-    status: 'live',
-    date: '2026-11-06',
-    dateLabel: '6 Nov 2026',
-    amount: 145000,
-    title: 'Konferensi Teknologi Nusantara 2026',
-    venue: 'Convention Hall',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'workshop-uiux-2',
-    slug: 'workshop-uiux-2',
-    category: 'workshop',
-    categoryName: 'Workshop',
-    status: 'soon',
-    date: '2026-11-10',
-    dateLabel: '10 Nov 2026',
-    amount: 145000,
-    title: 'Workshop Product Design',
-    venue: 'Creative Hub',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'seminar-pendidikan-2',
-    slug: 'seminar-pendidikan-2',
-    category: 'seminar',
-    categoryName: 'Seminar',
-    status: 'live',
-    date: '2026-11-09',
-    dateLabel: '9 Nov 2026',
-    amount: 145000,
-    title: 'Seminar Transformasi Pendidikan Digital',
-    venue: 'Auditorium Kampus',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'forum-kalimantan-2',
-    slug: 'forum-kalimantan-2',
-    category: 'conference',
-    categoryName: 'Konferensi',
-    status: 'live',
-    date: '2026-11-04',
-    dateLabel: '4 Nov 2026',
-    amount: 145000,
-    title: 'Konferensi Inovasi Kalimantan',
-    venue: 'Hotel Mercure',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'seminar-teknologi',
-    slug: 'seminar-teknologi',
-    category: 'seminar',
-    categoryName: 'Seminar',
-    status: 'soon',
-    date: '2026-11-12',
-    dateLabel: '12 Nov 2026',
-    amount: 0,
-    title: 'Seminar Teknologi Nasional',
-    venue: 'Auditorium Kampus',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'kelas-kepemimpinan',
-    slug: 'kelas-kepemimpinan',
-    category: 'workshop',
-    categoryName: 'Workshop',
-    status: 'soon',
-    date: '2026-11-14',
-    dateLabel: '14 Nov 2026',
-    amount: 145000,
-    title: 'Pelatihan Kepemimpinan Mahasiswa',
-    venue: 'Aula Kampus',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'webinar-inovasi',
-    slug: 'webinar-inovasi',
-    category: 'webinar',
-    categoryName: 'Webinar',
-    status: 'live',
-    date: '2026-11-16',
-    dateLabel: '16 Nov 2026',
-    amount: 0,
-    title: 'Webinar Inovasi Digital',
-    venue: 'Online',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'kuliah-umum',
-    slug: 'kuliah-umum',
-    category: 'seminar',
-    categoryName: 'Seminar',
-    status: 'soon',
-    date: '2026-11-18',
-    dateLabel: '18 Nov 2026',
-    amount: 0,
-    title: 'Kuliah Umum Masa Depan Teknologi',
-    venue: 'Auditorium Kampus',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'sosialisasi-kampus',
-    slug: 'sosialisasi-kampus',
-    category: 'seminar',
-    categoryName: 'Seminar',
-    status: 'live',
-    date: '2026-11-20',
-    dateLabel: '20 Nov 2026',
-    amount: 0,
-    title: 'Sosialisasi Program Kampus',
-    venue: 'Aula Kampus',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'workshop-desain',
-    slug: 'workshop-desain',
-    category: 'workshop',
-    categoryName: 'Workshop',
-    status: 'soon',
-    date: '2026-11-22',
-    dateLabel: '22 Nov 2026',
-    amount: 145000,
-    title: 'Workshop Desain Pengalaman Digital',
-    venue: 'Creative Hub',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'konferensi-inovasi',
-    slug: 'konferensi-inovasi',
-    category: 'conference',
-    categoryName: 'Konferensi',
-    status: 'live',
-    date: '2026-11-24',
-    dateLabel: '24 Nov 2026',
-    amount: 145000,
-    title: 'Forum Inovasi Kalimantan',
-    venue: 'Hotel Mercure',
-    organizer: 'Panitia SIMEVENT',
-    bannerUrl: ''
-  },
-  {
-    id: 'seminar-komunitas',
-    slug: 'seminar-komunitas',
-    category: 'seminar',
-    categoryName: 'Seminar',
-    status: 'soon',
-    date: '2026-11-26',
-    dateLabel: '26 Nov 2026',
-    amount: 0,
-    title: 'Seminar Kolaborasi Komunitas',
-    venue: 'Auditorium Kampus',
-    organizer: 'SIMEVENT',
-    bannerUrl: ''
-  }
-];
+    const isLoggedIn = {{ request.user.is_authenticated|yesno:'true,false' }};
+    /* Data contoh: dipakai hanya bila database belum berisi event publik. */
+    function makeDemoEvents() {
+      const names = { conference: 'Konferensi', workshop: 'Workshop', seminar: 'Seminar', webinar: 'Webinar', sosialisasi: 'Sosialisasi' };
+      const titles = {
+        conference: ['Konferensi Teknologi Nusantara 2026', 'Konferensi Meja Bundar', 'Forum Inovasi Kalimantan', 'Konferensi Pendidikan Kaltim', 'Konferensi Pariwisata Kaltim', 'Konferensi Ekonomi Kreatif', 'Konferensi Kesehatan Digital', 'Konferensi Mahasiswa Informatika', 'Konferensi Energi Terbarukan', 'Konferensi Kota Cerdas'],
+        workshop: ['Workshop UI/UX untuk Pemula', 'Workshop Product Design', 'Workshop Data Science', 'Workshop Fotografi Jurnalistik', 'Workshop Desain Pengalaman Digital', 'Pelatihan Kepemimpinan Mahasiswa', 'Workshop Pemrograman Web', 'Workshop Konten Kreatif', 'Workshop Penulisan Ilmiah', 'Workshop Video Editing'],
+        seminar: ['Seminar Nasional Pendidikan', 'Seminar Kewirausahaan Digital', 'Seminar Teknologi Nasional', 'Seminar Kesehatan Mental', 'Seminar Lingkungan Hidup', 'Kuliah Umum Kecerdasan Buatan', 'Seminar Kolaborasi Komunitas', 'Seminar Literasi Keuangan', 'Seminar Karier Fresh Graduate', 'Seminar Transformasi Pendidikan Digital'],
+        webinar: ['Webinar Inovasi Digital', 'Webinar Karier Teknologi', 'Webinar Literasi Keuangan', 'Webinar Keamanan Siber', 'Webinar Tips Beasiswa', 'Webinar Personal Branding', 'Webinar Analisis Data', 'Webinar Startup Kampus', 'Webinar Public Speaking', 'Webinar Riset dan Publikasi'],
+        sosialisasi: ['Sosialisasi Program Kampus', 'Sosialisasi Beasiswa Prestasi', 'Sosialisasi Kurikulum Merdeka', 'Sosialisasi Magang Bersertifikat', 'Sosialisasi Penerimaan Mahasiswa Baru', 'Sosialisasi Keselamatan Kerja', 'Sosialisasi Program Kreativitas Mahasiswa', 'Sosialisasi Pertukaran Pelajar', 'Sosialisasi Layanan Perpustakaan', 'Sosialisasi Organisasi Kemahasiswaan']
+      };
+      const venues = ['Hotel Mercure', 'Auditorium Kampus', 'Aula Kampus', 'Creative Hub', 'Convention Hall', 'Gedung Serbaguna'];
+      const organizers = ['Panitia SIMEVENT', 'Andi Pratama', 'Dr. Rina Kartika', 'BEM Fakultas', 'Himpunan Mahasiswa'];
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const list = [];
+      Object.keys(titles).forEach((category, ci) => {
+        titles[category].forEach((title, i) => {
+          const offset = i === 0 ? 0 : ((i * 9 + ci * 4) % 60) - 14;
+          const day = new Date(today); day.setDate(today.getDate() + offset);
+          const iso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+          const isOnline = category === 'webinar';
+          list.push({
+            id: `demo-${category}-${i + 1}`,
+            slug: `demo-${category}-${i + 1}`,
+            demo: true,
+            category,
+            categoryName: names[category],
+            status: offset < 0 ? 'done' : (offset <= 1 ? 'live' : 'soon'),
+            date: iso,
+            dateLabel: day.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+            amount: i % 3 === 0 ? 0 : [50000, 75000, 100000, 145000][(i + ci) % 4],
+            title,
+            venue: isOnline ? 'Online (Zoom)' : venues[(i + ci) % venues.length],
+            organizer: organizers[(i + ci) % organizers.length],
+            bannerUrl: ''
+          });
+        });
+      });
+      return list;
+    }
     const backendEvents = JSON.parse(
       document.getElementById('backend-events').textContent
     );
 
-    const events = backendEvents;
+    const events = backendEvents.length ? backendEvents : makeDemoEvents();
     const parameters = new URLSearchParams(location.search);
     let currentPage = 1;
     search.value = parameters.get('q') || '';
-    const selectedCategory = parameters.get('kategori');
-    if (selectedCategory) categorySelect.value = selectedCategory;
+    const categoryAlias = { konferensi: 'conference', conference: 'conference' };
+    const selectedCategory = (parameters.get('kategori') || '').toLowerCase();
+    if (selectedCategory) categorySelect.value = categoryAlias[selectedCategory] || selectedCategory;
 
     const fallbackBannerUrl = "{% static 'img/hero.jpg' %}";
 
@@ -444,7 +243,7 @@
         </ul>
         <div class="event-card__foot">
           <span class="price"></span>
-          <a class="btn btn--dark btn--sm" href="{% url 'peserta_daftar_event' %}">Lihat Event</a>
+          <a class="btn btn--dark btn--sm" href="{% url 'peserta_daftar_event' %}">Daftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
         </div>
       `;
 
@@ -469,8 +268,10 @@
       card.querySelector('.price').textContent = event.amount
         ? `Rp${event.amount.toLocaleString('id-ID')}`
         : 'Gratis';
-      card.querySelector('.event-card__foot a').href =
-        `/jelajah/${encodeURIComponent(event.slug)}/`;
+      /* Data contoh -> halaman masuk; event asli: peserta yang sudah login langsung ke Daftar Event, tamu diminta masuk dulu. */
+      card.querySelector('.event-card__foot a').href = event.demo || !isLoggedIn
+        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
+        : `{% url 'peserta_daftar_event' %}`;
       return card;
     }
 
@@ -512,8 +313,7 @@
       if (sort.value === 'tanggal') visible.sort((a, b) => a.date.localeCompare(b.date));
       if (sort.value === 'harga') visible.sort((a, b) => a.amount - b.amount);
       count.textContent = `${visible.length} event ditemukan`;
-      empty.hidden = events.length === 0 || visible.length > 0;
-      noEvents.hidden = events.length > 0;
+      empty.hidden = visible.length > 0;
       const pageCount = Math.ceil(visible.length / pageSize);
       currentPage = Math.min(currentPage, Math.max(pageCount, 1));
       const start = (currentPage - 1) * pageSize;

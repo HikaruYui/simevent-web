@@ -172,23 +172,24 @@
   min-width: 0;
   flex: 1;
   width: auto;
-  height: 28px;
-  padding: 0 13px;
+  height: 30px;
+  padding: 0 14px;
   border-radius: 999px;
-  background: #a2a59c;
-  color: #fff;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .2);
+  color: var(--olive);
 }
-.jj-search .icon { width: 16px; height: 16px; flex: none; }
+.jj-search .icon { width: 16px; height: 16px; flex: none; color: #000; }
 .jj-search input {
   width: 100%;
   min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--olive-ink);
+  color: var(--olive);
   font: 500 13px/1 var(--font-body);
 }
-.jj-search input::placeholder { color: rgba(42, 44, 30, .7); }
+.jj-search input::placeholder { color: var(--olive); opacity: .85; }
 .jj-search:focus-within { outline: 2px solid var(--orange); outline-offset: 2px; }
 
 .jj-note { margin: 0; color: var(--muted); font: 500 11px/1.4 var(--font-body); text-align: right; }
@@ -344,3 +345,9 @@
   .jj-event-card { min-height: 190px; }
   .jj-event-card__visual { height: 82px; min-height: 82px; }
 }
+
+/* ---------- Footer menempel di bawah halaman ---------- */
+.jj-page { min-height: 100vh; display: flex; flex-direction: column; }
+@media (min-width: 1101px) { .jj-page { min-height: calc(100vh / 0.8); } }   /* body di-zoom 0.8 pada layar lebar */
+.jj-page > .jj { flex: 1 0 auto; width: 100%; }
+.jj-page > .jj-footer { flex: none; margin-top: auto; }
