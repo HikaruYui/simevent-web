@@ -272,7 +272,7 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
         <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
       </nav>
       <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
-        <img src="{% static 'img/participant-avatar.svg' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover ring-2 ring-white">
+        <img src="{% static 'img/achievement-hero.png' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
         <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
         <i class="fa-solid fa-chevron-right ml-auto mr-2 text-xs text-brand-orangeDeep"></i>
       </a>
