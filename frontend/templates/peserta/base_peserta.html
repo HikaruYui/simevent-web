@@ -189,9 +189,7 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
 .participant-outline:hover { background: rgba(255, 233, 188, 0.4); }
 .participant-user-chip {
   background: rgba(255,250,239,.26);
-  transition: background-color .2s ease;
 }
-.participant-user-chip:hover { background: rgba(255,250,239,.68); }
 .participant-sidebar nav a {
   display: flex;
   align-items: center;
@@ -266,17 +264,18 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
         {% url 'peserta_daftar_event' as daftar_event_url %}
         {% url 'peserta_sertifikat' as sertifikat_url %}
         {% url 'peserta_achievement' as achievement_url %}
+        {% url 'peserta_akun' as akun_url %}
         <a href="{{ dashboard_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-house mr-3 w-7 text-2xl"></i>Dashboard</a>
         <a href="{{ daftar_event_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-calendar-plus mr-3 w-7 text-2xl"></i>Daftar Event</a>
         <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
         <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
+        <a href="{{ akun_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == akun_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-gear mr-3 w-7 text-2xl"></i>Profil Saya</a>
       </nav>
-      <a href="{% url 'peserta_akun' %}" aria-label="Buka Akun Saya" class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
-        <img src="{% static 'img/achievement-hero.png' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
-        <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
-        <i class="fa-solid fa-chevron-right ml-auto mr-2 text-xs text-brand-orangeDeep"></i>
-      </a>
       <div>
+        <div class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
+          <img src="{% static 'img/achievement-hero.png' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
+          <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
+        </div>
         <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
       </div>
     </div>
