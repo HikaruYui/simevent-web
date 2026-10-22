@@ -1,0 +1,8 @@
+{% load socialaccount %}
+{% if request.user.is_authenticated %}
+<form method="post" action="{% provider_login_url 'google' process='connect' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{% url 'after_login' %}">
+  <button type="submit">Hubungkan akun Google</button>
+</form>
+{% endif %}

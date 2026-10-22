@@ -17,6 +17,9 @@
     {% block navbar %}{% include 'partials/navbar.html' %}{% endblock %}
 
     <main>
+      {% block notifications %}
+      {% include "partials/messages.html" %}
+      {% endblock %}
       {% block content %}{% endblock %}
     </main>
 

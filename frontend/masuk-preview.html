@@ -745,34 +745,33 @@
       }
     );
 
-    document
-      .getElementById("forgotPassword")
-      .addEventListener("click", function (event) {
+    function loginWithGoogle() {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "{% url 'google_login' %}";
 
-        event.preventDefault();
+      const csrf = document.createElement("input");
+      csrf.type = "hidden";
+      csrf.name = "csrfmiddlewaretoken";
+      csrf.value = document.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+      ).value;
 
-        loginNotice.textContent =
-          "Fitur lupa password belum tersedia.";
+      const next = document.createElement("input");
+      next.type = "hidden";
+      next.name = "next";
+      next.value = "{% url 'after_login' %}";
 
-        loginNotice.hidden = false;
-
-      });
-
-
-    function googleNotAvailable() {
-
-      const visibleNotice =
-        registerPanel.hidden
-          ? loginNotice
-          : registerError;
-
-
-      visibleNotice.textContent =
-        "Login dengan Google belum tersedia.";
-
-      visibleNotice.hidden = false;
-
+      form.append(csrf, next);
+      document.body.appendChild(form);
+      form.submit();
     }
+
+    document.getElementById("googleLogin")
+      .addEventListener("click", loginWithGoogle);
+
+    document.getElementById("googleRegister")
+      .addEventListener("click", loginWithGoogle);
 
 
     document

@@ -225,7 +225,9 @@ def detail_event(request, slug):
 # =========================================================
 
 def _participant_redirect(request):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
+    if request.user.role == "ORGANIZER":
+        return redirect("eo_dashboard")
+    if request.user.role == "ADMIN":
         return redirect("panitia_dashboard")
     if not request.user.profile_complete:
         return redirect("peserta_akun")
@@ -741,3 +743,20 @@ def panitia_event_detail(
             "event": event,
         },
     )
+
+def _admin_panel(template):
+    @never_cache
+    @require_GET
+    @login_required(login_url="login_page")
+    def view(request):
+        if getattr(request.user, 'role', None) != "ADMIN" and not request.user.is_staff:
+            return redirect("landing")
+        return render(request, f"admin/{template}.html")
+    return view
+
+admin_dashboard = _admin_panel("dashboard_admin")
+admin_users = _admin_panel("kelola_pengguna")
+admin_events = _admin_panel("dashboard_admin")    # Sementara arahkan ke dashboard
+admin_finance = _admin_panel("dashboard_admin")   # Sementara arahkan ke dashboard
+admin_audit = _admin_panel("dashboard_admin")     # Sementara arahkan ke dashboard
+admin_settings = _admin_panel("dashboard_admin")  # Sementara arahkan ke dashboard

@@ -3,8 +3,10 @@
 import os
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "halo123")
 # if not SECRET_KEY:
@@ -23,6 +25,10 @@ INSTALLED_APPS = [
     "apps.events",
     "apps.registrations",
     "apps.achievements",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -32,6 +38,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [{
@@ -90,3 +98,45 @@ SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 STATIC_URL = "/static/"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# Custom User SIMEVENT menggunakan email, tanpa username.
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_UNIQUE_EMAIL = True
+# Berlaku untuk alur allauth; endpoint register/sign_in lama memiliki alur sendiri.
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# Identitas Google diverifikasi lewat OAuth; tidak meminta email konfirmasi lokal.
+# Akun lama wajib ditautkan lewat sesi login yang sudah sah.
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+LOGIN_URL = "/masuk/"
+LOGIN_REDIRECT_URL = "/setelah-login/"
+LOGOUT_REDIRECT_URL = "/masuk/"
+
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = False
+# Tautkan akun lama melalui /auth/3rdparty/ setelah login dengan password.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = False
+SOCIALACCOUNT_STORE_TOKENS = False
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID", ""),
+            "secret": os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
+        "OAUTH_PKCE_ENABLED": True,
+    }
+}
+
+# Email pengembangan ditampilkan di terminal. Produksi perlu konfigurasi SMTP.
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
