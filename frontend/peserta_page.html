@@ -2,7 +2,25 @@
 {% load static %}
 {% block ptitle %}Dashboard Peserta{% endblock %}
 {% block peserta %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Samakan seluruh font dashboard peserta dengan Landing Page & Jelajah */
+#participantDashboard,
+#achievementModal,
+.feedback-dialog {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+#participantDashboard h1,
+#participantDashboard h2,
+#participantDashboard h3,
+#participantDashboard .font-display,
+#achievementModal h2,
+#achievementModal h3 {
+  font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  letter-spacing: -0.02em;
+}
 #achievementModal {
   position: fixed;
   inset: 0;
@@ -341,56 +359,115 @@
   }
   #participantDashboard .participant-hero-illustration img { opacity: .72; }
 }
+
 #participantDashboard .my-events-grid {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
 }
 #participantDashboard .my-event-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: .6rem;
-  padding: 14px 14px 18px;
-  border: 1px solid rgba(190,143,71,.26);
+  gap: .65rem;
+  padding: 14px 16px 18px;
+  border: 1px solid rgba(190,143,71,.24);
   border-radius: 24px;
   background: linear-gradient(160deg, #fffaf0, #f7ead0);
-  box-shadow: 0 9px 20px rgba(142,100,47,.08);
-  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 10px 24px rgba(47, 43, 34, 0.08);
+  font-family: 'Manrope', sans-serif;
+  transition: transform .22s ease, box-shadow .22s ease;
 }
-#participantDashboard .my-event-card:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(142,100,47,.14); }
+#participantDashboard .my-event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(47, 43, 34, 0.14);
+}
 #participantDashboard .my-event-card__img {
-  height: 150px;
-  margin: -14px -14px 0;
-  border-radius: 24px 24px 0 0;
+  height: 164px;
+  margin: -14px -16px 0;
+  border-radius: 23px 23px 0 0;
   background-size: cover;
   background-position: center;
 }
 #participantDashboard .my-event-card__chips {
   position: absolute;
   top: 24px; left: 26px; right: 26px;
-  display: flex; justify-content: space-between; gap: .5rem;
+  display: flex; justify-content: space-between; align-items: center; gap: .5rem;
 }
 #participantDashboard .my-chip {
-  padding: 3px 14px; border-radius: 999px; font-size: .8rem; font-weight: 600; color: #3a3326;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-family: 'Manrope', sans-serif;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #2f2b22;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 #participantDashboard .my-chip--cream { background: #f6ecd2; }
-#participantDashboard .my-chip--white { background: #fff; }
+#participantDashboard .my-chip--white { background: #ffffff; }
 #participantDashboard .my-status {
-  display: inline-flex; align-items: center; gap: .4rem; align-self: flex-start;
-  margin-top: -1.1rem; position: relative; z-index: 1;
-  padding: 3px 12px; border-radius: 999px; background: #fff;
-  font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .02em;
-  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  display: inline-flex; align-items: center; gap: .42rem; align-self: flex-start;
+  margin-top: -1.15rem; position: relative; z-index: 1;
+  padding: 4px 12px; border-radius: 999px; background: #fff;
+  font-family: 'Manrope', sans-serif;
+  font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em;
+  box-shadow: 0 3px 8px rgba(0,0,0,.08);
 }
-#participantDashboard .my-status i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+#participantDashboard .my-status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 #participantDashboard .my-status--live { color: #0f7a4a; }
 #participantDashboard .my-status--soon { color: #be3a4a; }
 #participantDashboard .my-status--done { color: #6b7280; }
-#participantDashboard .my-event-card__title { font-family: inherit; font-size: 1.3rem; font-weight: 800; line-height: 1.25; color: #2f2b22; }
+#participantDashboard .my-event-card__title {
+  font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #2f2b22;
+  margin-top: .1rem;
+}
 #participantDashboard .my-event-card__link::after { content: ""; position: absolute; inset: 0; border-radius: 24px; }
-#participantDashboard .my-event-card__meta { display: grid; gap: .35rem; color: #5b5546; font-size: .92rem; }
-#participantDashboard .my-event-card__meta i { width: 1.1rem; margin-right: .3rem; color: #8b7f68; }
+#participantDashboard .my-event-card__meta {
+  display: grid;
+  gap: .38rem;
+  color: #5b5546;
+  font-family: 'Manrope', sans-serif;
+  font-size: .88rem;
+  font-weight: 500;
+}
+#participantDashboard .my-event-card__meta li { display: flex; align-items: center; gap: .45rem; }
+#participantDashboard .my-event-card__meta i { width: 1rem; text-align: center; color: #8b7f68; }
+#participantDashboard .my-event-card__foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-top: auto;
+  padding-top: .65rem;
+  border-top: 1px solid rgba(190,143,71,.18);
+}
+#participantDashboard .my-event-card__price {
+  font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  font-size: .95rem;
+  font-weight: 800;
+  color: #8b510d;
+}
+#participantDashboard .my-event-card__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #2f2b22;
+  color: #fffaf0;
+  font-family: 'Manrope', sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .18s ease, transform .18s ease;
+}
+#participantDashboard .my-event-card__btn:hover { background: #8b510d; transform: translateX(2px); }
 #participantDashboard .my-event-card__actions { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .3rem; }
 #participantDashboard .my-event-card__actions > * { flex: 1 1 120px; }
 </style>
@@ -412,7 +489,7 @@
         <span class="dashboard-stat-icon grid h-20 w-20 shrink-0 place-items-center rounded-full text-4xl text-[#8b510d]"><i class="fa-regular fa-calendar-check"></i></span>
         <div>
           <p class="text-base font-bold text-brand-ink">Event Diikuti</p>
-          <p class="font-display text-4xl font-extrabold text-brand-ink">{{ total_registrations }}</p>
+          <p id="totalRegistrationsCount" class="font-display text-4xl font-extrabold text-brand-ink">{{ total_registrations }}</p>
           <p class="text-xs text-stone-600">Total event terdaftar</p>
         </div>
       </div>
@@ -453,14 +530,14 @@
     </div>
   </section>
 
-  <section>
+  <section id="myEventsSection">
     <div class="mb-3 flex items-center justify-between gap-3">
       <h2 class="dashboard-section-heading font-display text-2xl font-extrabold text-brand-orangeDeep">Event Saya</h2>
       <a href="{% url 'peserta_daftar_event' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
     </div>
 
     {% if registrations %}
-    <div class="my-events-grid">
+    <div id="myEventsGrid" class="my-events-grid">
       {% for registration in registrations|slice:':5' %}
       {% with event=registration.event %}
       <article class="my-event-card">
@@ -524,7 +601,8 @@
       {% endfor %}
     </div>
     {% else %}
-    <div class="participant-card dashboard-events-card overflow-hidden rounded-[22px]">
+    <div id="myEventsGrid" class="my-events-grid" hidden></div>
+    <div id="myEventsEmptyState" class="participant-card dashboard-events-card overflow-hidden rounded-[22px]">
       <div class="flex flex-col items-center justify-center gap-2 px-5 py-8 text-center text-stone-500 sm:flex-row sm:gap-4">
         <span class="dashboard-empty-icon grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl text-brand-orangeDeep"><i class="fa-solid fa-calendar-plus"></i></span>
         <div class="sm:text-left"><span class="block font-bold text-brand-ink">Belum ada event terdaftar</span><span class="mt-0.5 block text-xs text-stone-500">Temukan acara yang sesuai dengan minat Anda.</span></div>
@@ -653,6 +731,96 @@
   </section>
 </dialog>
 <script>
+// Render event yang didaftarkan dari halaman Jelajah ke seksi "Event Saya"
+document.addEventListener('DOMContentLoaded', () => {
+  const MY_EVENTS_STORAGE_KEY = 'simevent_my_events';
+  const fallbackBanner = "{% static 'img/hero.jpg' %}";
+  const detailBaseUrl = "{% url 'detail_event' 'SLUG_PLACEHOLDER' %}";
+  const daftarEventUrl = "{% url 'peserta_daftar_event' %}";
+
+  let savedEvents = [];
+  try {
+    savedEvents = JSON.parse(localStorage.getItem(MY_EVENTS_STORAGE_KEY) || '[]');
+  } catch (e) {
+    savedEvents = [];
+  }
+
+  if (!savedEvents.length) return;
+
+  const grid = document.getElementById('myEventsGrid');
+  const emptyState = document.getElementById('myEventsEmptyState');
+  if (!grid) return;
+
+  // Kumpulkan judul/slug event yang sudah dirender dari database agar tidak duplikat
+  const existingTitles = new Set(
+    Array.from(grid.querySelectorAll('.my-event-card__title')).map(el => el.textContent.trim().toLowerCase())
+  );
+
+  const statusConfig = {
+    live: { cls: 'my-status--live', label: 'Sedang Berlangsung' },
+    soon: { cls: 'my-status--soon', label: 'Akan Datang' },
+    done: { cls: 'my-status--done', label: 'Selesai' },
+  };
+
+  let addedCount = 0;
+
+  savedEvents.forEach((ev) => {
+    if (!ev || !ev.title) return;
+    if (existingTitles.has(ev.title.trim().toLowerCase())) return;
+
+    const st = statusConfig[ev.status] || statusConfig.soon;
+    const card = document.createElement('article');
+    card.className = 'my-event-card';
+    card.dataset.clientEventSlug = ev.slug || '';
+
+    const bannerUrl = ev.bannerUrl || fallbackBanner;
+    const eventLink = ev.demo
+      ? `${daftarEventUrl}?event=${encodeURIComponent(ev.slug || '')}`
+      : detailBaseUrl.replace('SLUG_PLACEHOLDER', encodeURIComponent(ev.slug || ''));
+
+    card.innerHTML = `
+      <div class="my-event-card__img" aria-hidden="true"></div>
+      <div class="my-event-card__chips">
+        <span class="my-chip my-chip--cream"></span>
+        <time class="my-chip my-chip--white"></time>
+      </div>
+      <span class="my-status ${st.cls}"><i></i> ${st.label}</span>
+      <h3 class="my-event-card__title">
+        <a class="my-event-card__link" href="${eventLink}"></a>
+      </h3>
+      <ul class="my-event-card__meta">
+        <li><i class="fa-solid fa-location-dot"></i> <span class="js-ev-venue"></span></li>
+        <li><i class="fa-regular fa-user"></i> <span class="js-ev-org"></span></li>
+      </ul>
+    `;
+
+    card.querySelector('.my-event-card__img').style.backgroundImage = `url("${bannerUrl}")`;
+    card.querySelector('.my-chip--cream').textContent = ev.categoryName || ev.category || 'Event';
+    const timeEl = card.querySelector('time');
+    timeEl.dateTime = ev.date || '';
+    timeEl.textContent = ev.dateLabel || ev.date || '-';
+    card.querySelector('.my-event-card__link').textContent = ev.title;
+    card.querySelector('.js-ev-venue').textContent = ev.venue || 'Online';
+    card.querySelector('.js-ev-org').textContent = ev.organizer || 'Panitia SIMEVENT';
+
+    grid.prepend(card);
+    existingTitles.add(ev.title.trim().toLowerCase());
+    addedCount += 1;
+  });
+
+  if (addedCount > 0 || grid.children.length > 0) {
+    grid.hidden = false;
+    if (emptyState) emptyState.hidden = true;
+  }
+
+  // Perbarui angka statistik "Event Diikuti" jika ada tambahan dari localStorage
+  const countEl = document.getElementById('totalRegistrationsCount');
+  if (countEl && addedCount > 0) {
+    const baseCount = parseInt(countEl.textContent.trim(), 10) || 0;
+    countEl.textContent = String(baseCount + addedCount);
+  }
+});
+
 // Arahkan logo di navbar/sidebar ke landing page saat ditekan
 document.addEventListener('DOMContentLoaded', () => {
   const landingUrl = "{% url 'landing' %}";
