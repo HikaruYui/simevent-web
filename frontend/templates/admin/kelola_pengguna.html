@@ -2,74 +2,22 @@
 {% block title %}Kelola Pengguna{% endblock %}
 {% block page_key %}admin_users{% endblock %}
 {% block nav_admin_users %} class="is-active" aria-current="page"{% endblock %}
-
 {% block content %}
-<header class="eo-head">
-  <h1>Kelola Pengguna & Panitia</h1>
-</header>
-
-<div class="toolbar">
-  <label class="search">
-    <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
-    <span class="sr-only">Cari pengguna</span>
-    <input id="userSearch" type="search" placeholder="Cari nama, email, atau role...">
-  </label>
-  
-  <label class="pill-select">
-    <select id="roleFilter">
-      <option value="">Semua Peran</option>
-      <option value="ketua">Ketua Panitia</option>
-      <option value="panitia">Anggota Panitia</option>
-      <option value="peserta">Peserta</option>
-    </select>
-    <svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg>
-  </label>
-  
-  <div class="toolbar__grow"></div>
-  <button type="button" class="btn" id="addUserBtn">
-    <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> Tambah User Baru
-  </button>
-</div>
-
-<div class="table-wrap" style="margin-top:16px">
-  <table class="tbl">
-    <thead>
-      <tr>
-        <th>Nama / Email</th>
-        <th>Peran (Role)</th>
-        <th>Organisasi / Komunitas</th>
-        <th>Status Akun</th>
-        <th class="num">Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-          <b>Senku Sartika</b><br>
-          <small class="muted">senku@simevent.id</small>
-        </td>
-        <td><span class="badge-admin">Ketua Panitia</span></td>
-        <td>BEM Fakultas Teknik</td>
-        <td><span style="color:#22c55e;font-weight:700">Aktif</span></td>
-        <td class="num">
-          <button class="btn btn--ghost" style="padding:4px 8px">Edit</button>
-          <button class="btn btn--ghost" style="padding:4px 8px;color:#ef4444">Bekukan</button>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <b>Budi Santoso</b><br>
-          <small class="muted">budi@gmail.com</small>
-        </td>
-        <td>Peserta</td>
-        <td>-</td>
-        <td><span style="color:#22c55e;font-weight:700">Aktif</span></td>
-        <td class="num">
-          <button class="btn btn--ghost" style="padding:4px 8px">Edit</button>
-          <button class="btn btn--ghost" style="padding:4px 8px;color:#ef4444">Bekukan</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<header class="eo-head"><h1>Kelola Pengguna</h1><button type="button" class="btn" id="addUserBtn"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Tambah pengguna</button></header>
+<article class="card adm-card">
+  <div class="toolbar" id="userTools"><label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari</span><input id="userSearch" type="search" placeholder="Cari nama, email, peran"></label></div>
+  <div class="tabs adm-tabs" id="userTabs" role="group" aria-label="Filter peran"></div>
+  <div id="userTable"><div class="table-wrap"><table class="tbl"><thead><tr><th>Pengguna</th><th>Peran</th><th>Organisasi</th><th>Ikut</th><th>Status</th><th></th></tr></thead><tbody id="userBody"></tbody></table></div>
+    <div class="pager"><span id="userInfo"></span><div id="userPager"></div></div></div>
+  <div id="propBox" hidden><ul class="prop-list" id="propList"></ul></div>
+</article>
+<dialog class="dlg" id="userDlg" aria-labelledby="userDlgTitle"><form id="userForm" novalidate>
+  <div class="dlg__head"><h2 id="userDlgTitle">Tambah pengguna</h2><button type="button" class="dlg__x" data-close aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-plus" style="transform:rotate(45deg);transform-origin:center"/></svg></button></div>
+  <div class="dlg__body">
+    <div class="field"><label for="ufNama">Nama lengkap</label><input id="ufNama" name="nama" type="text" maxlength="80"></div>
+    <div class="field"><label for="ufEmail">Email</label><input id="ufEmail" name="email" type="email"></div>
+    <div class="field"><label for="ufPeran">Peran</label><select id="ufPeran" name="peran"><option value="peserta">Peserta</option><option value="penyelenggara">Ketua Panitia</option><option value="lapangan">Panitia Lapangan</option><option value="dokumentasi">Tim Dokumentasi</option><option value="admin">Admin Platform</option></select></div>
+    <div class="field"><label for="ufOrg">Organisasi (opsional)</label><input id="ufOrg" name="org" type="text" maxlength="80"></div>
+    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Simpan</button></div>
+  </div></form></dialog>
 {% endblock %}

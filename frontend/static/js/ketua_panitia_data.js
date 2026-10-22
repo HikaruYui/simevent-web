@@ -144,4 +144,6 @@
     statusEvent: STATUS_EVENT,
     statusTiket: STATUS_TIKET
   };
+  /* Terapkan tindakan Admin (persetujuan event, balasan support, dst) bila ada */
+  if (window.SIM) { window.SIM.applyToEO(window.EO); }
 })();

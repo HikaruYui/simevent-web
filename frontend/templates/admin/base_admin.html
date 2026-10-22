@@ -7,7 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/admin_control.css' %}?v=1">
   <style>
     :root { --side-w: clamp(210px, 14.5vw, 244px); }
     .sr-only {
@@ -74,6 +75,7 @@
       <a href="{% url 'admin_dashboard' %}" {% block nav_admin_dashboard %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Beranda</a>
       <a href="{% url 'admin_users' %}" {% block nav_admin_users %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg>Kelola Pengguna</a>
       <a href="{% url 'admin_events' %}" {% block nav_admin_events %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Kelola Event</a>
+      <a href="{% url 'admin_support' %}" {% block nav_admin_support %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg>Support</a>
       <a href="{% url 'admin_finance' %}" {% block nav_admin_finance %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-wallet"/></svg>Keuangan</a>
       <a href="{% url 'admin_audit' %}" {% block nav_admin_audit %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-log"/></svg>Audit Log</a>
       <a href="{% url 'admin_settings' %}" {% block nav_admin_settings %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
@@ -92,6 +94,16 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script src="{% static 'js/admin_control.js' %}"></script>
+<dialog class="dlg" id="admDlg" aria-labelledby="admDlgTitle">
+  <form id="admDlgForm" novalidate>
+    <div class="dlg__head"><h2 id="admDlgTitle">Konfirmasi</h2><button type="button" class="dlg__x" data-close aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-plus" style="transform:rotate(45deg);transform-origin:center"/></svg></button></div>
+    <div class="dlg__body"><p id="admDlgText"></p>
+      <div class="field" id="admDlgReasonWrap" hidden><label for="admDlgReason" id="admDlgReasonLabel">Alasan</label><textarea id="admDlgReason" rows="3" maxlength="300"></textarea></div>
+      <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn" id="admDlgOk">Lanjutkan</button></div></div>
+  </form>
+</dialog>
+<script src="{% static 'js/simevent_shared.js' %}"></script>
+<script src="{% static 'js/ketua_panitia_data.js' %}"></script>
+<script src="{% static 'js/admin_control.js' %}?v=1"></script>
 </body>
 </html>

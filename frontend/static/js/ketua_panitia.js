@@ -214,6 +214,11 @@
   function initNewEvent() {
     var dlg = $("#newEventDlg"); if (!dlg) { return; }
     var form = $("form", dlg);
+    /* Jenis event mengikuti kategori aktif yang diatur Admin (Pengaturan > Kategori) */
+    if (window.SIM && form.jenis) {
+      var cats = Object.keys(SIM.state.settings.categories).filter(function (k) { return SIM.state.settings.categories[k]; });
+      if (cats.length) { form.jenis.innerHTML = cats.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join(""); }
+    }
     $$("[data-open-new-event]").forEach(function (b) {
       b.addEventListener("click", function () { form.reset(); $$("small", form).forEach(function (s) { s.remove(); }); dlg.showModal(); $("#neNama").focus(); });
     });
@@ -239,12 +244,19 @@
       });
       if (Object.keys(errs).length) { var f = $("small", form); if (f) { f.closest(".field").querySelector("input,select").focus(); } return; }
 
-      var id = Math.max.apply(null, E.events.map(function (e) { return e.id; })) + 1;
-      E.events.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: "mendatang", hadir: 0, pendapatan: 0 });
-      E.activity.unshift({ tipe: "event", teks: "Event baru \"" + v.nama + "\" dibuat", waktu: "Baru saja" });
+      var S = window.SIM, needApproval = !S || S.state.settings.approvalRequired;
+      var status = needApproval ? "diajukan" : "mendatang";
+      var id = Math.max.apply(null, E.events.map(function (e) { return e.id; }).concat([200])) + 1;
+      E.events.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: status, hadir: 0, pendapatan: 0 });
+      var teks = needApproval ? "Event \"" + v.nama + "\" diajukan, menunggu persetujuan admin" : "Event baru \"" + v.nama + "\" dibuat";
+      E.activity.unshift({ tipe: "event", teks: teks, waktu: "Baru saja" });
+      if (S) {
+        S.state.newEvents.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, harga: v.harga, status: status });
+        S.log("event", teks, "Budi Santoso", "Ketua Panitia", { eo: true });
+      }
       dlg.close();
       onEventsChanged();
-      toast("Event \"" + v.nama + "\" ditambahkan. Ini data contoh, belum tersimpan ke database.");
+      toast(needApproval ? "Event \"" + v.nama + "\" dikirim ke admin untuk disetujui. Data contoh, belum tersimpan ke database." : "Event \"" + v.nama + "\" ditambahkan. Ini data contoh, belum tersimpan ke database.");
     });
   }
 
@@ -266,7 +278,7 @@
 
     /* grafik kehadiran */
     var selEvent = $("#selEvent"), selMetrik = $("#selMetrik"), plot = $("#attendancePlot");
-    E.events.filter(function (e) { return e.status !== "mendatang"; }).forEach(function (e) {
+    E.events.filter(function (e) { return e.status === "berlangsung" || e.status === "selesai"; }).forEach(function (e) {
       var o = document.createElement("option"); o.value = e.id; o.textContent = e.nama; selEvent.appendChild(o);
     });
     Object.keys(E.metrik).forEach(function (k) {
@@ -307,8 +319,10 @@
     var tbody = $("#evBody"), tabsEl = $("#evTabs"), q = $("#evSearch"), filter = "semua";
     var dlg = $("#detailDlg");
     var TABS = [["semua", "Semua"], ["berlangsung", "Sedang Berlangsung"], ["mendatang", "Mendatang"], ["selesai", "Selesai"]];
+    var TABS_EXTRA = [["diajukan", "Menunggu Persetujuan"], ["ditolak", "Ditolak"], ["ditangguhkan", "Ditangguhkan"]];
     function counts() {
-      return TABS.map(function (t) { return [t[0], t[1], t[0] === "semua" ? E.events.length : E.events.filter(function (e) { return e.status === t[0]; }).length]; });
+      return TABS.concat(TABS_EXTRA).map(function (t) { return [t[0], t[1], t[0] === "semua" ? E.events.length : E.events.filter(function (e) { return e.status === t[0]; }).length]; })
+        .filter(function (t, i) { return i < TABS.length || t[2] > 0; });   /* tab tambahan hanya muncul bila ada isinya */
     }
     function render() {
       tabsEl.innerHTML = counts().map(function (t) {
@@ -337,7 +351,8 @@
       $("#detailBody").innerHTML =
         "<dt>Jenis</dt><dd>" + esc(e.jenis) + "</dd><dt>Tanggal</dt><dd>" + fmtDate(e.tanggal) + "</dd><dt>Lokasi</dt><dd>" + esc(e.lokasi) + "</dd>" +
         "<dt>Status</dt><dd>" + chip(e.status, E.statusEvent[e.status]) + "</dd><dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " kuota</dd>" +
-        "<dt>Hadir</dt><dd>" + e.hadir + " peserta</dd><dt>Harga tiket</dt><dd>" + rp(e.harga) + "</dd><dt>Pendapatan</dt><dd>" + (e.pendapatan ? "Rp " + num(e.pendapatan) : "Rp 0") + "</dd>";
+        "<dt>Hadir</dt><dd>" + e.hadir + " peserta</dd><dt>Harga tiket</dt><dd>" + rp(e.harga) + "</dd><dt>Pendapatan</dt><dd>" + (e.pendapatan ? "Rp " + num(e.pendapatan) : "Rp 0") + "</dd>" +
+        (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "");
       dlg.showModal();
     });
     $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
@@ -422,7 +437,7 @@
       list.innerHTML = rows.length ? rows.map(function (t) {
         var e = eventById(t.eventId);
         return '<li><details class="ticket"><summary><div><span class="ticket__title">' + esc(t.judul) + '</span><span class="ticket__meta">' + esc(t.id) + " &middot; " + esc(e.nama) + " &middot; " + fmtDate(t.tanggal) + "</span></div>" + chip(t.status, E.statusTiket[t.status]) +
-          '<span class="ticket__chev" aria-hidden="true"><svg class="icon"><use href="#i-chev"/></svg></span></summary><div class="ticket__body"><p>' + esc(t.isi) + '</p><p class="ticket__meta">Dilaporkan oleh ' + esc(t.pelapor) + "</p>" +
+          '<span class="ticket__chev" aria-hidden="true"><svg class="icon"><use href="#i-chev"/></svg></span></summary><div class="ticket__body"><p>' + esc(t.isi) + '</p><p class="ticket__meta">Dilaporkan oleh ' + esc(t.pelapor) + "</p>" + (t.balasan ? '<p class="ticket__reply"><b>Balasan admin:</b> ' + esc(t.balasan) + "</p>" : "") +
           (t.status === "diaudit" ? '<div class="ticket__actions"><button type="button" class="btn" data-done="' + esc(t.id) + '">Tandai selesai</button></div>' : "") + "</div></details></li>";
       }).join("") : '<li><p class="tbl-empty">Belum ada tiket.</p></li>';
     }
@@ -430,6 +445,11 @@
     list.addEventListener("click", function (ev) {
       var b = ev.target.closest("[data-done]"); if (!b) { return; }
       E.tickets.forEach(function (t) { if (t.id === b.dataset.done) { t.status = "selesai"; } });
+      if (window.SIM) {
+        var prev = SIM.state.tickets[b.dataset.done] || {};
+        SIM.state.tickets[b.dataset.done] = { status: "selesai", balasan: prev.balasan || "" };
+        SIM.log("support", "Tiket " + b.dataset.done + " ditandai selesai oleh Ketua Panitia", "Budi Santoso", "Ketua Panitia", { eo: true });
+      }
       toast("Tiket " + b.dataset.done + " ditandai selesai. Ini data contoh, belum tersimpan ke database.");
       render();
     });
@@ -487,6 +507,8 @@
       { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "dokumentasi", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
       { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "dokumentasi", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
     ];
+    /* akun yang dibekukan Admin tidak bisa masuk: tampil sebagai ditangguhkan */
+    if (window.SIM) { team.forEach(function (m) { var u = SIM.state.users[m.email]; if (u && u.status === "dibekukan") { m.status = "ditangguhkan"; } }); }
     var invites = [
       { id: 11, email: "putri.amelia@mail.com", peran: "lapangan",    kirim: "2 hari lalu", sisa: 5 },
       { id: 12, email: "agus.salim@mail.com",   peran: "dokumentasi", kirim: "6 hari lalu", sisa: 1 }

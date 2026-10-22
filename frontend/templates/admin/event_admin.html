@@ -1,0 +1,14 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Kelola Event{% endblock %}
+{% block page_key %}admin_events{% endblock %}
+{% block nav_admin_events %} class="is-active" aria-current="page"{% endblock %}
+{% block content %}
+<header class="eo-head"><h1>Kelola Event</h1><p>Setujui, tolak, atau tangguhkan event dari semua penyelenggara.</p></header>
+<article class="card adm-card">
+  <div class="toolbar"><label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari</span><input id="evSearch" type="search" placeholder="Cari event, penyelenggara, lokasi"></label><label class="pill-select"><span class="sr-only">Jenis</span><select id="evJenis"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label></div>
+  <div class="tabs adm-tabs" id="evTabs" role="group" aria-label="Filter status"></div>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Penyelenggara</th><th>Tanggal</th><th>Tiket</th><th class="num">Harga</th><th>Status</th><th></th></tr></thead><tbody id="evBody"></tbody></table></div>
+</article>
+<dialog class="dlg" id="evDetail" aria-labelledby="evDetailTitle"><div class="dlg__head"><h2 id="evDetailTitle"></h2><button type="button" class="dlg__x" data-close aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-plus" style="transform:rotate(45deg);transform-origin:center"/></svg></button></div>
+<div class="dlg__body"><dl class="dl" id="evDetailBody"></dl><div class="dlg__foot"><button type="button" class="btn" data-close>Tutup</button></div></div></dialog>
+{% endblock %}

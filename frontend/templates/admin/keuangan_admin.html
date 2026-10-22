@@ -1,0 +1,15 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Keuangan{% endblock %}
+{% block page_key %}admin_finance{% endblock %}
+{% block nav_admin_finance %} class="is-active" aria-current="page"{% endblock %}
+{% block content %}
+<header class="eo-head"><h1>Keuangan Platform</h1><button type="button" class="btn btn--ghost" id="finExport"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Ekspor CSV</button></header>
+<section class="kpi-grid" aria-label="Ringkasan keuangan">
+  <article class="card kpi"><p class="kpi__label">Total Penjualan Tiket</p><p class="kpi__value" id="fGross">0</p></article>
+  <article class="card kpi"><p class="kpi__label">Pendapatan Platform</p><p class="kpi__value" id="fFee">0</p><p class="kpi__delta kpi__delta--muted" id="fFeeNote"></p></article>
+  <article class="card kpi"><p class="kpi__label">Dana Sudah Dicairkan</p><p class="kpi__value" id="fCair">0</p></article>
+  <article class="card kpi"><p class="kpi__label">Siap Dicairkan</p><p class="kpi__value" id="fAvail">0</p><p class="kpi__delta kpi__delta--muted">Dari event yang sudah selesai</p></article>
+</section>
+<article class="card chart-card chart-card--bar" style="margin-top:24px"><h2 class="sec-title">Pendapatan platform per bulan</h2><div class="chart-card__plot" id="finChart"></div></article>
+<article class="card adm-card" style="margin-top:24px"><div class="table-wrap"><table class="tbl"><thead><tr><th>Penyelenggara</th><th class="num">Penjualan</th><th class="num">Biaya platform</th><th class="num">Bersih</th><th class="num">Siap cair</th><th>Status</th><th></th></tr></thead><tbody id="finBody"></tbody><tfoot></tfoot></table></div></article>
+{% endblock %}

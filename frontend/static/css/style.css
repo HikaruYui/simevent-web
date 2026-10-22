@@ -92,7 +92,7 @@ button, input { font: inherit; }
   max-width: 1112px; min-height: 80px; margin: 0 auto;
   display: flex; align-items: center; flex-wrap: nowrap; gap: 12px 0;
   padding: 0 20px 0 44px;
-  background: rgba(245, 230, 197, .39);
+  background: rgba(245, 230, 197, .72);   /* sebelumnya .39 */
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-radius: 40px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, .25);
@@ -551,24 +551,21 @@ button, input { font: inherit; }
   }
 }
 
-<<<<<<< HEAD
  /* ANIMASI LOGO? */
 :root {
   /* >>> GANTI jika nama/lokasi file logo Anda berbeda <<< */
   --logo-url: url("../img/logo.svg");
 
   --logo-wave-dur: 6.7s;   /* makin besar = makin pelan animasnya */
-  --logo-wave: linear-gradient(
+    --logo-wave: linear-gradient(
     90deg,
-    #F5E6C5 0%,
-    #E9B76A 16%,
+    #3F422E 0%,
+    #81531D 16%,
     #D78B30 30%,
-    #9F886F 42%,
-    #3F422E 52%,
-    #9F886F 62%,
-    #D78B30 74%,
-    #E9B76A 88%,
-    #F5E6C5 100%
+    #E9B76A 42%,
+    #D78B30 54%,
+    #81531D 70%,
+    #3F422E 100%
   );
 }
 
@@ -597,9 +594,6 @@ button, input { font: inherit; }
     transform: translateZ(0);
   }
   .auth__logo::after { inset: 0 16px; }
-
-  /* logo asli disembunyikan, tetap ada untuk ukuran & aksesibilitas */
-  .navbar__brand img,
   .auth__logo img { opacity: 0; }
 }
 
@@ -621,5 +615,3 @@ button, input { font: inherit; }
   .navbar__brand::after, .auth__logo::after { animation: none; }
   .navbar__brand, .auth__logo { animation: none; }
 }
-=======
->>>>>>> 6ed7875aac74bc1de930ee8a5e91f5f2acef8dd9
