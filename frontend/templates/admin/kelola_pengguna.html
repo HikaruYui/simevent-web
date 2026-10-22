@@ -1,0 +1,75 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Kelola Pengguna{% endblock %}
+{% block page_key %}admin_users{% endblock %}
+{% block nav_admin_users %} class="is-active" aria-current="page"{% endblock %}
+
+{% block content %}
+<header class="eo-head">
+  <h1>Kelola Pengguna & Panitia</h1>
+</header>
+
+<div class="toolbar">
+  <label class="search">
+    <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+    <span class="sr-only">Cari pengguna</span>
+    <input id="userSearch" type="search" placeholder="Cari nama, email, atau role...">
+  </label>
+  
+  <label class="pill-select">
+    <select id="roleFilter">
+      <option value="">Semua Peran</option>
+      <option value="ketua">Ketua Panitia</option>
+      <option value="panitia">Anggota Panitia</option>
+      <option value="peserta">Peserta</option>
+    </select>
+    <svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg>
+  </label>
+  
+  <div class="toolbar__grow"></div>
+  <button type="button" class="btn" id="addUserBtn">
+    <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> Tambah User Baru
+  </button>
+</div>
+
+<div class="table-wrap" style="margin-top:16px">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Nama / Email</th>
+        <th>Peran (Role)</th>
+        <th>Organisasi / Komunitas</th>
+        <th>Status Akun</th>
+        <th class="num">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <b>Senku Sartika</b><br>
+          <small class="muted">senku@simevent.id</small>
+        </td>
+        <td><span class="badge-admin">Ketua Panitia</span></td>
+        <td>BEM Fakultas Teknik</td>
+        <td><span style="color:#22c55e;font-weight:700">Aktif</span></td>
+        <td class="num">
+          <button class="btn btn--ghost" style="padding:4px 8px">Edit</button>
+          <button class="btn btn--ghost" style="padding:4px 8px;color:#ef4444">Bekukan</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b>Budi Santoso</b><br>
+          <small class="muted">budi@gmail.com</small>
+        </td>
+        <td>Peserta</td>
+        <td>-</td>
+        <td><span style="color:#22c55e;font-weight:700">Aktif</span></td>
+        <td class="num">
+          <button class="btn btn--ghost" style="padding:4px 8px">Edit</button>
+          <button class="btn btn--ghost" style="padding:4px 8px;color:#ef4444">Bekukan</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

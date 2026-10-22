@@ -66,6 +66,12 @@ urlpatterns = [
     path("ketua-panitia/log-aktivitas/", views.eo_log, name="eo_log"),
     path("ketua-panitia/support/", views.eo_support, name="eo_support"),
     path("ketua-panitia/pengaturan/", views.eo_pengaturan, name="eo_pengaturan"),
+    path("admin-panel/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-panel/users/", views.admin_users, name="admin_users"),
+    path("admin-panel/events/", views.admin_events, name="admin_events"),
+    path("admin-panel/finance/", views.admin_finance, name="admin_finance"),
+    path("admin-panel/audit/", views.admin_audit, name="admin_audit"),
+    path("admin-panel/settings/", views.admin_settings, name="admin_settings"),
 
     path(
         "panitia/event/<int:pk>/",

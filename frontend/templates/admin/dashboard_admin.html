@@ -1,0 +1,95 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_key %}admin_dashboard{% endblock %}
+{% block nav_admin_dashboard %} class="is-active" aria-current="page"{% endblock %}
+
+{% block content %}
+<header class="eo-head">
+  <h1>Control Panel Platform</h1>
+</header>
+
+<!-- Ringkasan Sistem Global (Grid 4 Kolom) -->
+<section class="kpi-grid" aria-label="Ringkasan Sistem" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+  <article class="card kpi">
+    <p class="kpi__label">Total Pengguna Aktif</p>
+    <p class="kpi__value">1,420</p>
+    <p class="kpi__delta" style="color:var(--olive)">+12% bulan ini</p>
+  </article>
+
+  <article class="card kpi">
+    <p class="kpi__label">Total Event Terdaftar</p>
+    <p class="kpi__value">86</p>
+    <p class="kpi__delta">42 Berlangsung</p>
+  </article>
+
+  <article class="card kpi kpi--split">
+    <p class="kpi__label">Persetujuan Event</p>
+    <div class="kpi__pair">
+      <div>
+        <span class="kpi__num kpi__num--orange">5</span>
+        <span class="kpi__cap kpi__cap--orange">Perlu Review</span>
+      </div>
+      <i></i>
+      <div>
+        <span class="kpi__num">81</span>
+        <span class="kpi__cap">Disetujui</span>
+      </div>
+    </div>
+  </article>
+
+  <article class="card kpi kpi--split">
+    <p class="kpi__label">Status Server & Database</p>
+    <div class="kpi__pair">
+      <div>
+        <span class="kpi__num" style="color:#22c55e; font-size: 20px;">99.9%</span>
+        <span class="kpi__cap">Uptime</span>
+      </div>
+      <i></i>
+      <div>
+        <span class="kpi__num" style="color:#22c55e; font-size: 20px;">OK</span>
+        <span class="kpi__cap">Sistem</span>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- Tabel Persetujuan Event Baru (Full 1 Kolom) -->
+<div style="margin-top: 28px; width: 100%;">
+  <h2 class="sec-title sec-title--out"><span>Persetujuan Event Baru</span></h2>
+  <div class="table-wrap card" style="width: 100%;">
+    <table class="tbl" style="width: 100%;">
+      <thead>
+        <tr>
+          <th>Nama Event</th>
+          <th>Ketua Panitia</th>
+          <th>Tanggal</th>
+          <th>Status</th>
+          <th class="num">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Hackathon PTIK 2026</b></td>
+          <td>Ahmad Fauzi</td>
+          <td>12 Nov 2026</td>
+          <td><span class="kpi__cap kpi__cap--orange" style="padding:4px 10px;border-radius:6px;background:#fef3c7">Pending</span></td>
+          <td class="num">
+            <button class="btn" style="padding:4px 12px;font-size:12px">Setujui</button>
+            <button class="btn btn--ghost" style="padding:4px 12px;font-size:12px;color:#ef4444">Tolak</button>
+          </td>
+        </tr>
+        <tr>
+          <td><b>Workshop AI & Machine Learning</b></td>
+          <td>Siti Rahma</td>
+          <td>05 Des 2026</td>
+          <td><span class="kpi__cap kpi__cap--orange" style="padding:4px 10px;border-radius:6px;background:#fef3c7">Pending</span></td>
+          <td class="num">
+            <button class="btn" style="padding:4px 12px;font-size:12px">Setujui</button>
+            <button class="btn btn--ghost" style="padding:4px 12px;font-size:12px;color:#ef4444">Tolak</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
