@@ -1,5 +1,5 @@
 html {
-  font-size: min(calc(100vw / 90), calc(100vh / 63.75));
+  font-size: 16px;
 }
  
 .auth__panel {
@@ -550,3 +550,4 @@ button, input { font: inherit; }
     min-height: calc(100vh / 0.8);
   }
 }
+

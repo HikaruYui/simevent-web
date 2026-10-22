@@ -1,0 +1,7 @@
+{% load socialaccount %}
+{# Letakkan include ini DI LUAR form email/password. #}
+<form method="post" action="{% provider_login_url 'google' process='login' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{% url 'after_login' %}">
+  <button type="submit">Masuk dengan Google</button>
+</form>

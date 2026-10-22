@@ -225,7 +225,9 @@ def detail_event(request, slug):
 # =========================================================
 
 def _participant_redirect(request):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
+    if request.user.role == "ORGANIZER":
+        return redirect("eo_dashboard")
+    if request.user.role == "ADMIN":
         return redirect("panitia_dashboard")
     if not request.user.profile_complete:
         return redirect("peserta_akun")

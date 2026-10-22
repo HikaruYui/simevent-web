@@ -4,6 +4,8 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
+    # Jalur terpisah agar tidak bentrok dengan API /accounts/.
+    path("auth/", include("allauth.urls")),
     path(
         "",
         views.landing_page,

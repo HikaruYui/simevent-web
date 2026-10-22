@@ -1,0 +1,11 @@
+{% if messages %}
+  <div aria-live="polite">
+    {% for message in messages %}
+      <div style="margin: 12px 0; padding: 12px 16px;
+                  border: 1px solid #dbb46c; border-radius: 12px;
+                  background: #fffaf0; color: #17365d;">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
