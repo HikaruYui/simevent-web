@@ -74,6 +74,7 @@ urlpatterns = [
     path("admin-panel/finance/", views.admin_finance, name="admin_finance"),
     path("admin-panel/audit/", views.admin_audit, name="admin_audit"),
     path("admin-panel/settings/", views.admin_settings, name="admin_settings"),
+    path("admin-panel/support/", views.admin_support, name="admin_support"),
 
     path(
         "panitia/event/<int:pk>/",

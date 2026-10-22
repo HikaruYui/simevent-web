@@ -94,8 +94,6 @@ def jelajah(request):
         "terdaftar_ids": [],
     })
 
-
-# ---------------------------------------------------------------- Tentang
 def tentang(request):
     return render(request, "tentang.html", {"halaman_aktif": "tentang"})
 

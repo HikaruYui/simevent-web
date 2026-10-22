@@ -756,7 +756,8 @@ def _admin_panel(template):
 
 admin_dashboard = _admin_panel("dashboard_admin")
 admin_users = _admin_panel("kelola_pengguna")
-admin_events = _admin_panel("dashboard_admin")    # Sementara arahkan ke dashboard
-admin_finance = _admin_panel("dashboard_admin")   # Sementara arahkan ke dashboard
-admin_audit = _admin_panel("dashboard_admin")     # Sementara arahkan ke dashboard
-admin_settings = _admin_panel("dashboard_admin")  # Sementara arahkan ke dashboard
+admin_events = _admin_panel("event_admin")
+admin_support = _admin_panel("support_admin")
+admin_finance = _admin_panel("keuangan_admin")
+admin_audit = _admin_panel("audit_admin")
+admin_settings = _admin_panel("pengaturan_admin")

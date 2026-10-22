@@ -507,3 +507,10 @@ body[data-page="support"] .tabs { margin-top: 24px; }
 body[data-page="support"] .ticket-list { margin-top: 20px; padding: 0; }
 body[data-page="pendapatan"] .chart-card--bar { margin-top: 24px; }
 body[data-page="pendapatan"] .table-wrap { margin-top: 24px; }
+
+/* ---------- Status tambahan (persetujuan admin) ---------- */
+.chip--diajukan, .chip--menunggu, .chip--revisi { background: var(--warn-bg); color: var(--warn); }
+.chip--ditolak, .chip--ditangguhkan, .chip--dibekukan { background: var(--bad-bg); color: var(--bad); }
+.chip--aktif, .chip--dicairkan, .chip--disetujui { background: var(--good-bg); color: var(--good); }
+.chip--belum { background: #E9E4D6; color: var(--muted); }
+.ticket__reply { padding: 10px 14px; border-radius: 12px; background: var(--white); font: 500 14px/1.5 var(--font-body); }
