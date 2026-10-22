@@ -550,3 +550,73 @@ button, input { font: inherit; }
     min-height: calc(100vh / 0.8);
   }
 }
+
+ /* ANIMASI LOGO? */
+:root {
+  /* >>> GANTI jika nama/lokasi file logo Anda berbeda <<< */
+  --logo-url: url("../img/logo.svg");
+
+  --logo-wave-dur: 6.7s;   /* makin besar = makin pelan animasnya */
+  --logo-wave: linear-gradient(
+    90deg,
+    #F5E6C5 0%,
+    #E9B76A 16%,
+    #D78B30 30%,
+    #9F886F 42%,
+    #3F422E 52%,
+    #9F886F 62%,
+    #D78B30 74%,
+    #E9B76A 88%,
+    #F5E6C5 100%
+  );
+}
+
+@property --logo-shift { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+
+.navbar__brand,
+.auth__logo { position: relative; }
+
+@supports ((-webkit-mask-image: url("x")) or (mask-image: url("x"))) {
+  .navbar__brand::after,
+  .auth__logo::after {
+    content: "";
+    position: absolute; inset: 0;
+    pointer-events: none;
+
+    /* bentuk = logo itu sendiri, isi = gradien yang bergeser */
+    -webkit-mask: var(--logo-url) left center / 100% 100% no-repeat;
+            mask: var(--logo-url) left center / 100% 100% no-repeat;
+
+    background-image: var(--logo-wave);
+    background-size: 200% 100%;
+    background-repeat: repeat-x;
+    animation: logo-wave var(--logo-wave-dur) linear infinite;
+
+    will-change: background-position;
+    transform: translateZ(0);
+  }
+  .auth__logo::after { inset: 0 16px; }
+
+  /* logo asli disembunyikan, tetap ada untuk ukuran & aksesibilitas */
+  .navbar__brand img,
+  .auth__logo img { opacity: 0; }
+}
+
+/* rubah arah animasi  from itu kanan to itu kiri liat % */
+@keyframes logo-wave {
+  from { background-position: 200% 0; }
+  to   { background-position: 0% 0; }
+}
+
+/* Masuk halus saat halaman dibuka */
+.navbar__brand,
+.auth__logo { animation: logo-in .9s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes logo-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar__brand::after, .auth__logo::after { animation: none; }
+  .navbar__brand, .auth__logo { animation: none; }
+}

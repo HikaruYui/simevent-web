@@ -172,7 +172,6 @@
     const priceSelect = document.getElementById('jj-price');
     const resetButton = document.getElementById('jj-reset');
     const pageSize = 8;
-    const isLoggedIn = {{ request.user.is_authenticated|yesno:'true,false' }};
     /* Data contoh: dipakai hanya bila database belum berisi event publik. */
     function makeDemoEvents() {
       const names = { conference: 'Konferensi', workshop: 'Workshop', seminar: 'Seminar', webinar: 'Webinar', sosialisasi: 'Sosialisasi' };
@@ -312,7 +311,6 @@
       });
       if (sort.value === 'tanggal') visible.sort((a, b) => a.date.localeCompare(b.date));
       if (sort.value === 'harga') visible.sort((a, b) => a.amount - b.amount);
-      count.textContent = `${visible.length} event ditemukan`;
       empty.hidden = visible.length > 0;
       const pageCount = Math.ceil(visible.length / pageSize);
       currentPage = Math.min(currentPage, Math.max(pageCount, 1));
