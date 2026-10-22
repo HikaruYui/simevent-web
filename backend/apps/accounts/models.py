@@ -63,7 +63,6 @@ class UserManager(BaseUserManager):
             **extra_fields,
         )
 
-
 # Inheritance: memperluas AbstractUser dengan identitas login berupa email.
 class User(AbstractUser):
     username = None
