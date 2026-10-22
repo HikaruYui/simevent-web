@@ -653,6 +653,34 @@
   </section>
 </dialog>
 <script>
+// Arahkan logo di navbar/sidebar ke landing page saat ditekan
+document.addEventListener('DOMContentLoaded', () => {
+  const landingUrl = "{% url 'landing' %}";
+  const logoSelectors = [
+    'img[src*="logo"]',
+    '.navbar__brand',
+    'header a[href*="peserta"]',
+    'aside a[href*="peserta"]',
+    '[class*="brand"]',
+    '[class*="logo"]'
+  ];
+  
+  document.querySelectorAll(logoSelectors.join(', ')).forEach((el) => {
+    // Hindari mengubah elemen di dalam area konten utama dashboard
+    if (el.closest('#participantDashboard') || el.closest('#achievementModal')) return;
+
+    const parentLink = el.closest('a');
+    if (parentLink) {
+      parentLink.href = landingUrl;
+    } else {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => {
+        window.location.href = landingUrl;
+      });
+    }
+  });
+});
+
 const achievementModal = document.getElementById('achievementModal');
 achievementModal.addEventListener('click', (event) => {
  if (event.target === achievementModal) achievementModal.close();
