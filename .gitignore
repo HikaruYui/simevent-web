@@ -13,3 +13,5 @@ OOP.md
 ARCHITECTURE.md 
 backend.zip
 venv/
+.vscode/
+logs.txt
