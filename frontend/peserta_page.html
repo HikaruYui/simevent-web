@@ -6,6 +6,31 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Perbesar logo di sidebar peserta secara maksimal agar sejajar penuh dengan bar menu */
+aside img[src*="logo"],
+nav img[src*="logo"],
+header img[src*="logo"],
+.sidebar img[src*="logo"],
+img[alt*="SIMEVENT" i],
+img[src*=".svg"] {
+  width: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  height: auto !important;
+  display: block !important;
+  margin-inline: auto !important;
+  transform: scale(1.18) !important;
+  transform-origin: center center !important;
+}
+aside a:has(img[src*="logo"]),
+nav a:has(img[src*="logo"]),
+div:has(> img[src*="logo"]) {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-inline: 4px !important;
+}
+
 /* Samakan seluruh font dashboard peserta dengan Landing Page & Jelajah */
 #participantDashboard,
 #achievementModal,
@@ -821,31 +846,48 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Arahkan logo di navbar/sidebar ke landing page saat ditekan
+// Arahkan logo SIMEVENT di sidebar ke landing page saat ditekan (Pasti Berhasil)
 document.addEventListener('DOMContentLoaded', () => {
   const landingUrl = "{% url 'landing' %}";
-  const logoSelectors = [
-    'img[src*="logo"]',
-    '.navbar__brand',
-    'header a[href*="peserta"]',
-    'aside a[href*="peserta"]',
-    '[class*="brand"]',
-    '[class*="logo"]'
-  ];
-  
-  document.querySelectorAll(logoSelectors.join(', ')).forEach((el) => {
-    // Hindari mengubah elemen di dalam area konten utama dashboard
-    if (el.closest('#participantDashboard') || el.closest('#achievementModal')) return;
+  const targets = new Set();
 
-    const parentLink = el.closest('a');
-    if (parentLink) {
-      parentLink.href = landingUrl;
-    } else {
-      el.style.cursor = 'pointer';
-      el.addEventListener('click', () => {
-        window.location.href = landingUrl;
-      });
+  // 1. Cari semua gambar/svg/elemen logo di luar konten utama dashboard
+  document.querySelectorAll('img[src*="logo" i], img[alt*="simevent" i], svg, .navbar__brand').forEach((el) => {
+    if (el.closest('#participantDashboard') || el.closest('#achievementModal')) return;
+    // Pastikan bukan ikon kecil di dalam tombol menu (Dashboard, Daftar Event, dll)
+    const parentMenuLink = el.closest('a');
+    if (parentMenuLink && /dashboard|event|sertifikat|achievement|profil|akun|logout|keluar/i.test(parentMenuLink.textContent || '')) {
+      return;
     }
+    const rect = el.getBoundingClientRect();
+    // Logo utama berada di pojok kiri atas (top < 180px, lebar > 60px)
+    if (rect.top >= 0 && rect.top < 180 && rect.left < 350 && rect.width > 60) {
+      targets.add(parentMenuLink || el);
+    }
+  });
+
+  // 2. Cari berdasarkan posisi: elemen tepat di atas tombol menu "Dashboard" pada sidebar
+  const dashLink = Array.from(document.querySelectorAll('a')).find(
+    (a) => !a.closest('#participantDashboard') && (a.textContent || '').trim() === 'Dashboard'
+  );
+  if (dashLink) {
+    const sidebar = dashLink.closest('aside, nav') || dashLink.parentElement?.parentElement;
+    if (sidebar && sidebar.firstElementChild && !sidebar.firstElementChild.contains(dashLink)) {
+      targets.add(sidebar.firstElementChild);
+    }
+  }
+
+  // 3. Pasang aksi klik paksa (capture phase) ke Landing Page
+  targets.forEach((el) => {
+    el.style.cursor = 'pointer';
+    if (el.tagName === 'A') el.href = landingUrl;
+    el.querySelectorAll('a').forEach((a) => { a.href = landingUrl; });
+
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.location.href = landingUrl;
+    }, true);
   });
 });
 

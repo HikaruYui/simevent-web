@@ -92,7 +92,7 @@ button, input { font: inherit; }
   max-width: 1112px; min-height: 80px; margin: 0 auto;
   display: flex; align-items: center; flex-wrap: nowrap; gap: 12px 0;
   padding: 0 20px 0 44px;
-  background: rgba(245, 230, 197, .72);   /* sebelumnya .39 */
+  background: rgba(245, 230, 197, .39);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-radius: 40px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, .25);
@@ -103,13 +103,13 @@ button, input { font: inherit; }
 /* INI BAGIAN YANG TIDAK SENGAJA TERHAPUS SEBELUMNYA */
 .navbar__menu {
   display: flex; gap: 16px; margin-left: auto; padding: 8px 17px;
-  background: rgba(255, 255, 255, .2);
+  background: rgba(245, 230, 197, .45);
   -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
   border-radius: 28px;
 }
 .navbar__menu a {
   display: grid; place-items: center; height: 40px; padding: 0 20px; min-width: 88px;
-  border-radius: 20px; background: rgba(245, 230, 197, .8);
+  border-radius: 20px; background: rgba(245, 230, 197, .65);
   font: 700 15px/1 var(--font-body); color: var(--taupe);
   transition: background-color .2s, color .2s;
 }
