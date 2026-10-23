@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from .admin_support import ReadOnlyAuditAdmin, ReasonActionForm, run_single_action
 from .forms import AccountChangeForm, RegistrationForm
 from .models import AccountAccessChange, User
-from .role_service import set_account_role
+from .role_service import set_account_role, promote_platform_admin
 from .services import change_account_access
 
 
@@ -99,6 +99,7 @@ class AccountAdmin(UserAdmin):
         "set_organizer",
         "suspend_account",
         "activate_account",
+        "set_platform_admin",
     )
 
     @admin.display(description="Role")
@@ -112,6 +113,29 @@ class AccountAdmin(UserAdmin):
 
     def has_view_permission(self, request, obj=None):
         return request.user.is_active and request.user.has_perm("accounts.manage_platform")
+    
+    def has_promote_admin_permission(self, request):
+        return (
+            request.user.is_authenticated
+            and request.user.is_active
+            and request.user.is_superuser
+        )
+
+    @admin.action(
+        description="Jadikan Admin Platform",
+        permissions=["promote_admin"],
+    )
+    def set_platform_admin(self, request, queryset):
+        run_single_action(
+            self,
+            request,
+            queryset,
+            lambda pk, reason: promote_platform_admin(
+                actor=request.user,
+                user_id=pk,
+                reason=reason,
+            ),
+        )
 
     def has_add_permission(self, request):
         return request.user.is_active and request.user.is_superuser
