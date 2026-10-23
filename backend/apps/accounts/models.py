@@ -173,6 +173,7 @@ class AccountAccessChange(models.Model):
         SET_PARTICIPANT = ("SET_PARTICIPANT", "Jadikan Peserta")
         SET_COMMITTEE = ("SET_COMMITTEE", "Jadikan Panitia")
         SET_ORGANIZER = ("SET_ORGANIZER", "Jadikan Ketua Panitia")
+        SET_ADMIN=("SET_ADMIN", "Jadikan Admin PLatform")
 
         # Tetap disimpan agar riwayat dan service lama tidak rusak.
         GRANT_ORGANIZER = (

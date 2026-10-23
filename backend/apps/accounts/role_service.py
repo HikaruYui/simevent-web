@@ -88,3 +88,79 @@ def set_account_role(*, actor, user_id, role, reason):
             reason=reason,
         )
         return user
+
+@transaction.atomic
+def promote_platform_admin(*, actor, user_id, reason):
+    reason = (reason or "").strip()
+
+    if not reason or len(reason) > 2000:
+        raise ValidationError(
+            "Alasan wajib diisi (maksimal 2000 karakter)."
+        )
+
+    if not actor.is_authenticated:
+        raise PermissionDenied
+
+    actordb = User.objects.select_for_update().get(pk=actor.pk)
+
+    if not actor_db.is_active or not actor_db.is_superuser:
+        raise PermissionDenied(
+            "Akun ini tidak dapat dipromosikan."
+        )
+    
+    if not user.is_active:
+        raise ValidationError(
+            "Aktifkan akun terlebih dahulu."
+        )
+
+    if not user.has_perm("accounts.manage_platform"):
+        raise ValidationError(
+            "Pengguna sudah memiliki akses Admin Platform."
+        )
+    
+    try:
+        admin_group = Group.objects.get(name="Platform Admin")
+    except Group.DoesNotExist:
+        raise ValidationError(
+            "Grup Platform Admin belum tersedia. "
+            "Jalankan bootstrap_roles."
+        )
+
+    if not admin_group.permissions.filter(
+        content_type__app_label="accounts",
+        codename="manage_platform",
+    ).exists():
+        raise ValidationError(
+            "Permission Platform Admin belum dikonfigurasi."
+        )
+
+
+    old_groups=Group.objects.filter(
+        name__in=["Organizer", "ketua-panitia"]
+    )
+
+    user.groups.remove("old.groups")
+
+    old_permissions=Permission.objects.filter(
+        content_type__app_label="accounts",
+        codename__in=[
+            "access_organizer",
+            "access_head_organizer",
+        ],
+    )
+    user.user_permissions.remove(*old_permissions)
+
+    # Berikan akses admin.
+    user.groups.add(admin_group)
+    user.is_staff=True
+    user.save(update_fields=["is_staff"])
+
+    # Catat riwayat perubahan.
+    AccountAccessChange.objects.create(
+        user=user,
+        actor=actor_db,
+        action=AccountAccessChange.Action.SET_ADMIN,
+        reason=reason,
+    )
+    return user
+
