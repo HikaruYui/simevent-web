@@ -58,7 +58,10 @@ class ProfileForm(forms.ModelForm):
             "phone_number",
         )
         widgets = {
-            "birth_date": forms.DateInput(attrs={"type": "date"}),
+            "birth_date": forms.DateInput(
+                format="%Y-%m-%d",
+                attrs={"type": "date"},
+            ),
             "address": forms.Textarea(attrs={"rows": 1}),
             "ktp_number": forms.TextInput(attrs={"inputmode": "numeric", "pattern": "[0-9]{16}", "maxlength": "16", "autocomplete": "off"}),
             "ktp_document": forms.FileInput(attrs={"accept": "application/pdf,.pdf"}),

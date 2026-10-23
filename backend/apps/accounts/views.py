@@ -1,14 +1,39 @@
 # Fungsi file: Penanganan request HTTP, scope akses, dan respons untuk akun, autentikasi, dan hak akses.
 
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.http import JsonResponse
+from django.http import FileResponse, Http404, JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from .forms import EmailAuthenticationForm, ProfileForm, RegistrationForm
 from .models import User
+
+
+@never_cache
+@login_required(login_url="login_page")
+@require_GET
+def ktp_document(request):
+    document = request.user.ktp_document
+    if not document:
+        raise Http404("Dokumen KTP tidak ditemukan.")
+
+    try:
+        file_handle = document.open("rb")
+    except (FileNotFoundError, OSError):
+        raise Http404("Dokumen KTP tidak ditemukan.")
+
+    response = FileResponse(
+        file_handle,
+        as_attachment=False,
+        filename=document.name.rsplit("/", 1)[-1],
+        content_type="application/pdf",
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 @never_cache
