@@ -3,6 +3,15 @@
 {% block peserta %}
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <style>
+  .event-filter-dropdown { position: relative; min-width: 0; }
+  .event-filter-trigger { display: flex; min-height: 50px; width: 100%; align-items: center; gap: 10px; border: 1px solid #D7BD88; border-radius: 12px; background: #fff; padding: 0 12px; color: #3F422E; text-align: left; font-size: .875rem; line-height: 1.25rem; }
+  .event-filter-trigger > span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .event-filter-trigger:focus-visible { outline: 2px solid #3F422E; outline-offset: 2px; }
+  .event-filter-dropdown.is-open .event-filter-trigger { border-bottom-right-radius: 0; border-bottom-left-radius: 0; }
+  .event-filter-menu { position: absolute; top: calc(100% - 1px); right: 0; left: 0; z-index: 70; max-height: 240px; overflow-y: auto; border: 1px solid #D7BD88; border-top: 0; border-radius: 0 0 12px 12px; background: #fff; padding: 4px; box-shadow: 0 12px 22px rgba(63,66,46,.16); }
+  .event-filter-menu[hidden] { display: none; }
+  .event-filter-option { display: block; width: 100%; border: 0; border-radius: 7px; background: transparent; padding: 9px 10px; color: #3F422E; text-align: left; }
+  .event-filter-option:hover, .event-filter-option:focus-visible { background: #3F422E; color: #D7BD88; outline: none; }
   .event-poster { position: relative; isolation: isolate; }
   .event-poster--art::before, .event-poster--art::after { position: absolute; z-index: 0; content: ""; border-radius: 9999px; background: rgba(255,255,255,.12); pointer-events: none; }
   .event-poster--art::before { width: 150px; height: 150px; right: -38px; top: -64px; }
@@ -11,17 +20,35 @@
   .event-poster[data-kind="conference"] { background: linear-gradient(135deg,#071b3d,#123c78 60%,#1368a8); }
   .event-poster[data-kind="seminar"] { background: linear-gradient(135deg,#05b8db,#51ddf2 58%,#077fc9); color: #07385a; }
   .event-poster[data-kind="webinar"] { background: linear-gradient(135deg,#5c2d91,#9b59b6 58%,#e27c97); }
+  @media (min-width: 768px) {
+    .participant-main > div.space-y-5 { position:relative; top:-19px; }
+  }
  </style>
- <header class="participant-page-intro participant-hero event-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7"><div class="relative z-10 max-w-[72%] sm:max-w-[62%]"><a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a><h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div>{% include 'peserta/_pesut_hero_art.html' %}</header>
- <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(250px,1fr)_repeat(3,minmax(140px,190px))]">
+ <header class="participant-page-intro participant-hero event-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7"><div class="relative z-10 max-w-[72%] sm:max-w-[62%]"><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div>{% include 'peserta/_pesut_hero_art.html' %}</header>
+ <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(250px,1fr)_repeat(2,minmax(160px,190px))]">
   <label class="flex min-h-[50px] items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-brand-orangeDeep"></i><input id="eventSearch" type="search" class="w-full bg-transparent text-sm outline-none" placeholder="Cari event berdasarkan nama, kategori, atau penyelenggara..."></label>
-  <label class="flex min-h-[50px] items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3"><i class="fa-regular fa-calendar text-brand-orangeDeep"></i><select id="eventTime" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Waktu</option><option value="upcoming">Akan Datang</option><option value="this-month">Bulan Ini</option><option value="next-month">Bulan Depan</option><option value="past">Event Sebelumnya</option></select></label>
-  <label class="flex min-h-[50px] items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3"><i class="fa-solid fa-tag text-brand-orangeDeep"></i><select id="eventCategory" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Kategori</option>{% for category in categories %}<option value="{{ category|lower }}">{{ category }}</option>{% endfor %}</select></label>
-  <label class="flex min-h-[50px] items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3"><i class="fa-solid fa-sliders text-brand-orangeDeep"></i><select id="eventStatus" class="w-full bg-transparent text-sm outline-none"><option value="">Semua Status</option><option value="Akan Datang">Akan Datang</option><option value="Sedang Berlangsung">Sedang Berlangsung</option><option value="Selesai">Selesai</option></select></label>
+  <div class="event-filter-dropdown" data-event-dropdown>
+   <select id="eventCategory" hidden><option value="">Semua Kategori</option>{% for category in categories %}<option value="{{ category|lower }}">{{ category }}</option>{% endfor %}</select>
+   <button type="button" class="event-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="eventCategoryMenu"><i class="fa-solid fa-tag" aria-hidden="true"></i><span>Semua Kategori</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></button>
+   <div id="eventCategoryMenu" class="event-filter-menu" role="listbox" aria-label="Filter kategori" hidden>
+    <button type="button" class="event-filter-option" role="option" data-value="" aria-selected="true">Semua Kategori</button>
+    {% for category in categories %}<button type="button" class="event-filter-option" role="option" data-value="{{ category|lower }}" aria-selected="false">{{ category }}</button>{% endfor %}
+   </div>
+  </div>
+  <div class="event-filter-dropdown" data-event-dropdown>
+   <select id="eventStatus" hidden><option value="">Semua Status</option><option value="Akan Datang">Akan Datang</option><option value="Sedang Berlangsung">Sedang Berlangsung</option><option value="Selesai">Selesai</option></select>
+   <button type="button" class="event-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="eventStatusMenu"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Semua Status</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></button>
+   <div id="eventStatusMenu" class="event-filter-menu" role="listbox" aria-label="Filter status" hidden>
+    <button type="button" class="event-filter-option" role="option" data-value="" aria-selected="true">Semua Status</button>
+    <button type="button" class="event-filter-option" role="option" data-value="Akan Datang" aria-selected="false">Akan Datang</button>
+    <button type="button" class="event-filter-option" role="option" data-value="Sedang Berlangsung" aria-selected="false">Sedang Berlangsung</button>
+    <button type="button" class="event-filter-option" role="option" data-value="Selesai" aria-selected="false">Selesai</button>
+   </div>
+  </div>
  </div>
  <div class="space-y-3">
   {% for event in events %}
-  <article class="participant-card event-row grid gap-4 rounded-2xl p-4 sm:p-5 md:grid-cols-[240px_minmax(0,1fr)_minmax(235px,290px)] md:items-center" data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}" data-category="{{ event.event_type.name|lower }}" data-status="{{ event.ui_status }}" data-date="{{ event.start_datetime|date:'Y-m-d' }}">
+   <article class="participant-card event-row grid gap-4 rounded-2xl p-4 sm:p-5 md:grid-cols-[240px_minmax(0,1fr)_minmax(235px,290px)] md:items-center" data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}" data-category="{{ event.event_type.name|lower }}" data-status="{{ event.ui_status }}">
    <a href="{% url 'detail_event' event.slug %}" class="event-poster {% if not event.banner %}event-poster--art{% endif %} flex h-36 items-center justify-center overflow-hidden rounded-xl text-center text-white" data-kind="{{ event.event_type.code|lower }}">
     {% if event.banner %}<img src="{{ event.banner.url }}" alt="Banner {{ event.title }}" class="h-full w-full object-cover">{% else %}
     <span class="relative flex h-full w-full items-center justify-between overflow-hidden px-4 py-3 text-left">
@@ -97,7 +124,6 @@ document.querySelectorAll('.free-registration').forEach((form) => {
  });
 });
 const search = document.getElementById('eventSearch');
-const time = document.getElementById('eventTime');
 const category = document.getElementById('eventCategory');
 const status = document.getElementById('eventStatus');
 const rows = [...document.querySelectorAll('.event-row')];
@@ -105,20 +131,11 @@ const empty = document.getElementById('eventEmpty');
 const visibleCount = document.getElementById('eventVisibleCount');
 function filterEvents() {
  const query = search.value.trim().toLocaleLowerCase('id');
- const today = new Date();
- const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
  let visible = 0;
  rows.forEach((row) => {
-  const eventDate = new Date(`${row.dataset.date}T00:00:00`);
-  const inSelectedTime = !time.value
-   || (time.value === 'upcoming' && eventDate >= new Date(today.getFullYear(), today.getMonth(), today.getDate()))
-   || (time.value === 'this-month' && eventDate.getFullYear() === today.getFullYear() && eventDate.getMonth() === today.getMonth())
-   || (time.value === 'next-month' && eventDate.getFullYear() === nextMonth.getFullYear() && eventDate.getMonth() === nextMonth.getMonth())
-   || (time.value === 'past' && eventDate < new Date(today.getFullYear(), today.getMonth(), today.getDate()));
   const show = row.dataset.search.includes(query)
    && (!category.value || row.dataset.category === category.value)
-   && (!status.value || row.dataset.status === status.value)
-   && inSelectedTime;
+    && (!status.value || row.dataset.status === status.value);
   row.hidden = !show;
   if (show) visible += 1;
  });
@@ -126,8 +143,61 @@ function filterEvents() {
  empty.classList.toggle('hidden', visible !== 0);
 }
 search.addEventListener('input', filterEvents);
-time.addEventListener('change', filterEvents);
 category.addEventListener('change', filterEvents);
 status.addEventListener('change', filterEvents);
+document.querySelectorAll('[data-event-dropdown]').forEach((dropdown) => {
+ const trigger = dropdown.querySelector('.event-filter-trigger');
+ const menu = dropdown.querySelector('.event-filter-menu');
+ const select = dropdown.querySelector('select');
+ const label = trigger.querySelector('span');
+ const closeMenu = () => {
+  menu.hidden = true;
+  trigger.setAttribute('aria-expanded', 'false');
+  dropdown.classList.remove('is-open');
+ };
+ trigger.addEventListener('click', () => {
+  const shouldOpen = menu.hidden;
+  document.querySelectorAll('[data-event-dropdown]').forEach((other) => {
+   other.querySelector('.event-filter-menu').hidden = true;
+   other.querySelector('.event-filter-trigger').setAttribute('aria-expanded', 'false');
+   other.classList.remove('is-open');
+  });
+  if (shouldOpen) {
+   menu.hidden = false;
+   trigger.setAttribute('aria-expanded', 'true');
+   dropdown.classList.add('is-open');
+  }
+ });
+ dropdown.querySelectorAll('.event-filter-option').forEach((option) => {
+  option.addEventListener('click', () => {
+   select.value = option.dataset.value;
+   label.textContent = option.textContent.trim();
+   dropdown.querySelectorAll('.event-filter-option').forEach((item) => {
+    item.setAttribute('aria-selected', item === option ? 'true' : 'false');
+   });
+   select.dispatchEvent(new Event('change', {bubbles: true}));
+   closeMenu();
+   trigger.focus();
+  });
+ });
+});
+document.addEventListener('click', (event) => {
+ document.querySelectorAll('[data-event-dropdown]').forEach((dropdown) => {
+  if (!dropdown.contains(event.target)) {
+   dropdown.querySelector('.event-filter-menu').hidden = true;
+   dropdown.querySelector('.event-filter-trigger').setAttribute('aria-expanded', 'false');
+   dropdown.classList.remove('is-open');
+  }
+ });
+});
+document.addEventListener('keydown', (event) => {
+ if (event.key !== 'Escape') return;
+ document.querySelectorAll('[data-event-dropdown].is-open').forEach((dropdown) => {
+  dropdown.querySelector('.event-filter-menu').hidden = true;
+  dropdown.querySelector('.event-filter-trigger').setAttribute('aria-expanded', 'false');
+  dropdown.classList.remove('is-open');
+  dropdown.querySelector('.event-filter-trigger').focus();
+ });
+});
 </script>
 {% endblock %}

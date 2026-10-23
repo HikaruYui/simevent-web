@@ -3,28 +3,27 @@
 {% block peserta %}
 <style>
 .certificate-picker { position:relative; }
-.certificate-picker-menu { position:absolute; top:calc(100% + 8px); left:0; z-index:50; width:max-content; min-width:100%; overflow:hidden; border:1px solid #D7BD88; border-radius:12px; background:#fffdf7; box-shadow:0 12px 24px rgba(63,66,46,.18); }
-.certificate-picker-option { display:block; width:100%; padding:9px 12px; color:#1b3a5c; text-align:left; white-space:nowrap; }
-.certificate-picker-option[aria-selected="true"] { background:#3F422E; color:#D7BD88; box-shadow:inset 3px 0 #D7BD88; font-weight:700; }
-.certificate-picker-option:hover:not([aria-selected="true"]), .certificate-picker-option:focus-visible { background:#D7BD88; color:#3F422E; outline:none; }
+.certificate-picker-menu { position:absolute; top:calc(100% + 2px); left:0; z-index:100; width:max-content; min-width:100%; overflow:hidden; border:1px solid #D7BD88; border-radius:12px; background:#fffdf7; box-shadow:0 12px 24px rgba(63,66,46,.18); }
+.certificate-picker-option { display:block; width:100%; cursor:pointer; padding:9px 12px; color:#1b3a5c; text-align:left; white-space:nowrap; }
+.certificate-picker-option[aria-selected="true"] { background:#F7E8C5; color:#3F422E; font-weight:700; }
+.certificate-picker-option:hover, .certificate-picker-option:focus-visible { background:#3F422E; color:#D7BD88; outline:none; }
 .certificate-picker-trigger:focus-visible { border-radius:6px; outline:2px solid #D7BD88; outline-offset:2px; }
 </style>
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <header class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
   <div class="relative z-10 max-w-2xl">
-   <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
-   <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Sertifikat Saya</h1>
+   <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Sertifikat Saya</h1>
    <p class="mt-2">Koleksi sertifikat dari event yang telah Anda ikuti.</p>
   </div>
   {% include 'peserta/_pesut_hero_art.html' %}
  </header>
- <div class="participant-card grid gap-3 rounded-2xl p-3 sm:grid-cols-[minmax(220px,1fr)_190px_190px] sm:p-4">
-  <label class="flex items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-stone-400"></i><input id="certificateSearch" type="search" class="w-full bg-transparent outline-none" placeholder="Cari nama event..."></label>
+ <div class="participant-card grid gap-3 rounded-2xl p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-[minmax(220px,1fr)_230px_190px]">
+  <label class="flex items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3 sm:col-span-2 lg:col-span-1"><i class="fa-solid fa-magnifying-glass text-stone-400"></i><input id="certificateSearch" type="search" class="w-full bg-transparent outline-none" placeholder="Cari nama event..."></label>
   <div id="certificateStatusPicker" class="certificate-picker relative flex min-w-0 items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3">
    <i class="fa-solid fa-filter text-brand-orangeDeep" aria-hidden="true"></i>
    <select id="certificateStatus" class="sr-only" tabindex="-1" aria-hidden="true"><option value="">Semua Status</option><option value="ready">Sertifikat Diterbitkan</option><option value="waiting">Belum Tersedia</option></select>
-   <button id="certificateStatusTrigger" type="button" class="certificate-picker-trigger flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm text-brand-ink" aria-haspopup="listbox" aria-expanded="false" aria-controls="certificateStatusMenu">
-    <span id="certificateStatusLabel">Semua Status</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+   <button id="certificateStatusTrigger" type="button" class="certificate-picker-trigger flex min-w-0 flex-1 items-center justify-between gap-2 whitespace-nowrap text-left text-sm text-brand-ink" aria-haspopup="listbox" aria-expanded="false" aria-controls="certificateStatusMenu">
+    <span id="certificateStatusLabel" class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">Semua Status</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
    </button>
    <div id="certificateStatusMenu" class="certificate-picker-menu hidden" role="listbox" aria-label="Filter status sertifikat">
     <button type="button" class="certificate-picker-option" role="option" data-option-value="" aria-selected="true">Semua Status</button>
@@ -34,13 +33,13 @@
   </div>
   <div id="certificateSortPicker" class="certificate-picker relative flex min-w-0 items-center gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-3">
    <i class="fa-solid fa-arrow-down-wide-short text-brand-orangeDeep" aria-hidden="true"></i>
-   <select id="certificateSort" class="sr-only" tabindex="-1" aria-hidden="true"><option value="newest">Urutkan: Terbaru</option><option value="oldest">Urutkan: Terlama</option></select>
-   <button id="certificateSortTrigger" type="button" class="certificate-picker-trigger flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm text-brand-ink" aria-haspopup="listbox" aria-expanded="false" aria-controls="certificateSortMenu">
-    <span id="certificateSortLabel">Urutkan: Terbaru</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+   <select id="certificateSort" class="sr-only" tabindex="-1" aria-hidden="true"><option value="newest">Terbaru</option><option value="oldest">Terlama</option></select>
+   <button id="certificateSortTrigger" type="button" class="certificate-picker-trigger flex min-w-0 flex-1 items-center justify-between gap-2 whitespace-nowrap text-left text-sm text-brand-ink" aria-haspopup="listbox" aria-expanded="false" aria-controls="certificateSortMenu">
+    <span id="certificateSortLabel" class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">Urutkan</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
    </button>
    <div id="certificateSortMenu" class="certificate-picker-menu hidden" role="listbox" aria-label="Urutkan sertifikat">
-    <button type="button" class="certificate-picker-option" role="option" data-option-value="newest" aria-selected="true">Urutkan: Terbaru</button>
-    <button type="button" class="certificate-picker-option" role="option" data-option-value="oldest" aria-selected="false">Urutkan: Terlama</button>
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="newest" aria-selected="false">Terbaru</button>
+    <button type="button" class="certificate-picker-option" role="option" data-option-value="oldest" aria-selected="false">Terlama</button>
    </div>
   </div>
  </div>
@@ -91,14 +90,19 @@ function setupCertificatePicker(selectId, pickerId, triggerId, menuId, labelId) 
  function closeMenu() {
   menu.classList.add('hidden');
   trigger.setAttribute('aria-expanded', 'false');
+  picker.style.zIndex = '';
  }
- trigger.addEventListener('click', () => {
+ trigger.addEventListener('click', (event) => {
+  event.stopPropagation();
   const isOpen = trigger.getAttribute('aria-expanded') === 'true';
   menu.classList.toggle('hidden', isOpen);
   trigger.setAttribute('aria-expanded', String(!isOpen));
+  picker.style.zIndex = isOpen ? '' : '101';
  });
  options.forEach((option) => {
-  option.addEventListener('click', () => {
+  option.addEventListener('click', (event) => {
+   event.preventDefault();
+   event.stopPropagation();
    select.value = option.dataset.optionValue;
    label.textContent = option.textContent.trim();
    options.forEach((item) => item.setAttribute('aria-selected', String(item === option)));

@@ -1,5 +1,7 @@
 # Fungsi file: Form input dan validasi field yang boleh dikirim pengguna untuk akun, autentikasi, dan hak akses.
 
+import re
+
 from django import forms
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -48,6 +50,7 @@ class ProfileForm(forms.ModelForm):
             "first_name",
             "last_name",
             "ktp_number",
+            "ktp_document",
             "gender",
             "birth_place",
             "birth_date",
@@ -56,9 +59,10 @@ class ProfileForm(forms.ModelForm):
         )
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}),
-            "address": forms.Textarea(attrs={"rows": 3}),
-            "ktp_number": forms.TextInput(attrs={"inputmode": "numeric", "maxlength": "16"}),
-            "phone_number": forms.TelInput(attrs={"inputmode": "tel"}),
+            "address": forms.Textarea(attrs={"rows": 1}),
+            "ktp_number": forms.TextInput(attrs={"inputmode": "numeric", "pattern": "[0-9]{16}", "maxlength": "16", "autocomplete": "off"}),
+            "ktp_document": forms.FileInput(attrs={"accept": "application/pdf,.pdf"}),
+            "phone_number": forms.TelInput(attrs={"inputmode": "numeric", "pattern": "08[0-9]{8,11}", "maxlength": "13", "autocomplete": "tel"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -68,6 +72,7 @@ class ProfileForm(forms.ModelForm):
         for field in self.fields.values():
             field.required = True
         self.fields["full_name"].required = False
+        self.fields["ktp_document"].required = False
         self.fields["first_name"].required = False
         self.fields["last_name"].required = False
         self.fields["first_name"].widget = forms.HiddenInput()
@@ -87,7 +92,7 @@ class ProfileForm(forms.ModelForm):
                 self.add_error("first_name", "Masukkan nama lengkap.")
 
         for field in self.Meta.fields:
-            if field in ("first_name", "last_name"):
+            if field in ("first_name", "last_name", "ktp_document"):
                 continue
             value = cleaned_data.get(field)
             if isinstance(value, str):
@@ -96,6 +101,26 @@ class ProfileForm(forms.ModelForm):
             if not value and field not in self.errors:
                 self.add_error(field, "Lengkapi biodata ini.")
         return cleaned_data
+
+    def clean_ktp_document(self):
+        document = self.cleaned_data.get("ktp_document")
+        if not document or getattr(document, "_committed", False):
+            return document
+        if document.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("Ukuran PDF KTP maksimal 5 MB.")
+        if not document.name.lower().endswith(".pdf"):
+            raise forms.ValidationError("Dokumen KTP harus berformat PDF.")
+        signature = document.read(5)
+        document.seek(0)
+        if signature != b"%PDF-":
+            raise forms.ValidationError("File yang diunggah bukan PDF yang valid.")
+        return document
+
+    def clean_phone_number(self):
+        phone = (self.cleaned_data.get("phone_number") or "").strip()
+        if phone and not re.fullmatch(r"08\d{8,11}", phone):
+            raise forms.ValidationError("Nomor HP harus diawali 08 dan terdiri dari 10 sampai 13 digit angka.")
+        return phone
 
 
 class EmailAuthenticationForm(AuthenticationForm):

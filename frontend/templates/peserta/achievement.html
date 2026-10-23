@@ -8,15 +8,10 @@
   isolation: isolate;
   overflow: hidden;
   border: 1px solid rgba(191,149,76,.16);
-  background:
-    radial-gradient(circle at 8% 22%, rgba(218,176,96,.13) 0 2px, transparent 3px),
-    radial-gradient(circle at 15% 28%, rgba(255,255,255,.72) 0 1.5px, transparent 2.5px),
-    radial-gradient(circle at 88% 18%, rgba(218,176,96,.1), transparent 26%),
-    repeating-linear-gradient(135deg, rgba(168,129,66,.018) 0 1px, transparent 1px 17px),
-    linear-gradient(135deg, #fffaf0, #fff8e9 58%, #fffaf1);
+  background:#fff;
 }
 #achievementProgress::before,
-#achievementProgress::after { position:absolute; z-index:-1; content:""; pointer-events:none; }
+#achievementProgress::after { display:none; content:none; }
 #achievementProgress::before {
   top: 34px; right: -118px; width: 310px; height: 310px;
   border: 1px solid rgba(189,145,72,.1); border-radius: 50%;
@@ -70,8 +65,8 @@
 #achievementProgress .achievement-benefit-panel { min-width:0; }
 #achievementProgress .achievement-progress-panel,
 #achievementProgress .achievement-benefit-panel { position:relative; overflow:hidden; border:1px solid rgba(191,149,76,.12); }
-#achievementProgress .achievement-progress-panel { background:radial-gradient(circle at 96% 6%, rgba(255,255,255,.55), transparent 90px), radial-gradient(circle at 100% 100%, rgba(206,164,90,.13), transparent 160px), rgba(244,231,194,.78); }
-#achievementProgress .achievement-benefit-panel { background:radial-gradient(circle at 100% 0%, rgba(221,184,111,.18), transparent 120px), rgba(255,255,255,.8); }
+#achievementProgress .achievement-progress-panel,
+#achievementProgress .achievement-benefit-panel { background:#fff; }
 @keyframes platinum-glint { 0%,100% { opacity:.45; transform:scale(.78) rotate(0deg); } 48% { opacity:1; transform:scale(1.16) rotate(18deg); } }
 @media (prefers-reduced-motion: reduce) {
   #achievementProgress .achievement-medal--platinum::before,
@@ -84,8 +79,7 @@
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <header class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
   <div class="relative z-10 max-w-2xl lg:max-w-[52%] xl:max-w-[56%]">
-   <a href="{% url 'peserta_dashboard' %}" class="text-sm font-semibold text-stone-600 hover:text-brand-orangeDeep"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
-   <h1 class="mt-4 font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Achievement</h1>
+   <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Achievement</h1>
    <p class="mt-2">Selesaikan event pilihan dan raih semua penghargaan!</p>
   </div>
   {% include 'peserta/_pesut_hero_art.html' %}
@@ -128,7 +122,7 @@
       <i class="achievement-medal-icon fa-solid {% if level_count >= level.required %}fa-star{% else %}fa-lock{% endif %}"></i>
      </div>
      <p class="mt-1 font-extrabold"><span class="achievement-level-label achievement-level--{% if level.name == 'Perak' %}silver{% elif level.name == 'Emas' %}gold{% elif level.name == 'Platinum' %}platinum{% else %}legend{% endif %}">{{ level.name }}</span></p>
-     <p class="text-xs text-stone-500">{{ level.required }} event</p>
+     <p class="mt-1 text-xs text-stone-500">{{ level.required }} event</p>
      <p class="mt-1 text-[11px] font-bold {% if level_count >= level.required %}text-emerald-700{% else %}text-stone-500{% endif %}">{% if level_count >= level.required %}Tercapai{% else %}Perlu {{ level.required }} event{% endif %}</p>
     </div>
     {% endfor %}
@@ -164,10 +158,10 @@
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
     <h2 class="font-display text-2xl font-extrabold text-brand-ink">Daftar Achievement</h2>
     <div class="flex flex-wrap items-center gap-2">
-     <div class="flex rounded-full bg-amber-100/80 p-1" role="group" aria-label="Filter achievement">
-      <button type="button" class="achievement-filter rounded-full bg-amber-700 px-3 py-2 text-xs font-bold text-white sm:text-sm" data-filter="all" aria-pressed="true">Semua</button>
-      <button type="button" class="achievement-filter rounded-full px-3 py-2 text-xs font-bold text-brand-orangeDeep sm:text-sm" data-filter="pending" aria-pressed="false">Belum Selesai</button>
-      <button type="button" class="achievement-filter rounded-full px-3 py-2 text-xs font-bold text-brand-orangeDeep sm:text-sm" data-filter="done" aria-pressed="false">Selesai</button>
+     <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter achievement">
+      <button type="button" class="achievement-filter rounded-full border border-[#D7BD88] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="all" aria-pressed="true">Semua</button>
+      <button type="button" class="achievement-filter rounded-full border border-[#D7BD88] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="pending" aria-pressed="false">Belum Selesai</button>
+      <button type="button" class="achievement-filter rounded-full border border-[#D7BD88] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="done" aria-pressed="false">Selesai</button>
      </div>
      <div class="rounded-full bg-amber-100 px-4 py-2 text-sm font-bold">{{ completed_count }}/{{ levels|length }} level tercapai</div>
     </div>
@@ -194,25 +188,27 @@
   </section>
   <aside class="space-y-4">
    <section class="participant-card rounded-2xl p-5">
-    <h2 class="font-display text-lg font-extrabold">Total Achievement</h2>
-    <div class="mt-4 flex items-center justify-center gap-5">
+    <h2 class="font-display text-center text-lg font-extrabold">Total Achievement</h2>
+    <div class="mt-4 grid justify-items-center">
      <div class="achievement-donut grid h-32 w-32 shrink-0 place-items-center rounded-full text-center" style="--achievement-progress: {{ completed_percentage }}%"><span class="grid h-20 w-20 place-items-center rounded-full bg-[#fff9f2] font-display text-2xl font-extrabold">{{ completed_count }}/{{ levels|length }}<small class="block text-xs font-semibold">level</small></span></div>
-     <div><p class="font-display text-3xl font-extrabold">{{ completed_percentage }}%</p><p class="text-sm text-stone-600">level tercapai</p><p class="mt-2 text-xs text-stone-500">{{ level_count }} event terdaftar</p></div>
+     <p class="mt-3 text-center text-xs text-stone-500">{{ level_count }} event terdaftar</p>
     </div>
    </section>
    <section class="participant-card rounded-2xl p-5">
-    <h2 class="font-display text-lg font-extrabold"><i class="fa-solid fa-gift mr-2 text-brand-orangeDeep"></i>Reward Saya</h2>
-    <p class="mt-2 text-sm text-stone-600">Badge akan mengikuti level yang sudah Anda capai.</p>
+    <h2 class="text-center font-display text-lg font-extrabold"><i class="fa-solid fa-gift mr-2 text-brand-orangeDeep"></i>Reward Saya</h2>
+    <div class="mt-3 flex items-baseline justify-center gap-2"><span class="font-display text-3xl font-extrabold">{{ completed_percentage }}%</span><span class="text-sm text-stone-600">level tercapai</span></div>
+    <p class="mt-2 text-center text-sm text-stone-600">Badge akan mengikuti level yang sudah Anda capai.</p>
     {% for level in levels %}{% if level.completed %}
     <div class="mt-3 flex items-center gap-3 rounded-xl bg-amber-50 p-3"><i class="fa-solid fa-medal text-xl text-amber-600"></i><span class="text-sm font-bold">Badge {{ level.name }}</span><i class="fa-solid fa-check ml-auto text-emerald-600"></i></div>
     {% endif %}{% endfor %}
-    <a href="{% url 'peserta_dashboard' %}" class="participant-outline mt-4 block rounded-lg px-3 py-3 text-center text-sm font-bold"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali ke Dashboard</a>
    </section>
   </aside>
  </div>
 </div>
 <style>
 .achievement-donut { background: conic-gradient(#a96b18 var(--achievement-progress), #eadfc9 var(--achievement-progress)); }
+.achievement-filter:hover { background:#f7e8c5; }
+.achievement-filter[aria-pressed="true"] { border-color:#3F422E; background:#3F422E; color:#fff; }
 </style>
 <script>
 const achievementFilters = [...document.querySelectorAll('.achievement-filter')];
@@ -230,9 +226,6 @@ achievementFilters.forEach((button) => button.addEventListener('click', () => {
  achievementFilters.forEach((item) => {
   const active = item === button;
   item.setAttribute('aria-pressed', String(active));
-  item.classList.toggle('bg-amber-700', active);
-  item.classList.toggle('text-white', active);
-  item.classList.toggle('text-brand-orangeDeep', !active);
  });
 }));
 </script>

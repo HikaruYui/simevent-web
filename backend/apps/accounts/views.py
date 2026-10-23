@@ -101,7 +101,7 @@ def profile(request):
     user = request.user
 
     if request.method == "POST":
-        form = ProfileForm(request.POST, instance=user)
+        form = ProfileForm(request.POST, request.FILES, instance=user)
         if not form.is_valid():
             return JsonResponse(
                 {"errors": form.errors.get_json_data()},
