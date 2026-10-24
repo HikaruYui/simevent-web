@@ -1,5 +1,3 @@
-# Halaman MVT publik, autentikasi halaman, dan dashboard pengelolaan event.
-
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -21,11 +19,6 @@ from apps.registrations.models import (
     Registration,
     RegistrationStatus,
 )
-
-
-# =========================================================
-# HALAMAN PUBLIK
-# =========================================================
 
 @never_cache
 @require_GET
@@ -219,16 +212,11 @@ def detail_event(request, slug):
         },
     )
 
-
-# =========================================================
-# AUTENTIKASI
-# =========================================================
-
 def _participant_redirect(request):
     if request.user.role == "ORGANIZER":
         return redirect("eo_dashboard")
     if request.user.role == "ADMIN":
-        return redirect("panitia_dashboard")
+        return redirect("admin_dashboard") 
     if not request.user.profile_complete:
         return redirect("peserta_akun")
     return None
@@ -256,20 +244,15 @@ def logout_page(request):
         "landing"
     )
 
-
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
 def after_login(request):
     if request.user.role == "ORGANIZER":
-        return redirect(
-            "eo_dashboard"
-        )
+        return redirect("eo_dashboard")
 
     if request.user.role == "ADMIN":
-        return redirect(
-            "panitia_dashboard"
-        )
+        return redirect("admin_dashboard")
 
     return redirect("peserta_dashboard" if request.user.profile_complete else "peserta_akun")
 
@@ -311,10 +294,6 @@ def peserta_akun(request):
         "profile_progress": round(completed_profile_fields * 100 / len(profile_values)),
     })
 
-
-# =========================================================
-# DASHBOARD PESERTA
-# =========================================================
 
 @never_cache
 @require_GET
@@ -603,11 +582,6 @@ def peserta_achievement(request):
         "track_segment": min(3, max(0, len(completed_levels) - 1)),
     })
 
-
-# =========================================================
-# DASHBOARD PANITIA / ADMIN
-# =========================================================
-
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
@@ -698,11 +672,6 @@ def panitia_dashboard(request):
             ),
         },
     )
-
-
-# =========================================================
-# DASHBOARD KETUA PANITIA (data contoh, belum dari database)
-# =========================================================
 
 def _ketua_panitia(template):
     @never_cache
