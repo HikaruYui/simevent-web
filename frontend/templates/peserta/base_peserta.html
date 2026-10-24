@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <script>
-tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#8B510D',goldLight:'#F3D9A6',olive:'#3F422E',ink:'#17365D',muted:'#70664F'}}}}}
+tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#8B510D',goldLight:'#F3D9A6',olive:'#3F422E',ink:'#3F422E',muted:'#70664F'}}}}}
 </script>
 <style>
 :root {
@@ -24,7 +24,7 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],displa
   --participant-accent: #c88d3a;
   --participant-accent-deep: #8b510d;
   --participant-olive: #3d422d;
-  --participant-ink: #1b3a5c;
+  --participant-ink: #3f422e;
   --participant-muted: #6e6258;
 }
 html { font-size: 16px; }
@@ -205,7 +205,7 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
 .participant-sidebar nav { width: 100%; min-width: 0; }
 .participant-sidebar nav a:not(.participant-button) {
   border: 1px solid transparent;
-  color: #17365d;
+  color: #3F422E;
 }
 .participant-sidebar nav a:not(.participant-button):hover {
   background: rgba(255,250,239,.28);
@@ -289,6 +289,13 @@ html, body, .participant-page .page, .participant-page .page > main {
 }
 #participantDashboard .dashboard-stat-card::after {
   content: none !important;
+}
+.participant-page .text-brand-ink,
+.participant-page .text-slate-700 {
+  color:#3F422E !important;
+}
+.participant-page .text-slate-600 {
+  color:#63684f !important;
 }
 </style>
 {% endblock %}

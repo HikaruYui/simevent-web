@@ -4,11 +4,12 @@
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <style>
   .event-filter-dropdown { position: relative; min-width: 0; }
-  .event-filter-trigger { display: flex; min-height: 50px; width: 100%; align-items: center; gap: 10px; border: 1px solid #D7BD88; border-radius: 12px; background: #fff; padding: 0 12px; color: #3F422E; text-align: left; font-size: .875rem; line-height: 1.25rem; }
-  .event-filter-trigger > span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .event-filter-trigger { display: flex; min-height: 50px; width: 100%; align-items: center; gap: 10px; border: 1px solid #3F422E; border-radius: 12px; background: #fff; padding: 0 12px; color: #3F422E; text-align: left; font-size: .875rem; line-height: 1.25rem; }
+  .event-filter-trigger > span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #3F422E; }
+  .event-filter-trigger > i { color: #3F422E; }
   .event-filter-trigger:focus-visible { outline: 2px solid #3F422E; outline-offset: 2px; }
   .event-filter-dropdown.is-open .event-filter-trigger { border-bottom-right-radius: 0; border-bottom-left-radius: 0; }
-  .event-filter-menu { position: absolute; top: calc(100% - 1px); right: 0; left: 0; z-index: 70; max-height: 240px; overflow-y: auto; border: 1px solid #D7BD88; border-top: 0; border-radius: 0 0 12px 12px; background: #fff; padding: 4px; box-shadow: 0 12px 22px rgba(63,66,46,.16); }
+  .event-filter-menu { position: absolute; top: calc(100% - 1px); right: 0; left: 0; z-index: 70; max-height: 240px; overflow-y: auto; border: 1px solid #3F422E; border-top: 0; border-radius: 0 0 12px 12px; background: #fff; padding: 4px; box-shadow: 0 12px 22px rgba(63,66,46,.16); }
   .event-filter-menu[hidden] { display: none; }
   .event-filter-option { display: block; width: 100%; border: 0; border-radius: 7px; background: transparent; padding: 9px 10px; color: #3F422E; text-align: left; }
   .event-filter-option:hover, .event-filter-option:focus-visible { background: #3F422E; color: #D7BD88; outline: none; }
@@ -26,7 +27,7 @@
  </style>
  <header class="participant-page-intro participant-hero event-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7"><div class="relative z-10 max-w-[72%] sm:max-w-[62%]"><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div>{% include 'peserta/_pesut_hero_art.html' %}</header>
  <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(250px,1fr)_repeat(2,minmax(160px,190px))]">
-  <label class="flex min-h-[50px] items-center gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-brand-orangeDeep"></i><input id="eventSearch" type="search" class="w-full bg-transparent text-sm outline-none" placeholder="Cari event berdasarkan nama, kategori, atau penyelenggara..."></label>
+  <label class="flex min-h-[50px] items-center gap-3 rounded-xl border border-[#3F422E] bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-[#3F422E]"></i><input id="eventSearch" type="search" class="w-full bg-transparent text-sm outline-none" placeholder="Cari event berdasarkan nama, kategori, atau penyelenggara..."></label>
   <div class="event-filter-dropdown" data-event-dropdown>
    <select id="eventCategory" hidden><option value="">Semua Kategori</option>{% for category in categories %}<option value="{{ category|lower }}">{{ category }}</option>{% endfor %}</select>
    <button type="button" class="event-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="eventCategoryMenu"><i class="fa-solid fa-tag" aria-hidden="true"></i><span>Semua Kategori</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></button>
@@ -74,7 +75,7 @@
    </div>
    <div class="flex flex-col gap-3 md:items-stretch">
     <div class="flex items-center justify-between gap-2 md:justify-end">
-     <span class="w-fit rounded-full px-3 py-1 text-xs font-extrabold {% if event.ui_status == 'Selesai' %}bg-emerald-100 text-emerald-800{% elif event.ui_status == 'Sedang Berlangsung' %}bg-blue-100 text-blue-800{% else %}bg-rose-100 text-rose-700{% endif %}">{{ event.ui_status }}</span>
+     <span class="w-fit rounded-full px-3 py-1 text-xs font-extrabold {% if event.ui_status == 'Selesai' %}bg-emerald-100 text-emerald-800{% elif event.ui_status == 'Sedang Berlangsung' %}bg-[#e8eadc] text-[#3F422E]{% else %}bg-rose-100 text-rose-700{% endif %}">{{ event.ui_status }}</span>
      <a href="{% url 'detail_event' event.slug %}" aria-label="Lihat detail {{ event.title }}" title="Lihat detail event" class="hidden text-brand-orangeDeep md:inline"><i class="fa-solid fa-ellipsis-vertical"></i></a>
     </div>
     <div class="grid grid-cols-2 gap-2">
