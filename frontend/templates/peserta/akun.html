@@ -211,9 +211,6 @@
   <section class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
     <div class="relative z-10 max-w-[72%] sm:max-w-[62%]">
       <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">{% if profile_complete %}Akun Saya{% else %}Lengkapi Biodata{% endif %}</h1>
-      <p class="mt-2 break-words text-sm font-semibold text-brand-ink">
-        Akun aktif: <span>{{ request.user.email }}</span>
-      </p>
       <p class="mt-2 text-sm leading-relaxed text-stone-700 sm:text-base">Isi data diri dengan benar agar pendaftaran event, tiket, dan sertifikat tercatat atas nama Anda.</p>
     </div>
     {% include 'peserta/_pesut_hero_art.html' %}
