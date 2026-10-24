@@ -282,7 +282,7 @@ def peserta_akun(request):
         return redirect("panitia_dashboard")
 
     if request.method == "POST":
-        form = ProfileForm(request.POST, instance=request.user)
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Biodata berhasil disimpan. Akun Anda siap digunakan.")
@@ -292,7 +292,6 @@ def peserta_akun(request):
 
     profile_values = (
         request.user.first_name,
-        request.user.email,
         request.user.ktp_number,
         request.user.gender,
         request.user.birth_place,

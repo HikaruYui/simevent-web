@@ -1,6 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import models
 from django.db.models.functions import Lower
 
@@ -78,6 +78,12 @@ class User(AbstractUser):
         blank=True,
         validators=[RegexValidator(r"^\d{16}$", "Nomor KTP harus terdiri dari 16 digit.")],
     )
+    ktp_document = models.FileField(
+        "Dokumen KTP (PDF)",
+        upload_to="private/ktp_documents/",
+        blank=True,
+        validators=[FileExtensionValidator(["pdf"])],
+    )
     gender = models.CharField(
         "Jenis kelamin",
         max_length=1,
@@ -85,7 +91,6 @@ class User(AbstractUser):
         choices=(
             ("L", "Laki-laki"),
             ("P", "Perempuan"),
-            ("O", "Lainnya"),
         ),
     )
     birth_place = models.CharField("Tempat lahir", max_length=100, blank=True)

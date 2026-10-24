@@ -177,11 +177,11 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   box-shadow: 0 10px 20px rgba(142,100,47,.09);
 }
 .participant-button {
-  background: linear-gradient(180deg, #d7b36f, #c69b50);
+  background: #d9b777;
   color: #fff;
-  box-shadow: 0 5px 12px rgba(164,117,45,.16), inset 0 1px 0 rgba(255,255,255,0.55);
+  box-shadow: 0 5px 12px rgba(164,117,45,.12);
 }
-.participant-button:hover { background: linear-gradient(180deg, #d0a75d, #b98532); }
+.participant-button:hover { background: #d0ad68; }
 .participant-outline {
   border: 1px solid rgba(156, 111, 45, 0.54);
   color: #8b510d;
@@ -211,15 +211,17 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   background: rgba(255,250,239,.28);
 }
 .participant-sidebar nav a.participant-button {
-  border: 1px solid rgba(255,255,255,.42);
-  box-shadow: 0 8px 18px rgba(125,77,15,.2), inset 0 1px 0 rgba(255,255,255,.42);
+  border: 1px solid #e6d2a9;
+  background:#f3e2b4;
+  color:#3F422E;
+  box-shadow:none;
 }
 .participant-sidebar nav a i {
   width: 1.4rem;
   text-align: center;
   color: #8b510d;
 }
-.participant-sidebar nav a.participant-button i { color: #fff; }
+.participant-sidebar nav a.participant-button i { color: #3F422E; }
 @media (min-width: 768px) {
   .participant-sidebar {
     position: fixed !important;
@@ -251,6 +253,42 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   .participant-sidebar nav { gap: 8px!important; overflow: visible!important; }
   .participant-sidebar nav a { min-height: 64px; font-size: 1.125rem; }
   .participant-sidebar-panel > div:last-child { margin-top: auto !important; flex: 0 0 auto !important; padding: 14px 4px 0 !important; }
+}
+/* Halaman peserta memakai latar cokelat polos dan panel putih. */
+html, body, .participant-page .page, .participant-page .page > main {
+  background: #f3e2b4 !important;
+  background-image: none !important;
+}
+.participant-shell {
+  background: #f3e2b4 !important;
+  background-image: none !important;
+}
+.participant-main::before {
+  content: none !important;
+  background: none !important;
+}
+.participant-page .participant-sidebar-panel::after {
+  content:none !important;
+  background:none !important;
+  box-shadow:none !important;
+}
+.participant-page .participant-sidebar-panel,
+.participant-page .participant-card,
+.participant-page .participant-page-intro,
+.participant-page .participant-hero,
+#participantDashboard .my-event-card,
+#participantDashboard .dashboard-summary-heading,
+#participantDashboard .dashboard-events-card thead,
+#participantAccount .account-card,
+#participantAccount .account-section-title,
+#achievementProgress .achievement-progress-panel,
+#achievementProgress .achievement-benefit-panel,
+#achievementModal > section {
+  background: #fff !important;
+  background-image: none !important;
+}
+#participantDashboard .dashboard-stat-card::after {
+  content: none !important;
 }
 </style>
 {% endblock %}
