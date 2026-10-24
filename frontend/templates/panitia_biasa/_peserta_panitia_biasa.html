@@ -1,47 +1,71 @@
 <style>
+  .event-head { margin-bottom: 18px; }
+  .event-head h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--olive);
+  }
+  .event-head p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
   .table-toolbar {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--line);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 14px;
+    gap: 12px;
     flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .filter-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1.5px solid var(--olive);
+    background: transparent;
+    color: var(--olive);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .filter-pill .count { opacity: .6; font-weight: 700; }
+  .filter-pill:hover { background: var(--cream-soft); }
+  .filter-pill.is-active {
+    background: var(--olive);
+    color: var(--cream);
+    border-color: var(--olive);
   }
   .search-peserta {
+    flex: 1;
+    min-width: 240px;
     display: flex;
     align-items: center;
     gap: 10px;
     background: #fff;
-    border: 1.5px solid var(--line);
-    border-radius: 12px;
-    padding: 0 14px;
-    height: 42px;
-    min-width: 260px;
+    border: 0;
+    border-radius: 999px;
+    padding: 0 22px;
+    height: 50px;
   }
   .search-peserta input {
     border: 0;
     outline: 0;
     width: 100%;
+    background: transparent;
     font: inherit;
     font-size: 14px;
     color: var(--olive);
   }
-  .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-  .filter-pill {
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    background: var(--cream-soft);
-    color: var(--muted);
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .filter-pill.is-active {
-    background: var(--olive);
-    color: var(--cream);
-    border-color: var(--olive);
+  .table-card {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #fff;
   }
 
   .peserta-table {
@@ -50,20 +74,28 @@
     text-align: left;
   }
   .peserta-table th {
-    background: var(--cream-soft);
-    padding: 14px 22px;
-    font-size: 12px;
+    background: var(--olive);
+    padding: 18px 22px;
+    font-size: 14px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--brown);
-    border-bottom: 1px solid var(--line);
+    letter-spacing: 0.03em;
+    color: var(--cream);
+    text-align: center;
+    border: 0;
   }
+  .peserta-table th:nth-child(2),
+  .peserta-table td:nth-child(2) { text-align: left; }
   .peserta-table td {
-    padding: 15px 22px;
+    padding: 18px 22px;
     border-bottom: 1px solid var(--line);
-    font-size: 14px;
+    font-size: 15px;
+    color: var(--olive);
+    text-align: center;
+    background: #fff;
   }
+  .peserta-table td:nth-child(2) { font-weight: 700; }
+  .peserta-table tbody tr:hover td { background: var(--cream-soft); }
   .badge-hadir {
     display: inline-flex;
     align-items: center;
@@ -75,6 +107,31 @@
     background: var(--green-bg);
     color: var(--green);
   }
+  /* Kolom Aksi disembunyikan; tombol aslinya tetap ada di DOM dan dipicu dari tombol di samping status */
+  .peserta-table td:last-child { display: none; }
+  .status-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn-batal-hadir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1.5px solid #E3B4AD;
+    background: transparent;
+    color: #C0392B;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-batal-hadir:hover { background: #FDECEA; border-color: #C0392B; }
   .badge-belum {
     display: inline-flex;
     align-items: center;
@@ -88,40 +145,105 @@
   }
 </style>
 
-<div class="panel-card">
-  <div class="table-toolbar">
-    <div>
-      <h3 style="margin:0; font-size:18px; font-weight:800;">Daftar Nama Peserta Event</h3>
-      <p style="margin:2px 0 0; font-size:13px; color:var(--muted);">Pantau status kehadiran atau lakukan absen langsung dari daftar.</p>
-    </div>
+<div class="event-head">
+  <h3>Daftar Nama Peserta Event</h3>
+  <p>Pantau status kehadiran atau batalkan kehadiran.</p>
+</div>
 
-    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-      <div class="search-peserta">
-        <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
-        <input type="search" id="searchParticipantInput" placeholder="Cari nama atau kode tiket..." oninput="renderParticipantTable()">
-      </div>
-
-      <div class="filter-pills">
-        <button type="button" class="filter-pill is-active" data-filter="all" onclick="setParticipantFilter('all', this)">Semua</button>
-        <button type="button" class="filter-pill" data-filter="present" onclick="setParticipantFilter('present', this)">Sudah Hadir</button>
-        <button type="button" class="filter-pill" data-filter="absent" onclick="setParticipantFilter('absent', this)">Belum Hadir</button>
-      </div>
-    </div>
+<div class="table-toolbar">
+  <div class="filter-pills">
+    <button type="button" class="filter-pill is-active" data-filter="all" onclick="setParticipantFilter('all', this)">Semua <span class="count" id="countAll"></span></button>
+    <button type="button" class="filter-pill" data-filter="present" onclick="setParticipantFilter('present', this)">Sudah Presensi <span class="count" id="countPresent"></span></button>
+    <button type="button" class="filter-pill" data-filter="absent" onclick="setParticipantFilter('absent', this)">Belum Presensi <span class="count" id="countAbsent"></span></button>
   </div>
 
+  <div class="search-peserta">
+    <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+    <input type="search" id="searchParticipantInput" placeholder="Cari nama atau kode tiket..." oninput="renderParticipantTable()">
+  </div>
+</div>
+
+<div class="panel-card table-card">
   <div style="overflow-x:auto;">
     <table class="peserta-table">
       <thead>
         <tr>
           <th>Kode Tiket</th>
           <th>Nama Peserta</th>
-          <th>Email / Instansi</th>
+          <th>Email</th>
           <th>Waktu Hadir</th>
           <th>Status</th>
-          <th>Aksi</th>
         </tr>
       </thead>
       <tbody id="participantTableBody"></tbody>
     </table>
   </div>
 </div>
+
+<script>
+(function () {
+  // Cari tombol "batalkan absen" asli di sel Aksi (yang disembunyikan) pada baris tersebut
+  function findCancelButton(row) {
+    var cells = row.querySelectorAll('td');
+    var actionCell = cells[cells.length - 1];
+    if (!actionCell) return null;
+    var buttons = actionCell.querySelectorAll('button, a, [onclick]');
+    for (var i = 0; i < buttons.length; i++) {
+      var b = buttons[i];
+      var txt = ((b.textContent || '') + ' ' + (b.getAttribute('onclick') || '') + ' ' + (b.title || '')).toLowerCase();
+      if (/batal|cancel|undo|hapus|reset/.test(txt)) return b;
+    }
+    return buttons.length ? buttons[buttons.length - 1] : null;
+  }
+
+  // Setelah tabel dirender: baris yang sudah hadir mendapat tombol "Batalkan Hadir" di samping badge
+  function decorateRows() {
+    var rows = document.querySelectorAll('#participantTableBody tr');
+    rows.forEach(function (row) {
+      var badge = row.querySelector('.badge-hadir');
+      if (!badge || row.querySelector('.btn-batal-hadir')) return;
+      var cancelBtn = findCancelButton(row);
+      if (!cancelBtn) return;
+
+      var wrap = document.createElement('span');
+      wrap.className = 'status-wrap';
+      badge.parentNode.insertBefore(wrap, badge);
+      wrap.appendChild(badge);
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-batal-hadir';
+      btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Batalkan Presensi';
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        cancelBtn.click();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  // Ubah teks "Belum Hadir" menjadi "Belum Presensi" pada badge status
+  function renameBelumHadir() {
+    var tb = document.getElementById('participantTableBody');
+    if (!tb) return;
+    var walker = document.createTreeWalker(tb, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) {
+      if (/Belum\s+Hadir/i.test(node.nodeValue)) {
+        node.nodeValue = node.nodeValue.replace(/Belum\s+Hadir/gi, 'Belum Presensi');
+      }
+    }
+  }
+
+  function refreshRows() {
+    decorateRows();
+    renameBelumHadir();
+  }
+
+  var tbody = document.getElementById('participantTableBody');
+  if (tbody) {
+    new MutationObserver(refreshRows).observe(tbody, { childList: true });
+    refreshRows();
+  }
+})();
+</script>
