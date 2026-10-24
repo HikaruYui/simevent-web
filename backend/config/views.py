@@ -439,11 +439,15 @@ def peserta_daftar_event(request):
             else "Sedang Berlangsung" if event.start_datetime <= now
             else "Akan Datang"
         )
+    categories = list(
+        EventType.objects.filter(is_active=True).values_list("name", flat=True)
+    )
+    if not any(category.casefold() == "sosialisasi" for category in categories):
+        categories.append("Sosialisasi")
+    categories.sort(key=str.casefold)
     return render(request, "peserta/daftar_event.html", {
         "events": events,
-        "categories": list(
-            EventType.objects.filter(is_active=True).values_list("name", flat=True)
-        ),
+        "categories": categories,
         "now": now,
     })
 
