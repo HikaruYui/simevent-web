@@ -498,7 +498,7 @@ div:has(> img[src*="logo"]) {
     <div class="relative z-10 flex min-h-[126px] items-center sm:min-h-[148px]">
       <div class="max-w-[72%] sm:max-w-[62%]">
         <p class="text-sm font-semibold text-stone-700 sm:text-base">Halo,</p>
-        <h1 class="mt-1 break-words font-display text-3xl font-extrabold text-[#3F422E] sm:text-4xl">{{ request.user.get_full_name|default:request.user.email }}</h1>
+        <h1 class="mt-1 whitespace-nowrap font-display text-[clamp(1rem,5vw,2.25rem)] font-extrabold text-[#3F422E] sm:text-4xl">{{ request.user.get_full_name|default:request.user.email }}</h1>
         <p class="mt-2 text-sm text-stone-700 sm:text-base">Terus ikuti event menarik dan raih lebih banyak pengalaman!</p>
       </div>
     </div>

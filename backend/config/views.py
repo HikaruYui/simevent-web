@@ -273,14 +273,16 @@ def peserta_akun(request):
     else:
         form = ProfileForm(instance=request.user)
 
+    # Read values from the form so the progress ring also reflects fields
+    # submitted on an invalid POST, before they have been saved to the user.
     profile_values = (
-        request.user.first_name,
-        request.user.ktp_number,
-        request.user.gender,
-        request.user.birth_place,
-        request.user.birth_date,
-        request.user.address,
-        request.user.phone_number,
+        form["full_name"].value(),
+        form["ktp_number"].value(),
+        form["gender"].value(),
+        form["birth_place"].value(),
+        form["birth_date"].value(),
+        form["address"].value(),
+        form["phone_number"].value(),
     )
     completed_profile_fields = sum(
         bool(value.strip() if isinstance(value, str) else value)

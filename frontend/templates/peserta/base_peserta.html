@@ -319,7 +319,7 @@ html, body, .participant-page .page, .participant-page .page > main {
       </nav>
       <div>
         <div class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
-          <img src="{% static 'img/achievement-hero.png' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
+          <img src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}" alt="Foto profil {{ request.user.get_full_name|default:request.user.email }}" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
           <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
         </div>
         <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
