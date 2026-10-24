@@ -187,6 +187,23 @@
     display: block;
     margin-top: 6px;
 }
+#participantAccount .profile-photo-control { min-width:0; }
+#participantAccount .account-field input[type="file"],
+#participantAccount .profile-photo-control input[type="file"] { display:block; width:100%; height:auto; min-height:52px; box-sizing:border-box; margin-top:7px; border:1px solid rgba(167,157,105,.38); border-radius:11px; background:#fff; padding:8px; color:#40563b; font-size:.875rem; }
+#participantAccount .account-field input[type="file"]::file-selector-button,
+#participantAccount .profile-photo-control input[type="file"]::file-selector-button { margin-right:10px; border:0; border-radius:7px; background:#e6edcb; padding:7px 10px; color:#40563b; font-weight:700; cursor:pointer; }
+#participantAccount .profile-crop-modal { position:fixed; z-index:1000; inset:0; display:flex; align-items:center; justify-content:center; overflow-y:auto; padding:20px; background:rgba(31,39,28,.62); }
+#participantAccount .profile-crop-modal[hidden] { display:none; }
+#participantAccount .profile-crop-dialog { width:min(100%,460px); border:1px solid #e6d2a9; border-radius:22px; background:#fff; padding:22px; box-shadow:0 24px 70px rgba(18,25,16,.28); }
+#participantAccount .profile-crop-viewport { position:relative; width:min(100%,340px); aspect-ratio:1; overflow:hidden; margin:18px auto 14px; border-radius:14px; background:#30362e; touch-action:none; }
+#participantAccount .profile-crop-image { position:absolute; max-width:none; max-height:none; user-select:none; pointer-events:none; }
+#participantAccount .profile-crop-guide { position:absolute; inset:5%; border:2px solid rgba(255,255,255,.9); border-radius:50%; box-shadow:0 0 0 999px rgba(28,34,26,.16); pointer-events:none; }
+#participantAccount .profile-crop-zoom { display:block; width:100%; accent-color:#4b5037; }
+#participantAccount .profile-crop-button { min-height:42px; border-radius:10px; padding:9px 15px; font-weight:700; }
+#participantAccount .profile-crop-cancel { border:1px solid #d7bd88; background:#fff; color:#40563b; }
+#participantAccount .profile-crop-save { border:1px solid #4b5037; background:#4b5037; color:#fff; }
+#participantAccount .profile-crop-save:hover { border-color:#555b40; background:#555b40; }
+@media (max-width:639px) { #participantAccount .profile-crop-dialog { padding:18px; } }
 
 </style>
 
@@ -194,9 +211,6 @@
   <section class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
     <div class="relative z-10 max-w-[72%] sm:max-w-[62%]">
       <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">{% if profile_complete %}Akun Saya{% else %}Lengkapi Biodata{% endif %}</h1>
-      <p class="mt-2 break-words text-sm font-semibold text-brand-ink">
-        Akun aktif: <span>{{ request.user.email }}</span>
-      </p>
       <p class="mt-2 text-sm leading-relaxed text-stone-700 sm:text-base">Isi data diri dengan benar agar pendaftaran event, tiket, dan sertifikat tercatat atas nama Anda.</p>
     </div>
     {% include 'peserta/_pesut_hero_art.html' %}
@@ -212,32 +226,48 @@
       {% if form.non_field_errors %}<div class="mx-5 mt-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{{ form.non_field_errors }}</div>{% endif %}
 
       <section>
-        <div class="account-section-title flex items-center gap-3 px-5 py-4 sm:px-7"><span class="grid h-10 w-10 place-items-center text-xl"><i class="fa-solid fa-user"></i></span><div><h2 class="font-display text-lg font-extrabold text-brand-ink">Identitas diri</h2><p class="text-sm text-stone-500">Informasi utama pemilik akun</p></div><div class="account-progress-ring ml-auto grid h-[58px] w-[58px] shrink-0 place-items-center rounded-full p-[5px]" aria-label="Progres biodata {{ profile_progress }} persen"><div class="grid h-full w-full place-items-center rounded-full bg-[#fffaf0] font-display text-sm font-extrabold text-brand-ink">{{ profile_progress }}%</div></div></div>
-        <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-7">
-          <label class="account-field text-sm font-bold text-brand-ink sm:col-span-2" for="id_full_name">Nama lengkap {{ form.full_name }}{{ form.first_name }}{{ form.last_name }}{% for error in form.full_name.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}{% for error in form.first_name.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
-
-          <label class="account-field text-sm font-bold text-brand-ink" for="accountEmail">Email akun <input id="accountEmail" type="email" value="{{ request.user.email }}" readonly></label>
-          <label class="account-field text-sm font-bold text-brand-ink" for="id_ktp_number">Nomor KTP {{ form.ktp_number }}{% for error in form.ktp_number.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}<span class="mt-1 block text-xs font-normal text-stone-500">Masukkan 16 digit nomor pada KTP.</span></label>
-
-          <div class="account-field text-sm font-bold text-brand-ink">
-            <label id="genderLabel" for="genderPicker">Jenis kelamin</label>
-            <div class="gender-picker" data-gender-picker>
-              {{ form.gender }}
-              <button id="genderPicker" type="button" class="gender-picker-button" role="combobox" aria-labelledby="genderLabel" aria-haspopup="listbox" aria-expanded="false" aria-controls="genderOptions" aria-required="true">
-                <span data-gender-value>Pilih jenis kelamin</span><i class="fa-solid fa-chevron-down text-xs text-[#6b8244]" aria-hidden="true"></i>
-              </button>
-              <div id="genderOptions" class="gender-picker-menu" role="listbox" aria-labelledby="genderLabel" hidden>
-                {% for value, label in form.gender.field.choices %}{% if value %}
-                <button type="button" class="gender-picker-option" role="option" aria-selected="false" data-value="{{ value }}">{{ label }}<i class="fa-solid fa-check text-xs text-[#71864a]" aria-hidden="true" hidden></i></button>
-                {% endif %}{% endfor %}
-              </div>
-            </div>
-            <p class="gender-picker-error mt-1 hidden text-xs font-semibold" data-gender-error>Pilih jenis kelamin.</p>
-            {% for error in form.gender.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}
+        <div class="account-section-title flex items-center gap-3 px-5 py-4 sm:px-7"><span class="grid h-10 w-10 place-items-center text-xl"><i class="fa-solid fa-user"></i></span><div><h2 class="font-display text-lg font-extrabold text-brand-ink">Identitas diri</h2><p class="text-sm text-stone-500">Informasi utama pemilik akun</p></div><div id="accountProgressRing" class="account-progress-ring ml-auto grid h-[58px] w-[58px] shrink-0 place-items-center rounded-full p-[5px]" aria-label="Progres biodata {{ profile_progress }} persen"><div class="grid h-full w-full place-items-center rounded-full bg-[#fffaf0] font-display text-sm font-extrabold text-brand-ink"><span id="accountProgressValue">{{ profile_progress }}%</span></div></div></div>
+        <div class="grid gap-y-4 p-5 sm:gap-y-5 sm:p-7">
+          <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+            <label class="account-field text-sm font-bold text-brand-ink" for="id_full_name">Nama lengkap {{ form.full_name }}{{ form.first_name }}{{ form.last_name }}{% for error in form.full_name.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}{% for error in form.first_name.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
+            <label class="account-field text-sm font-bold text-brand-ink" for="id_birth_place">Tempat lahir {{ form.birth_place }}{% for error in form.birth_place.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
           </div>
-          <label class="account-field text-sm font-bold text-brand-ink" for="id_ktp_document">Unggah KTP (PDF) {{ form.ktp_document }}{% for error in form.ktp_document.errors %}<span class="mt-1 block text-sm font-semibold text-rose-700">{{ error }}</span>{% endfor %}<span class="mt-1 block text-sm font-normal text-stone-500">Format PDF, maksimal 5 MB.{% if request.user.ktp_document %} File tersimpan: <strong class="font-bold text-[#4b5037]">{% with ktp_filename=request.user.ktp_document.name %}{{ ktp_filename|cut:'private/ktp_documents/' }}{% endwith %}</strong>. <a class="font-bold text-[#4b5037] underline" href="{% url 'accounts:ktp_document' %}" target="_blank" rel="noopener">Lihat KTP PDF</a>{% endif %}</span></label>
-          <label class="account-field text-sm font-bold text-brand-ink" for="id_birth_date">Tanggal lahir {{ form.birth_date }}{% for error in form.birth_date.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
-          <label class="account-field text-sm font-bold text-brand-ink" for="id_birth_place">Tempat lahir {{ form.birth_place }}{% for error in form.birth_place.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
+
+          <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+            <label class="account-field text-sm font-bold text-brand-ink" for="accountEmail">Email akun <input id="accountEmail" type="email" value="{{ request.user.email }}" readonly></label>
+            <label class="account-field text-sm font-bold text-brand-ink" for="id_ktp_number">Nomor KTP {{ form.ktp_number }}{% for error in form.ktp_number.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}<span class="mt-1 block text-xs font-normal text-stone-500">Masukkan 16 digit nomor pada KTP.</span></label>
+          </div>
+
+          <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+            <div class="account-field text-sm font-bold text-brand-ink">
+              <label id="genderLabel" for="genderPicker">Jenis kelamin</label>
+              <div class="gender-picker" data-gender-picker>
+                {{ form.gender }}
+                <button id="genderPicker" type="button" class="gender-picker-button" role="combobox" aria-labelledby="genderLabel" aria-haspopup="listbox" aria-expanded="false" aria-controls="genderOptions" aria-required="true">
+                  <span data-gender-value>Pilih jenis kelamin</span><i class="fa-solid fa-chevron-down text-xs text-[#6b8244]" aria-hidden="true"></i>
+                </button>
+                <div id="genderOptions" class="gender-picker-menu" role="listbox" aria-labelledby="genderLabel" hidden>
+                  {% for value, label in form.gender.field.choices %}{% if value %}
+                  <button type="button" class="gender-picker-option" role="option" aria-selected="false" data-value="{{ value }}">{{ label }}<i class="fa-solid fa-check text-xs text-[#71864a]" aria-hidden="true" hidden></i></button>
+                  {% endif %}{% endfor %}
+                </div>
+              </div>
+              <p class="gender-picker-error mt-1 hidden text-xs font-semibold" data-gender-error>Pilih jenis kelamin.</p>
+              {% for error in form.gender.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}
+            </div>
+            <label class="account-field text-sm font-bold text-brand-ink" for="id_ktp_document">Unggah KTP (PDF) {{ form.ktp_document }}{% for error in form.ktp_document.errors %}<span class="mt-1 block text-sm font-semibold text-rose-700">{{ error }}</span>{% endfor %}<span class="mt-1 block text-sm font-normal text-stone-500">Format PDF, maksimal 5 MB.{% if request.user.ktp_document %} File tersimpan: <strong class="font-bold text-[#4b5037]">{% with ktp_filename=request.user.ktp_document.name %}{{ ktp_filename|cut:'private/ktp_documents/' }}{% endwith %}</strong>. <a class="font-bold text-[#4b5037] underline" href="{% url 'accounts:ktp_document' %}" target="_blank" rel="noopener">Lihat KTP PDF</a>{% endif %}</span></label>
+          </div>
+
+          <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+            <label class="account-field text-sm font-bold text-brand-ink" for="id_birth_date">Tanggal lahir {{ form.birth_date }}{% for error in form.birth_date.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
+            <div class="profile-photo-control">
+              <label class="block text-sm font-bold text-brand-ink" for="id_profile_photo">Foto profil</label>
+              {{ form.profile_photo }}
+              {% for error in form.profile_photo.errors %}<span class="mt-1 block text-sm font-semibold text-rose-700">{{ error }}</span>{% endfor %}
+              <p id="profilePhotoStatus" class="mt-1 text-xs font-normal text-stone-500">JPG, PNG, atau WebP, maksimal 5 MB.{% if request.user.profile_photo %} Foto tersimpan; pilih foto baru untuk menggantinya.{% endif %}</p>
+              <p id="profilePhotoError" class="mt-1 text-sm font-semibold text-rose-700" role="alert" hidden></p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -260,7 +290,25 @@
         <div class="flex flex-wrap items-center gap-3"><p class="text-xs text-stone-500"><i class="fa-solid fa-lock mr-1 text-amber-700"></i>Data Anda tersimpan pada akun SIMEVENT.</p></div>
         <button type="submit" class="participant-button inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold"><i class="fa-solid fa-floppy-disk"></i>Simpan Biodata</button>
       </div>
+
     </form>
+
+    <div id="profileCropModal" class="profile-crop-modal" role="presentation" aria-hidden="true" hidden>
+      <section class="profile-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCropTitle" tabindex="-1">
+        <h3 id="profileCropTitle" class="font-display text-xl font-extrabold text-[#40563b]">Atur foto profil</h3>
+        <p class="mt-1 text-sm text-stone-600">Geser foto untuk mengatur posisi, lalu gunakan penggeser untuk memperbesar.</p>
+        <div id="profileCropViewport" class="profile-crop-viewport" aria-label="Area crop foto profil">
+          <img id="profileCropImage" class="profile-crop-image" alt="Pratinjau foto yang akan dipotong" draggable="false">
+          <span class="profile-crop-guide" aria-hidden="true"></span>
+        </div>
+        <label class="block text-sm font-semibold text-[#40563b]" for="profileCropZoom">Perbesar foto</label>
+        <input id="profileCropZoom" class="profile-crop-zoom mt-2" type="range" min="1" max="3" step="0.05" value="1">
+        <div class="mt-5 flex justify-end gap-3">
+          <button id="profileCropCancel" class="profile-crop-button profile-crop-cancel" type="button">Batal</button>
+          <button id="profileCropSave" class="profile-crop-button profile-crop-save" type="button">Gunakan foto</button>
+        </div>
+      </section>
+    </div>
 
   </div>
 </div>
@@ -429,6 +477,198 @@ document.addEventListener("DOMContentLoaded", function () {
     }, true);
   }
 });
+</script>
+
+<script>
+(() => {
+  const input = document.getElementById("id_profile_photo");
+  const modal = document.getElementById("profileCropModal");
+  const viewport = document.getElementById("profileCropViewport");
+  const image = document.getElementById("profileCropImage");
+  const zoom = document.getElementById("profileCropZoom");
+  const cancelButton = document.getElementById("profileCropCancel");
+  const saveButton = document.getElementById("profileCropSave");
+  const status = document.getElementById("profilePhotoStatus");
+  const error = document.getElementById("profilePhotoError");
+  if (!input || !modal || !viewport || !image || !zoom || !cancelButton || !saveButton || !error) return;
+
+  let sourceFile = null;
+  let imageUrl = null;
+  let scale = 1;
+  let imageLeft = 0;
+  let imageTop = 0;
+  let dragStart = null;
+  let previouslyFocused = null;
+
+  const showError = (message) => {
+    error.textContent = message;
+    error.hidden = !message;
+  };
+
+  const revokeImageUrl = () => {
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl = null;
+    image.removeAttribute("src");
+  };
+
+  const layoutImage = (preserveCenter = false) => {
+    if (!image.naturalWidth || !image.naturalHeight) return;
+    const size = viewport.clientWidth;
+    if (!size) return;
+
+    const centerX = preserveCenter && scale ? (size / 2 - imageLeft) / scale : null;
+    const centerY = preserveCenter && scale ? (size / 2 - imageTop) / scale : null;
+    const fitScale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
+    scale = fitScale * Number(zoom.value);
+    const width = image.naturalWidth * scale;
+    const height = image.naturalHeight * scale;
+
+    image.style.width = `${width}px`;
+    image.style.height = `${height}px`;
+    imageLeft = centerX === null ? (size - width) / 2 : size / 2 - centerX * scale;
+    imageTop = centerY === null ? (size - height) / 2 : size / 2 - centerY * scale;
+    imageLeft = Math.min(0, Math.max(size - width, imageLeft));
+    imageTop = Math.min(0, Math.max(size - height, imageTop));
+    image.style.left = `${imageLeft}px`;
+    image.style.top = `${imageTop}px`;
+  };
+
+  const closeModal = (cancelled) => {
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    dragStart = null;
+    if (cancelled) input.value = "";
+    sourceFile = null;
+    revokeImageUrl();
+    input.focus();
+  };
+
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    showError("");
+    if (!file) return;
+
+    const allowedType = ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+      || /\.(jpe?g|png|webp)$/i.test(file.name);
+    if (!allowedType || file.size > 5 * 1024 * 1024) {
+      showError(file.size > 5 * 1024 * 1024
+        ? "Ukuran foto profil maksimal 5 MB."
+        : "Pilih foto JPG, PNG, atau WebP.");
+      input.value = "";
+      return;
+    }
+
+    sourceFile = file;
+    previouslyFocused = document.activeElement;
+    zoom.value = "1";
+    imageUrl = URL.createObjectURL(file);
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    image.onload = () => requestAnimationFrame(() => {
+      layoutImage();
+      saveButton.focus();
+    });
+    image.onerror = () => {
+      showError("Foto tidak dapat dibuka. Coba pilih file gambar lain.");
+      closeModal(true);
+    };
+    image.src = imageUrl;
+  });
+
+  zoom.addEventListener("input", () => layoutImage(true));
+  window.addEventListener("resize", () => {
+    if (!modal.hidden) layoutImage(true);
+  });
+
+  viewport.addEventListener("pointerdown", (event) => {
+    if (!sourceFile) return;
+    event.preventDefault();
+    viewport.setPointerCapture(event.pointerId);
+    dragStart = { x: event.clientX, y: event.clientY, left: imageLeft, top: imageTop };
+  });
+  viewport.addEventListener("pointermove", (event) => {
+    if (!dragStart) return;
+    const size = viewport.clientWidth;
+    imageLeft = Math.min(0, Math.max(size - image.clientWidth, dragStart.left + event.clientX - dragStart.x));
+    imageTop = Math.min(0, Math.max(size - image.clientHeight, dragStart.top + event.clientY - dragStart.y));
+    image.style.left = `${imageLeft}px`;
+    image.style.top = `${imageTop}px`;
+  });
+  viewport.addEventListener("pointerup", () => { dragStart = null; });
+  viewport.addEventListener("pointercancel", () => { dragStart = null; });
+
+  cancelButton.addEventListener("click", () => closeModal(true));
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) closeModal(true);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) closeModal(true);
+  });
+
+  saveButton.addEventListener("click", () => {
+    if (!sourceFile || !image.naturalWidth) return;
+    const originalFile = sourceFile;
+    const size = viewport.clientWidth;
+    const cropSize = size / scale;
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      showError("Pratinjau crop tidak dapat diproses oleh browser ini.");
+      return;
+    }
+
+    context.drawImage(image, -imageLeft / scale, -imageTop / scale, cropSize, cropSize, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (modal.hidden || sourceFile !== originalFile) return;
+      if (!blob) {
+        showError("Foto gagal diproses. Coba pilih foto lain.");
+        return;
+      }
+
+      const croppedFile = new File([blob], `${originalFile.name.replace(/\.[^.]+$/, "")}-profil.jpg`, { type: "image/jpeg" });
+      const transfer = new DataTransfer();
+      transfer.items.add(croppedFile);
+      input.files = transfer.files;
+      if (status) status.textContent = `Foto siap disimpan: ${croppedFile.name}.`;
+      showError("");
+      closeModal(false);
+      if (previouslyFocused) previouslyFocused.focus();
+    }, "image/jpeg", 0.9);
+  });
+})();
+</script>
+
+<script>
+(() => {
+  const ring = document.getElementById("accountProgressRing");
+  const valueLabel = document.getElementById("accountProgressValue");
+  const fields = [
+    document.getElementById("id_full_name"),
+    document.getElementById("id_ktp_number"),
+    document.getElementById("id_gender"),
+    document.getElementById("id_birth_place"),
+    document.getElementById("id_birth_date"),
+    document.getElementById("id_address"),
+    document.getElementById("id_phone_number"),
+  ].filter(Boolean);
+  if (!ring || !valueLabel || !fields.length) return;
+
+  const updateProgress = () => {
+    const completed = fields.filter((field) => String(field.value || "").trim()).length;
+    const percentage = Math.round((completed * 100) / fields.length);
+    ring.style.background = `conic-gradient(#4b5037 ${percentage}%, #e6d2a9 ${percentage}% 100%)`;
+    ring.setAttribute("aria-label", `Progres biodata ${percentage} persen`);
+    valueLabel.textContent = `${percentage}%`;
+  };
+
+  fields.forEach((field) => {
+    field.addEventListener("input", updateProgress);
+    field.addEventListener("change", updateProgress);
+  });
+  updateProgress();
+})();
 </script>
 
 {% endblock %}

@@ -1,0 +1,474 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jelajah Event | SIMEVENT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/jelajah.css' %}">
+</head>
+<body>
+  <div class="page jj-page">
+    <header class="site-header jj-site-header">
+      <nav class="navbar" aria-label="Navigasi utama">
+        <a
+          class="navbar__brand"
+          href="{% url 'landing' %}"
+          aria-label="SIMEVENT, ke beranda"
+        >
+          <img
+            src="{% static 'img/logo.svg' %}"
+            alt="SIMEVENT"
+          >
+        </a>
+        <ul class="navbar__menu">
+          <li>
+            <a href="{% url 'landing' %}">
+              Beranda
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="{% url 'jelajah' %}"
+              class="is-active"
+              aria-current="page"
+            >
+              Jelajah
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'tentang' %}">
+              Tentang
+            </a>
+          </li>
+
+          <li>
+  <a href="{% url 'bantuan' %}">
+    Bantuan
+  </a>
+</li>
+        </ul>
+        <div class="navbar__actions">
+          {% include "partials/session_actions.html" %}
+        </div>
+      </nav>
+    </header>
+    <main class="jj">
+      <div class="jj__crumb">
+        <a href="{% url 'landing' %}">
+          Beranda
+        </a>
+        /
+        <b>Jelajah Event</b>
+      </div>
+      <h1>Jelajah Berbagai Event Menarik</h1>
+      <p class="jj__sub">Telusuri seminar, workshop, konferensi, webinar, dan sosialisasi dari penyelenggara kampus dan komunitas, lalu dapatkan sertifikat digital untuk setiap event yang kamu hadiri.</p>
+
+      <section class="jj-results" aria-label="Daftar event">
+        <div class="jj-toolbar">
+          <label class="sr-only" for="jj-category">Kategori event</label>
+          <select id="jj-category" class="jj-toolbar-select jj-category-select">
+            <option value="">Semua Kategori</option>
+            <option value="conference">Konferensi</option>
+            <option value="workshop">Workshop</option>
+            <option value="seminar">Seminar</option>
+            <option value="webinar">Webinar</option>
+            <option value="sosialisasi">Sosialisasi</option>
+          </select>
+          <label class="sr-only" for="jj-status">Status event</label>
+          <select id="jj-status" class="jj-toolbar-select">
+            <option value="">Status</option>
+            <option value="soon">Akan datang</option>
+            <option value="live">Sedang berlangsung</option>
+            <option value="done">Selesai</option>
+          </select>
+          <label class="sr-only" for="jj-price">Biaya event</label>
+          <select id="jj-price" class="jj-toolbar-select">
+            <option value="semua">Biaya</option>
+            <option value="gratis">Gratis</option>
+            <option value="berbayar">Berbayar</option>
+          </select>
+          <label class="sr-only" for="jj-sort">Urutkan event</label>
+          <select id="jj-sort" class="jj-toolbar-select jj-sort-select">
+            <option value="relevan">Urutkan</option>
+            <option value="tanggal">Tanggal terdekat</option>
+            <option value="harga">Harga terendah</option>
+          </select>
+          <button class="jj-reset-button" id="jj-reset" type="button">Reset</button>
+          <label class="jj-search" for="jj-search">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+            <input id="jj-search" type="search" placeholder="Cari event...">
+          </label>
+        </div>
+
+        <p class="jj-note" id="jj-count" aria-live="polite"></p>
+        <div class="jj-event-grid" id="jj-grid"></div>
+        <p class="jj-empty" id="jj-empty" role="status" hidden>Tidak ada event yang cocok dengan pencarian atau filter.</p>
+        <nav class="jj-pagination" id="jj-pagination" aria-label="Navigasi halaman event"></nav>
+      </section>
+    </main>
+    <footer class="footer jj-footer" id="bantuan">
+      <div class="footer__inner">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <img
+              src="{% static 'img/logo.svg' %}"
+              alt="SIMEVENT"
+            >
+            <p>Platform pendaftaran dan pembuatan event formal. Menghubungkan peserta, penyelenggara, dan komunitas dalam satu sistem.</p>
+          </div>
+          <div>
+            <h3>Kategori Event</h3>
+            <ul>
+              <li><a href="{% url 'jelajah' %}?kategori=conference">Konferensi</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=workshop">Workshop</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=seminar">Seminar</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=webinar">Webinar</a></li>
+              <li><a href="{% url 'jelajah' %}?kategori=sosialisasi">Sosialisasi</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>SIMEVENT</h3>
+            <ul>
+              <li>
+                <a href="{% url 'tentang' %}">
+                  Tentang Kami
+                </a>
+              </li>
+              <li><a href="{% url 'bantuan' %}">Bantuan</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Kontak dan Alamat</h3>
+            <ul class="footer__contact">
+              <li><a href="mailto:halo@simevent.id">halo@simevent.id</a></li>
+              <li><span>Samarinda, Kalimantan Timur</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer__bottom">
+          <p>&copy; 2026 SIMEVENT | All Right Reserved</p>
+          <div><a href="#">Kebijakan Privasi</a><a href="#">Syarat &amp; Ketentuan</a></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+  {{ event_data|json_script:"backend-events" }}
+  <script>
+    const grid = document.getElementById('jj-grid');
+    const search = document.getElementById('jj-search');
+    const sort = document.getElementById('jj-sort');
+    const count = document.getElementById('jj-count');
+    const empty = document.getElementById('jj-empty');
+    const pagination = document.getElementById('jj-pagination');
+    const categorySelect = document.getElementById('jj-category');
+    const statusSelect = document.getElementById('jj-status');
+    const priceSelect = document.getElementById('jj-price');
+    const resetButton = document.getElementById('jj-reset');
+    const pageSize = 8;
+    /* Data contoh: dipakai hanya bila database belum berisi event publik. */
+    function makeDemoEvents() {
+      const names = { conference: 'Konferensi', workshop: 'Workshop', seminar: 'Seminar', webinar: 'Webinar', sosialisasi: 'Sosialisasi' };
+      const titles = {
+        conference: ['Konferensi Teknologi Nusantara 2026', 'Konferensi Meja Bundar', 'Forum Inovasi Kalimantan', 'Konferensi Pendidikan Kaltim', 'Konferensi Pariwisata Kaltim', 'Konferensi Ekonomi Kreatif', 'Konferensi Kesehatan Digital', 'Konferensi Mahasiswa Informatika', 'Konferensi Energi Terbarukan', 'Konferensi Kota Cerdas'],
+        workshop: ['Workshop UI/UX untuk Pemula', 'Workshop Product Design', 'Workshop Data Science', 'Workshop Fotografi Jurnalistik', 'Workshop Desain Pengalaman Digital', 'Pelatihan Kepemimpinan Mahasiswa', 'Workshop Pemrograman Web', 'Workshop Konten Kreatif', 'Workshop Penulisan Ilmiah', 'Workshop Video Editing'],
+        seminar: ['Seminar Nasional Pendidikan', 'Seminar Kewirausahaan Digital', 'Seminar Teknologi Nasional', 'Seminar Kesehatan Mental', 'Seminar Lingkungan Hidup', 'Kuliah Umum Kecerdasan Buatan', 'Seminar Kolaborasi Komunitas', 'Seminar Literasi Keuangan', 'Seminar Karier Fresh Graduate', 'Seminar Transformasi Pendidikan Digital'],
+        webinar: ['Webinar Inovasi Digital', 'Webinar Karier Teknologi', 'Webinar Literasi Keuangan', 'Webinar Keamanan Siber', 'Webinar Tips Beasiswa', 'Webinar Personal Branding', 'Webinar Analisis Data', 'Webinar Startup Kampus', 'Webinar Public Speaking', 'Webinar Riset dan Publikasi'],
+        sosialisasi: ['Sosialisasi Program Kampus', 'Sosialisasi Beasiswa Prestasi', 'Sosialisasi Kurikulum Merdeka', 'Sosialisasi Magang Bersertifikat', 'Sosialisasi Penerimaan Mahasiswa Baru', 'Sosialisasi Keselamatan Kerja', 'Sosialisasi Program Kreativitas Mahasiswa', 'Sosialisasi Pertukaran Pelajar', 'Sosialisasi Layanan Perpustakaan', 'Sosialisasi Organisasi Kemahasiswaan']
+      };
+      const venues = ['Hotel Mercure', 'Auditorium Kampus', 'Aula Kampus', 'Creative Hub', 'Convention Hall', 'Gedung Serbaguna'];
+      const organizers = ['Panitia SIMEVENT', 'Andi Pratama', 'Dr. Rina Kartika', 'BEM Fakultas', 'Himpunan Mahasiswa'];
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const list = [];
+      Object.keys(titles).forEach((category, ci) => {
+        titles[category].forEach((title, i) => {
+          const offset = i === 0 ? 0 : ((i * 9 + ci * 4) % 60) - 14;
+          const day = new Date(today); day.setDate(today.getDate() + offset);
+          const iso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+          const isOnline = category === 'webinar';
+          list.push({
+            id: `demo-${category}-${i + 1}`,
+            slug: `demo-${category}-${i + 1}`,
+            demo: true,
+            category,
+            categoryName: names[category],
+            status: offset < 0 ? 'done' : (offset <= 1 ? 'live' : 'soon'),
+            date: iso,
+            dateLabel: day.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+            amount: i % 3 === 0 ? 0 : [50000, 75000, 100000, 145000][(i + ci) % 4],
+            title,
+            venue: isOnline ? 'Online (Zoom)' : venues[(i + ci) % venues.length],
+            organizer: organizers[(i + ci) % organizers.length],
+            bannerUrl: ''
+          });
+        });
+      });
+      return list;
+    }
+    const backendEvents = JSON.parse(
+      document.getElementById('backend-events').textContent
+    );
+
+    const events = backendEvents.length ? backendEvents : makeDemoEvents();
+    const parameters = new URLSearchParams(location.search);
+    let currentPage = 1;
+    search.value = parameters.get('q') || '';
+    const categoryAlias = { konferensi: 'conference', conference: 'conference' };
+    const selectedCategory = (parameters.get('kategori') || '').toLowerCase();
+    if (selectedCategory) categorySelect.value = categoryAlias[selectedCategory] || selectedCategory;
+
+    const fallbackBannerUrl = "{% static 'img/hero.jpg' %}";
+    const isLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const detailEventBaseUrl = "{% url 'detail_event' 'SLUG_PLACEHOLDER' %}";
+    const MY_EVENTS_STORAGE_KEY = 'simevent_my_events';
+
+    function getSavedMyEvents() {
+      try {
+        return JSON.parse(localStorage.getItem(MY_EVENTS_STORAGE_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveToMyEvents(event) {
+      const list = getSavedMyEvents();
+      const exists = list.some(item => item.slug === event.slug || item.id === event.id);
+      if (!exists) {
+        list.unshift({
+          id: event.id,
+          slug: event.slug,
+          title: event.title,
+          category: event.category,
+          categoryName: event.categoryName || event.category || 'Event',
+          status: event.status || 'soon',
+          date: event.date,
+          dateLabel: event.dateLabel,
+          venue: event.venue || 'Online',
+          organizer: event.organizer || 'Panitia SIMEVENT',
+          bannerUrl: event.bannerUrl || fallbackBannerUrl,
+          demo: Boolean(event.demo),
+          registeredAt: new Date().toISOString()
+        });
+        localStorage.setItem(MY_EVENTS_STORAGE_KEY, JSON.stringify(list));
+      }
+    }
+
+    function createCard(event) {
+      const card = document.createElement('article');
+      card.className = 'event-card';
+      card.innerHTML = `
+        <div class="event-card__img" aria-hidden="true"></div>
+        <div class="event-card__chips">
+          <span class="chip chip--cream"></span>
+          <time class="chip chip--white"></time>
+        </div>
+        <span class="status"><i></i></span>
+        <h2 class="event-card__title"><a class="event-card__link" href="#" style="color:inherit;text-decoration:none;"></a></h2>
+        <ul class="event-card__meta">
+          <li><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></li>
+          <li><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></li>
+        </ul>
+        <div class="event-card__foot">
+          <span class="price"></span>
+          <a class="btn btn--dark btn--sm" href="{% url 'peserta_daftar_event' %}">Daftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      `;
+
+      const statusNames = {
+        live: 'Sedang Berlangsung',
+        soon: 'Akan Datang',
+        done: 'Selesai',
+      };
+      const image = card.querySelector('.event-card__img');
+      image.style.backgroundImage = `url("${event.bannerUrl || fallbackBannerUrl}")`;
+      card.querySelector('.chip--cream').textContent = event.categoryName || event.category;
+      const date = card.querySelector('time');
+      date.dateTime = event.date;
+      date.textContent = event.dateLabel;
+      const status = card.querySelector('.status');
+      status.classList.add(`status--${event.status}`);
+      status.append(document.createTextNode(` ${statusNames[event.status] || 'Status tidak diketahui'}`));
+      const titleLink = card.querySelector('.event-card__link');
+      titleLink.textContent = event.title;
+      titleLink.href = event.demo
+        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
+        : detailEventBaseUrl.replace('SLUG_PLACEHOLDER', encodeURIComponent(event.slug));
+      const meta = card.querySelectorAll('.event-card__meta li');
+      meta[0].append(document.createTextNode(` ${event.venue || 'Online'}`));
+      meta[1].append(document.createTextNode(` ${event.organizer}`));
+      card.querySelector('.price').textContent = event.amount
+        ? `Rp${event.amount.toLocaleString('id-ID')}`
+        : 'Gratis';
+      const registerBtn = card.querySelector('.event-card__foot a');
+      const alreadyRegistered = getSavedMyEvents().some(item => item.slug === event.slug || item.id === event.id);
+      if (alreadyRegistered && isLoggedIn) {
+        registerBtn.innerHTML = `Terdaftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`;
+      }
+      registerBtn.href = !isLoggedIn
+        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
+        : `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
+      registerBtn.addEventListener('click', () => {
+        saveToMyEvents(event);
+      });
+      return card;
+    }
+
+    function renderPagination(pageCount) {
+      pagination.replaceChildren();
+      if (pageCount < 2) return;
+
+      const addPageButton = (label, page, options = {}) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = options.current ? 'is-current' : '';
+        button.textContent = label;
+        button.disabled = Boolean(options.disabled);
+        if (options.current) button.setAttribute('aria-current', 'page');
+        button.addEventListener('click', () => {
+          currentPage = page;
+          filterEvents();
+          grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        pagination.append(button);
+      };
+
+      addPageButton('Prev', Math.max(1, currentPage - 1), { disabled: currentPage === 1 });
+      for (let page = 1; page <= pageCount; page += 1) {
+        addPageButton(String(page), page, { current: page === currentPage });
+      }
+      addPageButton('Next', Math.min(pageCount, currentPage + 1), { disabled: currentPage === pageCount });
+    }
+
+    function filterEvents() {
+      const query = search.value.trim().toLocaleLowerCase('id');
+      const visible = events.filter(event => {
+        const searchText = `${event.title} ${event.categoryName} ${event.venue} ${event.organizer}`.toLocaleLowerCase('id');
+        return searchText.includes(query)
+          && (!categorySelect.value || categorySelect.value === event.category)
+          && (!statusSelect.value || statusSelect.value === event.status)
+          && (priceSelect.value === 'semua' || (priceSelect.value === 'gratis' ? event.amount === 0 : event.amount > 0));
+      });
+      if (sort.value === 'tanggal') visible.sort((a, b) => a.date.localeCompare(b.date));
+      if (sort.value === 'harga') visible.sort((a, b) => a.amount - b.amount);
+      empty.hidden = visible.length > 0;
+      count.textContent = visible.length > 0 ? `Menampilkan ${visible.length} event` : '';
+      const pageCount = Math.ceil(visible.length / pageSize);
+      currentPage = Math.min(currentPage, Math.max(pageCount, 1));
+      const start = (currentPage - 1) * pageSize;
+      grid.replaceChildren(...visible.slice(start, start + pageSize).map(createCard));
+      renderPagination(pageCount);
+    }
+
+    [categorySelect, statusSelect, priceSelect, sort].forEach(control => {
+      control.addEventListener('change', () => { currentPage = 1; filterEvents(); });
+    });
+    search.addEventListener('input', () => { currentPage = 1; filterEvents(); });
+    resetButton.addEventListener('click', () => {
+      categorySelect.value = '';
+      statusSelect.value = '';
+      priceSelect.value = 'semua';
+      sort.value = 'relevan';
+            search.value = '';
+      history.replaceState(null, '', location.pathname);
+      currentPage = 1;
+      document.querySelectorAll('.jj-toolbar-select').forEach(select => select._syncDropdown());
+      filterEvents();
+    });
+
+    /* ---------- Dropdown kustom: membungkus tiap <select> toolbar ---------- */
+    const chevron = '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+    document.querySelectorAll('.jj-toolbar-select').forEach(select => {
+      const wrap = document.createElement('div');
+      wrap.className = 'jj-dd';
+      select.before(wrap);
+      wrap.append(select);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'jj-dd__btn';
+      button.setAttribute('aria-haspopup', 'listbox');
+      button.setAttribute('aria-expanded', 'false');
+      const labelText = document.querySelector(`label[for="${select.id}"]`)?.textContent.trim();
+      if (labelText) button.setAttribute('aria-label', labelText);
+
+      const menu = document.createElement('ul');
+      menu.className = 'jj-dd__menu';
+      menu.setAttribute('role', 'listbox');
+      [...select.options].slice(1).forEach(option => {   /* opsi pertama (placeholder) tidak ditampilkan di daftar */
+        const item = document.createElement('li');
+        item.setAttribute('role', 'option');
+        item.dataset.value = option.value;
+        item.textContent = option.textContent;
+        menu.append(item);
+      });
+      wrap.append(button, menu);
+
+      const items = () => [...menu.children];
+      const setFocus = index => {
+        items().forEach((item, i) => item.classList.toggle('is-focus', i === index));
+      };
+      const sync = () => {
+        const selected = select.options[select.selectedIndex];
+        button.innerHTML = `<span>${selected.textContent}</span>${chevron}`;
+        items().forEach(item => item.setAttribute('aria-selected', String(item.dataset.value === select.value)));
+      };
+      const open = () => {
+        document.querySelectorAll('.jj-dd.is-open').forEach(other => other !== wrap && other.classList.remove('is-open'));
+        wrap.classList.add('is-open');
+        button.setAttribute('aria-expanded', 'true');
+        setFocus(select.selectedIndex - 1);
+      };
+      const close = () => {
+        wrap.classList.remove('is-open');
+        button.setAttribute('aria-expanded', 'false');
+        setFocus(-1);
+      };
+      const choose = value => {
+        if (select.value !== value) {
+          select.value = value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        sync();
+        close();
+        button.focus();
+      };
+
+      select._syncDropdown = sync;
+      button.addEventListener('click', () => wrap.classList.contains('is-open') ? close() : open());
+      menu.addEventListener('click', event => {
+        const item = event.target.closest('li');
+        if (!item) return;
+        /* klik opsi yang sudah aktif = batalkan filter (kembali ke placeholder) */
+        choose(item.dataset.value === select.value ? select.options[0].value : item.dataset.value);
+      });
+      button.addEventListener('keydown', event => {
+        const list = items();
+        let current = list.findIndex(item => item.classList.contains('is-focus'));
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          if (!wrap.classList.contains('is-open')) { open(); return; }
+          current = (current + (event.key === 'ArrowDown' ? 1 : -1) + list.length) % list.length;
+          setFocus(current);
+        } else if (event.key === 'Enter' && wrap.classList.contains('is-open') && current > -1) {
+          event.preventDefault();
+          choose(list[current].dataset.value);
+        } else if (event.key === 'Escape') {
+          close();
+        }
+      });
+      sync();
+    });
+    document.addEventListener('click', event => {
+      document.querySelectorAll('.jj-dd.is-open').forEach(dd => { if (!dd.contains(event.target)) dd.classList.remove('is-open'); });
+    });
+
+    filterEvents();
+  </script>
+</body>
+</html>

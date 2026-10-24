@@ -1,0 +1,514 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Tentang SIMEVENT</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/style.css' %}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{% static 'css/tentang.css' %}"
+  >
+</head>
+
+
+<body>
+
+  <div class="page tt-page">
+    <header class="site-header tt-site-header">
+
+      <nav
+        class="navbar"
+        aria-label="Navigasi utama"
+      >
+
+        <a
+          class="navbar__brand"
+          href="{% url 'landing' %}"
+          aria-label="SIMEVENT, ke beranda"
+        >
+          <img
+            src="{% static 'img/logo.svg' %}"
+            alt="SIMEVENT"
+          >
+        </a>
+
+
+        <ul class="navbar__menu">
+
+          <li>
+            <a href="{% url 'landing' %}">
+              Beranda
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'jelajah' %}">
+              Jelajah
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="{% url 'tentang' %}"
+              class="is-active"
+              aria-current="page"
+            >
+              Tentang
+            </a>
+          </li>
+
+          <li>
+  <a href="{% url 'bantuan' %}">
+    Bantuan
+  </a>
+</li>
+
+        </ul>
+
+
+        <div class="navbar__actions">
+          {% include "partials/session_actions.html" %}
+        </div>
+
+      </nav>
+
+    </header>
+
+    <main class="tt">
+
+      <!-- Breadcrumb -->
+      <div class="tt__crumb">
+
+        <a href="{% url 'landing' %}">
+          Beranda
+        </a>
+
+        <span aria-hidden="true">
+          ›
+        </span>
+
+        <b>
+          Tentang
+        </b>
+
+      </div>
+
+      <section
+        class="tt-hero"
+        aria-labelledby="tt-judul"
+      >
+
+        <div class="tt-hero__text">
+
+          <h1 id="tt-judul">Menghubungkan Anda Dengan <span class="tt-hero__accent">Pengalaman Event Terbaik</span></h1>
+
+          <p>
+            SIMEVENT adalah platform yang mempertemukan penyelenggara
+            event formal dengan pesertanya di Samarinda dan sekitarnya.
+            Konferensi, workshop, seminar, hingga kuliah umum bisa dicari
+            dan didaftari dari satu tempat.
+          </p>
+
+          <p>
+            Selama ini informasi event tersebar dan pendaftaran dilakukan
+            manual. Dengan SIMEVENT, daftar event, presensi, dan sertifikat
+            digital dilakukan di satu tempat.
+          </p>
+
+        </div>
+
+
+        <img
+          class="tt-hero__photo"
+          src="{% static 'img/hero.jpg' %}"
+          alt="Peserta sebuah event berfoto bersama di auditorium"
+        >
+
+      </section>
+      <section
+        class="tt-stat"
+        aria-labelledby="tt-stat-judul"
+      >
+
+        <h2 id="tt-stat-judul">
+          Statistik Peserta
+        </h2>
+
+
+        <svg
+          class="tt-stat__chart"
+          viewBox="0 0 1142 411"
+          role="img"
+          aria-label="Grafik garis jumlah peserta gabungan semua event, cenderung naik"
+        >
+
+          <polyline
+            points="
+              65,339
+              123,305
+              169,341
+              212,296
+              277,320
+              370,267
+              452,298
+              499,252
+              541,236
+              650,179
+              791,236
+              836,195
+              881,177
+              928,141
+              981,128
+              1041,106
+            "
+          />
+
+        </svg>
+
+      </section>
+      <h2 class="tt-title">
+        SIMEVENT untuk siapa?
+      </h2>
+
+
+      <div class="tt-who">
+
+        <!-- PESERTA -->
+        <article class="tt-card tt-card--peserta">
+
+          <span class="tt-pill tt-pill--cream">
+            Peserta
+          </span>
+
+          <h3>
+            Jumpai dan ikuti event yang tepat
+          </h3>
+
+
+          <ul>
+
+            <li>
+              Cari event berdasarkan kategori, status, dan biaya
+            </li>
+
+            <li>
+              Daftar dan bayar dalam beberapa klik
+            </li>
+
+            <li>
+              Presensi cepat dengan e-tiket QR
+            </li>
+
+            <li>
+              Sertifikat digital terbit otomatis setelah acara
+            </li>
+
+          </ul>
+
+
+          <a
+            class="tt-btn tt-btn--cream"
+            href="{% url 'jelajah' %}"
+          >
+            Jelajah
+          </a>
+
+        </article>
+
+
+        <!-- PENYELENGGARA -->
+        <article class="tt-card tt-card--eo">
+
+          <span class="tt-pill tt-pill--orange">
+            Penyelenggara
+          </span>
+
+          <h3>
+            Kelola event Anda bersama tim
+          </h3>
+
+
+          <ul>
+
+            <li>
+              Ajukan event, admin meninjau dan menyetujui
+            </li>
+
+            <li>
+              Undang panitia melalui email
+            </li>
+
+            <li>
+              Pantau pendaftar, kehadiran, dan pembayaran
+            </li>
+
+            <li>
+              Penerbitan sertifikat digital yang mudah
+            </li>
+
+          </ul>
+
+
+          <a
+            class="tt-btn tt-btn--orange"
+            href="{% url 'after_login' %}"
+          >
+            Buat Event Sekarang
+          </a>
+
+        </article>
+
+      </div>
+      <h2 class="tt-title">
+        Tim Balik Layar
+      </h2>
+
+
+      <ul class="tt-team">
+
+        <li>
+
+          <span class="tt-avatar">
+
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4.5 21a7.5 7.5 0 0 1 15 0Z"/>
+            </svg>
+
+          </span>
+
+          <b>
+            Senku Ishigami
+          </b>
+
+          <span>
+            Head of Programmer
+          </span>
+
+        </li>
+
+
+        <li>
+
+          <span class="tt-avatar">
+
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4.5 21a7.5 7.5 0 0 1 15 0Z"/>
+            </svg>
+
+          </span>
+
+          <b>
+            Kohaku Inedo
+          </b>
+
+          <span>
+            Head of Design
+          </span>
+
+        </li>
+        <li>
+
+          <span class="tt-avatar">
+
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4.5 21a7.5 7.5 0 0 1 15 0Z"/>
+            </svg>
+
+          </span>
+
+          <b>
+            Xie Quan Lie
+          </b>
+
+          <span>
+            Head of Marketing
+          </span>
+
+        </li>
+
+      </ul>
+      <section
+        class="tt-cta"
+        aria-label="Ajakan bergabung"
+      >
+
+        <p>
+          <span>
+            Tunggu Apa Lagi?
+          </span>
+
+          <br>
+
+          Temukan event atau mulai buat eventmu
+        </p>
+
+
+        <div class="tt-cta__act">
+
+          <a
+            class="tt-btn tt-btn--cream"
+            href="{% url 'jelajah' %}"
+          >
+            Jelajah
+          </a>
+
+          <a
+            class="tt-btn tt-btn--orange"
+            href="{% url 'after_login' %}"
+          >
+            Buat Event Sekarang
+          </a>
+
+        </div>
+
+      </section>
+
+    </main>
+    <footer
+      class="footer tt-footer"
+      id="bantuan"
+    >
+
+      <div class="footer__inner">
+
+        <div class="footer__grid">
+
+          <div class="footer__brand">
+
+            <img
+              src="{% static 'img/logo.svg' %}"
+              alt="SIMEVENT"
+            >
+
+            <p>
+              Platform pendaftaran dan pembuatan event formal.
+              Menghubungkan peserta, penyelenggara, dan komunitas
+              dalam satu sistem.
+            </p>
+
+          </div>
+
+
+          <div>
+
+            <h3>
+              Kategori Event
+            </h3>
+
+            <ul>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=conference">
+                  Konferensi
+                </a>
+              </li>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=workshop">
+                  Workshop
+                </a>
+              </li>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=seminar">
+                  Seminar
+                </a>
+              </li>
+
+              <li>
+                <a href="{% url 'jelajah' %}?kategori=webinar">
+                  Webinar
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3>
+              SIMEVENT
+            </h3>
+            <ul>
+              <li>
+                <a href="{% url 'tentang' %}">
+                  Tentang Kami
+                </a>
+              </li>
+
+              <li>
+  <a href="{% url 'bantuan' %}">
+    Bantuan
+  </a>
+</li>
+            </ul>
+          </div>
+          <div>
+
+            <h3>
+              Kontak dan Alamat
+            </h3>
+
+            <ul class="footer__contact">
+
+              <li>
+                <a href="mailto:halo@simevent.id">
+                  halo@simevent.id
+                </a>
+              </li>
+
+              <li>
+                <span>
+                  Samarinda, Kalimantan Timur
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer__bottom">
+          <p>
+            &copy; 2026 SIMEVENT | All Right Reserved
+          </p>
+          <div>
+            <a href="#">
+              Kebijakan Privasi
+            </a>
+            <a href="#">
+              Syarat &amp; Ketentuan
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

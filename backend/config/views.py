@@ -1,5 +1,3 @@
-# Halaman MVT publik, autentikasi halaman, dan dashboard pengelolaan event.
-
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -21,11 +19,6 @@ from apps.registrations.models import (
     Registration,
     RegistrationStatus,
 )
-
-
-# =========================================================
-# HALAMAN PUBLIK
-# =========================================================
 
 @never_cache
 @require_GET
@@ -219,16 +212,11 @@ def detail_event(request, slug):
         },
     )
 
-
-# =========================================================
-# AUTENTIKASI
-# =========================================================
-
 def _participant_redirect(request):
     if request.user.role == "ORGANIZER":
         return redirect("eo_dashboard")
     if request.user.role == "ADMIN":
-        return redirect("panitia_dashboard")
+        return redirect("admin_dashboard") 
     if not request.user.profile_complete:
         return redirect("peserta_akun")
     return None
@@ -256,20 +244,15 @@ def logout_page(request):
         "landing"
     )
 
-
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
 def after_login(request):
     if request.user.role == "ORGANIZER":
-        return redirect(
-            "eo_dashboard"
-        )
+        return redirect("eo_dashboard")
 
     if request.user.role == "ADMIN":
-        return redirect(
-            "panitia_dashboard"
-        )
+        return redirect("admin_dashboard")
 
     return redirect("peserta_dashboard" if request.user.profile_complete else "peserta_akun")
 
@@ -290,14 +273,16 @@ def peserta_akun(request, template_name="peserta/akun.html", success_url="pesert
     else:
         form = ProfileForm(instance=request.user)
 
+    # Read values from the form so the progress ring also reflects fields
+    # submitted on an invalid POST, before they have been saved to the user.
     profile_values = (
-        request.user.first_name,
-        request.user.ktp_number,
-        request.user.gender,
-        request.user.birth_place,
-        request.user.birth_date,
-        request.user.address,
-        request.user.phone_number,
+        form["full_name"].value(),
+        form["ktp_number"].value(),
+        form["gender"].value(),
+        form["birth_place"].value(),
+        form["birth_date"].value(),
+        form["address"].value(),
+        form["phone_number"].value(),
     )
     completed_profile_fields = sum(
         bool(value.strip() if isinstance(value, str) else value)
@@ -311,10 +296,6 @@ def peserta_akun(request, template_name="peserta/akun.html", success_url="pesert
         "profile_progress": round(completed_profile_fields * 100 / len(profile_values)),
     })
 
-
-# =========================================================
-# DASHBOARD PESERTA
-# =========================================================
 
 @never_cache
 @require_GET
@@ -458,11 +439,15 @@ def peserta_daftar_event(request):
             else "Sedang Berlangsung" if event.start_datetime <= now
             else "Akan Datang"
         )
+    categories = list(
+        EventType.objects.filter(is_active=True).values_list("name", flat=True)
+    )
+    if not any(category.casefold() == "sosialisasi" for category in categories):
+        categories.append("Sosialisasi")
+    categories.sort(key=str.casefold)
     return render(request, "peserta/daftar_event.html", {
         "events": events,
-        "categories": list(
-            EventType.objects.filter(is_active=True).values_list("name", flat=True)
-        ),
+        "categories": categories,
         "now": now,
     })
 
@@ -603,11 +588,6 @@ def peserta_achievement(request):
         "track_segment": min(3, max(0, len(completed_levels) - 1)),
     })
 
-
-# =========================================================
-# DASHBOARD PANITIA / ADMIN
-# =========================================================
-
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
@@ -698,11 +678,6 @@ def panitia_dashboard(request):
             ),
         },
     )
-
-
-# =========================================================
-# DASHBOARD KETUA PANITIA (data contoh, belum dari database)
-# =========================================================
 
 def _ketua_panitia(template):
     @never_cache

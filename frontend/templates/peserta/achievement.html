@@ -153,15 +153,15 @@
   </div>
  </section>
 
- <div class="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(270px,0.8fr)]">
+  <div id="achievementListLayout" class="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(270px,0.8fr)]">
   <section>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
     <h2 class="font-display text-2xl font-extrabold text-brand-ink">Daftar Achievement</h2>
     <div class="flex flex-wrap items-center gap-2">
      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter achievement">
-      <button type="button" class="achievement-filter rounded-full border border-[#D7BD88] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="all" aria-pressed="true">Semua</button>
-      <button type="button" class="achievement-filter rounded-full border border-[#D7BD88] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="pending" aria-pressed="false">Belum Selesai</button>
-      <button type="button" class="achievement-filter rounded-full border border-[#D7BD88] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="done" aria-pressed="false">Selesai</button>
+      <button type="button" class="achievement-filter rounded-full border border-[#3F422E] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="all" aria-pressed="true">Semua</button>
+      <button type="button" class="achievement-filter rounded-full border border-[#3F422E] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="pending" aria-pressed="false">Belum Selesai</button>
+      <button type="button" class="achievement-filter rounded-full border border-[#3F422E] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="done" aria-pressed="false">Selesai</button>
      </div>
      <div class="rounded-full bg-amber-100 px-4 py-2 text-sm font-bold">{{ completed_count }}/{{ levels|length }} level tercapai</div>
     </div>
@@ -183,18 +183,18 @@
      <span class="rounded-lg px-3 py-2 text-center text-sm font-bold {% if achievement.is_completed %}bg-emerald-100 text-emerald-800{% else %}bg-stone-100 text-stone-500{% endif %}">{% if achievement.is_completed %}Selesai{% else %}Belum Selesai{% endif %}</span>
     </article>
     {% endfor %}
-    <p id="achievementEmpty" class="participant-card hidden rounded-xl p-4 text-sm text-stone-500">Tidak ada achievement pada filter ini.</p>
+      <div id="achievementEmpty" class="participant-card hidden min-h-[240px] rounded-2xl p-6 text-center text-base font-semibold text-stone-500" role="status" aria-live="polite">Tidak ada achievement pada filter ini.</div>
    </div>
   </section>
-  <aside class="space-y-4">
-   <section class="participant-card rounded-2xl p-5">
+    <aside class="grid content-start gap-4 lg:grid-rows-[auto_minmax(min-content,1fr)]">
+   <section class="participant-card rounded-2xl p-4">
     <h2 class="font-display text-center text-lg font-extrabold">Total Achievement</h2>
-    <div class="mt-4 grid justify-items-center">
+    <div class="mt-2 grid justify-items-center">
      <div class="achievement-donut grid h-32 w-32 shrink-0 place-items-center rounded-full text-center" style="--achievement-progress: {{ completed_percentage }}%"><span class="grid h-20 w-20 place-items-center rounded-full bg-[#fff9f2] font-display text-2xl font-extrabold">{{ completed_count }}/{{ levels|length }}<small class="block text-xs font-semibold">level</small></span></div>
-     <p class="mt-3 text-center text-xs text-stone-500">{{ level_count }} event terdaftar</p>
+     <p class="mt-2 text-center text-xs text-stone-500">{{ level_count }} event terdaftar</p>
     </div>
    </section>
-   <section class="participant-card rounded-2xl p-5">
+     <section class="participant-card flex flex-col justify-center rounded-2xl p-5">
     <h2 class="text-center font-display text-lg font-extrabold"><i class="fa-solid fa-gift mr-2 text-brand-orangeDeep"></i>Reward Saya</h2>
     <div class="mt-3 flex items-baseline justify-center gap-2"><span class="font-display text-3xl font-extrabold">{{ completed_percentage }}%</span><span class="text-sm text-stone-600">level tercapai</span></div>
     <p class="mt-2 text-center text-sm text-stone-600">Badge akan mengikuti level yang sudah Anda capai.</p>
@@ -207,6 +207,9 @@
 </div>
 <style>
 .achievement-donut { background: conic-gradient(#a96b18 var(--achievement-progress), #eadfc9 var(--achievement-progress)); }
+.achievement-row[hidden] { display:none !important; }
+#achievementEmpty:not(.hidden) { display:grid; place-items:center; }
+#achievementListLayout > aside { min-height:min-content; }
 .achievement-filter:hover { background:#f7e8c5; }
 .achievement-filter[aria-pressed="true"] { border-color:#3F422E; background:#3F422E; color:#fff; }
 </style>
@@ -222,6 +225,11 @@ achievementFilters.forEach((button) => button.addEventListener('click', () => {
   row.hidden = !show;
   if (show) visible += 1;
  });
+  achievementEmpty.textContent = filter === 'done'
+   ? 'Belum ada achievement yang selesai.'
+   : filter === 'pending'
+    ? 'Semua achievement sudah selesai.'
+    : 'Belum ada achievement.';
  achievementEmpty.classList.toggle('hidden', visible !== 0);
  achievementFilters.forEach((item) => {
   const active = item === button;

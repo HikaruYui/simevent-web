@@ -51,6 +51,7 @@ class ProfileForm(forms.ModelForm):
             "last_name",
             "ktp_number",
             "ktp_document",
+            "profile_photo",
             "gender",
             "birth_place",
             "birth_date",
@@ -65,6 +66,7 @@ class ProfileForm(forms.ModelForm):
             "address": forms.Textarea(attrs={"rows": 1}),
             "ktp_number": forms.TextInput(attrs={"inputmode": "numeric", "pattern": "[0-9]{16}", "maxlength": "16", "autocomplete": "off"}),
             "ktp_document": forms.FileInput(attrs={"accept": "application/pdf,.pdf"}),
+            "profile_photo": forms.FileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
             "phone_number": forms.TelInput(attrs={"inputmode": "numeric", "pattern": "08[0-9]{8,11}", "maxlength": "13", "autocomplete": "tel"}),
         }
 
@@ -76,6 +78,7 @@ class ProfileForm(forms.ModelForm):
             field.required = True
         self.fields["full_name"].required = False
         self.fields["ktp_document"].required = False
+        self.fields["profile_photo"].required = False
         self.fields["first_name"].required = False
         self.fields["last_name"].required = False
         self.fields["first_name"].widget = forms.HiddenInput()
@@ -95,7 +98,7 @@ class ProfileForm(forms.ModelForm):
                 self.add_error("first_name", "Masukkan nama lengkap.")
 
         for field in self.Meta.fields:
-            if field in ("first_name", "last_name", "ktp_document"):
+            if field in ("first_name", "last_name", "ktp_document", "profile_photo"):
                 continue
             value = cleaned_data.get(field)
             if isinstance(value, str):
@@ -118,6 +121,12 @@ class ProfileForm(forms.ModelForm):
         if signature != b"%PDF-":
             raise forms.ValidationError("File yang diunggah bukan PDF yang valid.")
         return document
+
+    def clean_profile_photo(self):
+        photo = self.cleaned_data.get("profile_photo")
+        if photo and not getattr(photo, "_committed", False) and photo.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("Ukuran foto profil maksimal 5 MB.")
+        return photo
 
     def clean_phone_number(self):
         phone = (self.cleaned_data.get("phone_number") or "").strip()

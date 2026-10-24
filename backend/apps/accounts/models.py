@@ -84,6 +84,12 @@ class User(AbstractUser):
         blank=True,
         validators=[FileExtensionValidator(["pdf"])],
     )
+    profile_photo = models.ImageField(
+        "Foto profil",
+        upload_to="profile_photos/",
+        blank=True,
+        validators=[FileExtensionValidator(["jpg", "jpeg", "png", "webp"])],
+    )
     gender = models.CharField(
         "Jenis kelamin",
         max_length=1,
