@@ -1,0 +1,184 @@
+<style>
+  .scanner-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 22px;
+  }
+  .camera-box {
+    background: #23251A;
+    color: var(--cream);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid var(--olive);
+    display: flex;
+    flex-direction: column;
+  }
+  .camera-box__head {
+    padding: 16px 22px;
+    background: var(--olive-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .camera-box__title {
+    margin: 0;
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--cream);
+  }
+  .camera-viewport {
+    position: relative;
+    min-height: 330px;
+    display: grid;
+    place-items: center;
+    background: #171810;
+    padding: 20px;
+    text-align: center;
+  }
+  #qrReader { width: 100%; max-width: 460px; border-radius: 14px; overflow: hidden; }
+  .camera-placeholder i {
+    font-size: 42px;
+    color: var(--taupe);
+    margin-bottom: 12px;
+  }
+  .camera-placeholder h4 { margin: 0 0 6px; font-size: 16px; color: var(--cream); }
+  .camera-placeholder p { margin: 0; font-size: 13px; color: #b5ab99; max-width: 320px; }
+
+  .manual-box {
+    padding: 18px 22px;
+    background: var(--cream-card);
+    color: var(--olive);
+    border-top: 1px solid var(--line);
+  }
+  .manual-box__label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--brown);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .manual-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .manual-input {
+    flex: 1;
+    min-width: 200px;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    font: 600 14px/1 var(--font-body);
+    color: var(--olive);
+    text-transform: uppercase;
+  }
+  .manual-input:focus { outline: 2px solid var(--orange); border-color: transparent; }
+
+  .result-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .result-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--cream-soft);
+    color: var(--brown);
+  }
+  .result-body {
+    padding: 32px 24px;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .result-empty-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    background: var(--cream-soft);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    margin-bottom: 14px;
+  }
+  .scan-success-card {
+    width: 100%;
+    text-align: left;
+    background: var(--cream-soft);
+    border: 1.5px solid #d5c39f;
+    border-radius: 18px;
+    padding: 20px;
+  }
+  @media (max-width: 960px) {
+    .scanner-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="scanner-grid">
+  <!-- KIRI: KAMERA PEMINDAI & INPUT MANUAL -->
+  <div class="camera-box">
+    <div class="camera-box__head">
+      <h3 class="camera-box__title"><i class="fa-solid fa-camera mr-2"></i> Kamera Pemindai QR Code Peserta</h3>
+      <button type="button" class="btn-primary" id="btnToggleCamera" onclick="toggleQrCamera()">
+        <i class="fa-solid fa-camera"></i> Nyalakan Kamera
+      </button>
+    </div>
+
+    <div class="camera-viewport">
+      <div id="qrReader"></div>
+      <div class="camera-placeholder" id="cameraPlaceholder">
+        <i class="fa-solid fa-video-slash"></i>
+        <h4>Kamera Belum Aktif</h4>
+        <p>Klik tombol "Nyalakan Kamera" di atas untuk scan barcode tiket peserta, atau masukkan kode tiket secara manual di bawah.</p>
+      </div>
+    </div>
+
+    <div class="manual-box">
+      <label class="manual-box__label" for="manualCodeInput">
+        <i class="fa-solid fa-keyboard"></i> Tidak Bisa Scan? Input Manual Kode Tiket / ID Peserta:
+      </label>
+      <form class="manual-form" onsubmit="handleManualCheckin(event)">
+        <input type="text" id="manualCodeInput" class="manual-input" placeholder="Contoh: SIM-001 atau SIM-002" required>
+        <button type="submit" class="btn-olive">
+          <i class="fa-solid fa-check-double"></i> Tandai Hadir
+        </button>
+      </form>
+      <small style="display:block; margin-top:8px; color:var(--muted); font-size:12px;">
+        *Kode percobaan: <strong>SIM-001</strong>, <strong>SIM-002</strong>, <strong>SIM-003</strong>, <strong>SIM-004</strong>, <strong>SIM-005</strong>
+      </small>
+    </div>
+  </div>
+
+  <!-- KANAN: HASIL PEMINDAIAN TERAKHIR -->
+  <div class="panel-card">
+    <div class="result-head">
+      <h3 style="margin:0; font-size:16px; font-weight:800;">
+        <i class="fa-solid fa-clipboard-check" style="color:var(--orange); margin-right:6px;"></i> Hasil Pemindaian Terakhir
+      </h3>
+      <span class="result-badge" id="scanStatusBadge">MENUNGGU SCAN</span>
+    </div>
+
+    <div class="result-body" id="scanResultContainer">
+      <div class="result-empty-icon">
+        <i class="fa-solid fa-qrcode"></i>
+      </div>
+      <h4 style="margin:0 0 6px; font-size:17px;">Arahkan Kamera atau Input Kode</h4>
+      <p style="margin:0; font-size:13px; color:var(--muted); max-width:300px;">
+        Informasi peserta akan langsung muncul di sini dan statusnya otomatis tercatat sebagai <strong>Hadir</strong>.
+      </p>
+    </div>
+  </div>
+</div>

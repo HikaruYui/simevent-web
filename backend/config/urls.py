@@ -60,6 +60,11 @@ urlpatterns = [
         views.panitia_dashboard,
         name="panitia_dashboard",
     ),
+    path(
+        "panitia_biasa/",
+        views.panitia_biasa_dashboard,
+        name="panitia_biasa",
+    ),
 
     path("ketua-panitia/", views.eo_dashboard, name="eo_dashboard"),
     path("ketua-panitia/event/", views.eo_event, name="eo_event"),

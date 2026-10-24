@@ -1,0 +1,403 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard Panitia | SIMEVENT{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
+
+  <style>
+    :root {
+      --olive: #3F422E;
+      --olive-ink: #2A2C1E;
+      --taupe: #9F886F;
+      --orange: #D78B30;
+      --cream: #F5E6C5;
+      --cream-card: #FFFDF8;
+      --cream-soft: #F9F0DC;
+      --brown: #81531D;
+      --brown-deep: #8B510D;
+      --navy: #2A2C1E;
+      --muted: #6F6556;
+      --line: #E6DCC3;
+      --green: #17603F;
+      --green-bg: #E6F4ED;
+      --danger: #B42318;
+      --danger-bg: #FEE4E2;
+
+      --font-head: "Plus Jakarta Sans", system-ui, sans-serif;
+      --font-body: "Manrope", system-ui, sans-serif;
+
+      --logo-url: url("{% static 'img/logo.svg' %}");
+      --logo-wave-dur: 6.7s;
+      --logo-wave: linear-gradient(
+        90deg, #3F422E 0%, #81531D 16%, #D78B30 30%,
+        #E9B76A 42%, #D78B30 54%, #81531D 70%, #3F422E 100%
+      );
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--olive);
+      background: #F5E6C5;
+    }
+
+    /* ============ LAYOUT: 2 kolom (sidebar | konten), tidak bisa saling menimpa ============ */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+      padding: 16px 24px 16px 6px;
+    }
+
+    /* ============ SIDEBAR ============ */
+    .sidebar-menu {
+      position: sticky;
+      top: 16px;
+      height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+      padding: 40px 14px 22px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      border: 1px solid #EADFC6;
+      border-radius: 20px;
+      background: #FFFDF8;
+      box-shadow: 0 4px 16px rgba(63, 66, 46, .06);
+    }
+    .sidebar-menu::-webkit-scrollbar { width: 0; }
+    .sidebar-menu > * { position: relative; z-index: 1; }
+
+    /* Logo */
+    .brand { margin-bottom: 10px; padding: 0 1px; }
+    .navbar__brand { position: relative; display: block; width: 220px; }
+    .navbar__brand img { width: 100%; height: auto; display: block; }
+    @supports ((-webkit-mask-image: url("x")) or (mask-image: url("x"))) {
+      .navbar__brand::after {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        -webkit-mask: var(--logo-url) left center / 100% 100% no-repeat;
+                mask: var(--logo-url) left center / 100% 100% no-repeat;
+        background-image: var(--logo-wave); background-size: 200% 100%;
+        background-repeat: repeat-x;
+        animation: logo-wave var(--logo-wave-dur) linear infinite;
+      }
+    }
+    @keyframes logo-wave { from { background-position: 200% 0; } to { background-position: 0% 0; } }
+
+    /* Menu */
+    .nav-list { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; }
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; min-height: 64px; padding: 14px;
+      border: 1px solid transparent; border-radius: 12px;
+      background: transparent; color: var(--navy);
+      font: 700 18px/1.2 var(--font-body); text-align: left; cursor: pointer;
+      transition: all .2s ease;
+    }
+    .nav-btn i { width: 28px; flex-shrink: 0; text-align: center; font-size: 24px; color: var(--olive); }
+    .nav-btn:hover { background: rgba(245, 230, 197, .55); }
+    .nav-btn.is-active {
+      background: #F5E6C5;
+      color: var(--olive-ink);
+      border-color: transparent;
+      box-shadow: none;
+    }
+    .nav-btn.is-active i { color: var(--olive); }
+
+    /* Toggle Peserta <-> Panitia (di bawah menu) */
+    .rs { margin: 18px 0 4px; padding: 0 2px; }
+    .rs__track {
+      position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+      width: 100%; height: 50px; padding: 0; cursor: pointer;
+      border: 1px solid #E6DCC3; border-radius: 999px;
+      background: #F5E6C5;
+      box-shadow: inset 0 1px 3px rgba(63, 66, 46, .10);
+      transition: background .35s ease, border-color .35s ease;
+    }
+    .rs[data-mode="panitia"] .rs__track {
+      background: #3F422E;
+      border-color: #3F422E;
+    }
+    .rs__track:focus-visible { outline: 3px solid rgba(215, 139, 48, .55); outline-offset: 2px; }
+    .rs__label {
+      position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      font: 800 12.5px/1 'Manrope', sans-serif; color: var(--olive); transition: color .3s;
+    }
+    .rs[data-mode="panitia"] .rs__label { color: #F5E6C5; }
+    .rs__knob {
+      position: absolute; z-index: 2; top: 4px; left: 4px;
+      width: calc(50% - 4px); height: calc(100% - 8px);
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      border-radius: 999px; color: #fff; font: 800 12.5px/1 'Manrope', sans-serif;
+      background: #3F422E;
+      box-shadow: 0 3px 8px rgba(63, 66, 46, .30);
+      transition: transform .35s cubic-bezier(.5, 1.4, .5, 1), background .35s ease, color .35s ease;
+    }
+    .rs[data-mode="panitia"] .rs__knob {
+      transform: translateX(100%);
+      background: #F5E6C5;
+      color: #3F422E;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
+    }
+
+    /* Bawah: profil + logout */
+    .sidebar-bottom { margin-top: auto; padding: 14px 4px 0; }
+    .profile-box {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; min-width: 0; padding: 16px 8px 8px;
+      border: 0; border-top: 1px solid #E6DCC3; border-radius: 12px;
+      background: transparent; cursor: pointer; text-align: left;
+      font-family: var(--font-body); transition: background .2s;
+    }
+    .profile-box:hover { background: rgba(245, 230, 197, .45); }
+    .profile-box.is-active { background: #F5E6C5; }
+    .profile-box__avatar {
+      width: 64px; height: 64px; flex-shrink: 0; overflow: hidden;
+      border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #fff;
+      display: grid; place-items: center; color: var(--olive); font-size: 24px;
+    }
+    .profile-box__avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+    .profile-box__info { display: block; min-width: 0; line-height: 1.25; }
+    .profile-box .profile-box__name { display: block; font: 700 16px/1.25 var(--font-body); color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .profile-box .profile-box__role { display: block; font: 500 11.5px/1.25 var(--font-body); color: var(--muted); }
+
+    .btn-logout {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; min-height: 56px; margin-top: 8px; padding: 0 12px;
+      border-radius: 12px; color: var(--olive-ink);
+      font-size: 18px; font-weight: 700; text-decoration: none;
+      transition: background .2s;
+    }
+    .btn-logout i { width: 28px; text-align: center; font-size: 24px; }
+    .btn-logout:hover { background: rgba(245, 230, 197, .6); }
+
+    /* ============ KONTEN ============ */
+    .content-area { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding: 0 0 40px; }
+
+    .event-chip {
+      display: inline-flex; align-items: center; gap: 10px; align-self: flex-start;
+      padding: 8px 16px; border-radius: 999px;
+      background: #FFFDF8; border: 1px solid var(--line);
+      font-size: 13px; color: var(--muted);
+    }
+    .event-chip i { color: var(--olive); }
+    .event-chip strong { color: var(--olive); font-weight: 800; }
+
+    /* ============ STAT CARDS ============ */
+    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .stat-card {
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; gap: 18px;
+      padding: 22px 24px; border-radius: 22px;
+      background: #FFFDF8;
+      border: 1px solid var(--line);
+      box-shadow: 0 4px 16px rgba(63,66,46,.07);
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .stat-card__icon {
+      position: relative; z-index: 1; flex-shrink: 0;
+      width: 62px; height: 62px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 26px; color: #fff;
+      background: var(--grad); box-shadow: 0 6px 14px var(--shadow);
+    }
+    .stat-card__body { position: relative; z-index: 1; flex: 1; min-width: 0; }
+    .stat-card__label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .stat-card__val { margin: 2px 0 0; font-family: var(--font-head); font-size: 40px; font-weight: 800; line-height: 1.1; color: var(--olive); }
+    .stat-card__hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .stat-card__bar { height: 6px; border-radius: 99px; background: rgba(63,66,46,.1); margin-top: 10px; overflow: hidden; }
+    .stat-card__bar span { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--grad); transition: width .5s ease; }
+
+    .stat-card--total   { --grad: linear-gradient(135deg, #8A8D6B, var(--olive)); --shadow: rgba(63,66,46,.35); --tint: rgba(63,66,46,.08); }
+    .stat-card--absent  { --grad: linear-gradient(135deg, #F0B35A, var(--orange)); --shadow: rgba(215,139,48,.4); --tint: rgba(215,139,48,.14); }
+    .stat-card--present { --grad: linear-gradient(135deg, #3FA077, var(--green)); --shadow: rgba(23,96,63,.35); --tint: rgba(23,96,63,.10); }
+
+    .panel-card { background: #FFFDF8; border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 8px 24px rgba(129,83,29,.08); overflow: hidden; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; border: 0; background: var(--olive); color: var(--cream); font: 700 15px/1 var(--font-body); cursor: pointer; transition: background .2s; }
+    .btn-primary:hover { background: var(--olive-ink); }
+    .btn-olive { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; border: 0; background: var(--olive); color: var(--cream); font: 700 15px/1 var(--font-body); cursor: pointer; transition: background .2s; }
+    .btn-olive:hover { background: var(--olive-ink); }
+
+    .tab-pane { display: none; }
+    .tab-pane.is-active { display: block; animation: fade-in .3s ease; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ============ RESPONSIF ============ */
+    @media (max-width: 1100px) {
+      .stat-cards { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .dashboard-layout { grid-template-columns: 1fr; padding: 12px; }
+      .sidebar-menu { position: relative; top: 0; height: auto; overflow: hidden; padding: 24px 14px 16px; }
+      .nav-btn { min-height: 56px; font-size: 16px; }
+      .sidebar-bottom { margin-top: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="dashboard-layout">
+
+    <!-- SIDEBAR KIRI -->
+    <aside class="sidebar-menu">
+
+      <div class="brand">
+        <a href="{% url 'landing' %}" class="navbar__brand" title="Kembali ke Beranda">
+          <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
+        </a>
+      </div>
+      <!-- TOGGLE PESERTA <-> PANITIA -->
+      <div class="rs" data-mode="panitia">
+        <button type="button"
+                class="rs__track"
+                role="switch"
+                aria-checked="true"
+                aria-label="Ganti mode antara Peserta dan Panitia"
+                data-url="{% url 'peserta_dashboard' %}">
+          <span class="rs__label"><i class="fa-solid fa-user"></i> Peserta</span>
+          <span class="rs__label"><i class="fa-solid fa-user-shield"></i> Panitia</span>
+          <span class="rs__knob">
+            <i class="fa-solid fa-user-shield"></i> Panitia
+          </span>
+        </button>
+      </div>
+      <script>
+        (function () {
+          if (window.__rsInit) return;
+          window.__rsInit = true;
+          document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.rs__track');
+            if (!btn) return;
+            const box = btn.closest('.rs');
+            const goingToPanitia = box.dataset.mode !== 'panitia';
+            box.dataset.mode = goingToPanitia ? 'panitia' : 'peserta';
+            btn.setAttribute('aria-checked', goingToPanitia ? 'true' : 'false');
+            setTimeout(function () { window.location.href = btn.dataset.url; }, 380);
+          });
+        })();
+      </script>
+
+      <!-- MENU -->
+      <nav class="nav-list" aria-label="Menu Navigasi Panitia">
+        <button type="button" class="nav-btn" data-target="tab-scanner" onclick="switchPanitiaTab('tab-scanner')">
+          <i class="fa-solid fa-qrcode"></i> Scan &amp; Input Absen
+        </button>
+        <button type="button" class="nav-btn" data-target="tab-peserta" onclick="switchPanitiaTab('tab-peserta')">
+          <i class="fa-solid fa-users-line"></i> Daftar Peserta
+        </button>
+        <button type="button" class="nav-btn is-active" data-target="tab-dokumentasi" onclick="switchPanitiaTab('tab-dokumentasi')">
+          <i class="fa-regular fa-folder-open"></i> Dokumentasi Event
+        </button>
+      </nav>
+
+
+
+      <!-- BAWAH: PROFIL + LOGOUT -->
+      <div class="sidebar-bottom">
+        <button type="button" class="profile-box" id="profileBox" data-target="tab-profil" onclick="switchPanitiaTab('tab-profil')" title="Profil &amp; Event">
+          <span class="profile-box__avatar" id="headerAvatar">
+            <img src="{% static 'img/achievement-hero.png' %}" alt="">
+          </span>
+          <span class="profile-box__info">
+            <span class="profile-box__name" id="headerUserName">{{ request.user.get_full_name|default:"Denny Mulia" }}</span>
+            <span class="profile-box__role">Panitia Biasa</span>
+          </span>
+        </button>
+        <a href="{% url 'logout_page' %}" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> keluar</a>
+      </div>
+    </aside>
+
+    <!-- AREA KONTEN KANAN -->
+    <div class="content-area">
+
+      <div class="event-chip">
+        <i class="fa-regular fa-calendar-check"></i>
+        Event: <strong id="sidebarEventName">Seminar Teknologi Nusantara</strong>
+      </div>
+
+      <!-- STATISTIK -->
+      <div class="stat-cards">
+        <div class="stat-card stat-card--total">
+          <div class="stat-card__icon"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-card__body">
+            <div class="stat-card__label">Total Peserta</div>
+            <p class="stat-card__val" id="statTotal">0</p>
+            <div class="stat-card__hint">Peserta terdaftar</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-card--absent">
+          <div class="stat-card__icon"><i class="fa-regular fa-clock"></i></div>
+          <div class="stat-card__body">
+            <div class="stat-card__label">Belum Hadir</div>
+            <p class="stat-card__val" id="statAbsent">0</p>
+            <div class="stat-card__hint">Menunggu check-in</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-card--present">
+          <div class="stat-card__icon"><i class="fa-solid fa-check"></i></div>
+          <div class="stat-card__body">
+            <div class="stat-card__label">Sudah Hadir</div>
+            <p class="stat-card__val" id="statPresent">0</p>
+            <div class="stat-card__hint"><span id="statPercent">0%</span> tingkat kehadiran</div>
+            <div class="stat-card__bar"><span id="statBar"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KONTEN TAB -->
+      <div>
+        {% block content %}{% endblock %}
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // GANTI MENU TAB
+    function switchPanitiaTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('is-active'));
+      document.querySelectorAll('.nav-btn, .profile-box').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.target === tabId);
+      });
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('is-active');
+    }
+
+    // PERSENTASE KEHADIRAN (otomatis mengikuti angka statistik)
+    function updateAttendanceBar() {
+      const total = parseInt(document.getElementById('statTotal').textContent, 10) || 0;
+      const present = parseInt(document.getElementById('statPresent').textContent, 10) || 0;
+      const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+      document.getElementById('statPercent').textContent = pct + '%';
+      document.getElementById('statBar').style.width = pct + '%';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedEventName = localStorage.getItem('simevent_panitia_event_name');
+      if (savedEventName) {
+        const sidebarTitle = document.getElementById('sidebarEventName');
+        if (sidebarTitle) sidebarTitle.textContent = savedEventName;
+      }
+
+      ['statTotal', 'statPresent'].forEach(id => {
+        new MutationObserver(updateAttendanceBar)
+          .observe(document.getElementById(id), { childList: true, characterData: true, subtree: true });
+      });
+      updateAttendanceBar();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<style>
+  .table-toolbar {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .search-peserta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 0 14px;
+    height: 42px;
+    min-width: 260px;
+  }
+  .search-peserta input {
+    border: 0;
+    outline: 0;
+    width: 100%;
+    font: inherit;
+    font-size: 14px;
+    color: var(--olive);
+  }
+  .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-pill {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--cream-soft);
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filter-pill.is-active {
+    background: var(--olive);
+    color: var(--cream);
+    border-color: var(--olive);
+  }
+
+  .peserta-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .peserta-table th {
+    background: var(--cream-soft);
+    padding: 14px 22px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--brown);
+    border-bottom: 1px solid var(--line);
+  }
+  .peserta-table td {
+    padding: 15px 22px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .badge-hadir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    background: var(--green-bg);
+    color: var(--green);
+  }
+  .badge-belum {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    background: #FDEFD9;
+    color: var(--orange-deep);
+  }
+</style>
+
+<div class="panel-card">
+  <div class="table-toolbar">
+    <div>
+      <h3 style="margin:0; font-size:18px; font-weight:800;">Daftar Nama Peserta Event</h3>
+      <p style="margin:2px 0 0; font-size:13px; color:var(--muted);">Pantau status kehadiran atau lakukan absen langsung dari daftar.</p>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <div class="search-peserta">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+        <input type="search" id="searchParticipantInput" placeholder="Cari nama atau kode tiket..." oninput="renderParticipantTable()">
+      </div>
+
+      <div class="filter-pills">
+        <button type="button" class="filter-pill is-active" data-filter="all" onclick="setParticipantFilter('all', this)">Semua</button>
+        <button type="button" class="filter-pill" data-filter="present" onclick="setParticipantFilter('present', this)">Sudah Hadir</button>
+        <button type="button" class="filter-pill" data-filter="absent" onclick="setParticipantFilter('absent', this)">Belum Hadir</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="peserta-table">
+      <thead>
+        <tr>
+          <th>Kode Tiket</th>
+          <th>Nama Peserta</th>
+          <th>Email / Instansi</th>
+          <th>Waktu Hadir</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="participantTableBody"></tbody>
+    </table>
+  </div>
+</div>

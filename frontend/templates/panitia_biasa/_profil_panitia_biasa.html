@@ -1,0 +1,352 @@
+<style>
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+  }
+  .profile-side {
+    padding: 28px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .profile-avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--brown));
+    color: var(--cream);
+    display: grid;
+    place-items: center;
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border: 4px solid var(--cream);
+    box-shadow: 0 8px 20px rgba(129, 83, 29, 0.18);
+  }
+  .profile-avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--olive);
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    font: 500 14px/1 var(--font-body);
+    color: var(--olive);
+  }
+  .form-input:focus { outline: 2px solid var(--orange); border-color: transparent; }
+  @media (max-width: 860px) {
+    .profile-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="profile-grid">
+  <!-- KARTU FOTO PROFIL & AKSES PERAN -->
+  <div class="panel-card profile-side">
+    <div class="profile-avatar-preview" id="profileAvatarPreview">
+      <i class="fa-solid fa-user"></i>
+    </div>
+    <h3 id="profileCardName" style="margin:0; font-size:19px; font-weight:800;">{{ request.user.get_full_name|default:"Denny Mulia" }}</h3>
+    <p style="margin:4px 0 16px; font-size:13px; color:var(--muted);">Panitia Biasa - SIMEVENT</p>
+
+    <label for="avatarUploadInput" class="btn-primary" style="width:100%; cursor:pointer;">
+      <i class="fa-solid fa-camera"></i> Ubah Foto Profil
+    </label>
+    <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;" onchange="handleAvatarChange(event)">
+
+    <hr style="width:100%; border:0; border-top:1px solid var(--line); margin:22px 0;">
+
+    <p style="font-size:12px; font-weight:800; color:var(--brown); margin:0 0 10px;">GANTI MODE TAMPILAN AKUN</p>
+    <a href="{% url 'peserta_dashboard' %}" class="btn-olive" style="width:100%; text-decoration:none;">
+      <i class="fa-solid fa-repeat"></i> Beralih ke Mode Peserta
+    </a>
+  </div>
+
+  <!-- FORM UBAH NAMA & PASSWORD -->
+  <div class="panel-card" style="padding: 28px;">
+    <h3 style="margin:0 0 6px; font-size:20px; font-weight:800;">Pengaturan Profil &amp; Keamanan Panitia</h3>
+    <p style="margin:0 0 22px; font-size:13px; color:var(--muted);">Perbarui nama tampilan dan kata sandi akun panitia Anda.</p>
+
+    <form onsubmit="handleProfileSave(event)">
+      <div class="form-group">
+        <label for="inputNamaPanitia">Nama Lengkap Panitia</label>
+        <input type="text" id="inputNamaPanitia" class="form-input" value="{{ request.user.get_full_name|default:'Denny Mulia' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="inputPasswordLama">Password Saat Ini</label>
+        <input type="password" id="inputPasswordLama" class="form-input" placeholder="Masukkan password saat ini (opsional jika hanya ganti nama)">
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+        <div class="form-group">
+          <label for="inputPasswordBaru">Password Baru</label>
+          <input type="password" id="inputPasswordBaru" class="form-input" placeholder="Minimal 12 karakter">
+        </div>
+        <div class="form-group">
+          <label for="inputKonfirmasiPassword">Konfirmasi Password Baru</label>
+          <input type="password" id="inputKonfirmasiPassword" class="form-input" placeholder="Ulangi password baru">
+        </div>
+      </div>
+
+      <div id="profileAlertBox" style="display:none; padding:12px 16px; border-radius:12px; margin-bottom:16px; font-size:13px; font-weight:700;"></div>
+
+      <button type="submit" class="btn-primary">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Profil
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY_PESERTA = 'simevent_panitia_biasa_peserta_list';
+  const defaultParticipants = [
+    { code: 'SIM-001', name: 'Andi Pratama', email: 'andi.pratama@unmul.ac.id', present: true, checkinTime: '08:15 WITA' },
+    { code: 'SIM-002', name: 'Siti Rahmawati', email: 'siti.rahma@gmail.com', present: true, checkinTime: '08:22 WITA' },
+    { code: 'SIM-003', name: 'Budi Santoso', email: 'budi.santoso@polnes.ac.id', present: false, checkinTime: '-' },
+    { code: 'SIM-004', name: 'Nabila Putri', email: 'nabila.putri@gmail.com', present: false, checkinTime: '-' },
+    { code: 'SIM-005', name: 'Rizky Ramadhan', email: 'rizky.rmd@itk.ac.id', present: false, checkinTime: '-' }
+  ];
+
+  let participants = [];
+  let currentFilter = 'all';
+  let html5QrScanner = null;
+  let cameraActive = false;
+
+  function loadParticipants() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_PESERTA));
+      participants = Array.isArray(saved) && saved.length ? saved : defaultParticipants;
+    } catch (e) {
+      participants = defaultParticipants;
+    }
+  }
+
+  function saveParticipants() {
+    localStorage.setItem(STORAGE_KEY_PESERTA, JSON.stringify(participants));
+  }
+
+  function updateStatsAndUI() {
+    const total = participants.length;
+    const presentCount = participants.filter(p => p.present).length;
+    const absentCount = total - presentCount;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statPresent').textContent = presentCount;
+    document.getElementById('statAbsent').textContent = absentCount;
+
+    renderParticipantTable();
+  }
+
+  function setParticipantFilter(filter, btnEl) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('is-active'));
+    if (btnEl) btnEl.classList.add('is-active');
+    renderParticipantTable();
+  }
+
+  function renderParticipantTable() {
+    const tbody = document.getElementById('participantTableBody');
+    const query = (document.getElementById('searchParticipantInput')?.value || '').trim().toLowerCase();
+    if (!tbody) return;
+
+    const filtered = participants.filter(p => {
+      if (currentFilter === 'present' && !p.present) return false;
+      if (currentFilter === 'absent' && p.present) return false;
+      if (query && !(`${p.code} ${p.name} ${p.email}`).toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:28px; color:var(--muted);">Tidak ada data peserta yang sesuai filter.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(p => `
+      <tr>
+        <td><strong>${p.code}</strong></td>
+        <td><strong>${p.name}</strong></td>
+        <td style="color:var(--muted);">${p.email}</td>
+        <td>${p.checkinTime}</td>
+        <td>
+          ${p.present
+            ? `<span class="badge-hadir"><i class="fa-solid fa-circle-check"></i> Sudah Hadir</span>`
+            : `<span class="badge-belum"><i class="fa-regular fa-clock"></i> Belum Hadir</span>`
+          }
+        </td>
+        <td>
+          ${p.present
+            ? `<button type="button" onclick="togglePresence('${p.code}')" style="background:transparent; border:1px solid var(--line); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; color:var(--muted);">Batalkan</button>`
+            : `<button type="button" onclick="markParticipantPresent('${p.code}')" class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px;">Absen Hadir</button>`
+          }
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function markParticipantPresent(rawCode) {
+    const code = (rawCode || '').trim().toUpperCase();
+    const target = participants.find(p => p.code.toUpperCase() === code);
+    const resultBox = document.getElementById('scanResultContainer');
+    const badge = document.getElementById('scanStatusBadge');
+
+    if (!target) {
+      badge.textContent = 'KODE TIDAK DITEMUKAN';
+      badge.style.background = 'var(--danger-bg)';
+      badge.style.color = 'var(--danger)';
+      resultBox.innerHTML = `
+        <div class="scan-success-card" style="border-color:var(--danger); background:#fff5f5;">
+          <h4 style="margin:0 0 6px; color:var(--danger);"><i class="fa-solid fa-circle-exclamation"></i> Kode "${code}" Tidak Terdaftar</h4>
+          <p style="margin:0; font-size:13px; color:var(--muted);">Pastikan kode tiket sesuai dengan daftar peserta (contoh: SIM-003).</p>
+        </div>
+      `;
+      return;
+    }
+
+    const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA';
+    target.present = true;
+    target.checkinTime = nowStr;
+    saveParticipants();
+    updateStatsAndUI();
+
+    badge.textContent = 'BERHASIL ABSEN';
+    badge.style.background = 'var(--green-bg)';
+    badge.style.color = 'var(--green)';
+    resultBox.innerHTML = `
+      <div class="scan-success-card">
+        <span class="badge-hadir" style="margin-bottom:10px;"><i class="fa-solid fa-check"></i> Tercatat Hadir (${nowStr})</span>
+        <h3 style="margin:4px 0; font-size:20px;">${target.name}</h3>
+        <p style="margin:0 0 8px; font-size:13px; color:var(--muted);">${target.email}</p>
+        <p style="margin:0; font-size:13px;">Kode Tiket: <strong>${target.code}</strong></p>
+      </div>
+    `;
+  }
+
+  function togglePresence(code) {
+    const target = participants.find(p => p.code === code);
+    if (!target) return;
+    target.present = !target.present;
+    target.checkinTime = target.present
+      ? new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA'
+      : '-';
+    saveParticipants();
+    updateStatsAndUI();
+  }
+
+  function handleManualCheckin(e) {
+    e.preventDefault();
+    const input = document.getElementById('manualCodeInput');
+    markParticipantPresent(input.value);
+    input.value = '';
+  }
+
+  function toggleQrCamera() {
+    const btn = document.getElementById('btnToggleCamera');
+    const placeholder = document.getElementById('cameraPlaceholder');
+
+    if (cameraActive && html5QrScanner) {
+      html5QrScanner.stop().then(() => {
+        cameraActive = false;
+        placeholder.style.display = 'block';
+        btn.innerHTML = '<i class="fa-solid fa-camera"></i> Nyalakan Kamera';
+      });
+      return;
+    }
+
+    if (typeof Html5Qrcode === 'undefined') {
+      alert('Library kamera sedang dimuat, silakan coba lagi atau gunakan input manual.');
+      return;
+    }
+
+    placeholder.style.display = 'none';
+    html5QrScanner = new Html5Qrcode('qrReader');
+    html5QrScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 240, height: 240 } },
+      (decodedText) => {
+        markParticipantPresent(decodedText);
+      },
+      () => {}
+    ).then(() => {
+      cameraActive = true;
+      btn.innerHTML = '<i class="fa-solid fa-video-slash"></i> Matikan Kamera';
+    }).catch(() => {
+      placeholder.style.display = 'block';
+      alert('Tidak dapat mengakses kamera. Pastikan izin kamera diberikan atau gunakan fitur Input Manual di bawah.');
+    });
+  }
+
+  function handleAvatarChange(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      localStorage.setItem('simevent_panitia_biasa_avatar', dataUrl);
+      document.getElementById('profileAvatarPreview').innerHTML = `<img src="${dataUrl}" alt="Foto Profil">`;
+      document.getElementById('headerAvatar').innerHTML = `<img src="${dataUrl}" alt="Foto Profil">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleProfileSave(event) {
+    event.preventDefault();
+    const newName = document.getElementById('inputNamaPanitia').value.trim();
+    const passBaru = document.getElementById('inputPasswordBaru').value;
+    const passKonf = document.getElementById('inputKonfirmasiPassword').value;
+    const alertBox = document.getElementById('profileAlertBox');
+
+    if (passBaru && passBaru !== passKonf) {
+      alertBox.style.display = 'block';
+      alertBox.style.background = 'var(--danger-bg)';
+      alertBox.style.color = 'var(--danger)';
+      alertBox.textContent = 'Konfirmasi password baru tidak cocok!';
+      return;
+    }
+
+    localStorage.setItem('simevent_panitia_biasa_name', newName);
+    document.getElementById('profileCardName').textContent = newName;
+    document.getElementById('headerUserName').textContent = newName;
+    document.getElementById('consoleUserName').textContent = newName;
+
+    document.getElementById('inputPasswordLama').value = '';
+    document.getElementById('inputPasswordBaru').value = '';
+    document.getElementById('inputKonfirmasiPassword').value = '';
+
+    alertBox.style.display = 'block';
+    alertBox.style.background = 'var(--green-bg)';
+    alertBox.style.color = 'var(--green)';
+    alertBox.textContent = passBaru
+      ? 'Profil dan password berhasil diperbarui!'
+      : 'Nama profil panitia berhasil diperbarui!';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadParticipants();
+    updateStatsAndUI();
+
+    const savedName = localStorage.getItem('simevent_panitia_biasa_name');
+    if (savedName) {
+      document.getElementById('inputNamaPanitia').value = savedName;
+      document.getElementById('profileCardName').textContent = savedName;
+      document.getElementById('headerUserName').textContent = savedName;
+      document.getElementById('consoleUserName').textContent = savedName;
+    }
+    const savedAvatar = localStorage.getItem('simevent_panitia_biasa_avatar');
+    if (savedAvatar) {
+      document.getElementById('profileAvatarPreview').innerHTML = `<img src="${savedAvatar}" alt="Foto Profil">`;
+      document.getElementById('headerAvatar').innerHTML = `<img src="${savedAvatar}" alt="Foto Profil">`;
+    }
+  });
+</script>

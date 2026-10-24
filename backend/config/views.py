@@ -612,6 +612,13 @@ def peserta_achievement(request):
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
+def panitia_biasa_dashboard(request):
+    # Bypass pengecekan permission (require_organizer) untuk panitia biasa
+    return render(request, "panitia_biasa_page.html")
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
 def panitia_dashboard(request):
     require_organizer(
         request.user
