@@ -277,8 +277,8 @@ def after_login(request):
 @never_cache
 @require_http_methods(["GET", "POST"])
 @login_required(login_url="login_page")
-def peserta_akun(request):
-    if request.user.role in ("ADMIN", "ORGANIZER"):
+def peserta_akun(request, template_name="peserta/akun.html", success_url="peserta_dashboard"):
+    if template_name == "peserta/akun.html" and request.user.role in ("ADMIN", "ORGANIZER"):
         return redirect("panitia_dashboard")
 
     if request.method == "POST":
@@ -286,7 +286,7 @@ def peserta_akun(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Biodata berhasil disimpan. Akun Anda siap digunakan.")
-            return redirect("peserta_dashboard")
+            return redirect(success_url)
     else:
         form = ProfileForm(instance=request.user)
 
@@ -304,7 +304,7 @@ def peserta_akun(request):
         for value in profile_values
     )
 
-    return render(request, "peserta/akun.html", {
+    return render(request, template_name, {
         "form": form,
         "profile_complete": request.user.profile_complete,
         "completed_profile_fields": completed_profile_fields,
@@ -767,3 +767,11 @@ admin_support = _admin_panel("support_admin")
 admin_finance = _admin_panel("keuangan_admin")
 admin_audit = _admin_panel("audit_admin")
 admin_settings = _admin_panel("pengaturan_admin")
+
+
+def panitia_akun(request):
+    return peserta_akun(
+        request,
+        template_name="panitia_biasa/akun_panitia_biasa.html",
+        success_url="panitia_akun",
+    )
