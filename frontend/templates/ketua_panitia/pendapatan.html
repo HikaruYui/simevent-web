@@ -3,10 +3,98 @@
 {% block page_key %}pendapatan{% endblock %}
 {% block nav_pendapatan %} class="is-active" aria-current="page"{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Pendapatan</h1></header>
-<section class="stat-row"><article class="card stat"><p class="stat__label">Total pendapatan</p><p class="stat__value" id="pdTotal"></p><p class="stat__note" id="pdDelta"></p></article>
-<article class="card stat"><p class="stat__label">Rata-rata per tiket</p><p class="stat__value" id="pdAvg"></p><p class="stat__note stat__note--muted">Pendapatan / tiket terjual</p></article>
-<article class="card stat"><p class="stat__label">Event terlaris</p><p class="stat__value" id="pdTop" style="font-size:20px"></p><p class="stat__note stat__note--muted" id="pdTopNote"></p></article></section>
-<article class="card chart-card chart-card--bar"><h2 class="sec-title">Pendapatan per bulan</h2><div class="chart-card__plot" id="pdChart"></div></article>
-<div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th class="num">Tiket</th><th class="num">Harga</th><th class="num">Pendapatan</th><th>Kontribusi</th></tr></thead><tbody id="pdBody"></tbody><tfoot id="pdFoot"></tfoot></table></div>
+<header class="eo-head" style="margin-bottom: 24px !important;">
+  <h1>Pendapatan</h1>
+</header>
+
+<!-- Ringkasan Statistik -->
+<section class="stat-row" style="margin-bottom: 24px;">
+  <article class="card stat">
+    <p class="stat__label">Total pendapatan</p>
+    <p class="stat__value" id="pdTotal"></p>
+    <p class="stat__note" id="pdDelta"></p>
+  </article>
+  <article class="card stat">
+    <p class="stat__label">Rata-rata per tiket</p>
+    <p class="stat__value" id="pdAvg"></p>
+    <p class="stat__note stat__note--muted">Pendapatan / tiket terjual</p>
+  </article>
+  <article class="card stat">
+    <p class="stat__label">Event terlaris</p>
+    <p class="stat__value" id="pdTop" style="font-size:20px"></p>
+    <p class="stat__note stat__note--muted" id="pdTopNote"></p>
+  </article>
+</section>
+
+<!-- Card Grafik Line -->
+<article class="card chart-card chart-card--bar" style="margin-bottom: 24px;">
+  <h2 class="sec-title">Pendapatan per bulan</h2>
+  <div class="chart-card__plot" id="pdChart"></div>
+</article>
+
+<!-- Card Putih Utama untuk Tabel Pendapatan -->
+<div class="card" style="background-color: #ffffff !important; padding: 0 !important; border-radius: 16px; overflow: hidden; margin-top: 24px;">
+  <style>
+    /* Styling Header Tabel: Full-Bleed & Rata Tengah */
+    .table-wrap.card-inner .tbl thead th {
+      background-color: var(--olive, #2b3022) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 13px !important;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 16px 12px !important;
+      text-align: center !important;
+      border: none !important;
+    }
+
+    /* Isi Sel Tabel Rata Tengah */
+    .table-wrap.card-inner .tbl tbody td,
+    .table-wrap.card-inner .tbl tfoot td {
+      background-color: #ffffff !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      padding: 16px 12px !important;
+      border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    /* Kolom Pertama (Nama Event) Dibuat Rata Kiri Agar Enak Dibaca */
+    .table-wrap.card-inner .tbl tbody td:first-child,
+    .table-wrap.card-inner .tbl tfoot td:first-child,
+    .table-wrap.card-inner .tbl thead th:first-child {
+      text-align: left !important;
+      padding-left: 20px !important;
+    }
+
+    /* Matikan Hover & Zebra Striping */
+    .table-wrap.card-inner .tbl tr:nth-child(even),
+    .table-wrap.card-inner .tbl tr:nth-child(odd),
+    .table-wrap.card-inner .tbl tr:hover {
+      background-color: #ffffff !important;
+      background: #ffffff !important;
+    }
+
+    /* Merapikan posisi progress bar meter kontribusi */
+    .table-wrap.card-inner .tbl .meter {
+      justify-content: center;
+    }
+  </style>
+
+  <!-- Tabel Pendapatan -->
+  <div class="table-wrap card-inner" style="margin: 0; padding: 0;">
+    <table class="tbl" style="width: 100%; margin: 0;">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Tiket</th>
+          <th>Harga</th>
+          <th>Pendapatan</th>
+          <th>Kontribusi</th>
+        </tr>
+      </thead>
+      <tbody id="pdBody"></tbody>
+      <tfoot id="pdFoot"></tfoot>
+    </table>
+  </div>
+</div>
 {% endblock %}
