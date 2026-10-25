@@ -1,10 +1,3 @@
-/* =========================================================
-   SIMEVENT - Control Panel Admin
-   Memakai data contoh yang SAMA dengan Dashboard Ketua Panitia
-   (window.EO) dan penyimpanan bersama (window.SIM), jadi tindakan
-   admin langsung terlihat di dashboard ketua panitia.
-   Ganti dengan data dari backend saat API siap.
-   ========================================================= */
 (function () {
   "use strict";
 
@@ -95,8 +88,58 @@
   function askReject(e, after) { ask({ title: "Tolak event?", text: '"' + e.nama + '" oleh ' + e.organizer + ".", reason: "Alasan penolakan (dikirim ke penyelenggara)", ok: "Tolak event", danger: true, onOk: function (r) { rejectEvent(e, r); after(); } }); }
   function askSuspend(e, after) { ask({ title: "Tangguhkan event?", text: 'Event "' + e.nama + '" tidak lagi tampil untuk peserta sampai dipulihkan.', reason: "Alasan penangguhan", ok: "Tangguhkan", danger: true, onOk: function (r) { suspendEvent(e, r); after(); } }); }
 
+  /* ---------- Proposal & detail event (dialog bersama) ---------- */
+  var RINGKAS = {
+    Konferensi: "Mempertemukan akademisi, praktisi, dan mahasiswa untuk berbagi riset dan membangun jejaring kolaborasi.",
+    Workshop: "Pelatihan praktik langsung agar peserta menguasai keterampilan baru dan membawa pulang hasil kerja nyata.",
+    Seminar: "Menghadirkan narasumber ahli untuk membahas isu terkini dan membuka ruang tanya jawab dengan peserta.",
+    Webinar: "Sesi daring terbuka agar peserta dari berbagai daerah dapat belajar tanpa terkendala jarak.",
+    Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
+    "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
+  };
+  function proposalOf(e) {
+    var n = st.newEvents.filter(function (x) { return x.id === e.id; })[0];
+    if (n && n.proposal) { return { file: n.proposal.file, size: n.proposal.size, uploaded: n.proposal.uploaded, ringkasan: n.proposal.ringkasan || RINGKAS[e.jenis] || RINGKAS.Seminar, asli: true }; }
+    var slug = e.nama.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    return { file: "Proposal_" + slug + ".pdf", size: (0.8 + (e.id % 7) * 0.35).toFixed(1).replace(".", ",") + " MB", uploaded: e.tanggal, ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar, asli: false };
+  }
+  var detailCtx = null;
+  function openDetail(e, after) {
+    var dlgD = $("#propDlg"), p = proposalOf(e), anggaran = Math.round(e.kuota * Math.max(e.harga, 25000) * 0.6 / 100000) * 100000;
+    detailCtx = { id: e.id, after: after };
+    $("#propDlgTitle").textContent = e.nama;
+    $("#propDlgBody").innerHTML =
+      '<dl class="dl"><dt>Penyelenggara</dt><dd>' + esc(e.organizer) + "</dd><dt>Jenis</dt><dd>" + esc(e.jenis) + "</dd><dt>Tanggal</dt><dd>" + fmtDate(e.tanggal) + "</dd><dt>Lokasi</dt><dd>" + esc(e.lokasi) + "</dd>" +
+      "<dt>Status</dt><dd>" + chip(e.status, STATUS_EVENT[e.status]) + "</dd><dt>Kuota &amp; harga</dt><dd>" + e.kuota + " peserta &middot; " + rp(e.harga) + "</dd>" +
+      (e.status === "diajukan" ? "" : "<dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " &middot; " + rp0(e.terjual * e.harga) + "</dd>") +
+      (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "") + "</dl>" +
+      '<h3 class="prop-h">Proposal</h3><div class="pdoc"><span class="pdoc__ico" aria-hidden="true">PDF</span><div><b>' + esc(p.file) + "</b><small>" + esc(p.size) + " &middot; diunggah " + fmtDate(p.uploaded) + '</small></div><button type="button" class="btn btn--ghost sm" data-open-doc>Buka proposal</button></div>' +
+      '<dl class="dl dl--prop"><dt>Tujuan &amp; ringkasan</dt><dd>' + esc(p.ringkasan) + "</dd><dt>Target peserta</dt><dd>" + e.kuota + " peserta, mahasiswa dan umum</dd><dt>Estimasi anggaran</dt><dd>" + rp0(anggaran) + "</dd></dl>" +
+      (p.asli ? "" : '<p class="pdoc__note">Isi proposal ini data contoh. File asli tersedia setelah unggah proposal tersambung ke backend.</p>');
+    var f = '<button type="button" class="btn btn--ghost" data-close>Tutup</button>';
+    if (e.status === "diajukan") { f += '<button type="button" class="btn btn--ghost" data-act="no">Tolak</button><button type="button" class="btn" data-act="ok">Setujui</button>'; }
+    else if (e.status === "mendatang" || e.status === "berlangsung") { f += '<button type="button" class="btn btn--ghost" data-act="sus">Tangguhkan</button>'; }
+    else if (e.status === "ditangguhkan") { f += '<button type="button" class="btn" data-act="res">Pulihkan</button>'; }
+    $("#propDlgFoot").innerHTML = f;
+    dlgD.showModal();
+  }
+  (function () {
+    var d = $("#propDlg"); if (!d) { return; }
+    d.addEventListener("click", function (ev) {
+      if (ev.target === d || ev.target.closest("[data-close]")) { d.close(); return; }
+      if (ev.target.closest("[data-open-doc]")) { toast("Contoh data: file proposal asli bisa dibuka setelah unggah tersambung ke backend."); return; }
+      var b = ev.target.closest("[data-act]"); if (!b || !detailCtx) { return; }
+      var e = eventById(detailCtx.id), after = detailCtx.after;
+      d.close();
+      if (b.dataset.act === "ok") { approveEvent(e); after(); }
+      else if (b.dataset.act === "no") { askReject(e, after); }
+      else if (b.dataset.act === "sus") { askSuspend(e, after); }
+      else if (b.dataset.act === "res") { restoreEvent(e); after(); }
+    });
+  })();
+
   /* ---------- Data: pengguna ---------- */
-  var PERAN = { admin: "Admin Platform", penyelenggara: "Ketua Panitia", lapangan: "Panitia Lapangan", dokumentasi: "Tim Dokumentasi", peserta: "Peserta" };
+  var PERAN = { admin: "Admin Platform", penyelenggara: "Ketua Panitia", panitia: "Panitia", peserta: "Peserta" };
   var BASE_USERS = [
     { email: "admin@simevent.id", nama: "Super Administrator", peran: "admin", org: "Platform SIMEVENT" },
     { email: "budi@simevent.id", nama: "Budi Santoso", peran: "penyelenggara", org: "BEM Fakultas Teknik" },
@@ -104,10 +147,10 @@
     { email: "rina.kartika@simevent.id", nama: "Dr. Rina Kartika", peran: "penyelenggara", org: "Fakultas Teknik" },
     { email: "sari.wulandari@simevent.id", nama: "Sari Wulandari", peran: "penyelenggara", org: "Himpunan Data Science" },
     { email: "andi.pratama@simevent.id", nama: "Andi Pratama", peran: "penyelenggara", org: "Komunitas Desain Kaltim" },
-    { email: "siti.rahma@mail.com", nama: "Siti Rahma", peran: "lapangan", org: "Tim " + ORG },
-    { email: "rafi.hidayat@mail.com", nama: "Rafi Hidayat", peran: "lapangan", org: "Tim " + ORG },
-    { email: "nabila.a@mail.com", nama: "Nabila Amalia", peran: "dokumentasi", org: "Tim " + ORG },
-    { email: "dimas.p@mail.com", nama: "Dimas Prakoso", peran: "dokumentasi", org: "Tim " + ORG, status: "ditangguhkan" },
+    { email: "siti.rahma@mail.com", nama: "Siti Rahma", peran: "panitia", org: "Tim " + ORG },
+    { email: "rafi.hidayat@mail.com", nama: "Rafi Hidayat", peran: "panitia", org: "Tim " + ORG },
+    { email: "nabila.a@mail.com", nama: "Nabila Amalia", peran: "panitia", org: "Tim " + ORG },
+    { email: "dimas.p@mail.com", nama: "Dimas Prakoso", peran: "panitia", org: "Tim " + ORG, status: "ditangguhkan" },
     { email: "rizky.ananda@mail.com", nama: "Rizky Ananda", peran: "peserta", org: "-" },
     { email: "salsa.putri@mail.com", nama: "Salsa Putri", peran: "peserta", org: "-" },
     { email: "fajar.nugroho@mail.com", nama: "Fajar Nugroho", peran: "peserta", org: "-" }
@@ -220,6 +263,37 @@
     if (!host.__ro && window.ResizeObserver) { host.__ro = new ResizeObserver(function () { host.__draw(); }); host.__ro.observe(host); }
   }
 
+    /* ---------- Grafik garis ---------- */
+  function lineChart(host, labels, values, name) {
+    function draw() {
+      host.innerHTML = "";
+      var W = Math.max(host.clientWidth, 300), H = Math.max(host.clientHeight, 240), m = { l: 56, r: 28, t: 30, b: 30 };
+      var max = Math.max.apply(null, values.concat([1])), p = Math.pow(10, Math.floor(Math.log10(max))), yMax = Math.ceil(max / p * 2) / 2 * p;
+      var inW = W - m.l - m.r, inH = H - m.t - m.b, slot = inW / values.length;
+      var svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", "0 0 " + W + " " + H); svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", name + ": " + labels.map(function (l, i) { return l + " " + rp0(values[i]); }).join(", "));
+      function add(tag, a, par) { var n = document.createElementNS(NS, tag); Object.keys(a).forEach(function (k) { n.setAttribute(k, a[k]); }); (par || svg).appendChild(n); return n; }
+      for (var i = 0; i <= 3; i++) {
+        var y = m.t + inH - inH * i / 3;
+        add("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, stroke: i === 0 ? "#9F886F" : "#E8DCC4", "stroke-width": 1 });
+        var t = add("text", { x: m.l - 8, y: y + 4, "text-anchor": "end", style: "font:500 12px var(--font-body);fill:var(--muted)" });
+        t.textContent = i === 0 ? "0" : (yMax * i / 3 >= 1e6 ? (yMax * i / 3 / 1e6).toFixed(1).replace(".0", "").replace(".", ",") + " jt" : Math.round(yMax * i / 3 / 1e3) + " rb");
+      }
+      var pts = values.map(function (v, i) { return [m.l + slot * (i + .5), m.t + inH - inH * v / yMax]; });
+      add("path", { d: "M" + pts.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" L"), fill: "none", stroke: "#3F422E", "stroke-width": 3, "stroke-linejoin": "round", "stroke-linecap": "round" });
+      pts.forEach(function (q, i) {
+        var last = i === pts.length - 1;
+        var c = add("circle", { cx: q[0], cy: q[1], r: last ? 6 : 5, fill: last ? "#D78B30" : "#3F422E", stroke: "#fff", "stroke-width": 2 });
+        add("title", {}, c).textContent = labels[i] + ": " + rp0(values[i]);
+        add("text", { x: q[0], y: H - 8, "text-anchor": "middle", style: "font:500 12px var(--font-body);fill:var(--muted)" }).textContent = labels[i];
+        if (last) { add("text", { x: q[0], y: q[1] - 12, "text-anchor": "middle", style: "font:800 12px var(--font-head);fill:var(--olive)" }).textContent = rp0(values[i]); }
+      });
+      host.appendChild(svg);
+    }
+    host.__draw = draw; draw();
+    if (!host.__ro && window.ResizeObserver) { host.__ro = new ResizeObserver(function () { host.__draw(); }); host.__ro.observe(host); }
+  }
+
   function download(name, text) {
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" }));
     a.download = name; document.body.appendChild(a); a.click(); a.remove();
@@ -243,14 +317,14 @@
       var open = tk.filter(function (t) { return t.status === "diaudit"; });
       var pProp = props.filter(function (p) { return p.status === "diajukan"; });
       setText("kUsers", num(us.filter(function (u) { return u.status !== "dibekukan"; }).length));
-      setText("kUsersNote", pProp.length + " pengajuan penyelenggara menunggu");
+      setText("kProp", pProp.length);
       setText("kEvents", num(evs.length));
-      setText("kEventsNote", evs.filter(function (e) { return e.status === "berlangsung"; }).length + " sedang berlangsung");
+      setText("kLiveEv", evs.filter(function (e) { return e.status === "berlangsung"; }).length);
       setText("kPend", pend.length); setText("kOk", disetujui.length);
       setText("kTkOpen", open.length); setText("kTkDone", tk.length - open.length);
       $("#apvBody").innerHTML = pend.length ? pend.map(function (e) {
         return '<tr><td><span class="cell-title">' + esc(e.nama) + '</span><span class="cell-sub">' + esc(e.jenis) + " &middot; " + esc(e.lokasi) + "</span></td><td>" + esc(e.organizer) + "</td><td>" + fmtDate(e.tanggal) + "</td>" +
-          '<td class="act"><button type="button" class="btn sm" data-ok="' + e.id + '">Setujui</button> <button type="button" class="btn btn--ghost sm" data-no="' + e.id + '">Tolak</button></td></tr>';
+          '<td class="act"><button type="button" class="btn btn--ghost sm" data-d="' + e.id + '">Detail</button> <button type="button" class="btn sm" data-ok="' + e.id + '">Setujui</button> <button type="button" class="btn btn--ghost sm" data-no="' + e.id + '">Tolak</button></td></tr>';
       }).join("") : '<tr><td colspan="4"><p class="tbl-empty">Tidak ada event yang menunggu persetujuan.</p></td></tr>';
       $("#tkMini").innerHTML = open.length ? open.slice(0, 4).map(function (t) {
         return '<li class="mini"><div><b>' + esc(t.judul) + "</b><small>" + esc(t.id) + " &middot; " + esc(t.pelapor) + " &middot; " + fmtDate(t.tanggal) + "</small></div></li>";
@@ -263,7 +337,8 @@
       }).join("");
     }
     $("#apvBody").addEventListener("click", function (ev) {
-      var ok = ev.target.closest("[data-ok]"), no = ev.target.closest("[data-no]");
+      var ok = ev.target.closest("[data-ok]"), no = ev.target.closest("[data-no]"), dt = ev.target.closest("[data-d]");
+      if (dt) { openDetail(eventById(parseInt(dt.dataset.d, 10)), render); }
       if (ok) { approveEvent(eventById(parseInt(ok.dataset.ok, 10))); render(); }
       if (no) { askReject(eventById(parseInt(no.dataset.no, 10)), render); }
     });
@@ -274,7 +349,7 @@
      KELOLA EVENT
      ========================================================= */
   function pageEvents() {
-    var tab = "semua", q = $("#evSearch"), selJenis = $("#evJenis"), body = $("#evBody"), tabs = $("#evTabs"), detail = $("#evDetail");
+    var tab = "semua", q = $("#evSearch"), body = $("#evBody"), tabs = $("#evTabs");
     var TABS = [["semua", "Semua"], ["diajukan", "Menunggu Persetujuan"], ["aktif", "Aktif"], ["selesai", "Selesai"], ["tidak", "Ditolak / Ditangguhkan"]];
     function inTab(e, t) {
       if (t === "semua") { return true; }
@@ -282,8 +357,6 @@
       if (t === "tidak") { return e.status === "ditolak" || e.status === "ditangguhkan"; }
       return e.status === t;
     }
-    var jenis = {}; events().forEach(function (e) { jenis[e.jenis] = 1; });
-    selJenis.innerHTML = '<option value="">Semua Jenis</option>' + Object.keys(jenis).sort().map(function (j) { return "<option>" + esc(j) + "</option>"; }).join("");
     function render() {
       var evs = events();
       tabs.innerHTML = TABS.map(function (t) {
@@ -292,36 +365,19 @@
       }).join("");
       var term = q.value.trim().toLowerCase();
       var rows = evs.filter(function (e) {
-        return inTab(e, tab) && (!selJenis.value || e.jenis === selJenis.value) && (!term || (e.nama + " " + e.organizer + " " + e.lokasi).toLowerCase().indexOf(term) !== -1);
+        return inTab(e, tab) && (!term || (e.nama + " " + e.organizer + " " + e.lokasi + " " + e.jenis).toLowerCase().indexOf(term) !== -1);
       });
       body.innerHTML = rows.length ? rows.map(function (e) {
-        var act = '<button type="button" class="btn btn--ghost sm" data-d="' + e.id + '">Detail</button>';
-        if (e.status === "diajukan") { act = '<button type="button" class="btn sm" data-ok="' + e.id + '">Setujui</button> <button type="button" class="btn btn--ghost sm" data-no="' + e.id + '">Tolak</button> ' + act; }
-        else if (e.status === "mendatang" || e.status === "berlangsung") { act += ' <button type="button" class="btn btn--ghost sm" data-sus="' + e.id + '">Tangguhkan</button>'; }
-        else if (e.status === "ditangguhkan") { act = '<button type="button" class="btn sm" data-res="' + e.id + '">Pulihkan</button> ' + act; }
+        var pct = e.kuota ? Math.round(e.terjual / e.kuota * 100) : 0;
         return '<tr><td><span class="cell-title">' + esc(e.nama) + '</span><span class="cell-sub">' + esc(e.jenis) + " &middot; " + esc(e.lokasi) + "</span></td><td>" + esc(e.organizer) + "</td><td>" + fmtDate(e.tanggal) + "</td>" +
-          "<td>" + e.terjual + "/" + e.kuota + '</td><td class="num">' + rp(e.harga) + "</td><td>" + chip(e.status, STATUS_EVENT[e.status]) + '</td><td class="act">' + act + "</td></tr>";
+          '<td><div class="tk"><div class="tk__bar" aria-hidden="true"><i style="width:' + pct + '%"></i></div><span>' + e.terjual + "/" + e.kuota + '</span></div></td><td class="num">' + rp(e.harga) + "</td><td>" + chip(e.status, STATUS_EVENT[e.status]) + '</td><td class="act"><button type="button" class="btn btn--ghost sm" data-d="' + e.id + '">Detail</button></td></tr>';
       }).join("") : '<tr><td colspan="7"><p class="tbl-empty">Tidak ada event yang cocok.</p></td></tr>';
     }
     tabs.addEventListener("click", function (ev) { var b = ev.target.closest("button[data-f]"); if (b) { tab = b.dataset.f; render(); } });
-    q.addEventListener("input", render); selJenis.addEventListener("change", render);
+    q.addEventListener("input", render);
     body.addEventListener("click", function (ev) {
-      var b = ev.target.closest("button"); if (!b) { return; }
-      var id = parseInt(b.dataset.ok || b.dataset.no || b.dataset.sus || b.dataset.res || b.dataset.d, 10), e = eventById(id);
-      if (b.dataset.ok) { approveEvent(e); render(); }
-      else if (b.dataset.no) { askReject(e, render); }
-      else if (b.dataset.sus) { askSuspend(e, render); }
-      else if (b.dataset.res) { restoreEvent(e); render(); }
-      else if (b.dataset.d) {
-        $("#evDetailTitle").textContent = e.nama;
-        $("#evDetailBody").innerHTML = "<dt>Penyelenggara</dt><dd>" + esc(e.organizer) + "</dd><dt>Jenis</dt><dd>" + esc(e.jenis) + "</dd><dt>Tanggal</dt><dd>" + fmtDate(e.tanggal) + "</dd><dt>Lokasi</dt><dd>" + esc(e.lokasi) + "</dd>" +
-          "<dt>Status</dt><dd>" + chip(e.status, STATUS_EVENT[e.status]) + "</dd><dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " kuota</dd><dt>Harga tiket</dt><dd>" + rp(e.harga) + "</dd>" +
-          "<dt>Pendapatan kotor</dt><dd>" + rp0(e.terjual * e.harga) + "</dd>" + (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "");
-        detail.showModal();
-      }
+      var b = ev.target.closest("button[data-d]"); if (b) { openDetail(eventById(parseInt(b.dataset.d, 10)), render); }
     });
-    $$("[data-close]", detail).forEach(function (b) { b.addEventListener("click", function () { detail.close(); }); });
-    detail.addEventListener("click", function (ev) { if (ev.target === detail) { detail.close(); } });
     render();
   }
 
@@ -335,7 +391,6 @@
     if (!TABS.some(function (t) { return t[0] === tab; })) { tab = "semua"; }
     function inTab(u, t) {
       if (t === "semua") { return true; }
-      if (t === "panitia") { return u.peran === "lapangan" || u.peran === "dokumentasi"; }
       return u.peran === t;
     }
     function render() {
@@ -375,12 +430,12 @@
       if (b.dataset.freeze) {
         ask({ title: "Bekukan akun " + u.nama + "?", text: "Akun tidak bisa masuk sampai diaktifkan lagi. Datanya tetap tersimpan.", reason: "Alasan pembekuan", ok: "Bekukan", danger: true, onOk: function (r) {
           st.users[em] = Object.assign(st.users[em] || {}, { status: "dibekukan" });
-          S.log("pengguna", "Akun " + u.nama + " (" + PERAN[u.peran] + ") dibekukan: " + r, ADMIN, "Admin Platform", { eo: u.peran === "lapangan" || u.peran === "dokumentasi" || u.nama === ORG });
+          S.log("pengguna", "Akun " + u.nama + " (" + PERAN[u.peran] + ") dibekukan: " + r, ADMIN, "Admin Platform", { eo: u.peran === "panitia" || u.nama === ORG });
           toast("Akun " + u.nama + " dibekukan."); render();
         } });
       } else if (b.dataset.unfreeze) {
         st.users[em] = Object.assign(st.users[em] || {}, { status: "aktif" });
-        S.log("pengguna", "Akun " + u.nama + " diaktifkan kembali", ADMIN, "Admin Platform", { eo: u.peran === "lapangan" || u.peran === "dokumentasi" });
+        S.log("pengguna", "Akun " + u.nama + " diaktifkan kembali", ADMIN, "Admin Platform", { eo: u.peran === "panitia" });
         toast("Akun " + u.nama + " diaktifkan."); render();
       } else if (b.dataset.reset) {
         S.log("pengguna", "Tautan atur ulang kata sandi dikirim ke " + u.email, ADMIN, "Admin Platform");
@@ -480,7 +535,7 @@
       setText("fGross", rp0(f.kotor)); setText("fFee", rp0(f.feeTotal)); setText("fFeeNote", "Biaya platform " + f.fee + "% dari tiket terjual");
       setText("fCair", rp0(f.cair)); setText("fAvail", rp0(f.tersedia));
       var scale = f.rows.length ? f.kotor / (f.rows.filter(function (o) { return o.nama === ORG; })[0] || { kotor: f.kotor }).kotor : 1;
-      barChart($("#finChart"), E.monthly.labels, E.monthly.pendapatan.map(function (v) { return Math.round(v * scale * f.fee / 100); }), "Biaya platform");
+      lineChart($("#finChart"), E.monthly.labels, E.monthly.pendapatan.map(function (v) { return Math.round(v * scale * f.fee / 100); }), "Biaya platform");
       body.innerHTML = f.rows.map(function (o) {
         var status = o.tersedia > 0 ? chip("menunggu", "Siap dicairkan") : (o.cair > 0 ? chip("dicairkan", "Sudah dicairkan") : chip("belum", "Belum ada dana"));
         return '<tr><td><span class="cell-title">' + esc(o.nama) + '</span><span class="cell-sub">' + o.event + " event &middot; " + num(o.tiket) + ' tiket</span></td><td class="num">' + rp0(o.kotor) + '</td><td class="num">' + rp0(o.fee) + '</td><td class="num">' + rp0(o.bersih) + '</td><td class="num">' + rp0(o.tersedia) + "</td><td>" + status + '</td><td class="act">' +
@@ -552,6 +607,7 @@
 
     var cats = st.settings.categories;
     function stats() {
+            if (!$("#setStats")) { return; }
       var names = Object.keys(cats), on = names.filter(function (k) { return cats[k]; }).length;
       $("#setStats").innerHTML = [["Biaya platform", st.settings.feePct + "%", "dari tiket berbayar"], ["Kategori aktif", on, "dari " + names.length + " kategori"], ["Akun dibekukan", users().filter(function (u) { return u.status === "dibekukan"; }).length, "tidak bisa masuk"]].map(function (s) {
         return '<article class="card stat"><p class="stat__label">' + s[0] + '</p><p class="stat__value">' + s[1] + '</p><p class="stat__note stat__note--muted">' + s[2] + "</p></article>";
@@ -562,16 +618,26 @@
     var pf = $("#platformForm");
     pf.fee.value = st.settings.feePct; pf.approval.setAttribute("aria-checked", String(!!st.settings.approvalRequired));
     pf.approval.addEventListener("click", function () { this.setAttribute("aria-checked", this.getAttribute("aria-checked") === "true" ? "false" : "true"); });
+        var pfBtn = $("#pfSave"), pfState = $("#pfState");
+    function pfDirty() {
+      var d = parseFloat(pf.fee.value) !== st.settings.feePct || (pf.approval.getAttribute("aria-checked") === "true") !== !!st.settings.approvalRequired;
+      pfBtn.disabled = !d; pfState.textContent = d ? "Ada perubahan belum disimpan" : "Belum ada perubahan";
+    }
+    function pfLast() {
+      var a = st.activity.filter(function (x) { return x.tipe === "pengaturan" && /^Pengaturan platform diubah/.test(x.teks); })[0];
+      $("#pfLastTxt").textContent = a ? "Terakhir diubah oleh " + a.aktor + " · " + S.ago(a.ts) : "Belum ada perubahan tercatat";
+    }
+    pf.fee.addEventListener("input", pfDirty); pf.approval.addEventListener("click", pfDirty); pfDirty(); pfLast();
     pf.addEventListener("submit", function (ev) {
       ev.preventDefault(); $$("small.err", pf).forEach(function (x) { x.remove(); });
       var fee = parseFloat(pf.fee.value);
-      if (!(fee >= 0 && fee <= 20)) { var m = document.createElement("small"); m.className = "err"; m.textContent = "Biaya platform harus antara 0 dan 20 persen."; pf.fee.closest(".field").appendChild(m); pf.fee.focus(); return; }
+      if (!(fee >= 0 && fee <= 20)) { var m = document.createElement("small"); m.className = "err"; m.textContent = "Biaya platform harus antara 0 dan 20 persen."; pf.fee.closest(".sp-row").appendChild(m); pf.fee.focus(); return; }
       var need = pf.approval.getAttribute("aria-checked") === "true", changes = [];
       if (fee !== st.settings.feePct) { changes.push("biaya platform " + fee + "%"); }
       if (need !== st.settings.approvalRequired) { changes.push("persetujuan event " + (need ? "wajib" : "tidak wajib")); }
       st.settings.feePct = fee; st.settings.approvalRequired = need; S.save();
       if (changes.length) { S.log("pengaturan", "Pengaturan platform diubah: " + changes.join(", "), ADMIN, "Admin Platform"); }
-      toast("Pengaturan platform disimpan. Dashboard ketua panitia memakai aturan baru."); stats();
+      toast("Pengaturan platform disimpan. Dashboard ketua panitia memakai aturan baru."); stats(); pfDirty(); pfLast();
     });
 
     /* Kategori */
@@ -626,8 +692,90 @@
       ev.target.reset(); pwState(); S.log("pengaturan", "Admin mengganti kata sandi", ADMIN, "Admin Platform"); toast("Kata sandi diubah. Ini data contoh, belum tersimpan ke database.");
     });
   }
+    /* ---------- Profil admin: foto (dengan crop) & email, data contoh di localStorage ---------- */
+  var PKEY = "simevent_admin_profile_v1";
+  function getProfile() { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } }
+  function setProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); return true; } catch (e) { return false; } }
+  function adminInitials(n) { return (n || "A").trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join(""); }
+  function applyProfile() {
+    var foto = getProfile().foto;
+    $$(".js-adm-ava").forEach(function (el) {
+      el.style.backgroundImage = foto ? 'url("' + foto + '")' : "";
+      el.textContent = foto ? "" : adminInitials(ADMIN);
+    });
+  }
+  function initAccount() {
+    var msg = $("#profMsg"), fIn = $("#profFoto"), em = $("#emailForm"), emIn = $("#pfEmailAdm");
+    var modal = $("#profileCropModal"), vp = $("#profileCropViewport"), img = $("#profileCropImage"), zoom = $("#profileCropZoom"), okBtn = $("#profileCropSave"), noBtn = $("#profileCropCancel");
+    var src = null, url = null, scale = 1, left = 0, top = 0, drag = null;
+    function say(t) { msg.innerHTML = t ? '<small class="err">' + t + "</small>" : ""; }
+    emIn.value = getProfile().email || emIn.defaultValue;
+
+    function layout(keep) {
+      if (!img.naturalWidth) { return; }
+      var size = vp.clientWidth; if (!size) { return; }
+      var cx = keep && scale ? (size / 2 - left) / scale : null, cy = keep && scale ? (size / 2 - top) / scale : null;
+      scale = Math.max(size / img.naturalWidth, size / img.naturalHeight) * Number(zoom.value);
+      var w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+      img.style.width = w + "px"; img.style.height = h + "px";
+      left = cx === null ? (size - w) / 2 : size / 2 - cx * scale; top = cy === null ? (size - h) / 2 : size / 2 - cy * scale;
+      left = Math.min(0, Math.max(size - w, left)); top = Math.min(0, Math.max(size - h, top));
+      img.style.left = left + "px"; img.style.top = top + "px";
+    }
+    function closeCrop() {
+      modal.hidden = true; modal.setAttribute("aria-hidden", "true"); drag = null; src = null; fIn.value = "";
+      if (url) { URL.revokeObjectURL(url); url = null; }
+      img.removeAttribute("src"); fIn.focus();
+    }
+    fIn.addEventListener("change", function () {
+      var f = fIn.files[0]; say(""); if (!f) { return; }
+      if (!/^image\/(png|jpe?g|webp)$/.test(f.type)) { say("Pilih foto JPG, PNG, atau WebP."); fIn.value = ""; return; }
+      if (f.size > 5 * 1024 * 1024) { say("Ukuran foto maksimal 5 MB."); fIn.value = ""; return; }
+      src = f; zoom.value = "1"; url = URL.createObjectURL(f);
+      modal.hidden = false; modal.setAttribute("aria-hidden", "false");
+      img.onload = function () { requestAnimationFrame(function () { layout(false); okBtn.focus(); }); };
+      img.onerror = function () { say("Foto tidak dapat dibuka. Coba file gambar lain."); closeCrop(); };
+      img.src = url;
+    });
+    zoom.addEventListener("input", function () { layout(true); });
+    window.addEventListener("resize", function () { if (!modal.hidden) { layout(true); } });
+    vp.addEventListener("pointerdown", function (e) { if (!src) { return; } e.preventDefault(); vp.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, l: left, t: top }; });
+    vp.addEventListener("pointermove", function (e) {
+      if (!drag) { return; }
+      var size = vp.clientWidth;
+      left = Math.min(0, Math.max(size - img.clientWidth, drag.l + e.clientX - drag.x)); top = Math.min(0, Math.max(size - img.clientHeight, drag.t + e.clientY - drag.y));
+      img.style.left = left + "px"; img.style.top = top + "px";
+    });
+    vp.addEventListener("pointerup", function () { drag = null; });
+    vp.addEventListener("pointercancel", function () { drag = null; });
+    noBtn.addEventListener("click", closeCrop);
+    modal.addEventListener("click", function (e) { if (e.target === modal) { closeCrop(); } });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) { closeCrop(); } });
+    okBtn.addEventListener("click", function () {
+      if (!src || !img.naturalWidth) { return; }
+      var size = vp.clientWidth, c = document.createElement("canvas"); c.width = c.height = 384;
+      c.getContext("2d").drawImage(img, -left / scale, -top / scale, size / scale, size / scale, 0, 0, 384, 384);
+      var p = getProfile(); p.foto = c.toDataURL("image/jpeg", .85);
+      if (!setProfile(p)) { say("Foto gagal disimpan di browser."); closeCrop(); return; }
+      closeCrop(); applyProfile(); S.log("pengaturan", "Admin mengganti foto profil", ADMIN, "Admin Platform"); toast("Foto profil diperbarui.");
+    });
+
+    $("#profFotoDel").addEventListener("click", function () {
+      var p = getProfile(); if (!p.foto) { say("Belum ada foto yang bisa dihapus."); return; }
+      delete p.foto; setProfile(p); say(""); applyProfile(); S.log("pengaturan", "Admin menghapus foto profil", ADMIN, "Admin Platform"); toast("Foto profil dihapus.");
+    });
+    em.addEventListener("submit", function (ev) {
+      ev.preventDefault(); $$("small.err", em).forEach(function (x) { x.remove(); });
+      var v = emIn.value.trim(), p = getProfile();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { var m = document.createElement("small"); m.className = "err"; m.textContent = "Format email belum benar."; emIn.closest(".field").appendChild(m); emIn.focus(); return; }
+      if (v === (p.email || emIn.defaultValue)) { toast("Email tidak berubah."); return; }
+      p.email = v; setProfile(p); S.log("pengaturan", "Admin mengganti email akun", ADMIN, "Admin Platform"); toast("Email diubah. Ini data contoh, belum tersimpan ke database.");
+    });
+  }
 
   var pages = { admin_dashboard: pageDashboard, admin_users: pageUsers, admin_events: pageEvents, admin_support: pageSupport, admin_finance: pageFinance, admin_audit: pageAudit, admin_settings: pageSettings };
+    applyProfile();
   var fn = pages[document.body.dataset.page];
   if (fn) { fn(); }
+  if (document.body.dataset.page === "admin_settings") { initAccount(); }
 })();

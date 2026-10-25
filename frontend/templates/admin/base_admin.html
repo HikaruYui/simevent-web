@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=5">
-  <link rel="stylesheet" href="{% static 'css/admin_control.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'css/admin_control.css' %}?v=11">
   <style>
     :root { --side-w: clamp(210px, 14.5vw, 244px); }
     .sr-only {
@@ -81,7 +81,7 @@
       <a href="{% url 'admin_settings' %}" {% block nav_admin_settings %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
     </nav>
     <div class="eo-user">
-      <b>{{ request.user.get_full_name|default:"Super Administrator" }}</b><p>Administrator System</p>
+      <div class="eo-profile"><span class="eo-profile__ava js-adm-ava" aria-hidden="true">SA</span><div class="eo-profile__txt"><b>{{ request.user.get_full_name|default:"Super Administrator" }}</b><p>Administrator System</p></div></div>
       <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
         <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
       </form>
@@ -94,6 +94,11 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<dialog class="dlg dlg--wide" id="propDlg" aria-labelledby="propDlgTitle">
+  <div class="dlg__head"><h2 id="propDlgTitle"></h2><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
+  <div class="dlg__body" id="propDlgBody"></div>
+  <div class="dlg__foot pdlg__foot" id="propDlgFoot"></div>
+</dialog>
 <dialog class="dlg" id="admDlg" aria-labelledby="admDlgTitle">
   <form id="admDlgForm" novalidate>
     <div class="dlg__head"><h2 id="admDlgTitle">Konfirmasi</h2><button type="button" class="dlg__x" data-close aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-plus" style="transform:rotate(45deg);transform-origin:center"/></svg></button></div>
@@ -104,6 +109,6 @@
 </dialog>
 <script src="{% static 'js/simevent_shared.js' %}"></script>
 <script src="{% static 'js/ketua_panitia_data.js' %}"></script>
-<script src="{% static 'js/admin_control.js' %}?v=1"></script>
+<script src="{% static 'js/admin_control.js' %}?v=5"></script>
 </body>
 </html>

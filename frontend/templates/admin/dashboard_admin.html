@@ -5,14 +5,14 @@
 {% block content %}
 <header class="eo-head"><h1>Control Panel Platform</h1></header>
 <section class="kpi-grid" aria-label="Ringkasan sistem">
-  <article class="card kpi"><p class="kpi__label">Total Pengguna Aktif</p><p class="kpi__value" id="kUsers">0</p><p class="kpi__delta kpi__delta--muted" id="kUsersNote"></p></article>
-  <article class="card kpi"><p class="kpi__label">Total Event Terdaftar</p><p class="kpi__value" id="kEvents">0</p><p class="kpi__delta kpi__delta--muted" id="kEventsNote"></p></article>
+  <article class="card kpi kpi--split"><p class="kpi__label">Pengguna</p><div class="kpi__pair"><div><span class="kpi__num" id="kUsers">0</span><span class="kpi__cap">Akun Aktif</span></div><i></i><div><span class="kpi__num kpi__num--orange" id="kProp">0</span><span class="kpi__cap kpi__cap--orange">Pengajuan</span></div></div></article>
+  <article class="card kpi kpi--split"><p class="kpi__label">Event</p><div class="kpi__pair"><div><span class="kpi__num" id="kEvents">0</span><span class="kpi__cap">Terdaftar</span></div><i></i><div><span class="kpi__num kpi__num--orange" id="kLiveEv">0</span><span class="kpi__cap kpi__cap--orange">Berlangsung</span></div></div></article>
   <article class="card kpi kpi--split"><p class="kpi__label">Persetujuan Event</p><div class="kpi__pair"><div><span class="kpi__num kpi__num--orange" id="kPend">0</span><span class="kpi__cap kpi__cap--orange">Perlu Review</span></div><i></i><div><span class="kpi__num" id="kOk">0</span><span class="kpi__cap">Disetujui</span></div></div></article>
-  <article class="card kpi kpi--split"><p class="kpi__label">Tiket Support</p><div class="kpi__pair"><div><span class="kpi__num kpi__num--orange" id="kTkOpen">0</span><span class="kpi__cap kpi__cap--orange">Sedang Diaudit</span></div><i></i><div><span class="kpi__num" id="kTkDone">0</span><span class="kpi__cap">Selesai</span></div></div></article>
+  <article class="card kpi kpi--split"><p class="kpi__label">Tiket Support</p><div class="kpi__pair"><div><span class="kpi__num kpi__num--orange" id="kTkOpen">0</span><span class="kpi__cap kpi__cap--orange">Diaudit</span></div><i></i><div><span class="kpi__num" id="kTkDone">0</span><span class="kpi__cap">Selesai</span></div></div></article>
 </section>
 <section class="dash-row">
   <div><h2 class="sec-title sec-title--out"><span>Event Menunggu Persetujuan</span><a href="{% url 'admin_events' %}">Kelola event &rarr;</a></h2>
-    <article class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Penyelenggara</th><th>Tanggal</th><th></th></tr></thead><tbody id="apvBody"></tbody></table></div></article></div>
+    <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Penyelenggara</th><th>Tanggal</th><th></th></tr></thead><tbody id="apvBody"></tbody></table></div></article></div>
   <div><h2 class="sec-title sec-title--out"><span>Aktivitas Terbaru</span><a href="{% url 'admin_audit' %}">Audit log &rarr;</a></h2>
     <article class="card mini-card"><ul class="mini-list" id="actMini"></ul></article></div>
 </section>

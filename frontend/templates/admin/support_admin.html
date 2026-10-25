@@ -3,7 +3,12 @@
 {% block page_key %}admin_support{% endblock %}
 {% block nav_admin_support %} class="is-active" aria-current="page"{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Support</h1><p>Tiket dari semua penyelenggara. Balasan langsung tampil di menu Support ketua panitia.</p></header>
-<article class="card adm-card"><div class="toolbar"><label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari</span><input id="tkSearch" type="search" placeholder="Cari tiket, pelapor, organisasi"></label></div><div class="tabs adm-tabs" id="tkTabs" role="group" aria-label="Filter status"></div>
-<ul class="ticket-list" id="tkList"></ul></article>
+<header class="eo-head eo-head--stack"><h1>Support</h1><p>Tiket dari semua penyelenggara. Balasan langsung tampil di menu Support ketua panitia.</p></header>
+<div class="adm-toolbar">
+  <div class="tabs" id="tkTabs" role="group" aria-label="Filter status"></div>
+  <label class="adm-search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari</span><input id="tkSearch" type="search" placeholder="Cari tiket, pelapor, organisasi"></label>
+</div>
+<article class="card adm-card">
+  <ul class="ticket-list" id="tkList"></ul>
+</article>
 {% endblock %}
