@@ -218,3 +218,25 @@ tfoot td { padding: 14px 22px; border-top: 2px solid var(--taupe); font: 800 14p
 .eo-user .eo-profile p { margin-top: 2px !important; }
 .eo-user form button { color: var(--olive) !important; font-size: 13.5px !important; }
 .eo-user form button .icon { width: 17px !important; height: 17px !important; }
+
+/* Sidebar: nama dan role masing-masing satu baris */
+.eo-profile { gap: 10px; }
+.eo-profile__ava { width: 48px; height: 48px; font-size: 16px; }
+.eo-profile__txt { min-width: 0; flex: 1 1 auto; }
+.eo-user .eo-profile b { font-size: 13.5px !important; font-weight: 700 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.eo-user .eo-profile p { font-size: 12px !important; font-weight: 400 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+/* Akun admin: form nama + email di kolom kanan */
+.sp-acc { display: grid; gap: 18px; padding-left: 48px; border-left: 1px solid var(--line); }
+.sp-inline__row { display: flex; align-items: center; gap: 10px; }
+.sp-inline__row input { flex: 1 1 0; min-width: 0; }
+.sp-inline__row .btn { flex: none; }
+@media (max-width: 900px) {
+  .sp-acc { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Sidebar: foto lebih kecil agar nama dan role muat satu baris */
+.eo-user { padding-left: 0; padding-right: 0; }
+.eo-profile__ava { width: 42px; height: 42px; font-size: 14px; }
+.eo-user .eo-profile b { font-size: 12.5px !important; }
+.eo-user .eo-profile p { font-size: 11.5px !important; }

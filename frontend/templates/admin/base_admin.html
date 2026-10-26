@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=5">
-  <link rel="stylesheet" href="{% static 'css/admin_control.css' %}?v=11">
+  <link rel="stylesheet" href="{% static 'css/admin_control.css' %}?v=12">
   <style>
     :root { --side-w: clamp(210px, 14.5vw, 244px); }
     .sr-only {
@@ -81,7 +81,7 @@
       <a href="{% url 'admin_settings' %}" {% block nav_admin_settings %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
     </nav>
     <div class="eo-user">
-      <div class="eo-profile"><span class="eo-profile__ava js-adm-ava" aria-hidden="true">SA</span><div class="eo-profile__txt"><b>{{ request.user.get_full_name|default:"Super Administrator" }}</b><p>Administrator System</p></div></div>
+            <div class="eo-profile"><span class="eo-profile__ava js-adm-ava" aria-hidden="true">SA</span><div class="eo-profile__txt"><b class="js-adm-name">{{ request.user.get_full_name|default:"Super Administrator" }}</b><p>Administrator System</p></div></div>
       <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
         <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
       </form>
@@ -109,6 +109,6 @@
 </dialog>
 <script src="{% static 'js/simevent_shared.js' %}"></script>
 <script src="{% static 'js/ketua_panitia_data.js' %}"></script>
-<script src="{% static 'js/admin_control.js' %}?v=5"></script>
+<script src="{% static 'js/admin_control.js' %}?v=7"></script>
 </body>
 </html>
