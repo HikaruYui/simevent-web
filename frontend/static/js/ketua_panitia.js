@@ -251,7 +251,9 @@
       var S = window.SIM, needApproval = !S || S.state.settings.approvalRequired;
       var status = needApproval ? "diajukan" : "mendatang";
       var id = Math.max.apply(null, E.events.map(function (e) { return e.id; }).concat([200])) + 1;
-      E.events.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: status, hadir: 0, pendapatan: 0 });
+      var imgInput = form.querySelector("#neGambar");
+      var gambarUrl = imgInput && imgInput.files[0] ? URL.createObjectURL(imgInput.files[0]) : "/static/img/default-event.jpg";
+      E.events.push({ id: id, nama: v.nama, gambarUrl: gambarUrl, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: status, hadir: 0, pendapatan: 0 });
       var teks = needApproval ? "Event \"" + v.nama + "\" diajukan, menunggu persetujuan admin" : "Event baru \"" + v.nama + "\" dibuat";
       E.activity.unshift({ tipe: "event", teks: teks, waktu: "Baru saja" });
       if (S) {
@@ -421,7 +423,7 @@
     $("#pdAvg").textContent = "Rp " + num(Math.round(total / tiket));
     $("#pdTop").textContent = top[0].nama;
     $("#pdTopNote").textContent = "Rp " + num(top[0].pendapatan) + " (" + Math.round(top[0].pendapatan / total * 100) + "% dari total)";
-    barChart($("#pdChart"), { labels: E.monthly.labels, values: E.monthly.pendapatan, name: "Pendapatan", fmt: function (v) { return "Rp " + num(v); }, fmtY: rpShort });
+    lineChart($("#pdChart"), { labels: E.monthly.labels, values: E.monthly.pendapatan, name: "Pendapatan", fmt: function (v) { return "Rp " + num(v); }, fmtY: rpShort });
     $("#pdBody").innerHTML = top.map(function (e) {
       var pct = Math.round(e.pendapatan / total * 100);
       return "<tr><td><span class=\"cell-title\">" + esc(e.nama) + '</span><span class="cell-sub">' + esc(e.jenis) + '</span></td><td class="num">' + e.terjual + '</td><td class="num">' + rp(e.harga) + '</td><td class="num"><b>Rp ' + num(e.pendapatan) + '</b></td><td><div class="meter"><div class="meter__bar" role="img" aria-label="' + pct + '% dari total"><i style="width:' + pct + '%"></i></div><small>' + pct + "%</small></div></td></tr>";

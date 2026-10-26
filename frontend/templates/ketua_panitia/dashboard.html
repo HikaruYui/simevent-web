@@ -3,24 +3,216 @@
 {% block page_key %}dashboard{% endblock %}
 {% block nav_dashboard %} class="is-active" aria-current="page"{% endblock %}
 {% block fab %}{% endblock %}
+
 {% block content %}
 <header class="eo-head"><h1>Dashboard Ketua Panitia</h1></header>
+
+<!-- CSS Penyesuaian Custom Dropdown Grafik Kehadiran & Kartu KPI -->
+<style>
+  /* Menjadikan container pill-select sebagai posisi acuan */
+  .pill-select {
+    position: relative !important;
+  }
+
+  /* Menu Melayang Dropdown Custom (Muncul ke atas agar tidak tertutupi elemen lain) */
+  .custom-select-menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    min-width: 240px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08);
+    padding: 6px;
+    z-index: 999;
+    display: none;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .custom-select-menu.show {
+    display: block !important;
+  }
+
+  .custom-select-item {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #1e293b;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 500;
+  }
+
+  /* Hover & Selected Murni Olive (#2b3022) Tanpa Biru OS */
+  .custom-select-item:hover,
+  .custom-select-item.is-selected {
+    background-color: #2b3022 !important;
+    color: #ffffff !important;
+  }
+
+  /* Penyesuaian Rata Kiri Judul Kartu KPI & Perapian Font Label */
+  .kpi--split {
+    padding: 20px !important;
+  }
+
+  .kpi--split .kpi__label {
+    text-align: left !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--olive, #3f422e) !important;
+    margin-bottom: 16px !important;
+  }
+
+  .kpi--split .kpi__pair {
+    display: flex !important;
+    align-items: flex-start !important; /* Memastikan perataan atas sejajar */
+    justify-content: space-around !important;
+  }
+
+  .kpi--split .kpi__num {
+    font-size: 36px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    display: block !important;
+  }
+
+  /* Memperkecil & Meratakan Label di Bawah Angka */
+  .kpi--split .kpi__cap {
+    font-size: 12px !important; /* Diperkecil agar 'Sedang Berlangsung' cukup 1 baris */
+    font-weight: 600 !important;
+    margin-top: 8px !important;
+    display: block !important;
+    white-space: nowrap !important; /* Mencegah teks terpotong jadi 2 baris */
+    text-align: center !important;
+  }
+</style>
+
 <section class="kpi-grid" aria-label="Ringkasan">
-  <article class="card kpi"><p class="kpi__label">Total Pendapatan</p><p class="kpi__value"><span id="kpiPendapatan">0</span></p><p class="kpi__delta"><span id="deltaPendapatan"></span></p><div class="kpi__spark" id="sparkPendapatan"></div></article>
-  <article class="card kpi"><p class="kpi__label">Tiket Terjual</p><p class="kpi__value"><span id="kpiTiket">0</span></p><p class="kpi__delta"><span id="deltaTiket"></span></p><div class="kpi__spark" id="sparkTiket"></div></article>
-  <article class="card kpi kpi--split"><p class="kpi__label">Event Aktif</p>
-    <div class="kpi__pair"><div><span id="evBerlangsung" class="kpi__num kpi__num--orange">0</span><span class="kpi__cap kpi__cap--orange">Sedang Berlangsung</span></div><i></i><div><span id="evMendatang" class="kpi__num">0</span><span class="kpi__cap">Mendatang</span></div></div></article>
-  <article class="card kpi kpi--split"><p class="kpi__label">Ticket Support</p>
-    <div class="kpi__pair"><div><span id="tkDiaudit" class="kpi__num kpi__num--orange">0</span><span class="kpi__cap kpi__cap--orange">Sedang Diaudit</span></div><i></i><div><span id="tkSelesai" class="kpi__num">0</span><span class="kpi__cap">Selesai</span></div></div></article>
+  <article class="card kpi">
+    <p class="kpi__label">Total Pendapatan</p>
+    <p class="kpi__value"><span id="kpiPendapatan">0</span></p>
+    <p class="kpi__delta"><span id="deltaPendapatan"></span></p>
+    <div class="kpi__spark" id="sparkPendapatan"></div>
+  </article>
+
+  <article class="card kpi">
+    <p class="kpi__label">Tiket Terjual</p>
+    <p class="kpi__value"><span id="kpiTiket">0</span></p>
+    <p class="kpi__delta"><span id="deltaTiket"></span></p>
+    <div class="kpi__spark" id="sparkTiket"></div>
+  </article>
+
+  <article class="card kpi kpi--split">
+    <p class="kpi__label">Event Aktif</p>
+    <div class="kpi__pair">
+      <div style="text-align: center; flex: 1;">
+        <span id="evBerlangsung" class="kpi__num kpi__num--orange">0</span>
+        <span class="kpi__cap kpi__cap--orange">Sedang Berlangsung</span>
+      </div>
+      <i style="width: 1px; height: 42px; background-color: rgba(0,0,0,0.15); display: inline-block; margin: 0 6px; align-self: center;"></i>
+      <div style="text-align: center; flex: 1;">
+        <span id="evMendatang" class="kpi__num">0</span>
+        <span class="kpi__cap">Mendatang</span>
+      </div>
+    </div>
+  </article>
+
+  <article class="card kpi kpi--split">
+    <p class="kpi__label">Ticket Support</p>
+    <div class="kpi__pair">
+      <div style="text-align: center; flex: 1;">
+        <span id="tkDiaudit" class="kpi__num kpi__num--orange">0</span>
+        <span class="kpi__cap kpi__cap--orange">Sedang Diaudit</span>
+      </div>
+      <i style="width: 1px; height: 42px; background-color: rgba(0,0,0,0.15); display: inline-block; margin: 0 6px; align-self: center;"></i>
+      <div style="text-align: center; flex: 1;">
+        <span id="tkSelesai" class="kpi__num">0</span>
+        <span class="kpi__cap">Selesai</span>
+      </div>
+    </div>
+  </article>
 </section>
+
 <section class="dash-row">
-  <div><h2 class="sec-title sec-title--out">Grafik Kehadiran</h2>
-  <article class="card chart-card"><div class="chart-card__plot" id="attendancePlot"></div>
-    <div class="chart-card__filters">
-    <label class="pill-select"><span class="sr-only">Event</span><select id="selEvent"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label>
-    <label class="pill-select"><span class="sr-only">Metrik</span><select id="selMetrik"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label></div></article></div>
-  <div><h2 class="sec-title sec-title--out"><span>Log Aktivitas</span><a href="{% url 'eo_log' %}" id="logToggle">Lihat semua &rarr;</a></h2>
-  <article class="card log-card" id="logCard"><ul class="log-list" id="logList"></ul>
-    <button type="button" class="fab" data-open-new-event><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Event baru</button></article></div>
+  <div>
+    <h2 class="sec-title sec-title--out">Grafik Kehadiran</h2>
+    <article class="card chart-card">
+      <div class="chart-card__plot" id="attendancePlot"></div>
+      <div class="chart-card__filters">
+        <label class="pill-select"><span class="sr-only">Event</span><select id="selEvent"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label>
+        <label class="pill-select"><span class="sr-only">Metrik</span><select id="selMetrik"></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label>
+      </div>
+    </article>
+  </div>
+  <div>
+    <h2 class="sec-title sec-title--out"><span>Log Aktivitas</span><a href="{% url 'eo_log' %}" id="logToggle">Lihat semua &rarr;</a></h2>
+    <article class="card log-card" id="logCard">
+      <ul class="log-list" id="logList"></ul>
+      <button type="button" class="fab" data-open-new-event><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Event baru</button>
+    </article>
+  </div>
 </section>
+
+<!-- Script Enhancer Dropdown (Cegah Menu Native OS & Warna Biru) -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    function attachCustomMenu(select) {
+      if (!select) return;
+
+      const parent = select.closest(".pill-select");
+      if (!parent) return;
+
+      let menu = parent.querySelector(".custom-select-menu");
+      if (!menu) {
+        menu = document.createElement("div");
+        menu.className = "custom-select-menu";
+        parent.appendChild(menu);
+      }
+
+      function renderItems() {
+        menu.innerHTML = "";
+        Array.from(select.options).forEach(opt => {
+          const item = document.createElement("div");
+          item.className = "custom-select-item" + (opt.selected ? " is-selected" : "");
+          item.textContent = opt.textContent;
+
+          item.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            select.value = opt.value;
+            select.dispatchEvent(new Event("input", { bubbles: true }));
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+            menu.classList.remove("show");
+            renderItems();
+          });
+
+          menu.appendChild(item);
+        });
+      }
+
+      select.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        document.querySelectorAll(".custom-select-menu").forEach(m => {
+          if (m !== menu) m.classList.remove("show");
+        });
+        renderItems();
+        menu.classList.toggle("show");
+      });
+
+      const observer = new MutationObserver(renderItems);
+      observer.observe(select, { childList: true, subtree: true });
+    }
+
+    attachCustomMenu(document.getElementById("selEvent"));
+    attachCustomMenu(document.getElementById("selMetrik"));
+
+    document.addEventListener("mousedown", function (e) {
+      if (!e.target.closest(".pill-select")) {
+        document.querySelectorAll(".custom-select-menu").forEach(m => m.classList.remove("show"));
+      }
+    });
+  });
+</script>
 {% endblock %}

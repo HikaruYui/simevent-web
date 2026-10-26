@@ -3,10 +3,41 @@
 {% block page_key %}log{% endblock %}
 {% block nav_log %} class="is-active" aria-current="page"{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Log Aktivitas</h1></header>
-<div class="toolbar" style="padding:20px 0 6px;border-bottom:0;gap:12px 16px">
-  <label class="search" style="flex:1 1 240px;max-width:300px;height:40px"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari aktivitas</span><input id="lgSearch" type="search" placeholder="Cari aktivitas..."></label>
-  <div class="tabs" id="lgTabs" role="group" aria-label="Filter kategori aktivitas"></div>
+<!-- Header dengan Jarak Bawah yang Longgar -->
+<header class="eo-head" style="margin-bottom: 24px !important;">
+  <h1>Log Aktivitas</h1>
+</header>
+
+<!-- Toolbar (Di Luar Card) -->
+<div class="toolbar-outer" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; width: 100%;">
+  <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+    <!-- 1. Filter Tabs (Di Kiri) -->
+    <div
+      class="tabs"
+      id="lgTabs"
+      role="group"
+      aria-label="Filter kategori aktivitas"
+      style="flex-shrink: 0;"
+    ></div>
+
+    <!-- 2. Search Bar (Warna Putih Bersih & Memanjang) -->
+    <label class="search" style="margin: 0 !important; flex: 1 !important; width: 100% !important; max-width: none !important; display: flex !important; align-items: center !important; background-color: #ffffff !important; border-radius: 9999px; padding: 0 16px;">
+      <svg class="icon" aria-hidden="true" style="flex-shrink: 0;">
+        <use href="#i-search"/>
+      </svg>
+      <span class="sr-only">Cari aktivitas</span>
+      <input
+        id="lgSearch"
+        type="search"
+        placeholder="Cari aktivitas..."
+        style="width: 100% !important; flex: 1 !important; max-width: none !important; background-color: #ffffff !important; background: #ffffff !important;"
+      >
+    </label>
+  </div>
 </div>
-<article class="card" style="margin-top:14px;padding:18px 22px"><ul class="log-list" id="lgList" style="max-height:none;padding-bottom:0"></ul></article>
+
+<!-- Card Putih untuk List Log Aktivitas -->
+<article class="card" style="background-color: #ffffff !important; padding: 20px; border-radius: 16px; margin-top: 14px;">
+  <ul class="log-list" id="lgList" style="max-height: none; padding-bottom: 0;"></ul>
+</article>
 {% endblock %}

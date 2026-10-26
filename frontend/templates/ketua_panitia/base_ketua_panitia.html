@@ -104,12 +104,173 @@
       <div class="field"><label for="neLokasi">Lokasi</label><input id="neLokasi" name="lokasi" type="text" maxlength="80"></div>
       <div class="field"><label for="neKuota">Kuota</label><input id="neKuota" name="kuota" type="number" min="1" value="100"></div>
       <div class="field"><label for="neHarga">Harga tiket (Rp, 0 = gratis)</label><input id="neHarga" name="harga" type="number" min="0" value="0"></div>
-      <div class="field"><label for="neProposal">Proposal event (PDF atau Word, maks 10 MB)</label><input id="neProposal" name="proposal" type="file" accept=".pdf,.doc,.docx"></div>
-      <div class="field"><label for="neRingkasan">Tujuan &amp; ringkasan event</label><textarea id="neRingkasan" name="ringkasan" rows="3" maxlength="300" placeholder="Jelaskan singkat tujuan dan isi acara"></textarea></div>
+      
+      <!-- 1. FIELD UPLOAD GAMBAR COVER EVENT -->
+      <div class="field">
+        <label for="neGambar">Gambar Cover Event (JPG/PNG, max 5MB)</label>
+        <div style="position: relative; display: flex; align-items: center; background-color: var(--cream-card, #fefae0); border: 1px solid var(--taupe, #e0d8b0); border-radius: 12px; padding: 8px 12px; width: 100%; box-sizing: border-box; gap: 10px; min-height: 42px;">
+          <input 
+            type="file" 
+            id="neGambar" 
+            name="gambar" 
+            accept="image/png, image/jpeg, image/jpg"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;"
+            onchange="handleGambarChange(this)"
+          >
+          <span id="btnUploadGambar" style="background-color: #ffffff; color: var(--olive, #2b3022); font-weight: 600; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; flex-shrink: 0; pointer-events: none; display: inline-flex; align-items: center; gap: 6px;">
+            <svg style="width:15px;height:15px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 7v10H5V7h14m0-2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-2.5 8.5l-2.5-3-2 2.5-1.5-2L7 15.5h10z"/></svg>
+            Unggah Gambar
+          </span>
+          <a 
+            id="gambarFileName" 
+            href="#" 
+            target="_blank" 
+            rel="noopener"
+            style="font-size: 13px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; pointer-events: none; text-decoration: none;"
+          >
+            Pilih berkas gambar...
+          </a>
+          <button 
+            type="button" 
+            id="btnCancelGambar" 
+            onclick="resetGambarInput(event)" 
+            style="display: none; background: none; border: none; color: #ef4444; font-size: 18px; font-weight: 700; cursor: pointer; padding: 0 4px; line-height: 1; z-index: 3;" 
+            title="Hapus gambar"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. FIELD UPLOAD PROPOSAL EVENT -->
+      <div class="field">
+        <label for="neProposal">Proposal Event (PDF, max 10MB)</label>
+        <div style="position: relative; display: flex; align-items: center; background-color: var(--cream-card, #fefae0); border: 1px solid var(--taupe, #e0d8b0); border-radius: 12px; padding: 8px 12px; width: 100%; box-sizing: border-box; gap: 10px; min-height: 42px;">
+          <input 
+            type="file" 
+            id="neProposal" 
+            name="proposal" 
+            accept=".pdf"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;"
+            onchange="handleProposalChange(this)"
+          >
+          <span id="btnUploadPdf" style="background-color: #ffffff; color: var(--olive, #2b3022); font-weight: 600; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; flex-shrink: 0; pointer-events: none; display: inline-flex; align-items: center; gap: 6px;">
+            <svg style="width:15px;height:15px;fill:currentColor" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+            Unggah PDF
+          </span>
+          <a 
+            id="proposalFileName" 
+            href="#" 
+            target="_blank" 
+            rel="noopener"
+            style="font-size: 13px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; pointer-events: none; text-decoration: none;"
+          >
+            Pilih berkas PDF...
+          </a>
+          <button 
+            type="button" 
+            id="btnCancelProposal" 
+            onclick="resetProposalInput(event)" 
+            style="display: none; background: none; border: none; color: #ef4444; font-size: 18px; font-weight: 700; cursor: pointer; padding: 0 4px; line-height: 1; z-index: 3;" 
+            title="Hapus file"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Simpan</button></div>
+    
+    <div class="dlg__foot">
+      <button type="button" class="btn btn--ghost" data-close>Batal</button>
+      <button type="submit" class="btn">Simpan</button>
+    </div>
   </form>
 </dialog>
+
+<!-- JS HANDLER UNTUK PROPOSAL & GAMBAR COVER -->
+<script>
+  /* --- Handler Gambar Cover --- */
+  function handleGambarChange(input) {
+    const btnUpload = document.getElementById('btnUploadGambar');
+    const fileNameEl = document.getElementById('gambarFileName');
+    const btnCancel = document.getElementById('btnCancelGambar');
+
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const fileUrl = URL.createObjectURL(file);
+
+      btnUpload.style.display = 'none';
+      fileNameEl.textContent = file.name;
+      fileNameEl.href = fileUrl;
+      fileNameEl.style.color = '#1a73e8';
+      fileNameEl.style.fontWeight = '600';
+      fileNameEl.style.textDecoration = 'underline';
+      fileNameEl.style.pointerEvents = 'auto';
+      btnCancel.style.display = 'block';
+      input.style.pointerEvents = 'none';
+    }
+  }
+
+  function resetGambarInput(event) {
+    if (event) event.stopPropagation();
+    const input = document.getElementById('neGambar');
+    const btnUpload = document.getElementById('btnUploadGambar');
+    const fileNameEl = document.getElementById('gambarFileName');
+    const btnCancel = document.getElementById('btnCancelGambar');
+
+    input.value = '';
+    input.style.pointerEvents = 'auto';
+    btnUpload.style.display = 'inline-flex';
+    fileNameEl.textContent = 'Pilih berkas gambar...';
+    fileNameEl.href = '#';
+    fileNameEl.style.color = '#64748b';
+    fileNameEl.style.fontWeight = 'normal';
+    fileNameEl.style.textDecoration = 'none';
+    fileNameEl.style.pointerEvents = 'none';
+    btnCancel.style.display = 'none';
+  }
+
+  /* --- Handler Proposal PDF --- */
+  function handleProposalChange(input) {
+    const btnUpload = document.getElementById('btnUploadPdf');
+    const fileNameEl = document.getElementById('proposalFileName');
+    const btnCancel = document.getElementById('btnCancelProposal');
+
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const fileUrl = URL.createObjectURL(file);
+
+      btnUpload.style.display = 'none';
+      fileNameEl.textContent = file.name;
+      fileNameEl.href = fileUrl;
+      fileNameEl.style.color = '#1a73e8';
+      fileNameEl.style.fontWeight = '600';
+      fileNameEl.style.textDecoration = 'underline';
+      fileNameEl.style.pointerEvents = 'auto';
+      btnCancel.style.display = 'block';
+      input.style.pointerEvents = 'none';
+    }
+  }
+
+  function resetProposalInput(event) {
+    if (event) event.stopPropagation();
+    const input = document.getElementById('neProposal');
+    const btnUpload = document.getElementById('btnUploadPdf');
+    const fileNameEl = document.getElementById('proposalFileName');
+    const btnCancel = document.getElementById('btnCancelProposal');
+
+    input.value = '';
+    input.style.pointerEvents = 'auto';
+    btnUpload.style.display = 'inline-flex';
+    fileNameEl.textContent = 'Pilih berkas PDF...';
+    fileNameEl.href = '#';
+    fileNameEl.style.color = '#64748b';
+    fileNameEl.style.fontWeight = 'normal';
+    fileNameEl.style.textDecoration = 'none';
+    fileNameEl.style.pointerEvents = 'none';
+    btnCancel.style.display = 'none';
+  }
+</script>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="{% static 'js/simevent_shared.js' %}"></script>
