@@ -3,7 +3,12 @@
 {% block page_key %}admin_audit{% endblock %}
 {% block nav_admin_audit %} class="is-active" aria-current="page"{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Audit Log</h1><button type="button" class="btn btn--ghost" id="auExport"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Ekspor CSV</button></header>
-<article class="card adm-card"><div class="toolbar"><label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari</span><input id="auSearch" type="search" placeholder="Cari kegiatan atau pelaku"></label></div><div class="tabs adm-tabs" id="auTabs" role="group" aria-label="Filter jenis"></div>
-<ul class="log-list adm-log" id="auList"></ul><div class="pager"><span id="auInfo"></span><div id="auPager"></div></div></article>
+<header class="eo-head eo-head--split"><div><h1>Audit Log</h1><p>Riwayat aktivitas penting di platform, mulai dari event, pengguna, support, hingga keuangan.</p></div><button type="button" class="btn btn--ghost" id="auExport"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Ekspor CSV</button></header>
+<div class="adm-toolbar adm-toolbar--search-first">
+  <label class="adm-search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari</span><input id="auSearch" type="search" placeholder="Cari kegiatan atau pelaku"></label>
+  <div class="tabs" id="auTabs" role="group" aria-label="Filter jenis"></div>
+</div>
+<article class="card adm-card" style="margin-top:0">
+  <ul class="log-list adm-log" id="auList"></ul><div class="pager"><span id="auInfo"></span><div id="auPager"></div></div>
+</article>
 {% endblock %}

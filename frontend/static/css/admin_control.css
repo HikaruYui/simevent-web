@@ -53,3 +53,190 @@ tfoot td { padding: 14px 22px; border-top: 2px solid var(--taupe); font: 800 14p
   .pw-rules { grid-template-columns: 1fr; }
   .set-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- Toolbar: filter di luar kartu, pencarian putih di kanan ---------- */
+.adm-toolbar { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 12px; margin: 24px 0 20px; }
+.adm-toolbar .tabs { flex: 0 1 auto; min-width: 0; }
+.fab--fixed { z-index: 30; }
+.adm-search {
+  display: flex; align-items: center; gap: 10px; flex: 0 1 320px; min-width: 220px; height: 48px; padding: 0 20px;
+  border-radius: 999px; background: #fff; box-shadow: 0 2px 6px rgba(63, 66, 46, .12); color: var(--muted);
+}
+.adm-search .icon { width: 18px; height: 18px; flex: none; }
+.adm-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 15px/1 var(--font-body); color: var(--olive); }
+.adm-search input::placeholder { color: var(--muted); opacity: .85; }
+.adm-search:focus-within { box-shadow: 0 0 0 3px var(--orange); }
+#userTools { flex: 1 1 280px; min-width: 220px; }
+.adm-toolbar .adm-search { flex: 1 1 280px; max-width: none; }
+#userTools[hidden] { display: none; }
+
+/* ---------- Kartu tabel: kepala gelap seperti Kelola Event ketua panitia ---------- */
+.adm-table { overflow: hidden; border-radius: 24px; }
+.adm-table .table-wrap { overflow-x: auto; }
+.adm-table table.tbl { min-width: 0; }
+.adm-table .tbl thead th {
+  padding: 18px 14px; background: var(--olive); color: var(--cream); text-align: center;
+  font: 700 13px/1 var(--font-head); letter-spacing: .06em;
+}
+.adm-table .tbl td { padding: 14px; text-align: center; white-space: nowrap; }
+.adm-table .tbl td:first-child, .adm-table .tbl th:first-child { text-align: left; white-space: normal; min-width: 200px; padding-left: 22px; }
+.adm-table .tbl td.num, .adm-table .tbl th.num { text-align: center; }
+.adm-table .tbl td.act { text-align: right; padding-right: 22px; }
+.adm-table .tbl tbody tr:hover td { background: #FCF7EA; }
+.adm-table .pager { background: #fff; }
+
+/* Batang tiket terjual */
+.tk { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.tk__bar { width: 72px; height: 8px; border-radius: 999px; background: var(--row, #EFE3C6); overflow: hidden; }
+.tk__bar i { display: block; height: 100%; border-radius: 999px; background: var(--olive); }
+.tk span { font: 700 13px/1 var(--font-body); color: var(--muted); }
+
+/* Dialog detail event + proposal */
+.dlg--wide { width: min(680px, calc(100vw - 32px)); }
+.prop-h { margin: 22px 0 10px; font: 700 16px/1.2 var(--font-head); }
+.pdoc { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--cream-card); }
+.pdoc > div { flex: 1; min-width: 0; }
+.pdoc b { display: block; font: 700 14px/1.3 var(--font-head); overflow-wrap: anywhere; }
+.pdoc small { display: block; margin-top: 2px; font: 500 12.5px/1.3 var(--font-body); color: var(--muted); }
+.pdoc__ico { display: grid; place-items: center; flex: none; width: 44px; height: 52px; border-radius: 10px; background: var(--bad); color: #fff; font: 800 12px/1 var(--font-head); }
+.pdoc__note { margin-top: 12px; font: 500 12.5px/1.45 var(--font-body); color: var(--muted); }
+.dl--prop { margin-top: 16px; }
+.pdlg__foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+@media (max-width: 760px) {
+  .adm-toolbar { flex-direction: column-reverse; align-items: stretch; }
+  .adm-search, #userTools { flex: 1 1 auto; }
+  .pdoc { flex-wrap: wrap; }
+}
+#propDlg[open] { display: flex; flex-direction: column; max-height: 90vh; }
+#propDlg .dlg__body { overflow-y: auto; display: block; }
+
+.eo-head--stack { display: block; }
+.eo-head--stack p { margin-top: 6px; }
+/* Keuangan: kartu ringkasan seragam */
+.eo-head--split { align-items: center; }
+.kpi-grid--fin .kpi { min-height: 150px; }
+.kpi-grid--fin .kpi__label { font-size: 15px; }
+.kpi-grid--fin .kpi__value { font-size: 30px; }
+.kpi-grid--fin .kpi__delta { position: static; margin-top: 10px; font: 500 14px/1.4 var(--font-body); }
+/* Audit Log: search di kiri, tabs di sebelahnya */
+.adm-toolbar--search-first .adm-search { flex: 0 1 300px; order: 2; margin-left: auto; }
+.adm-card > .adm-log { padding-top: 22px; }
+
+/* ---------- Pengaturan: tabs, baris pengaturan, footer ---------- */
+.set-tabs a { display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border: 1.5px solid var(--olive); border-radius: 999px; font: 600 14px/1 var(--font-body); color: var(--olive); transition: background-color .2s, color .2s; }
+.set-tabs a:hover { background: rgba(63, 66, 46, .08); }
+.set-tabs a.is-active { background: var(--olive); color: var(--cream); }
+.set-tabs a:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.adm-toolbar + .set-main { margin-top: 0; }
+
+.sp-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; padding: 22px 0; border-top: 1px solid var(--line); }
+.sp-row:first-of-type { margin-top: 4px; }
+.sp-row__txt { flex: 1 1 320px; min-width: 0; }
+.sp-row__txt label, .sp-row__txt b { display: block; font: 700 16px/1.3 var(--font-head); }
+.sp-row__txt p { margin-top: 4px; max-width: 520px; font: 500 13.5px/1.5 var(--font-body); color: var(--muted); }
+.sp-row__ctl { display: flex; align-items: center; gap: 10px; flex: none; }
+.sp-row__ctl input { width: 96px; height: 46px; padding: 0 16px; border: 1.5px solid var(--taupe); border-radius: 14px; background: var(--cream-card); font: 700 16px/1 var(--font-body); text-align: right; outline: 0; }
+.sp-row__ctl input:focus { border-color: var(--orange); }
+.sp-row__ctl span { font: 700 16px/1 var(--font-head); }
+.sp-row .err { flex: 1 0 100%; }
+
+.sp-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.sp-foot p { font: 500 13px/1.5 var(--font-body); color: var(--muted); }
+.sp-foot a { font-weight: 700; color: var(--olive); text-decoration: underline; }
+.sp-foot__act { display: flex; align-items: center; gap: 14px; }
+.sp-foot__act span { font: 600 13px/1 var(--font-body); color: var(--muted); }
+#pfSave:disabled { opacity: .45; cursor: not-allowed; }
+#pfSave:disabled:hover { background: var(--olive); color: var(--cream); }
+
+/* Akun admin */
+.sp-profile { display: flex; align-items: center; gap: 20px; margin-top: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.sp-profile b { display: block; font: 700 18px/1.2 var(--font-head); }
+.sp-profile small { display: block; margin-top: 2px; font: 500 14px/1.4 var(--font-body); color: var(--muted); }
+.sp-profile small.hint { margin-top: 8px; font-size: 12.5px; }
+.sp-profile__act { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.sp-file { cursor: pointer; }
+.sp-file:focus-within { outline: 2px solid var(--orange); outline-offset: 2px; }
+.sp-profile + .set-form { margin-top: 24px; }
+.sp-subh { margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--line); font: 700 20px/1.25 var(--font-head); }
+#emailForm .set-grid { grid-template-columns: minmax(0, 420px); }
+#emailForm .set-actions { justify-content: flex-start; }
+
+/* Avatar + chip profil di sidebar */
+.eo-profile__ava { width: 56px; height: 56px; font-size: 17px; }
+.eo-profile { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px 14px 8px 8px; border: 1px solid #F3E4A8; border-radius: 24px; background: #FFFDF6; }
+.sp-ava { width: 84px; height: 84px; font-size: 26px; }
+.eo-profile { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px 14px 8px 8px; border: 1px solid #F3E4A8; border-radius: 24px; background: #FFFDF6; }
+.eo-profile b { min-width: 0; }
+
+/* Chip profil sidebar: nama tidak terpotong, tombol keluar berwarna oranye seperti di peserta */
+.eo-user .eo-profile b { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; font-size: 14.5px !important; font-weight: 600 !important; line-height: 1.25 !important; }
+.eo-user form button { color: var(--orange-deep) !important; font-size: 15px !important; }
+.eo-user form button .icon { width: 20px !important; height: 20px !important; }
+
+/* Akun admin: foto di kiri, email di kanan */
+.sp-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; margin-top: 20px; }
+.sp-top .sp-profile { margin: 0; padding: 0 48px 0 0; border-bottom: 0; }
+.sp-top .sp-profile + .set-form { margin: 0; padding-left: 48px; border-left: 1px solid var(--line); }
+.sp-top #emailForm .set-grid { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) {
+  .sp-top { grid-template-columns: 1fr; }
+  .sp-top .sp-profile { padding: 0 0 24px; }
+  .sp-top .sp-profile + .set-form { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Perbaikan avatar (lingkaran olive + inisial/foto) */
+.eo-profile__ava, .sp-ava { display: grid; place-items: center; flex: none; border-radius: 50%; background: var(--olive) center / cover no-repeat; color: var(--cream); font: 800 15px/1 var(--font-head); }
+.eo-profile__ava { width: 56px; height: 56px; font-size: 17px; }
+.sp-ava { width: 84px; height: 84px; font-size: 26px; }
+
+/* Sidebar: profil tanpa shape di belakang, seperti peserta */
+.eo-user .eo-profile { padding: 0; border: 0; border-radius: 0; background: none; gap: 12px; }
+.eo-profile__ava { width: 64px; height: 64px; font-size: 20px; }
+.eo-user .eo-profile b { font-size: 16px !important; font-weight: 700 !important; overflow-wrap: anywhere; }
+
+/* Dialog atur foto profil (disalin dari peserta) */
+.profile-crop-modal { position: fixed; z-index: 1000; inset: 0; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; background: rgba(31, 39, 28, .62); }
+.profile-crop-modal[hidden] { display: none; }
+.profile-crop-dialog { width: min(100%, 460px); border: 1px solid #E6D2A9; border-radius: 22px; background: #fff; padding: 24px; box-shadow: 0 24px 70px rgba(18, 25, 16, .28); }
+.profile-crop-dialog h3 { font: 700 22px/1.2 var(--font-head); }
+.profile-crop-dialog p { margin-top: 6px; font: 500 14px/1.5 var(--font-body); color: var(--muted); }
+.profile-crop-dialog label { display: block; font: 700 14px/1.2 var(--font-head); }
+.profile-crop-viewport { position: relative; width: min(100%, 340px); aspect-ratio: 1; overflow: hidden; margin: 18px auto 14px; border-radius: 14px; background: #30362E; touch-action: none; cursor: grab; }
+.profile-crop-image { position: absolute; max-width: none; max-height: none; user-select: none; pointer-events: none; }
+.profile-crop-guide { position: absolute; inset: 5%; border: 2px solid rgba(255, 255, 255, .9); border-radius: 50%; box-shadow: 0 0 0 999px rgba(28, 34, 26, .16); pointer-events: none; }
+.profile-crop-zoom { display: block; width: 100%; margin-top: 8px; accent-color: var(--olive); }
+.profile-crop-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* Tombol simpan email & ubah kata sandi di kanan */
+#emailForm .set-actions, #pwForm .set-actions { justify-content: flex-end; }
+
+/* Sidebar: foto + nama + role, tombol Keluar kembali ke warna gelap */
+.eo-profile__ava { width: 52px; height: 52px; font-size: 17px; }
+.eo-profile__txt { min-width: 0; }
+.eo-user .eo-profile b { font-size: 15px !important; overflow-wrap: break-word; }
+.eo-user .eo-profile p { margin-top: 2px !important; }
+.eo-user form button { color: var(--olive) !important; font-size: 13.5px !important; }
+.eo-user form button .icon { width: 17px !important; height: 17px !important; }
+
+/* Sidebar: nama dan role masing-masing satu baris */
+.eo-profile { gap: 10px; }
+.eo-profile__ava { width: 48px; height: 48px; font-size: 16px; }
+.eo-profile__txt { min-width: 0; flex: 1 1 auto; }
+.eo-user .eo-profile b { font-size: 13.5px !important; font-weight: 700 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.eo-user .eo-profile p { font-size: 12px !important; font-weight: 400 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+/* Akun admin: form nama + email di kolom kanan */
+.sp-acc { display: grid; gap: 18px; padding-left: 48px; border-left: 1px solid var(--line); }
+.sp-inline__row { display: flex; align-items: center; gap: 10px; }
+.sp-inline__row input { flex: 1 1 0; min-width: 0; }
+.sp-inline__row .btn { flex: none; }
+@media (max-width: 900px) {
+  .sp-acc { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Sidebar: foto lebih kecil agar nama dan role muat satu baris */
+.eo-user { padding-left: 0; padding-right: 0; }
+.eo-profile__ava { width: 42px; height: 42px; font-size: 14px; }
+.eo-user .eo-profile b { font-size: 12.5px !important; }
+.eo-user .eo-profile p { font-size: 11.5px !important; }

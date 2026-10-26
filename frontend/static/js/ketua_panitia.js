@@ -238,6 +238,10 @@
       if (!v.lokasi) { errs.lokasi = "Isi lokasi event."; }
       if (!(v.kuota >= 1)) { errs.kuota = "Kuota minimal 1."; }
       if (!(v.harga >= 0)) { errs.harga = "Harga tidak boleh negatif."; }
+      var needDoc = !window.SIM || window.SIM.state.settings.approvalRequired, pf = form.proposal && form.proposal.files[0];
+      if (needDoc && !pf) { errs.proposal = "Unggah proposal event untuk diajukan ke admin."; }
+      else if (pf && !/\.(pdf|docx?)$/i.test(pf.name)) { errs.proposal = "Format proposal harus PDF atau Word."; }
+      else if (pf && pf.size > 10 * 1024 * 1024) { errs.proposal = "Ukuran proposal maksimal 10 MB."; }
       Object.keys(errs).forEach(function (k) {
         var s = document.createElement("small"); s.textContent = errs[k];
         form[k].closest(".field").appendChild(s);
@@ -253,7 +257,8 @@
       var teks = needApproval ? "Event \"" + v.nama + "\" diajukan, menunggu persetujuan admin" : "Event baru \"" + v.nama + "\" dibuat";
       E.activity.unshift({ tipe: "event", teks: teks, waktu: "Baru saja" });
       if (S) {
-        S.state.newEvents.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, harga: v.harga, status: status });
+        var up = new Date(), prop = pf ? { file: pf.name, size: (pf.size >= 1048576 ? (pf.size / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(pf.size / 1024)) + " KB"), uploaded: up.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + up.getDate()).slice(-2), ringkasan: form.ringkasan.value.trim() } : null;
+        S.state.newEvents.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, harga: v.harga, status: status, proposal: prop });
         S.log("event", teks, "Budi Santoso", "Ketua Panitia", { eo: true });
       }
       dlg.close();
@@ -497,23 +502,21 @@
   /* ---------- Halaman: Pengaturan ---------- */
   function pagePengaturan() {
     var PERAN = {
-      lapangan:   { nama: "Panitia Lapangan", info: "Melihat daftar peserta dan melakukan check-in tiket saat acara. Bisa mengganti kata sandinya sendiri.",
-                    poin: ["Melihat daftar peserta", "Check-in tiket", "Ganti kata sandi"] },
-      dokumentasi:{ nama: "Tim Dokumentasi",  info: "Melihat event dan mengunggah foto kegiatan yang langsung muncul di akun peserta.",                      
-                    poin: ["Melihat daftar event", "Unggah foto kegiatan ke peserta", "Ganti kata sandi"] }
+      panitia: { nama: "Panitia", info: "Melihat event yang ditugaskan, check-in peserta saat acara, mengerjakan tugas, dan mengunggah dokumentasi. Bisa beralih ke tampilan peserta.",
+                 poin: ["Check-in peserta", "Mengerjakan tugas", "Unggah dokumentasi"] }
     };
     var STATUS = { aktif: ["hadir", "Aktif"], tertunda: ["mendatang", "Menunggu"], ditangguhkan: ["selesai", "Ditangguhkan"] };
     var team = [
-      { id: 1, nama: "Siti Rahma",       email: "siti.rahma@mail.com",   peran: "lapangan",    akses: "semua", status: "aktif",        terakhir: "Hari ini" },
-      { id: 2, nama: "Rafi Hidayat",     email: "rafi.hidayat@mail.com", peran: "lapangan",    akses: [1, 2],  status: "aktif",        terakhir: "Kemarin" },
-      { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "dokumentasi", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
-      { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "dokumentasi", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
+      { id: 1, nama: "Siti Rahma",       email: "siti.rahma@mail.com",   peran: "panitia", akses: "semua", status: "aktif",        terakhir: "Hari ini" },
+      { id: 2, nama: "Rafi Hidayat",     email: "rafi.hidayat@mail.com", peran: "panitia", akses: [1, 2],  status: "aktif",        terakhir: "Kemarin" },
+      { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "panitia", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
+      { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "panitia", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
     ];
     /* akun yang dibekukan Admin tidak bisa masuk: tampil sebagai ditangguhkan */
     if (window.SIM) { team.forEach(function (m) { var u = SIM.state.users[m.email]; if (u && u.status === "dibekukan") { m.status = "ditangguhkan"; } }); }
     var invites = [
-      { id: 11, email: "putri.amelia@mail.com", peran: "lapangan",    kirim: "2 hari lalu", sisa: 5 },
-      { id: 12, email: "agus.salim@mail.com",   peran: "dokumentasi", kirim: "6 hari lalu", sisa: 1 }
+      { id: 11, email: "putri.amelia@mail.com", peran: "panitia", kirim: "2 hari lalu", sisa: 5 },
+      { id: 12, email: "agus.salim@mail.com",   peran: "panitia", kirim: "6 hari lalu", sisa: 1 }
     ];
     var NOTIF = [
       { k: "daftar",  t: "Pendaftaran peserta baru",       d: "Setiap ada peserta yang mendaftar ke eventmu.", on: true },
