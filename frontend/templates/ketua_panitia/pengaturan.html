@@ -18,20 +18,28 @@
 <div class="card set-main">
   <!-- PROFIL SAYA -->
   <section class="set-panel" id="panel-profil" data-panel="profil" aria-labelledby="h-profil" hidden>
-    <div class="set-sec">
-      <h2 id="h-profil" class="set-h">Profil saya</h2>
-      <p class="set-sub">Informasi ini tampil pada tim panitia dan di halaman event yang kamu kelola.</p>
-      <form id="profilForm" class="set-form" novalidate>
-        <div class="set-avatar"><span id="avatarInit" aria-hidden="true">KP</span><div><b id="avatarName">{{ request.user.get_full_name|default:"Ketua Panitia" }}</b><small>Ketua Panitia</small></div></div>
-        <div class="set-grid">
-          <div class="field"><label for="pfNama">Nama lengkap</label><input id="pfNama" name="nama" type="text" value="{{ request.user.get_full_name }}" maxlength="80"></div>
-          <div class="field"><label for="pfEmail">Email (untuk masuk)</label><input id="pfEmail" type="email" value="{{ request.user.email }}" readonly aria-describedby="pfEmailNote"><small class="hint" id="pfEmailNote">Email tidak bisa diubah sendiri. Hubungi admin platform bila perlu.</small></div>
-          <div class="field"><label for="pfHp">Nomor HP</label><input id="pfHp" name="hp" type="tel" placeholder="08xxxxxxxxxx" inputmode="tel"></div>
-          <div class="field"><label for="pfOrg">Komunitas / organisasi</label><input id="pfOrg" name="org" type="text" placeholder="Contoh: BEM Fakultas Teknik" maxlength="80"></div>
-        </div>
-        <div class="set-actions"><button type="submit" class="btn">Simpan perubahan</button></div>
-      </form>
+    <div class="sp-top">
+  <div class="sp-profile">
+    <span class="sp-ava" id="avatarInit" aria-hidden="true">KP</span>
+    <div>
+      <b id="avatarName">{{ request.user.get_full_name|default:"Ketua Panitia" }}</b><small>Ketua Panitia</small>
+      <div class="sp-profile__act"><label class="btn btn--ghost sm sp-file" for="profFoto">Unggah foto<input id="profFoto" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only"></label><button type="button" class="btn btn--ghost sm" id="profFotoDel">Hapus foto</button></div>
+      <small class="hint">JPG, PNG, atau WebP, maksimal 5 MB. Foto dipotong menjadi persegi.</small>
+      <div id="profMsg" aria-live="polite"></div>
     </div>
+  </div>
+  <div class="sp-acc">
+    <form id="nameForm" novalidate><div class="field"><label for="pfNama">Nama lengkap</label><div class="sp-inline__row"><input id="pfNama" name="nama" type="text" maxlength="80" value="{{ request.user.get_full_name|default:'Ketua Panitia' }}" autocomplete="name"><button type="submit" class="btn">Simpan nama</button></div></div></form>
+    <div class="field"><label for="pfEmail">Email (untuk masuk)</label><input id="pfEmail" type="email" value="{{ request.user.email }}" readonly aria-describedby="pfEmailNote"><small class="hint" id="pfEmailNote">Email tidak bisa diubah sendiri. Hubungi admin platform bila perlu.</small></div>
+  </div>
+</div>
+<form id="profilForm" class="set-form" novalidate>
+  <div class="set-grid">
+    <div class="field"><label for="pfHp">Nomor HP</label><input id="pfHp" name="hp" type="tel" placeholder="08xxxxxxxxxx" inputmode="tel"></div>
+    <div class="field"><label for="pfOrg">Komunitas / organisasi</label><input id="pfOrg" name="org" type="text" placeholder="Contoh: BEM Fakultas Teknik" maxlength="80"></div>
+  </div>
+  <div class="set-actions"><button type="submit" class="btn">Simpan perubahan</button></div>
+</form>
 
     <div class="set-sec">
       <h2 class="set-h">Ganti kata sandi</h2>
@@ -213,4 +221,17 @@
     <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn btn--danger" id="cfOk">Lanjutkan</button></div>
   </form>
 </dialog>
+<div id="profileCropModal" class="profile-crop-modal" role="presentation" aria-hidden="true" hidden>
+  <section class="profile-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCropTitle" tabindex="-1">
+    <h3 id="profileCropTitle">Atur foto profil</h3>
+    <p>Geser foto untuk mengatur posisi, lalu gunakan penggeser untuk memperbesar.</p>
+    <div id="profileCropViewport" class="profile-crop-viewport" aria-label="Area crop foto profil">
+      <img id="profileCropImage" class="profile-crop-image" alt="Pratinjau foto yang akan dipotong" draggable="false">
+      <span class="profile-crop-guide" aria-hidden="true"></span>
+    </div>
+    <label for="profileCropZoom">Perbesar foto</label>
+    <input id="profileCropZoom" class="profile-crop-zoom" type="range" min="1" max="3" step="0.05" value="1">
+    <div class="profile-crop-actions"><button id="profileCropCancel" type="button" class="btn btn--ghost">Batal</button><button id="profileCropSave" type="button" class="btn">Gunakan foto</button></div>
+  </section>
+</div>
 {% endblock %}

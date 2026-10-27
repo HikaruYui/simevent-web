@@ -254,3 +254,4 @@ tfoot td { padding: 14px 22px; border-top: 2px solid var(--taupe); font: 800 14p
 .select-menu.show { display: block; }
 .select-item { padding: 10px 14px; border-radius: 8px; font: 500 14px/1.3 var(--font-body); color: #1e293b; cursor: pointer; transition: background-color .15s, color .15s; }
 .select-item:hover, .select-item.is-selected { background: #2b3022; color: #fff; }
+.dlg__body > .dlg__foot, .dlg__body .dlg__foot { padding-left: 0; padding-right: 0; padding-bottom: 0; }

@@ -1,8 +1,3 @@
-/* =========================================================
-   SIMEVENT - Dashboard Ketua Panitia (EO)
-   Perilaku halaman: grafik SVG, tabel, filter, dialog.
-   Bergantung pada ketua_panitia_data.js (data contoh).
-   ========================================================= */
 (function () {
   "use strict";
 
@@ -550,21 +545,96 @@
     $$("[data-close]", cf).forEach(function (b) { b.addEventListener("click", function () { cf.close(); }); });
     $("form", cf).addEventListener("submit", function (ev) { ev.preventDefault(); cf.close(); if (cfAction) { cfAction(); } });
 
-    /* ----- Profil ----- */
+        /* ----- Profil: foto (dengan crop), nama, HP, organisasi ----- */
     function initials(n) { return n.trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; }
-    $("#avatarInit").textContent = initials($("#avatarName").textContent);
+    var baseName = $("#avatarName").textContent.trim();
+    function curName() { return getProfile().nama || baseName; }
+    function applyProfile() {
+      var pr = getProfile(), ava = $("#avatarInit");
+      ava.style.backgroundImage = pr.foto ? 'url("' + pr.foto + '")' : "";
+      ava.textContent = pr.foto ? "" : initials(curName());
+      $("#avatarName").textContent = curName();
+      applySidebarName();
+    }
+    var msg = $("#profMsg"), fIn = $("#profFoto"), nm = $("#nameForm"), nmIn = $("#pfNama");
+    var modal = $("#profileCropModal"), vp = $("#profileCropViewport"), img = $("#profileCropImage"), zoom = $("#profileCropZoom"), okBtn = $("#profileCropSave"), noBtn = $("#profileCropCancel");
+    var src = null, url = null, scale = 1, left = 0, top = 0, drag = null;
+    function say(t) { msg.innerHTML = t ? '<small class="err">' + t + "</small>" : ""; }
+    function fieldErr(input, text) {
+      var m = document.createElement("small"); m.className = "err"; m.textContent = text;
+      input.closest(".field").appendChild(m); input.focus();
+    }
+    nmIn.value = curName();
+    $("#pfHp").value = getProfile().hp || "";
+    $("#pfOrg").value = getProfile().org || "";
+    applyProfile();
+
+    nm.addEventListener("submit", function (ev) {
+      ev.preventDefault(); $$("small.err", nm).forEach(function (x) { x.remove(); });
+      var v = nmIn.value.trim().replace(/\s+/g, " "), p = getProfile();
+      if (v.length < 3) { fieldErr(nmIn, "Nama minimal 3 karakter."); return; }
+      if (v === curName()) { toast("Nama tidak berubah."); return; }
+      p.nama = v; setProfile(p); applyProfile(); toast("Nama diperbarui. Ini data contoh, belum tersimpan ke database.");
+    });
+
     $("#profilForm").addEventListener("submit", function (ev) {
       ev.preventDefault();
-      var f = ev.target, nama = f.nama.value.trim();
-      $$("small.err", f).forEach(function (s) { s.remove(); });
-      if (nama.length < 3) {
-        var s = document.createElement("small"); s.className = "err"; s.textContent = "Nama minimal 3 karakter.";
-        f.nama.closest(".field").appendChild(s); f.nama.focus(); return;
-      }
-      $("#avatarName").textContent = nama; $("#avatarInit").textContent = initials(nama);
+      var p = getProfile(); p.hp = $("#pfHp").value.trim(); p.org = $("#pfOrg").value.trim(); setProfile(p);
       toast("Profil diperbarui. Ini data contoh, belum tersimpan ke database.");
     });
 
+    function layout(keep) {
+      if (!img.naturalWidth) { return; }
+      var size = vp.clientWidth; if (!size) { return; }
+      var cx = keep && scale ? (size / 2 - left) / scale : null, cy = keep && scale ? (size / 2 - top) / scale : null;
+      scale = Math.max(size / img.naturalWidth, size / img.naturalHeight) * Number(zoom.value);
+      var w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+      img.style.width = w + "px"; img.style.height = h + "px";
+      left = cx === null ? (size - w) / 2 : size / 2 - cx * scale; top = cy === null ? (size - h) / 2 : size / 2 - cy * scale;
+      left = Math.min(0, Math.max(size - w, left)); top = Math.min(0, Math.max(size - h, top));
+      img.style.left = left + "px"; img.style.top = top + "px";
+    }
+    function closeCrop() {
+      modal.hidden = true; modal.setAttribute("aria-hidden", "true"); drag = null; src = null; fIn.value = "";
+      if (url) { URL.revokeObjectURL(url); url = null; }
+      img.removeAttribute("src"); fIn.focus();
+    }
+    fIn.addEventListener("change", function () {
+      var f = fIn.files[0]; say(""); if (!f) { return; }
+      if (!/^image\/(png|jpe?g|webp)$/.test(f.type)) { say("Pilih foto JPG, PNG, atau WebP."); fIn.value = ""; return; }
+      if (f.size > 5 * 1024 * 1024) { say("Ukuran foto maksimal 5 MB."); fIn.value = ""; return; }
+      src = f; zoom.value = "1"; url = URL.createObjectURL(f);
+      modal.hidden = false; modal.setAttribute("aria-hidden", "false");
+      img.onload = function () { requestAnimationFrame(function () { layout(false); okBtn.focus(); }); };
+      img.onerror = function () { say("Foto tidak dapat dibuka. Coba file gambar lain."); closeCrop(); };
+      img.src = url;
+    });
+    zoom.addEventListener("input", function () { layout(true); });
+    window.addEventListener("resize", function () { if (!modal.hidden) { layout(true); } });
+    vp.addEventListener("pointerdown", function (e) { if (!src) { return; } e.preventDefault(); vp.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, l: left, t: top }; });
+    vp.addEventListener("pointermove", function (e) {
+      if (!drag) { return; }
+      var size = vp.clientWidth;
+      left = Math.min(0, Math.max(size - img.clientWidth, drag.l + e.clientX - drag.x)); top = Math.min(0, Math.max(size - img.clientHeight, drag.t + e.clientY - drag.y));
+      img.style.left = left + "px"; img.style.top = top + "px";
+    });
+    vp.addEventListener("pointerup", function () { drag = null; });
+    vp.addEventListener("pointercancel", function () { drag = null; });
+    noBtn.addEventListener("click", closeCrop);
+    modal.addEventListener("click", function (e) { if (e.target === modal) { closeCrop(); } });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) { closeCrop(); } });
+    okBtn.addEventListener("click", function () {
+      if (!src || !img.naturalWidth) { return; }
+      var size = vp.clientWidth, c = document.createElement("canvas"); c.width = c.height = 384;
+      c.getContext("2d").drawImage(img, -left / scale, -top / scale, size / scale, size / scale, 0, 0, 384, 384);
+      var p = getProfile(); p.foto = c.toDataURL("image/jpeg", .85);
+      if (!setProfile(p)) { say("Foto gagal disimpan di browser."); closeCrop(); return; }
+      closeCrop(); applyProfile(); toast("Foto profil diperbarui.");
+    });
+    $("#profFotoDel").addEventListener("click", function () {
+      var p = getProfile(); if (!p.foto) { say("Belum ada foto yang bisa dihapus."); return; }
+      delete p.foto; setProfile(p); say(""); applyProfile(); toast("Foto profil dihapus.");
+    });
     /* ----- Kata sandi ----- */
     var pw = { lama: $("#pwLama"), baru: $("#pwBaru"), ulang: $("#pwUlang") };
     function pwState() {
@@ -708,8 +778,23 @@
     });
   }
 
+    /* ---------- Profil ketua panitia (data contoh di localStorage) ---------- */
+  var PKEY = "simevent_ketua_profile_v1";
+  function getProfile() { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } }
+  function setProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); return true; } catch (e) { return false; } }
+    function sbInitials(n) { return n.trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; }
+  function applySidebarName() {
+    var pr = getProfile(), b = $(".eo-user b"), ava = $(".eo-user__ava");
+    if (pr.nama && b) { b.textContent = pr.nama; }
+    if (ava) {
+      ava.style.backgroundImage = pr.foto ? 'url("' + pr.foto + '")' : "";
+      ava.textContent = pr.foto ? "" : sbInitials(b ? b.textContent : "");
+    }
+  }
+
   var pages = { dashboard: pageDashboard, event: pageEvent, peserta: pagePeserta, pendapatan: pagePendapatan, log: pageLog, support: pageSupport, pengaturan: pagePengaturan };  
   var fn = pages[document.body.dataset.page];
   if (fn) { fn(); }
+  applySidebarName(); 
   initNewEvent();
 })();

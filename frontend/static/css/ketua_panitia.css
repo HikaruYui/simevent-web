@@ -1,9 +1,3 @@
-/* =========================================================
-   SIMEVENT - Dashboard Ketua Panitia (EO)
-   Berdiri sendiri: tidak memuat style.css (halaman publik),
-   jadi tidak terkena zoom/ukuran halaman landing.
-   ========================================================= */
-
 :root {
   --olive: #3F422E;
   --olive-ink: #2A2C1E;
@@ -514,3 +508,39 @@ body[data-page="pendapatan"] .table-wrap { margin-top: 24px; }
 .chip--aktif, .chip--dicairkan, .chip--disetujui { background: var(--good-bg); color: var(--good); }
 .chip--belum { background: #E9E4D6; color: var(--muted); }
 .ticket__reply { padding: 10px 14px; border-radius: 12px; background: var(--white); font: 500 14px/1.5 var(--font-body); }
+/* ---------- Support: kartu pesan berwarna putih ---------- */
+body[data-page="support"] .ticket { background: var(--white); }
+body[data-page="support"] .ticket__reply { background: var(--cream-card); }
+/* ---------- Pengaturan > Profil saya (foto, nama, email) ---------- */
+.sp-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; margin-top: 20px; }
+.sp-profile { display: flex; align-items: center; gap: 20px; padding: 0 48px 0 0; }
+.sp-profile b { display: block; font: 700 18px/1.2 var(--font-head); }
+.sp-profile small { display: block; margin-top: 2px; font: 500 14px/1.4 var(--font-body); color: var(--muted); }
+.sp-profile small.hint { margin-top: 8px; font-size: 12.5px; }
+.sp-profile__act { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.sp-file { cursor: pointer; }
+.sp-file:focus-within { outline: 2px solid var(--orange); outline-offset: 2px; }
+.sp-ava { display: grid; place-items: center; flex: none; width: 84px; height: 84px; border-radius: 50%; background: var(--olive) center / cover no-repeat; color: var(--cream); font: 800 26px/1 var(--font-head); }
+.sp-acc { display: grid; gap: 18px; padding-left: 48px; border-left: 1px solid var(--line); }
+.sp-inline__row { display: flex; align-items: center; gap: 10px; }
+.sp-inline__row input { flex: 1 1 0; min-width: 0; }
+.sp-inline__row .btn { flex: none; }
+.sp-top + .set-form { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--line); }
+@media (max-width: 900px) {
+  .sp-top { grid-template-columns: 1fr; }
+  .sp-profile { padding: 0 0 24px; }
+  .sp-acc { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Dialog atur foto profil */
+.profile-crop-modal { position: fixed; z-index: 1000; inset: 0; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; background: rgba(31, 39, 28, .62); }
+.profile-crop-modal[hidden] { display: none; }
+.profile-crop-dialog { width: min(100%, 460px); border: 1px solid #E6D2A9; border-radius: 22px; background: #fff; padding: 24px; box-shadow: 0 24px 70px rgba(18, 25, 16, .28); }
+.profile-crop-dialog h3 { font: 700 22px/1.2 var(--font-head); }
+.profile-crop-dialog p { margin-top: 6px; font: 500 14px/1.5 var(--font-body); color: var(--muted); }
+.profile-crop-dialog label { display: block; font: 700 14px/1.2 var(--font-head); }
+.profile-crop-viewport { position: relative; width: min(100%, 340px); aspect-ratio: 1; overflow: hidden; margin: 18px auto 14px; border-radius: 14px; background: #30362E; touch-action: none; cursor: grab; }
+.profile-crop-image { position: absolute; max-width: none; max-height: none; user-select: none; pointer-events: none; }
+.profile-crop-guide { position: absolute; inset: 5%; border: 2px solid rgba(255, 255, 255, .9); border-radius: 50%; box-shadow: 0 0 0 999px rgba(28, 34, 26, .16); pointer-events: none; }
+.profile-crop-zoom { display: block; width: 100%; margin-top: 8px; accent-color: var(--olive); }
+.profile-crop-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
