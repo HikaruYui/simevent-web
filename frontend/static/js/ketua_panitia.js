@@ -206,6 +206,66 @@
 
   /* ---------- Dialog "Event baru" (dipakai semua halaman) ---------- */
   var onEventsChanged = function () {};
+  /* Dropdown kustom (menu putih, item terpilih olive) sebagai pengganti menu bawaan browser/OS.
+     Select asli tetap ada (disembunyikan) supaya form.jenis.value tetap bekerja. */
+  function enhanceSelect(select) {
+    if (!select || select.dataset.dd) { return; }
+    select.dataset.dd = "1";
+    var host = select.closest("dialog") || document.body;
+    var wrap = document.createElement("div"); wrap.className = "dd";
+    select.parentNode.insertBefore(wrap, select); wrap.appendChild(select);
+    var btn = document.createElement("button"); btn.type = "button"; btn.className = "dd__btn";
+    btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
+    btn.innerHTML = '<span class="dd__val"></span><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg>';
+    wrap.appendChild(btn);
+    var menu = document.createElement("div"); menu.className = "dd__menu"; menu.setAttribute("role", "listbox"); menu.hidden = true;
+    host.appendChild(menu);
+    var open = false, active = -1;
+
+    function sync() { var o = select.options[select.selectedIndex]; $(".dd__val", btn).textContent = o ? o.textContent : ""; }
+    function build() {
+      menu.innerHTML = Array.prototype.map.call(select.options, function (o, i) {
+        return '<div class="dd__item' + (i === select.selectedIndex ? " is-selected" : "") + (i === active ? " is-active" : "") + '" role="option" data-i="' + i + '" aria-selected="' + (i === select.selectedIndex) + '">' + esc(o.textContent) + "</div>";
+      }).join("");
+    }
+    function place() {
+      var r = btn.getBoundingClientRect();
+      menu.style.width = r.width + "px"; menu.style.left = r.left + "px";
+      var h = Math.min(menu.scrollHeight, 280), below = window.innerHeight - r.bottom - 12;
+      if (below < h && r.top > below) { menu.style.top = "auto"; menu.style.bottom = (window.innerHeight - r.top + 6) + "px"; menu.style.maxHeight = Math.min(280, r.top - 12) + "px"; }
+      else { menu.style.bottom = "auto"; menu.style.top = (r.bottom + 6) + "px"; menu.style.maxHeight = Math.min(280, below) + "px"; }
+    }
+    function openMenu() {
+      active = select.selectedIndex; build(); menu.hidden = false; open = true; wrap.classList.add("is-open"); btn.setAttribute("aria-expanded", "true"); place();
+      var sel = $(".is-selected", menu); if (sel) { sel.scrollIntoView({ block: "nearest" }); }
+    }
+    function closeMenu() { menu.hidden = true; open = false; wrap.classList.remove("is-open"); btn.setAttribute("aria-expanded", "false"); }
+    function choose(i) {
+      select.selectedIndex = i; sync(); closeMenu();
+      select.dispatchEvent(new Event("input", { bubbles: true })); select.dispatchEvent(new Event("change", { bubbles: true }));
+      btn.focus();
+    }
+    function move(d) {
+      var n = select.options.length; active = (active + d + n) % n; build();
+      var a = $(".is-active", menu); if (a) { a.scrollIntoView({ block: "nearest" }); }
+    }
+
+    btn.addEventListener("click", function () { if (open) { closeMenu(); } else { openMenu(); } });
+    btn.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { ev.preventDefault(); if (!open) { openMenu(); } else { move(ev.key === "ArrowDown" ? 1 : -1); } }
+      else if ((ev.key === "Enter" || ev.key === " ") && open) { ev.preventDefault(); choose(active); }
+      else if (ev.key === "Escape" && open) { ev.preventDefault(); ev.stopPropagation(); closeMenu(); }
+    });
+    menu.addEventListener("mousedown", function (ev) { ev.preventDefault(); });
+    menu.addEventListener("click", function (ev) { var it = ev.target.closest(".dd__item"); if (it) { choose(parseInt(it.dataset.i, 10)); } });
+    document.addEventListener("mousedown", function (ev) { if (open && !ev.target.closest(".dd__menu") && !ev.target.closest(".dd__btn")) { closeMenu(); } });
+    window.addEventListener("resize", function () { if (open) { place(); } });
+    host.addEventListener("scroll", function () { if (open) { place(); } }, true);
+    if (select.form) { select.form.addEventListener("reset", function () { setTimeout(function () { sync(); closeMenu(); }, 0); }); }
+    new MutationObserver(sync).observe(select, { childList: true });
+    sync();
+  }
+
   function initNewEvent() {
     var dlg = $("#newEventDlg"); if (!dlg) { return; }
     var form = $("form", dlg);
@@ -214,6 +274,7 @@
       var cats = Object.keys(SIM.state.settings.categories).filter(function (k) { return SIM.state.settings.categories[k]; });
       if (cats.length) { form.jenis.innerHTML = cats.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join(""); }
     }
+    enhanceSelect(form.jenis);
     $$("[data-open-new-event]").forEach(function (b) {
       b.addEventListener("click", function () { form.reset(); $$("small", form).forEach(function (s) { s.remove(); }); dlg.showModal(); $("#neNama").focus(); });
     });
@@ -344,6 +405,26 @@
           '<td><button type="button" class="btn btn--ghost" style="height:36px;padding:0 16px;font-size:13px" data-detail="' + e.id + '">Detail</button></td></tr>';
       }).join("");
     }
+    /* Data proposal: pakai yang diunggah saat "Event baru" (tersimpan di SIM.state.newEvents), kalau tidak ada pakai data contoh */
+    var RINGKAS = {
+      Konferensi: "Mempertemukan akademisi, praktisi, dan mahasiswa untuk berbagi riset dan membangun jejaring kolaborasi.",
+      Workshop: "Pelatihan praktik langsung agar peserta menguasai keterampilan baru dan membawa pulang hasil kerja nyata.",
+      Seminar: "Menghadirkan narasumber ahli untuk membahas isu terkini dan membuka ruang tanya jawab dengan peserta.",
+      Webinar: "Sesi daring terbuka agar peserta dari berbagai daerah dapat belajar tanpa terkendala jarak.",
+      Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
+      "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
+    };
+    function proposalOf(e) {
+      var S = window.SIM, n = S && S.state.newEvents.filter(function (x) { return x.id === e.id; })[0];
+      if (n && n.proposal) {
+        return { file: n.proposal.file, size: n.proposal.size, uploaded: n.proposal.uploaded, ringkasan: n.proposal.ringkasan || RINGKAS[e.jenis] || RINGKAS.Seminar, asli: true };
+      }
+      var slug = e.nama.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
+      return { file: "Proposal_" + slug + ".pdf", size: (0.8 + (e.id % 7) * 0.35).toFixed(1).replace(".", ",") + " MB", uploaded: e.tanggal, ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar, asli: false };
+    }
+    dlg.addEventListener("click", function (ev) {
+      if (ev.target.closest("[data-open-doc]")) { toast("Contoh data: file proposal asli bisa dibuka setelah unggah tersambung ke backend."); }
+    });
     tabsEl.addEventListener("click", function (ev) { var b = ev.target.closest("button[data-f]"); if (b) { filter = b.dataset.f; render(); } });
     q.addEventListener("input", render);
     tbody.addEventListener("click", function (ev) {
@@ -355,6 +436,13 @@
         "<dt>Status</dt><dd>" + chip(e.status, E.statusEvent[e.status]) + "</dd><dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " kuota</dd>" +
         "<dt>Hadir</dt><dd>" + e.hadir + " peserta</dd><dt>Harga tiket</dt><dd>" + rp(e.harga) + "</dd><dt>Pendapatan</dt><dd>" + (e.pendapatan ? "Rp " + num(e.pendapatan) : "Rp 0") + "</dd>" +
         (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "");
+      var p = proposalOf(e), anggaran = Math.round(e.kuota * Math.max(e.harga, 25000) * 0.6 / 100000) * 100000;
+      $("#detailProposal").innerHTML =
+        '<h3 class="prop-h">Proposal</h3>' +
+        '<div class="pdoc"><span class="pdoc__ico" aria-hidden="true">PDF</span><div><b>' + esc(p.file) + "</b><small>" + esc(p.size) + " &middot; diunggah " + fmtDate(p.uploaded) + '</small></div>' +
+        '<button type="button" class="btn btn--ghost" style="height:36px;padding:0 16px;font-size:13px" data-open-doc>Buka proposal</button></div>' +
+        '<dl class="detail-grid dl--prop"><dt>Tujuan &amp; ringkasan</dt><dd>' + esc(p.ringkasan) + "</dd><dt>Target peserta</dt><dd>" + e.kuota + " peserta, mahasiswa dan umum</dd><dt>Estimasi anggaran</dt><dd>Rp " + num(anggaran) + "</dd></dl>" +
+        (p.asli ? "" : '<p class="pdoc__note">Isi proposal ini data contoh. File asli tersedia setelah unggah proposal tersambung ke backend.</p>');
       dlg.showModal();
     });
     $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
@@ -686,27 +774,30 @@
       var aktif = team.filter(function (m) { return m.status === "aktif"; }).length;
       var tang = team.filter(function (m) { return m.status === "ditangguhkan"; }).length;
       var nc = $("#setNotifCount"); if (nc) { nc.textContent = invites.length; nc.hidden = !invites.length; }
-      $("#timStats").innerHTML = [["Anggota aktif", aktif, "dari " + team.length + " anggota"], ["Undangan tertunda", invites.length, "belum diterima"], ["Ditangguhkan", tang, "tidak bisa masuk"]].map(function (s) {
-        return '<article class="card stat"><p class="stat__label">' + s[0] + '</p><p class="stat__value">' + s[1] + '</p><p class="stat__note stat__note--muted">' + s[2] + "</p></article>";
-      }).join("");
+      var segera = invites.filter(function (i) { return i.sisa <= 1; }).length;
+function kpi(label, x, y) {
+  return '<article class="card kpi kpi--split"><p class="kpi__label">' + label + '</p><div class="kpi__pair">' +
+    '<div><span class="kpi__num' + (x[2] ? " kpi__num--orange" : "") + '">' + x[0] + '</span><span class="kpi__cap' + (x[2] ? " kpi__cap--orange" : "") + '">' + x[1] + "</span></div><i></i>" +
+    '<div><span class="kpi__num' + (y[2] ? " kpi__num--orange" : "") + '">' + y[0] + '</span><span class="kpi__cap' + (y[2] ? " kpi__cap--orange" : "") + '">' + y[1] + "</span></div></div></article>";
+}
+$("#timStats").innerHTML =
+  kpi("Anggota aktif", [aktif, "Aktif"], [team.length, "Total anggota"]) +
+  kpi("Undangan tertunda", [invites.length, "Belum diterima"], [segera, "Kedaluwarsa besok", true]) +
+  kpi("Ditangguhkan", [tang, "Tidak bisa masuk", true], [aktif, "Bisa masuk"]);
       $("#timBody").innerHTML = team.length ? team.map(function (m) {
         var st = STATUS[m.status];
-        var opts = Object.keys(PERAN).map(function (k) { return '<option value="' + k + '"' + (k === m.peran ? " selected" : "") + ">" + PERAN[k].nama + "</option>"; }).join("");
         return '<tr><td><span class="cell-title">' + esc(m.nama) + '</span><span class="cell-sub">' + esc(m.email) + " &middot; " + esc(m.terakhir) + "</span></td>" +
-          '<td><label class="pill-select sm"><span class="sr-only">Peran ' + esc(m.nama) + '</span><select data-role="' + m.id + '">' + opts + '</select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label></td>' +
+          "<td>" + esc(PERAN[m.peran].nama) + "</td>" +
           "<td>" + esc(eventNames(m.akses)) + "</td><td>" + chip(st[0], st[1]) + "</td>" +
           '<td class="act"><button type="button" class="btn btn--ghost sm" data-toggle="' + m.id + '">' + (m.status === "ditangguhkan" ? "Aktifkan" : "Tangguhkan") + '</button> <button type="button" class="btn btn--ghost sm" data-remove="' + m.id + '">Cabut akses</button></td></tr>';
       }).join("") : '<tr><td colspan="5"><p class="tbl-empty">Belum ada anggota. Undang panitia pertamamu.</p></td></tr>';
       $("#invList").innerHTML = invites.length ? invites.map(function (i) {
-        return '<li class="inv"><div><b>' + esc(i.email) + "</b><small>" + esc(PERAN[i.peran].nama) + " &middot; dikirim " + esc(i.kirim) + " &middot; " + (i.sisa <= 1 ? "kedaluwarsa besok" : "berlaku " + i.sisa + " hari lagi") + '</small></div><div class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Kirim ulang</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></div></li>';
-      }).join("") : '<li><p class="tbl-empty">Tidak ada undangan tertunda.</p></li>';
+  return '<tr><td><span class="cell-title">' + esc(i.email) + "</span></td>" +
+    "<td>" + esc(PERAN[i.peran].nama) + " &middot; dikirim " + esc(i.kirim) + " &middot; " + (i.sisa <= 1 ? "kedaluwarsa besok" : "berlaku " + i.sisa + " hari lagi") + "</td>" +
+    '<td class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Kirim ulang</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></td></tr>';
+}).join("") : '<tr><td colspan="3"><p class="tbl-empty">Tidak ada undangan tertunda.</p></td></tr>';
     }
     function member(id) { return team.filter(function (m) { return String(m.id) === String(id); })[0]; }
-    $("#timBody").addEventListener("change", function (ev) {
-      var s = ev.target.closest("[data-role]"); if (!s) { return; }
-      var m = member(s.dataset.role); m.peran = s.value;
-      toast("Peran " + m.nama + " diubah menjadi " + PERAN[m.peran].nama + ". Data contoh.");
-    });
     $("#timBody").addEventListener("click", function (ev) {
       var t = ev.target.closest("[data-toggle]"), r = ev.target.closest("[data-remove]");
       if (t) {

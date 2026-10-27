@@ -4,20 +4,20 @@
 {% block nav_pengaturan %} class="is-active" aria-current="page"{% endblock %}
 {% block fab %}{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Pengaturan</h1></header>
-
-<div class="set-top">
-  <nav class="card set-menu" id="setNav" aria-label="Bagian pengaturan">
+<header class="eo-head eo-head--stack"><h1>Pengaturan</h1><p>Kelola profil, anggota panitia, dan undangan yang masih tertunda.</p></header>
+<div class="adm-toolbar">
+  <nav class="tabs set-tabs" id="setNav" aria-label="Bagian pengaturan">
     <a href="#profil" data-tab="profil">Profil saya</a>
     <a href="#tim" data-tab="tim">Tim panitia</a>
     <a href="#notifikasi" data-tab="notifikasi">Undangan tertunda <span id="setNotifCount" hidden></span></a>
   </nav>
-  <div class="contents" id="timStats"></div>
 </div>
 
 <div class="card set-main">
   <!-- PROFIL SAYA -->
   <section class="set-panel" id="panel-profil" data-panel="profil" aria-labelledby="h-profil" hidden>
+    <h2 id="h-profil" class="set-h">Akun ketua panitia</h2>
+<p class="set-sub">Kelola foto profil, data diri, dan kata sandi akunmu.</p>
     <div class="sp-top">
   <div class="sp-profile">
     <span class="sp-ava" id="avatarInit" aria-hidden="true">KP</span>
@@ -64,124 +64,22 @@
 
   <!-- TIM PANITIA -->
   <section class="set-panel" id="panel-tim" data-panel="tim" aria-labelledby="h-tim" hidden>
+    <section class="kpi-grid kpi-grid--3" id="timStats" aria-label="Ringkasan tim"></section>
     <div class="set-row"><div><h2 id="h-tim" class="set-h">Anggota Panitia</h2><p class="set-sub">Atur peran dan event yang boleh diakses setiap anggota.</p></div>
     <button type="button" class="btn" id="inviteBtn"><svg class="icon" aria-hidden="true" style="width:18px;height:18px"><use href="#i-plus"/></svg>Undang panitia</button></div>
-    <div class="table-wrap"><table class="tbl"><thead><tr><th>Anggota</th><th>Peran</th><th>Akses event</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="timBody"></tbody></table></div>
+    <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Anggota</th><th>Peran</th><th>Akses event</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="timBody"></tbody></table></div></article>
   </section>
 
   <!-- UNDANGAN TERTUNDA -->
-  <section class="set-panel" id="panel-notifikasi" data-panel="notifikasi" aria-labelledby="h-notif" hidden>
-    <div class="set-sec">
-      <h2 id="h-undangan" class="set-h">Undangan tertunda</h2>
-      <p class="set-sub">Tautan undangan berlaku 7 hari. Setelah itu undangan harus dikirim ulang.</p>
-      
-      <!-- TABEL UNDANGAN TERTUNDA -->
-      <div class="table-wrap" style="margin-top: 16px;">
-        <table class="tbl tbl-inv">
-          <thead>
-            <tr>
-              <th>PENERIMA / EMAIL</th>
-              <th>INFORMASI UNDANGAN</th>
-              <th>AKSI</th>
-            </tr>
-          </thead>
-          <tbody id="invList">
-            <!-- Data dirender otomatis oleh JS -->
-          </tbody>
-        </table>
-      </div>
-
-    </div>
+  <section class="set-panel" id="panel-notifikasi" data-panel="notifikasi" aria-labelledby="h-undangan" hidden>
+    <h2 id="h-undangan" class="set-h">Undangan tertunda</h2>
+    <p class="set-sub">Tautan undangan berlaku 7 hari. Setelah itu undangan harus dikirim ulang.</p>
+    <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Penerima / Email</th><th>Informasi undangan</th><th class="num"><span class="sr-only">Aksi</span></th></tr></thead><tbody id="invList"></tbody></table></div></article>
   </section>
 </div>
 
-<!-- STYLE PRESISI PEMBAGIAN KOLOM TABEL & PESAN KOSONG -->
+<!-- STYLE MODAL UNDANG -->
 <style>
-  /* Header Tabel Olive + Center */
-  .tbl-inv thead tr {
-    display: grid !important;
-    grid-template-columns: 240px 1fr 300px !important;
-    background-color: var(--olive, #3F422E) !important;
-  }
-
-  .tbl-inv thead th {
-    background-color: transparent !important;
-    color: #ffffff !important;
-    text-align: center !important;
-    padding: 12px 16px !important;
-  }
-
-  /* Baris Isi Tabel */
-  .tbl-inv #invList > tr,
-  .tbl-inv #invList > li {
-    display: grid !important;
-    grid-template-columns: 1fr 300px !important;
-    align-items: center !important;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid var(--line, #E6DCC3) !important;
-  }
-
-  /* Pemisahan Kontainer Kiri */
-  .tbl-inv #invList > tr > *:nth-child(1),
-  .tbl-inv #invList > li > *:nth-child(1) {
-    display: grid !important;
-    grid-template-columns: 224px 1fr !important;
-    align-items: center !important;
-    gap: 16px !important;
-  }
-
-  /* Email tetap di Kolom 1 */
-  .tbl-inv #invList > tr > *:nth-child(1) > *:first-child,
-  .tbl-inv #invList > li > *:nth-child(1) > *:first-child {
-    word-break: break-all;
-    text-align: left !important;
-  }
-
-  /* Teks Informasi Undangan */
-  .tbl-inv #invList > tr > *:nth-child(1) > *:last-child,
-  .tbl-inv #invList > li > *:nth-child(1) > *:last-child {
-    text-align: center !important;
-    margin: 0 !important;
-    color: var(--muted, #6F6556) !important;
-  }
-
-  /* Tombol Aksi */
-  .tbl-inv #invList > tr > *:nth-child(2),
-  .tbl-inv #invList > li > *:nth-child(2) {
-    display: flex !important;
-    gap: 8px !important;
-    justify-content: center !important;
-    align-items: center !important;
-  }
-
-  /* Bikin pesan "Tidak ada undangan tertunda" / baris kosong jadi RATA TENGAH (CENTER) */
-  .tbl-inv #invList:has(.inv-empty),
-  .tbl-inv #invList:has(.empty),
-  .tbl-inv #invList:has(.tbl-empty) {
-    display: block !important;
-  }
-
-  .tbl-inv #invList .inv-empty,
-  .tbl-inv #invList .empty,
-  .tbl-inv #invList .tbl-empty,
-  .tbl-inv #invList > tr:only-child:not(:has(button)),
-  .tbl-inv #invList > li:only-child:not(:has(button)) {
-    display: block !important;
-    grid-template-columns: none !important;
-    text-align: center !important;
-    width: 100% !important;
-    padding: 32px 16px !important;
-    color: var(--muted, #6F6556) !important;
-  }
-
-  .tbl-inv #invList > tr:only-child:not(:has(button)) > *,
-  .tbl-inv #invList > li:only-child:not(:has(button)) > * {
-    display: block !important;
-    grid-template-columns: none !important;
-    text-align: center !important;
-    width: 100% !important;
-  }
-
   /* Modal Kartu Warna Putih */
   #inviteDlg, 
   #inviteDlg .dlg__body, 
@@ -208,7 +106,7 @@
         <div id="ivEventList" class="iv-eventlist" hidden></div>
       </fieldset>
       <div class="field"><label for="ivPesan">Pesan (opsional)</label><textarea id="ivPesan" name="pesan" rows="2" maxlength="200" placeholder="Contoh: Tolong bantu check-in di hari H."></textarea></div>
-      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Kamu bisa mengirim ulang, menyalin tautan, atau membatalkan undangan kapan saja dari tab Notifikasi.</p>
+      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Kamu bisa mengirim ulang, menyalin tautan, atau membatalkan undangan kapan saja dari tab Undangan tertunda.</p>
     </div>
     <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Kirim undangan</button></div>
   </form>
