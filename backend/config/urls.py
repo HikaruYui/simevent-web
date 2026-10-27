@@ -130,6 +130,11 @@ urlpatterns = [
         name="peserta_akun",
     ),
     path(
+        "peserta/akun/hapus-foto/",
+        views.peserta_hapus_foto,
+        name="peserta_hapus_foto",
+    ),
+    path(
         "peserta/",
         views.peserta_dashboard,
         name="peserta_dashboard",
