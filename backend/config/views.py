@@ -7,12 +7,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
-
 from apps.accounts.forms import ProfileForm
 from apps.accounts.permissions import require_organizer
 from apps.events.forms import AdminEventForm, EventForm
 from apps.events.models import Event, EventStatus, EventType
 from apps.achievements.models import Achievement
+from django.core.exceptions import PermissionDenied
 from apps.registrations.models import (
     Attendance,
     CertificateTemplate,
@@ -214,13 +214,41 @@ def detail_event(request, slug):
     )
 
 def _participant_redirect(request):
-    if request.user.role == "ORGANIZER":
-        return redirect("eo_dashboard")
-    if request.user.role == "ADMIN":
-        return redirect("admin_dashboard") 
+    if request.user.role != "PARTICIPANT":
+        return redirect(_dashboard_name(request.user))
+    
     if not request.user.profile_complete:
         return redirect("peserta_akun")
+
     return None
+
+def _require_role(request, *allowed_roles):
+    user = request.user
+
+    if (
+        not user.is_authenticated
+        or not user.is_active
+        or user.role not in allowed_roles
+    ):
+        raise PermissionDenied(
+            "Akun Anda tidak memiliki akses ke halaman ini."
+        )
+
+def _dashboard_name(user):
+    destinations = {
+        "ADMIN": "admin_dashboard",
+        "ORGANIZER": "eo_dashboard",
+        "COMMITTEE": "panitia_biasa",
+    }
+
+    if user.role in destinations:
+        return destinations[user.role]
+
+    return (
+        "peserta_dashboard"
+        if user.profile_complete
+        else "peserta_akun"
+    )
 
 @never_cache
 @require_GET
@@ -245,26 +273,27 @@ def logout_page(request):
         "landing"
     )
 
+
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
 def after_login(request):
-    if request.user.role == "ORGANIZER":
-        return redirect("eo_dashboard")
+    if not request.user.is_active:
+        raise PermissionDenied("Akun Anda tidak aktif.")
 
-    if request.user.role == "ADMIN":
-        return redirect("admin_dashboard")
-
-    return redirect("peserta_dashboard" if request.user.profile_complete else "peserta_akun")
+    return redirect(_dashboard_name(request.user))
 
 
 @never_cache
 @require_http_methods(["GET", "POST"])
 @login_required(login_url="login_page")
 def peserta_akun(request, template_name="peserta/akun.html", success_url="peserta_dashboard"):
-    if template_name == "peserta/akun.html" and request.user.role in ("ADMIN", "ORGANIZER"):
-        return redirect("panitia_dashboard")
-
+    if (
+        template_name == "peserta/akun.html" 
+        and request.user.role != "PARTICIPANT"
+    ):
+        return redirect(_dashboard_name(request.user))
+        
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
@@ -614,100 +643,35 @@ def peserta_achievement(request):
 @require_GET
 @login_required(login_url="login_page")
 def panitia_biasa_dashboard(request):
-    # Bypass pengecekan permission (require_organizer) untuk panitia biasa
+    _require_role(request, "COMMITTEE")
+
     return render(request, "panitia_biasa_page.html")
 
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
 def panitia_dashboard(request):
-    require_organizer(
-        request.user
-    )
-
-    events = (
-        Event.objects
-        .managed_by(request.user)
-        .select_related("event_type")
-    )
-
-    if request.user.has_perm(
-        "accounts.manage_platform"
-    ):
-        create_event_form = (
-            AdminEventForm()
-        )
-
-    else:
-        create_event_form = (
-            EventForm()
-        )
-
-    return render(
+    _require_role(
         request,
-        "panitia_page.html",
-        {
-            "managed_events": (
-                events.order_by(
-                    "-created_at",
-                    "-pk",
-                )
-            ),
-
-            "total_events": (
-                events.count()
-            ),
-
-            "draft_events": (
-                events
-                .filter(
-                    status=EventStatus.DRAFT
-                )
-                .count()
-            ),
-
-            "published_events": (
-                events
-                .filter(
-                    status=EventStatus.PUBLISHED
-                )
-                .count()
-            ),
-
-            "completed_events": (
-                events
-                .filter(
-                    status=EventStatus.COMPLETED
-                )
-                .count()
-            ),
-
-            "display_name": (
-                request.user
-                .get_full_name()
-                .strip()
-                or request.user.email
-            ),
-
-            "role_label": (
-                "Admin"
-                if request.user.role == "ADMIN"
-                else "Panitia"
-            ),
-
-            "create_event_form": (
-                create_event_form
-            ),
-        },
+        "ADMIN",
+        "ORGANIZER",
+        "COMMITTEE",
     )
+
+    return redirect(_dashboard_name(request.user))
 
 def _ketua_panitia(template):
     @never_cache
     @require_GET
     @login_required(login_url="login_page")
     def view(request):
-        require_organizer(request.user)
-        return render(request, f"ketua_panitia/{template}.html")
+        _require_role(request, "ORGANIZER")
+
+        return render(
+            request,
+            f"ketua_panitia/{template}.html",
+        )
+
     return view
 
 eo_dashboard = _ketua_panitia("dashboard")
@@ -752,9 +716,13 @@ def _admin_panel(template):
     @require_GET
     @login_required(login_url="login_page")
     def view(request):
-        if getattr(request.user, 'role', None) != "ADMIN" and not request.user.is_staff:
-            return redirect("landing")
-        return render(request, f"admin/{template}.html")
+        _require_role(request, "ADMIN")
+
+        return render(
+            request,
+            f"admin/{template}.html",
+        )
+
     return view
 
 admin_dashboard = _admin_panel("dashboard_admin")
@@ -765,8 +733,12 @@ admin_finance = _admin_panel("keuangan_admin")
 admin_audit = _admin_panel("audit_admin")
 admin_settings = _admin_panel("pengaturan_admin")
 
-
+@never_cache
+@require_http_methods(["GET", "POST"])
+@login_required(login_url="login_page")
 def panitia_akun(request):
+    _require_role(request, "COMITTEE")
+
     return peserta_akun(
         request,
         template_name="panitia_biasa/akun_panitia_biasa.html",
