@@ -263,7 +263,7 @@
     if (!host.__ro && window.ResizeObserver) { host.__ro = new ResizeObserver(function () { host.__draw(); }); host.__ro.observe(host); }
   }
 
-    /* ---------- Grafik garis ---------- */
+  /* ---------- Grafik garis ---------- */
   function lineChart(host, labels, values, name) {
     function draw() {
       host.innerHTML = "";
@@ -607,7 +607,7 @@
 
     var cats = st.settings.categories;
     function stats() {
-            if (!$("#setStats")) { return; }
+      if (!$("#setStats")) { return; }
       var names = Object.keys(cats), on = names.filter(function (k) { return cats[k]; }).length;
       $("#setStats").innerHTML = [["Biaya platform", st.settings.feePct + "%", "dari tiket berbayar"], ["Kategori aktif", on, "dari " + names.length + " kategori"], ["Akun dibekukan", users().filter(function (u) { return u.status === "dibekukan"; }).length, "tidak bisa masuk"]].map(function (s) {
         return '<article class="card stat"><p class="stat__label">' + s[0] + '</p><p class="stat__value">' + s[1] + '</p><p class="stat__note stat__note--muted">' + s[2] + "</p></article>";
@@ -618,7 +618,7 @@
     var pf = $("#platformForm");
     pf.fee.value = st.settings.feePct; pf.approval.setAttribute("aria-checked", String(!!st.settings.approvalRequired));
     pf.approval.addEventListener("click", function () { this.setAttribute("aria-checked", this.getAttribute("aria-checked") === "true" ? "false" : "true"); });
-        var pfBtn = $("#pfSave"), pfState = $("#pfState");
+    var pfBtn = $("#pfSave"), pfState = $("#pfState");
     function pfDirty() {
       var d = parseFloat(pf.fee.value) !== st.settings.feePct || (pf.approval.getAttribute("aria-checked") === "true") !== !!st.settings.approvalRequired;
       pfBtn.disabled = !d; pfState.textContent = d ? "Ada perubahan belum disimpan" : "Belum ada perubahan";
@@ -692,24 +692,40 @@
       ev.target.reset(); pwState(); S.log("pengaturan", "Admin mengganti kata sandi", ADMIN, "Admin Platform"); toast("Kata sandi diubah. Ini data contoh, belum tersimpan ke database.");
     });
   }
-    /* ---------- Profil admin: foto (dengan crop) & email, data contoh di localStorage ---------- */
+
+  /* ---------- Profil admin: foto (dengan crop), nama, email. Data contoh di localStorage ---------- */
   var PKEY = "simevent_admin_profile_v1";
   function getProfile() { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } }
   function setProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); return true; } catch (e) { return false; } }
   function adminInitials(n) { return (n || "A").trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join(""); }
+  function curName() { return getProfile().nama || ADMIN; }
   function applyProfile() {
-    var foto = getProfile().foto;
+    var pr = getProfile();
     $$(".js-adm-ava").forEach(function (el) {
-      el.style.backgroundImage = foto ? 'url("' + foto + '")' : "";
-      el.textContent = foto ? "" : adminInitials(ADMIN);
+      el.style.backgroundImage = pr.foto ? 'url("' + pr.foto + '")' : "";
+      el.textContent = pr.foto ? "" : adminInitials(curName());
     });
+    if (pr.nama) { $$(".js-adm-name").forEach(function (el) { el.textContent = pr.nama; }); }
   }
   function initAccount() {
     var msg = $("#profMsg"), fIn = $("#profFoto"), em = $("#emailForm"), emIn = $("#pfEmailAdm");
     var modal = $("#profileCropModal"), vp = $("#profileCropViewport"), img = $("#profileCropImage"), zoom = $("#profileCropZoom"), okBtn = $("#profileCropSave"), noBtn = $("#profileCropCancel");
     var src = null, url = null, scale = 1, left = 0, top = 0, drag = null;
     function say(t) { msg.innerHTML = t ? '<small class="err">' + t + "</small>" : ""; }
+    function fieldErr(input, text) {
+      var m = document.createElement("small"); m.className = "err"; m.textContent = text;
+      input.closest(".field").appendChild(m); input.focus();
+    }
     emIn.value = getProfile().email || emIn.defaultValue;
+    var nm = $("#nameForm"), nmIn = $("#pfNamaAdm");
+    nmIn.value = getProfile().nama || nmIn.defaultValue;
+    nm.addEventListener("submit", function (ev) {
+      ev.preventDefault(); $$("small.err", nm).forEach(function (x) { x.remove(); });
+      var v = nmIn.value.trim().replace(/\s+/g, " "), p = getProfile();
+      if (v.length < 3) { fieldErr(nmIn, "Nama minimal 3 karakter."); return; }
+      if (v === (p.nama || nmIn.defaultValue)) { toast("Nama tidak berubah."); return; }
+      p.nama = v; setProfile(p); applyProfile(); S.log("pengaturan", "Admin mengganti nama akun", ADMIN, "Admin Platform"); toast("Nama admin diperbarui.");
+    });
 
     function layout(keep) {
       if (!img.naturalWidth) { return; }
@@ -767,14 +783,14 @@
     em.addEventListener("submit", function (ev) {
       ev.preventDefault(); $$("small.err", em).forEach(function (x) { x.remove(); });
       var v = emIn.value.trim(), p = getProfile();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { var m = document.createElement("small"); m.className = "err"; m.textContent = "Format email belum benar."; emIn.closest(".field").appendChild(m); emIn.focus(); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { fieldErr(emIn, "Format email belum benar."); return; }
       if (v === (p.email || emIn.defaultValue)) { toast("Email tidak berubah."); return; }
       p.email = v; setProfile(p); S.log("pengaturan", "Admin mengganti email akun", ADMIN, "Admin Platform"); toast("Email diubah. Ini data contoh, belum tersimpan ke database.");
     });
   }
 
   var pages = { admin_dashboard: pageDashboard, admin_users: pageUsers, admin_events: pageEvents, admin_support: pageSupport, admin_finance: pageFinance, admin_audit: pageAudit, admin_settings: pageSettings };
-    applyProfile();
+  applyProfile();
   var fn = pages[document.body.dataset.page];
   if (fn) { fn(); }
   if (document.body.dataset.page === "admin_settings") { initAccount(); }

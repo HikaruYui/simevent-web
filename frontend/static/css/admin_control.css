@@ -33,8 +33,8 @@
 .dl dd { margin: 0; }
 #admDlgText { font: 500 15px/1.5 var(--font-body); }
 
-.tog-list { display: grid; gap: 4px; margin-top: 16px; }
-.tog { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.tog-list { display: grid; gap: 0; margin-top: 16px; }
+.tog { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 0; }
 .tog:last-child { border-bottom: 0; }
 .tog b { display: block; font: 700 15px/1.3 var(--font-head); }
 .tog small { display: block; margin-top: 3px; font: 500 13px/1.4 var(--font-body); color: var(--muted); max-width: 60ch; }
@@ -218,3 +218,40 @@ tfoot td { padding: 14px 22px; border-top: 2px solid var(--taupe); font: 800 14p
 .eo-user .eo-profile p { margin-top: 2px !important; }
 .eo-user form button { color: var(--olive) !important; font-size: 13.5px !important; }
 .eo-user form button .icon { width: 17px !important; height: 17px !important; }
+
+/* Sidebar: nama dan role masing-masing satu baris */
+.eo-profile { gap: 10px; }
+.eo-profile__ava { width: 48px; height: 48px; font-size: 16px; }
+.eo-profile__txt { min-width: 0; flex: 1 1 auto; }
+.eo-user .eo-profile b { font-size: 13.5px !important; font-weight: 700 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.eo-user .eo-profile p { font-size: 12px !important; font-weight: 400 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+
+/* Akun admin: form nama + email di kolom kanan */
+.sp-acc { display: grid; gap: 18px; padding-left: 48px; border-left: 1px solid var(--line); }
+.sp-inline__row { display: flex; align-items: center; gap: 10px; }
+.sp-inline__row input { flex: 1 1 0; min-width: 0; }
+.sp-inline__row .btn { flex: none; }
+@media (max-width: 900px) {
+  .sp-acc { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Sidebar: foto lebih kecil agar nama dan role muat satu baris */
+.eo-user { padding-left: 0; padding-right: 0; }
+.eo-profile__ava { width: 42px; height: 42px; font-size: 14px; }
+.eo-user .eo-profile b { font-size: 12.5px !important; }
+.eo-user .eo-profile p { font-size: 11.5px !important; }
+/* ---------- Dropdown kustom "Peran" (kelola pengguna) ---------- */
+.select-wrap { position: relative; }
+.dlg .select-wrap select { appearance: none; -webkit-appearance: none; padding-right: 44px; cursor: pointer; }
+.select-wrap .icon { position: absolute; right: 16px; top: 50%; width: 16px; height: 16px; margin-top: -8px; pointer-events: none; transition: transform .15s; }
+.select-wrap select[aria-expanded="true"] + .icon { transform: rotate(180deg); }
+.select-menu {
+  position: fixed; z-index: 9999; display: none; padding: 6px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, .12), 0 8px 10px -6px rgba(0, 0, 0, .08);
+  max-height: 280px; overflow-y: auto;
+}
+.select-menu.show { display: block; }
+.select-item { padding: 10px 14px; border-radius: 8px; font: 500 14px/1.3 var(--font-body); color: #1e293b; cursor: pointer; transition: background-color .15s, color .15s; }
+.select-item:hover, .select-item.is-selected { background: #2b3022; color: #fff; }
+.dlg__body > .dlg__foot, .dlg__body .dlg__foot { padding-left: 0; padding-right: 0; padding-bottom: 0; }
