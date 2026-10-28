@@ -65,6 +65,9 @@
     <span class="inline-flex rounded-full bg-amber-100 px-3 py-2 text-sm font-bold text-amber-900"><i class="fa-solid fa-hourglass-half mr-2"></i>Menunggu Event Selesai</span>
     <p class="text-xs text-stone-500">Sertifikat akan tersedia setelah event selesai dan kehadiran terverifikasi.</p>
     {% endif %}
+    {% if registration.documentation_ready %}
+    <a href="{% url 'peserta_dokumentasi' registration.event_id %}" target="_blank" rel="noopener noreferrer" class="participant-outline block rounded-lg px-3 py-2 text-center text-sm font-bold"><i class="fa-regular fa-images mr-1" aria-hidden="true"></i>Lihat Dokumentasi</a>
+    {% endif %}
    </div>
   </article>
   {% empty %}

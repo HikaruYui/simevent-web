@@ -3,42 +3,80 @@
     <i class="fa-solid fa-folder-open"></i> Manajemen Dokumentasi Event
   </h3>
   <p style="margin:0 0 24px; font-size:14px; color:var(--muted);">
-    Unggah atau lihat foto-foto kegiatan (dokumentasi) peserta selama event berlangsung.
+    Simpan tautan folder Google Drive dokumentasi untuk setiap event. Peserta yang hadir baru dapat membukanya setelah event berstatus <strong>Selesai</strong>.
   </p>
 
-  <div style="background:var(--cream-soft); padding:20px; border-radius:16px; border:1px solid var(--line);">
-    <h4 style="margin:0 0 10px; font-size:16px; font-weight:800; color:var(--olive);">Tautan Folder Google Drive Dokumentasi</h4>
-    <p style="margin:0 0 16px; font-size:13px; color:var(--muted);">Simpan tautan Google Drive yang dapat diakses panitia untuk mempermudah koordinasi dokumentasi.</p>
-    
-    <div style="display:flex; gap:10px;">
-      <input type="url" id="gdriveLinkInput" placeholder="https://drive.google.com/drive/folders/..." style="flex:1; padding:12px 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px;" value="https://drive.google.com/">
-      <button type="button" class="btn-primary" onclick="saveGDriveLink()">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan
-      </button>
-    </div>
-  </div>
+  {% csrf_token %}
 
-  <div style="margin-top:24px; text-align:center;">
-    <a href="https://drive.google.com/" id="btnOpenDrive" target="_blank" class="btn-olive" style="font-size:16px; padding:16px 32px; border-radius:999px;">
-      <i class="fa-brands fa-google-drive"></i> Buka Folder Dokumentasi
+  {% for event in documentation_events %}
+  <form class="doc-form" data-save-url="{% url 'events:documentation' event.pk %}" style="background:var(--cream-soft); padding:20px; border-radius:16px; border:1px solid var(--line); margin-bottom:16px;">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px;">
+      <h4 style="margin:0; font-size:16px; font-weight:800; color:var(--olive);">{{ event.title }}</h4>
+      {% if event.status == "COMPLETED" %}
+        <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#d1fae5; color:#065f46;">Selesai</span>
+      {% else %}
+        <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#fef3c7; color:#92400e;">Terbit · belum selesai</span>
+      {% endif %}
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+      <input type="url" name="documentation_url" maxlength="1000" value="{{ event.documentation_url }}"
+             placeholder="https://drive.google.com/drive/folders/..." aria-label="Tautan dokumentasi {{ event.title }}"
+             style="flex:1; min-width:240px; padding:12px 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px;">
+      <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+    </div>
+    <p class="doc-hint" style="margin:10px 0 0; font-size:12px; color:var(--muted);">
+      {% if event.status != "COMPLETED" %}Peserta baru dapat melihat tautan ini setelah event ditandai Selesai. {% endif %}Kosongkan lalu simpan untuk menghapus tautan.
+    </p>
+    <p class="doc-message" role="status" style="margin:8px 0 0; font-size:13px; font-weight:700;"></p>
+    <a class="doc-open" href="{{ event.documentation_url }}" target="_blank" rel="noopener noreferrer"
+       {% if not event.documentation_url %}hidden{% endif %}
+       style="display:inline-block; margin-top:8px; font-size:13px; font-weight:800; color:var(--olive);">
+      <i class="fa-brands fa-google-drive"></i> Buka folder dokumentasi
     </a>
-  </div>
+  </form>
+  {% empty %}
+  <p style="margin:0; padding:20px; text-align:center; font-size:14px; color:var(--muted); background:var(--cream-soft); border-radius:16px; border:1px solid var(--line);">
+    Belum ada event terbit atau selesai yang Anda kelola.
+  </p>
+  {% endfor %}
 </div>
 
 <script>
-  function saveGDriveLink() {
-    const link = document.getElementById('gdriveLinkInput').value;
-    if(link) {
-      localStorage.setItem('simevent_gdrive_link', link);
-      document.getElementById('btnOpenDrive').href = link;
-      alert('Tautan Google Drive berhasil disimpan!');
-    }
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    const savedLink = localStorage.getItem('simevent_gdrive_link');
-    if(savedLink) {
-      document.getElementById('gdriveLinkInput').value = savedLink;
-      document.getElementById('btnOpenDrive').href = savedLink;
-    }
+  document.querySelectorAll('.doc-form').forEach((form) => {
+    const message = form.querySelector('.doc-message');
+    const openLink = form.querySelector('.doc-open');
+    const input = form.querySelector('[name="documentation_url"]');
+    const button = form.querySelector('button[type="submit"]');
+    const csrf = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      message.style.color = 'var(--muted)';
+      message.textContent = 'Menyimpan...';
+      try {
+        const response = await fetch(form.dataset.saveUrl, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded'},
+          body: new URLSearchParams({documentation_url: input.value.trim()}),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const errors = result.errors ? Object.values(result.errors).flat().join(' ') : '';
+          throw new Error(errors || result.error || 'Tautan gagal disimpan.');
+        }
+        input.value = result.documentation_url;
+        openLink.hidden = !result.documentation_url;
+        if (result.documentation_url) openLink.href = result.documentation_url;
+        message.style.color = '#065f46';
+        message.textContent = result.documentation_url ? 'Tautan dokumentasi tersimpan.' : 'Tautan dokumentasi dihapus.';
+      } catch (error) {
+        message.style.color = '#b91c1c';
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
   });
 </script>

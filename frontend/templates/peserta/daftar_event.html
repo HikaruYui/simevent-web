@@ -21,6 +21,15 @@
   .event-poster[data-kind="conference"] { background: linear-gradient(135deg,#071b3d,#123c78 60%,#1368a8); }
   .event-poster[data-kind="seminar"] { background: linear-gradient(135deg,#05b8db,#51ddf2 58%,#077fc9); color: #07385a; }
   .event-poster[data-kind="webinar"] { background: linear-gradient(135deg,#5c2d91,#9b59b6 58%,#e27c97); }
+  .event-dialog { margin: auto; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; border: 0; border-radius: 24px; background: #fff; padding: 0; color: #3F422E; box-shadow: 0 24px 60px rgba(63,66,46,.32); }
+  .event-dialog::backdrop { background: rgba(31,39,28,.55); }
+  .event-dialog__close { position: absolute; top: 20px; right: 20px; display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border: 0; border-radius: 9999px; background: #f6e7c5; color: #3F422E; }
+  .event-dialog__close:hover { background: #efd9a8; }
+  .event-dialog__list { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px 20px; margin: 24px 0 0; }
+  .event-dialog__list dt { font-weight: 700; color: #6b6454; }
+  .event-dialog__list dd { margin: 0; overflow-wrap: anywhere; }
+  body:has(.event-dialog[open]) { overflow: hidden; }
+  .event-dialog [hidden] { display: none !important; }
   @media (min-width: 768px) {
     .participant-main > div.space-y-5 { position:relative; top:-19px; }
   }
@@ -56,9 +65,15 @@
     data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}"
     data-category="{{ event.event_type.name|lower }}"
     data-status="{{ event.ui_status }}"
+    data-detail-title="{{ event.title }}"
+    data-detail-type="{% if event.event_type.code == "CONFERENCE" %}Konferensi{% elif event.event_type.code == "WORKSHOP" %}Lokakarya{% else %}{{ event.event_type.name }}{% endif %}"
+    data-detail-date="{{ event.start_datetime|date:"j M Y" }}{% if event.end_datetime|date:"Ymd" != event.start_datetime|date:"Ymd" %} – {{ event.end_datetime|date:"j M Y" }}{% endif %}"
+    data-detail-time="{{ event.start_datetime|date:"H:i" }} – {{ event.end_datetime|date:"H:i" }} WIB"
+    data-detail-venue="{% if event.venue %}{{ event.venue }}{% elif event.get_delivery_mode_display|lower == "online" %}Daring{% else %}{{ event.get_delivery_mode_display }}{% endif %}"
+    {% if event.documentation_ready %}data-detail-doc="{% url 'peserta_dokumentasi' event.pk %}"{% endif %}
   >
 
-   <a href="{% url 'detail_event' event.slug %}" class="event-poster {% if not event.banner %}event-poster--art{% endif %} flex h-36 items-center justify-center overflow-hidden rounded-xl text-center text-white" data-kind="{{ event.event_type.code|lower }}">
+   <a href="{% url 'detail_event' event.slug %}" data-event-detail class="event-poster {% if not event.banner %}event-poster--art{% endif %} flex h-36 items-center justify-center overflow-hidden rounded-xl text-center text-white" data-kind="{{ event.event_type.code|lower }}">
     {% if event.banner %}<img src="{{ event.banner.url }}" alt="Banner {{ event.title }}" class="h-full w-full object-cover">{% else %}
     <span class="relative flex h-full w-full items-center justify-between overflow-hidden px-4 py-3 text-left">
      <span class="relative z-10 max-w-[72%]">
@@ -70,7 +85,7 @@
     </span>{% endif %}
    </a>
    <div class="min-w-0">
-    <a href="{% url 'detail_event' event.slug %}" class="font-display text-xl font-extrabold leading-tight text-brand-ink hover:underline">{{ event.title }}</a>
+    <a href="{% url 'detail_event' event.slug %}" data-event-detail class="font-display text-xl font-extrabold leading-tight text-brand-ink hover:underline">{{ event.title }}</a>
     <div class="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-600">
      <span class="whitespace-nowrap"><i class="fa-regular fa-calendar mr-2 text-brand-orangeDeep"></i>{{ event.start_datetime|date:"j M Y" }}</span>
      <span class="whitespace-nowrap"><i class="fa-regular fa-clock mr-2 text-brand-orangeDeep"></i>{{ event.start_datetime|date:"H:i" }} WIB</span>
@@ -84,14 +99,14 @@
    <div class="flex flex-col gap-3 md:items-stretch">
     <div class="flex items-center justify-between gap-2 md:justify-end">
      <span class="w-fit rounded-full px-3 py-1 text-xs font-extrabold {% if event.ui_status == 'Selesai' %}bg-emerald-100 text-emerald-800{% elif event.ui_status == 'Sedang Berlangsung' %}bg-[#e8eadc] text-[#3F422E]{% else %}bg-rose-100 text-rose-700{% endif %}">{{ event.ui_status }}</span>
-     <a href="{% url 'detail_event' event.slug %}" aria-label="Lihat detail {{ event.title }}" title="Lihat detail event" class="hidden text-brand-orangeDeep md:inline"><i class="fa-solid fa-ellipsis-vertical"></i></a>
+     <a href="{% url 'detail_event' event.slug %}" data-event-detail aria-label="Lihat detail {{ event.title }}" title="Lihat detail event" class="hidden text-brand-orangeDeep md:inline"><i class="fa-solid fa-ellipsis-vertical"></i></a>
     </div>
     <div class="grid grid-cols-2 gap-2">
-     <a href="{% url 'detail_event' event.slug %}" class="participant-outline rounded-lg px-3 py-2.5 text-center text-sm font-bold">Lihat Detail</a>
+     <a href="{% url 'detail_event' event.slug %}" data-event-detail class="participant-outline rounded-lg px-3 py-2.5 text-center text-sm font-bold">Lihat Detail</a>
      {% if event.is_registered %}<span class="rounded-lg bg-emerald-100 px-3 py-2.5 text-center text-sm font-bold text-emerald-800">Terdaftar</span>
      {% elif event.is_registration_open and event.price == 0 %}
       <form class="free-registration" method="post" action="{% url 'registrations:create' event.pk %}">{% csrf_token %}<button type="submit" class="participant-button w-full rounded-lg px-3 py-2.5 text-sm font-bold">Daftar Event</button></form>
-     {% elif event.is_registration_open %}<a href="{% url 'detail_event' event.slug %}" class="participant-button rounded-lg px-2 py-2.5 text-center text-sm font-bold">Berbayar · Lihat Detail</a>
+     {% elif event.is_registration_open %}<a href="{% url 'detail_event' event.slug %}" data-event-detail class="participant-button rounded-lg px-2 py-2.5 text-center text-sm font-bold">Berbayar · Lihat Detail</a>
      {% else %}<span class="rounded-lg bg-stone-100 px-2 py-2.5 text-center text-xs font-bold text-stone-500">Pendaftaran tutup</span>{% endif %}
     </div>
     <p class="text-right text-xs font-bold text-brand-orangeDeep">{% if event.price %}Rp{{ event.price|floatformat:"0g" }}{% else %}Gratis{% endif %}</p>
@@ -104,6 +119,22 @@
  </div>
  <p class="pt-1 text-sm text-stone-600">Menampilkan <span id="eventVisibleCount">{{ events|length }}</span> dari {{ events|length }} event</p>
 </div>
+<dialog id="eventDetailDialog" class="event-dialog" aria-labelledby="eventDetailTitle">
+ <div class="relative p-6 sm:p-8">
+  <button type="button" class="event-dialog__close" data-dialog-close aria-label="Tutup"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+  <h2 id="eventDetailTitle" class="font-display pr-14 text-2xl font-extrabold leading-tight text-brand-ink sm:text-3xl"></h2>
+  <dl class="event-dialog__list">
+   <dt>Jenis</dt><dd><span id="eventDetailType" class="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900"></span></dd>
+   <dt>Tanggal</dt><dd id="eventDetailDate"></dd>
+   <dt>Waktu</dt><dd id="eventDetailTime"></dd>
+   <dt>Lokasi</dt><dd id="eventDetailVenue"></dd>
+  </dl>
+  <div class="mt-8 flex flex-wrap justify-end gap-2">
+   <a id="eventDetailDoc" href="#" target="_blank" rel="noopener noreferrer" hidden class="participant-button rounded-full px-6 py-2.5 text-sm font-bold"><i class="fa-regular fa-images mr-2" aria-hidden="true"></i>Lihat Dokumentasi</a>
+   <button type="button" class="participant-outline rounded-full px-6 py-2.5 text-sm font-bold" data-dialog-close>Tutup</button>
+  </div>
+ </div>
+</dialog>
 <script>
 document.querySelectorAll('.free-registration').forEach((form) => {
  form.addEventListener('submit', async (event) => {
@@ -207,6 +238,36 @@ document.addEventListener('keydown', (event) => {
   dropdown.classList.remove('is-open');
   dropdown.querySelector('.event-filter-trigger').focus();
  });
+});
+const detailDialog = document.getElementById('eventDetailDialog');
+let detailTrigger = null;
+document.addEventListener('click', (event) => {
+ const trigger = event.target.closest('[data-event-detail]');
+ if (!trigger) return;
+ // Ctrl/Cmd/Shift + klik tetap membuka halaman detail di tab baru.
+ if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+ const row = trigger.closest('.event-row');
+ if (!row || !detailDialog.showModal) return;
+ event.preventDefault();
+ document.getElementById('eventDetailTitle').textContent = row.dataset.detailTitle;
+ document.getElementById('eventDetailType').textContent = row.dataset.detailType;
+ document.getElementById('eventDetailDate').textContent = row.dataset.detailDate;
+ document.getElementById('eventDetailTime').textContent = row.dataset.detailTime;
+ document.getElementById('eventDetailVenue').textContent = row.dataset.detailVenue;
+ // Tombol dokumentasi hanya ada jika server menandai peserta ini berhak (hadir + event selesai).
+ const docLink = document.getElementById('eventDetailDoc');
+ const docUrl = row.dataset.detailDoc || '';
+ docLink.hidden = !docUrl;
+ if (docUrl) docLink.href = docUrl; else docLink.removeAttribute('href');
+ detailTrigger = trigger;
+ detailDialog.showModal();
+});
+detailDialog.addEventListener('click', (event) => {
+ // Klik tombol tutup atau area gelap di luar kartu menutup pop-up.
+ if (event.target === detailDialog || event.target.closest('[data-dialog-close]')) detailDialog.close();
+});
+detailDialog.addEventListener('close', () => {
+ if (detailTrigger) detailTrigger.focus();
 });
 </script>
 {% endblock %}

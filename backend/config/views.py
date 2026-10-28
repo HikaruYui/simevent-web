@@ -23,11 +23,13 @@ from apps.registrations.models import (
     Registration,
     RegistrationStatus,
 )
+from django.core.exceptions import ValidationError
 from apps.events.models import (
     Event,
     EventStatus,
     EventType,
     EventTransition,
+    validate_documentation_url,
 )
 
 
@@ -483,8 +485,10 @@ def peserta_dashboard(request):
         if completed_registrations else 0
     )
 
+    documentation_ids = _documentation_event_ids(request.user)
     for registration in registrations:
         registration.certificate_ready = registration in certificates
+        registration.documentation_ready = registration.event_id in documentation_ids
 
     return render(request, "peserta_page.html", {
         "registrations": registrations,
@@ -516,6 +520,39 @@ def peserta_dashboard(request):
     })
 
 
+def _documentation_event_ids(user):
+    """Id event yang dokumentasinya boleh dibuka user (aturan ada di RegistrationQuerySet)."""
+    return set(
+        Registration.objects.owned_by(user)
+        .with_documentation()
+        .values_list("event_id", flat=True)
+    )
+
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def peserta_dokumentasi(request, event_id):
+    """Gerbang dokumentasi: tautan Drive tidak pernah ada di HTML untuk peserta yang tidak berhak."""
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
+
+    registration = get_object_or_404(
+        Registration.objects.owned_by(request.user)
+        .with_documentation()
+        .select_related("event"),
+        event_id=event_id,
+    )
+    url = registration.event.documentation_url
+    try:
+        # Periksa ulang host walau sudah divalidasi saat disimpan (mis. data diubah lewat Admin).
+        validate_documentation_url(url)
+    except ValidationError:
+        raise Http404("Tautan dokumentasi tidak valid.")
+    return redirect(url)
+
+
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
@@ -535,8 +572,10 @@ def peserta_daftar_event(request):
         .filter(status=RegistrationStatus.REGISTERED)
         .values_list("event_id", flat=True)
     )
+    documentation_ids = _documentation_event_ids(request.user)
     for event in events:
         event.is_registered = event.pk in registered_ids
+        event.documentation_ready = event.pk in documentation_ids
         event.is_registration_open = (
             event.status == EventStatus.PUBLISHED
             and event.registration_open <= now < event.registration_close
@@ -575,7 +614,9 @@ def peserta_sertifikat(request):
         .select_related("event", "event__organizer", "attendance", "feedback", "payment")
         .order_by("-event__start_datetime", "-pk")
     )
+    documentation_ids = _documentation_event_ids(request.user)
     for registration in registrations:
+        registration.documentation_ready = registration.event_id in documentation_ids
         registration.certificate_ready = (
             has_template
             and registration.event.status == EventStatus.COMPLETED
@@ -702,7 +743,15 @@ def peserta_achievement(request):
 def panitia_biasa_dashboard(request):
     _require_role(request, "COMMITTEE")
 
-    return render(request, "panitia_biasa_page.html")
+    documentation_events = (
+        Event.objects.managed_by(request.user)
+        .filter(status__in=(EventStatus.PUBLISHED, EventStatus.COMPLETED))
+        .select_related("event_type")
+        .order_by("-start_datetime", "-pk")
+    )
+    return render(request, "panitia_biasa_page.html", {
+        "documentation_events": documentation_events,
+    })
 
 @never_cache
 @require_GET

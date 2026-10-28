@@ -616,6 +616,11 @@ div:has(> img[src*="logo"]) {
           </form>
         </dialog>
         {% endif %}
+        {% if registration.documentation_ready %}
+        <div class="my-event-card__actions">
+          <a href="{% url 'peserta_dokumentasi' event.pk %}" target="_blank" rel="noopener noreferrer" class="participant-outline inline-flex justify-center rounded-lg px-3 py-2 text-sm font-bold"><i class="fa-regular fa-images mr-2" aria-hidden="true"></i>Lihat Dokumentasi</a>
+        </div>
+        {% endif %}
       </article>
       {% endwith %}
       {% endfor %}
