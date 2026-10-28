@@ -1,8 +1,3 @@
-/* =========================================================
-   SIMEVENT - Dashboard Ketua Panitia (EO)
-   Perilaku halaman: grafik SVG, tabel, filter, dialog.
-   Bergantung pada ketua_panitia_data.js (data contoh).
-   ========================================================= */
 (function () {
   "use strict";
 
@@ -211,6 +206,66 @@
 
   /* ---------- Dialog "Event baru" (dipakai semua halaman) ---------- */
   var onEventsChanged = function () {};
+  /* Dropdown kustom (menu putih, item terpilih olive) sebagai pengganti menu bawaan browser/OS.
+     Select asli tetap ada (disembunyikan) supaya form.jenis.value tetap bekerja. */
+  function enhanceSelect(select) {
+    if (!select || select.dataset.dd) { return; }
+    select.dataset.dd = "1";
+    var host = select.closest("dialog") || document.body;
+    var wrap = document.createElement("div"); wrap.className = "dd";
+    select.parentNode.insertBefore(wrap, select); wrap.appendChild(select);
+    var btn = document.createElement("button"); btn.type = "button"; btn.className = "dd__btn";
+    btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
+    btn.innerHTML = '<span class="dd__val"></span><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg>';
+    wrap.appendChild(btn);
+    var menu = document.createElement("div"); menu.className = "dd__menu"; menu.setAttribute("role", "listbox"); menu.hidden = true;
+    host.appendChild(menu);
+    var open = false, active = -1;
+
+    function sync() { var o = select.options[select.selectedIndex]; $(".dd__val", btn).textContent = o ? o.textContent : ""; }
+    function build() {
+      menu.innerHTML = Array.prototype.map.call(select.options, function (o, i) {
+        return '<div class="dd__item' + (i === select.selectedIndex ? " is-selected" : "") + (i === active ? " is-active" : "") + '" role="option" data-i="' + i + '" aria-selected="' + (i === select.selectedIndex) + '">' + esc(o.textContent) + "</div>";
+      }).join("");
+    }
+    function place() {
+      var r = btn.getBoundingClientRect();
+      menu.style.width = r.width + "px"; menu.style.left = r.left + "px";
+      var h = Math.min(menu.scrollHeight, 280), below = window.innerHeight - r.bottom - 12;
+      if (below < h && r.top > below) { menu.style.top = "auto"; menu.style.bottom = (window.innerHeight - r.top + 6) + "px"; menu.style.maxHeight = Math.min(280, r.top - 12) + "px"; }
+      else { menu.style.bottom = "auto"; menu.style.top = (r.bottom + 6) + "px"; menu.style.maxHeight = Math.min(280, below) + "px"; }
+    }
+    function openMenu() {
+      active = select.selectedIndex; build(); menu.hidden = false; open = true; wrap.classList.add("is-open"); btn.setAttribute("aria-expanded", "true"); place();
+      var sel = $(".is-selected", menu); if (sel) { sel.scrollIntoView({ block: "nearest" }); }
+    }
+    function closeMenu() { menu.hidden = true; open = false; wrap.classList.remove("is-open"); btn.setAttribute("aria-expanded", "false"); }
+    function choose(i) {
+      select.selectedIndex = i; sync(); closeMenu();
+      select.dispatchEvent(new Event("input", { bubbles: true })); select.dispatchEvent(new Event("change", { bubbles: true }));
+      btn.focus();
+    }
+    function move(d) {
+      var n = select.options.length; active = (active + d + n) % n; build();
+      var a = $(".is-active", menu); if (a) { a.scrollIntoView({ block: "nearest" }); }
+    }
+
+    btn.addEventListener("click", function () { if (open) { closeMenu(); } else { openMenu(); } });
+    btn.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { ev.preventDefault(); if (!open) { openMenu(); } else { move(ev.key === "ArrowDown" ? 1 : -1); } }
+      else if ((ev.key === "Enter" || ev.key === " ") && open) { ev.preventDefault(); choose(active); }
+      else if (ev.key === "Escape" && open) { ev.preventDefault(); ev.stopPropagation(); closeMenu(); }
+    });
+    menu.addEventListener("mousedown", function (ev) { ev.preventDefault(); });
+    menu.addEventListener("click", function (ev) { var it = ev.target.closest(".dd__item"); if (it) { choose(parseInt(it.dataset.i, 10)); } });
+    document.addEventListener("mousedown", function (ev) { if (open && !ev.target.closest(".dd__menu") && !ev.target.closest(".dd__btn")) { closeMenu(); } });
+    window.addEventListener("resize", function () { if (open) { place(); } });
+    host.addEventListener("scroll", function () { if (open) { place(); } }, true);
+    if (select.form) { select.form.addEventListener("reset", function () { setTimeout(function () { sync(); closeMenu(); }, 0); }); }
+    new MutationObserver(sync).observe(select, { childList: true });
+    sync();
+  }
+
   function initNewEvent() {
     var dlg = $("#newEventDlg"); if (!dlg) { return; }
     var form = $("form", dlg);
@@ -219,6 +274,7 @@
       var cats = Object.keys(SIM.state.settings.categories).filter(function (k) { return SIM.state.settings.categories[k]; });
       if (cats.length) { form.jenis.innerHTML = cats.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join(""); }
     }
+    enhanceSelect(form.jenis);
     $$("[data-open-new-event]").forEach(function (b) {
       b.addEventListener("click", function () { form.reset(); $$("small", form).forEach(function (s) { s.remove(); }); dlg.showModal(); $("#neNama").focus(); });
     });
@@ -238,6 +294,10 @@
       if (!v.lokasi) { errs.lokasi = "Isi lokasi event."; }
       if (!(v.kuota >= 1)) { errs.kuota = "Kuota minimal 1."; }
       if (!(v.harga >= 0)) { errs.harga = "Harga tidak boleh negatif."; }
+      var needDoc = !window.SIM || window.SIM.state.settings.approvalRequired, pf = form.proposal && form.proposal.files[0];
+      if (needDoc && !pf) { errs.proposal = "Unggah proposal event untuk diajukan ke admin."; }
+      else if (pf && !/\.(pdf|docx?)$/i.test(pf.name)) { errs.proposal = "Format proposal harus PDF atau Word."; }
+      else if (pf && pf.size > 10 * 1024 * 1024) { errs.proposal = "Ukuran proposal maksimal 10 MB."; }
       Object.keys(errs).forEach(function (k) {
         var s = document.createElement("small"); s.textContent = errs[k];
         form[k].closest(".field").appendChild(s);
@@ -247,11 +307,14 @@
       var S = window.SIM, needApproval = !S || S.state.settings.approvalRequired;
       var status = needApproval ? "diajukan" : "mendatang";
       var id = Math.max.apply(null, E.events.map(function (e) { return e.id; }).concat([200])) + 1;
-      E.events.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: status, hadir: 0, pendapatan: 0 });
+      var imgInput = form.querySelector("#neGambar");
+      var gambarUrl = imgInput && imgInput.files[0] ? URL.createObjectURL(imgInput.files[0]) : "/static/img/default-event.jpg";
+      E.events.push({ id: id, nama: v.nama, gambarUrl: gambarUrl, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: status, hadir: 0, pendapatan: 0 });
       var teks = needApproval ? "Event \"" + v.nama + "\" diajukan, menunggu persetujuan admin" : "Event baru \"" + v.nama + "\" dibuat";
       E.activity.unshift({ tipe: "event", teks: teks, waktu: "Baru saja" });
       if (S) {
-        S.state.newEvents.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, harga: v.harga, status: status });
+        var up = new Date(), prop = pf ? { file: pf.name, size: (pf.size >= 1048576 ? (pf.size / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(pf.size / 1024)) + " KB"), uploaded: up.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + up.getDate()).slice(-2), ringkasan: form.ringkasan.value.trim() } : null;
+        S.state.newEvents.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, harga: v.harga, status: status, proposal: prop });
         S.log("event", teks, "Budi Santoso", "Ketua Panitia", { eo: true });
       }
       dlg.close();
@@ -342,6 +405,26 @@
           '<td><button type="button" class="btn btn--ghost" style="height:36px;padding:0 16px;font-size:13px" data-detail="' + e.id + '">Detail</button></td></tr>';
       }).join("");
     }
+    /* Data proposal: pakai yang diunggah saat "Event baru" (tersimpan di SIM.state.newEvents), kalau tidak ada pakai data contoh */
+    var RINGKAS = {
+      Konferensi: "Mempertemukan akademisi, praktisi, dan mahasiswa untuk berbagi riset dan membangun jejaring kolaborasi.",
+      Workshop: "Pelatihan praktik langsung agar peserta menguasai keterampilan baru dan membawa pulang hasil kerja nyata.",
+      Seminar: "Menghadirkan narasumber ahli untuk membahas isu terkini dan membuka ruang tanya jawab dengan peserta.",
+      Webinar: "Sesi daring terbuka agar peserta dari berbagai daerah dapat belajar tanpa terkendala jarak.",
+      Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
+      "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
+    };
+    function proposalOf(e) {
+      var S = window.SIM, n = S && S.state.newEvents.filter(function (x) { return x.id === e.id; })[0];
+      if (n && n.proposal) {
+        return { file: n.proposal.file, size: n.proposal.size, uploaded: n.proposal.uploaded, ringkasan: n.proposal.ringkasan || RINGKAS[e.jenis] || RINGKAS.Seminar, asli: true };
+      }
+      var slug = e.nama.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
+      return { file: "Proposal_" + slug + ".pdf", size: (0.8 + (e.id % 7) * 0.35).toFixed(1).replace(".", ",") + " MB", uploaded: e.tanggal, ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar, asli: false };
+    }
+    dlg.addEventListener("click", function (ev) {
+      if (ev.target.closest("[data-open-doc]")) { toast("Contoh data: file proposal asli bisa dibuka setelah unggah tersambung ke backend."); }
+    });
     tabsEl.addEventListener("click", function (ev) { var b = ev.target.closest("button[data-f]"); if (b) { filter = b.dataset.f; render(); } });
     q.addEventListener("input", render);
     tbody.addEventListener("click", function (ev) {
@@ -353,6 +436,13 @@
         "<dt>Status</dt><dd>" + chip(e.status, E.statusEvent[e.status]) + "</dd><dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " kuota</dd>" +
         "<dt>Hadir</dt><dd>" + e.hadir + " peserta</dd><dt>Harga tiket</dt><dd>" + rp(e.harga) + "</dd><dt>Pendapatan</dt><dd>" + (e.pendapatan ? "Rp " + num(e.pendapatan) : "Rp 0") + "</dd>" +
         (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "");
+      var p = proposalOf(e), anggaran = Math.round(e.kuota * Math.max(e.harga, 25000) * 0.6 / 100000) * 100000;
+      $("#detailProposal").innerHTML =
+        '<h3 class="prop-h">Proposal</h3>' +
+        '<div class="pdoc"><span class="pdoc__ico" aria-hidden="true">PDF</span><div><b>' + esc(p.file) + "</b><small>" + esc(p.size) + " &middot; diunggah " + fmtDate(p.uploaded) + '</small></div>' +
+        '<button type="button" class="btn btn--ghost" style="height:36px;padding:0 16px;font-size:13px" data-open-doc>Buka proposal</button></div>' +
+        '<dl class="detail-grid dl--prop"><dt>Tujuan &amp; ringkasan</dt><dd>' + esc(p.ringkasan) + "</dd><dt>Target peserta</dt><dd>" + e.kuota + " peserta, mahasiswa dan umum</dd><dt>Estimasi anggaran</dt><dd>Rp " + num(anggaran) + "</dd></dl>" +
+        (p.asli ? "" : '<p class="pdoc__note">Isi proposal ini data contoh. File asli tersedia setelah unggah proposal tersambung ke backend.</p>');
       dlg.showModal();
     });
     $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
@@ -416,7 +506,7 @@
     $("#pdAvg").textContent = "Rp " + num(Math.round(total / tiket));
     $("#pdTop").textContent = top[0].nama;
     $("#pdTopNote").textContent = "Rp " + num(top[0].pendapatan) + " (" + Math.round(top[0].pendapatan / total * 100) + "% dari total)";
-    barChart($("#pdChart"), { labels: E.monthly.labels, values: E.monthly.pendapatan, name: "Pendapatan", fmt: function (v) { return "Rp " + num(v); }, fmtY: rpShort });
+    lineChart($("#pdChart"), { labels: E.monthly.labels, values: E.monthly.pendapatan, name: "Pendapatan", fmt: function (v) { return "Rp " + num(v); }, fmtY: rpShort });
     $("#pdBody").innerHTML = top.map(function (e) {
       var pct = Math.round(e.pendapatan / total * 100);
       return "<tr><td><span class=\"cell-title\">" + esc(e.nama) + '</span><span class="cell-sub">' + esc(e.jenis) + '</span></td><td class="num">' + e.terjual + '</td><td class="num">' + rp(e.harga) + '</td><td class="num"><b>Rp ' + num(e.pendapatan) + '</b></td><td><div class="meter"><div class="meter__bar" role="img" aria-label="' + pct + '% dari total"><i style="width:' + pct + '%"></i></div><small>' + pct + "%</small></div></td></tr>";
@@ -495,23 +585,21 @@
   /* ---------- Halaman: Pengaturan ---------- */
   function pagePengaturan() {
     var PERAN = {
-      lapangan:   { nama: "Panitia Lapangan", info: "Melihat daftar peserta dan melakukan check-in tiket saat acara. Bisa mengganti kata sandinya sendiri.",
-                    poin: ["Melihat daftar peserta", "Check-in tiket", "Ganti kata sandi"] },
-      dokumentasi:{ nama: "Tim Dokumentasi",  info: "Melihat event dan mengunggah foto kegiatan yang langsung muncul di akun peserta.",                      
-                    poin: ["Melihat daftar event", "Unggah foto kegiatan ke peserta", "Ganti kata sandi"] }
+      panitia: { nama: "Panitia", info: "Melihat event yang ditugaskan, check-in peserta saat acara, mengerjakan tugas, dan mengunggah dokumentasi. Bisa beralih ke tampilan peserta.",
+                 poin: ["Check-in peserta", "Mengerjakan tugas", "Unggah dokumentasi"] }
     };
     var STATUS = { aktif: ["hadir", "Aktif"], tertunda: ["mendatang", "Menunggu"], ditangguhkan: ["selesai", "Ditangguhkan"] };
     var team = [
-      { id: 1, nama: "Siti Rahma",       email: "siti.rahma@mail.com",   peran: "lapangan",    akses: "semua", status: "aktif",        terakhir: "Hari ini" },
-      { id: 2, nama: "Rafi Hidayat",     email: "rafi.hidayat@mail.com", peran: "lapangan",    akses: [1, 2],  status: "aktif",        terakhir: "Kemarin" },
-      { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "dokumentasi", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
-      { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "dokumentasi", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
+      { id: 1, nama: "Siti Rahma",       email: "siti.rahma@mail.com",   peran: "panitia", akses: "semua", status: "aktif",        terakhir: "Hari ini" },
+      { id: 2, nama: "Rafi Hidayat",     email: "rafi.hidayat@mail.com", peran: "panitia", akses: [1, 2],  status: "aktif",        terakhir: "Kemarin" },
+      { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "panitia", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
+      { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "panitia", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
     ];
     /* akun yang dibekukan Admin tidak bisa masuk: tampil sebagai ditangguhkan */
     if (window.SIM) { team.forEach(function (m) { var u = SIM.state.users[m.email]; if (u && u.status === "dibekukan") { m.status = "ditangguhkan"; } }); }
     var invites = [
-      { id: 11, email: "putri.amelia@mail.com", peran: "lapangan",    kirim: "2 hari lalu", sisa: 5 },
-      { id: 12, email: "agus.salim@mail.com",   peran: "dokumentasi", kirim: "6 hari lalu", sisa: 1 }
+      { id: 11, email: "putri.amelia@mail.com", peran: "panitia", kirim: "2 hari lalu", sisa: 5 },
+      { id: 12, email: "agus.salim@mail.com",   peran: "panitia", kirim: "6 hari lalu", sisa: 1 }
     ];
     var NOTIF = [
       { k: "daftar",  t: "Pendaftaran peserta baru",       d: "Setiap ada peserta yang mendaftar ke eventmu.", on: true },
@@ -545,21 +633,96 @@
     $$("[data-close]", cf).forEach(function (b) { b.addEventListener("click", function () { cf.close(); }); });
     $("form", cf).addEventListener("submit", function (ev) { ev.preventDefault(); cf.close(); if (cfAction) { cfAction(); } });
 
-    /* ----- Profil ----- */
+        /* ----- Profil: foto (dengan crop), nama, HP, organisasi ----- */
     function initials(n) { return n.trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; }
-    $("#avatarInit").textContent = initials($("#avatarName").textContent);
+    var baseName = $("#avatarName").textContent.trim();
+    function curName() { return getProfile().nama || baseName; }
+    function applyProfile() {
+      var pr = getProfile(), ava = $("#avatarInit");
+      ava.style.backgroundImage = pr.foto ? 'url("' + pr.foto + '")' : "";
+      ava.textContent = pr.foto ? "" : initials(curName());
+      $("#avatarName").textContent = curName();
+      applySidebarName();
+    }
+    var msg = $("#profMsg"), fIn = $("#profFoto"), nm = $("#nameForm"), nmIn = $("#pfNama");
+    var modal = $("#profileCropModal"), vp = $("#profileCropViewport"), img = $("#profileCropImage"), zoom = $("#profileCropZoom"), okBtn = $("#profileCropSave"), noBtn = $("#profileCropCancel");
+    var src = null, url = null, scale = 1, left = 0, top = 0, drag = null;
+    function say(t) { msg.innerHTML = t ? '<small class="err">' + t + "</small>" : ""; }
+    function fieldErr(input, text) {
+      var m = document.createElement("small"); m.className = "err"; m.textContent = text;
+      input.closest(".field").appendChild(m); input.focus();
+    }
+    nmIn.value = curName();
+    $("#pfHp").value = getProfile().hp || "";
+    $("#pfOrg").value = getProfile().org || "";
+    applyProfile();
+
+    nm.addEventListener("submit", function (ev) {
+      ev.preventDefault(); $$("small.err", nm).forEach(function (x) { x.remove(); });
+      var v = nmIn.value.trim().replace(/\s+/g, " "), p = getProfile();
+      if (v.length < 3) { fieldErr(nmIn, "Nama minimal 3 karakter."); return; }
+      if (v === curName()) { toast("Nama tidak berubah."); return; }
+      p.nama = v; setProfile(p); applyProfile(); toast("Nama diperbarui. Ini data contoh, belum tersimpan ke database.");
+    });
+
     $("#profilForm").addEventListener("submit", function (ev) {
       ev.preventDefault();
-      var f = ev.target, nama = f.nama.value.trim();
-      $$("small.err", f).forEach(function (s) { s.remove(); });
-      if (nama.length < 3) {
-        var s = document.createElement("small"); s.className = "err"; s.textContent = "Nama minimal 3 karakter.";
-        f.nama.closest(".field").appendChild(s); f.nama.focus(); return;
-      }
-      $("#avatarName").textContent = nama; $("#avatarInit").textContent = initials(nama);
+      var p = getProfile(); p.hp = $("#pfHp").value.trim(); p.org = $("#pfOrg").value.trim(); setProfile(p);
       toast("Profil diperbarui. Ini data contoh, belum tersimpan ke database.");
     });
 
+    function layout(keep) {
+      if (!img.naturalWidth) { return; }
+      var size = vp.clientWidth; if (!size) { return; }
+      var cx = keep && scale ? (size / 2 - left) / scale : null, cy = keep && scale ? (size / 2 - top) / scale : null;
+      scale = Math.max(size / img.naturalWidth, size / img.naturalHeight) * Number(zoom.value);
+      var w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+      img.style.width = w + "px"; img.style.height = h + "px";
+      left = cx === null ? (size - w) / 2 : size / 2 - cx * scale; top = cy === null ? (size - h) / 2 : size / 2 - cy * scale;
+      left = Math.min(0, Math.max(size - w, left)); top = Math.min(0, Math.max(size - h, top));
+      img.style.left = left + "px"; img.style.top = top + "px";
+    }
+    function closeCrop() {
+      modal.hidden = true; modal.setAttribute("aria-hidden", "true"); drag = null; src = null; fIn.value = "";
+      if (url) { URL.revokeObjectURL(url); url = null; }
+      img.removeAttribute("src"); fIn.focus();
+    }
+    fIn.addEventListener("change", function () {
+      var f = fIn.files[0]; say(""); if (!f) { return; }
+      if (!/^image\/(png|jpe?g|webp)$/.test(f.type)) { say("Pilih foto JPG, PNG, atau WebP."); fIn.value = ""; return; }
+      if (f.size > 5 * 1024 * 1024) { say("Ukuran foto maksimal 5 MB."); fIn.value = ""; return; }
+      src = f; zoom.value = "1"; url = URL.createObjectURL(f);
+      modal.hidden = false; modal.setAttribute("aria-hidden", "false");
+      img.onload = function () { requestAnimationFrame(function () { layout(false); okBtn.focus(); }); };
+      img.onerror = function () { say("Foto tidak dapat dibuka. Coba file gambar lain."); closeCrop(); };
+      img.src = url;
+    });
+    zoom.addEventListener("input", function () { layout(true); });
+    window.addEventListener("resize", function () { if (!modal.hidden) { layout(true); } });
+    vp.addEventListener("pointerdown", function (e) { if (!src) { return; } e.preventDefault(); vp.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, l: left, t: top }; });
+    vp.addEventListener("pointermove", function (e) {
+      if (!drag) { return; }
+      var size = vp.clientWidth;
+      left = Math.min(0, Math.max(size - img.clientWidth, drag.l + e.clientX - drag.x)); top = Math.min(0, Math.max(size - img.clientHeight, drag.t + e.clientY - drag.y));
+      img.style.left = left + "px"; img.style.top = top + "px";
+    });
+    vp.addEventListener("pointerup", function () { drag = null; });
+    vp.addEventListener("pointercancel", function () { drag = null; });
+    noBtn.addEventListener("click", closeCrop);
+    modal.addEventListener("click", function (e) { if (e.target === modal) { closeCrop(); } });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) { closeCrop(); } });
+    okBtn.addEventListener("click", function () {
+      if (!src || !img.naturalWidth) { return; }
+      var size = vp.clientWidth, c = document.createElement("canvas"); c.width = c.height = 384;
+      c.getContext("2d").drawImage(img, -left / scale, -top / scale, size / scale, size / scale, 0, 0, 384, 384);
+      var p = getProfile(); p.foto = c.toDataURL("image/jpeg", .85);
+      if (!setProfile(p)) { say("Foto gagal disimpan di browser."); closeCrop(); return; }
+      closeCrop(); applyProfile(); toast("Foto profil diperbarui.");
+    });
+    $("#profFotoDel").addEventListener("click", function () {
+      var p = getProfile(); if (!p.foto) { say("Belum ada foto yang bisa dihapus."); return; }
+      delete p.foto; setProfile(p); say(""); applyProfile(); toast("Foto profil dihapus.");
+    });
     /* ----- Kata sandi ----- */
     var pw = { lama: $("#pwLama"), baru: $("#pwBaru"), ulang: $("#pwUlang") };
     function pwState() {
@@ -611,27 +774,30 @@
       var aktif = team.filter(function (m) { return m.status === "aktif"; }).length;
       var tang = team.filter(function (m) { return m.status === "ditangguhkan"; }).length;
       var nc = $("#setNotifCount"); if (nc) { nc.textContent = invites.length; nc.hidden = !invites.length; }
-      $("#timStats").innerHTML = [["Anggota aktif", aktif, "dari " + team.length + " anggota"], ["Undangan tertunda", invites.length, "belum diterima"], ["Ditangguhkan", tang, "tidak bisa masuk"]].map(function (s) {
-        return '<article class="card stat"><p class="stat__label">' + s[0] + '</p><p class="stat__value">' + s[1] + '</p><p class="stat__note stat__note--muted">' + s[2] + "</p></article>";
-      }).join("");
+      var segera = invites.filter(function (i) { return i.sisa <= 1; }).length;
+function kpi(label, x, y) {
+  return '<article class="card kpi kpi--split"><p class="kpi__label">' + label + '</p><div class="kpi__pair">' +
+    '<div><span class="kpi__num' + (x[2] ? " kpi__num--orange" : "") + '">' + x[0] + '</span><span class="kpi__cap' + (x[2] ? " kpi__cap--orange" : "") + '">' + x[1] + "</span></div><i></i>" +
+    '<div><span class="kpi__num' + (y[2] ? " kpi__num--orange" : "") + '">' + y[0] + '</span><span class="kpi__cap' + (y[2] ? " kpi__cap--orange" : "") + '">' + y[1] + "</span></div></div></article>";
+}
+$("#timStats").innerHTML =
+  kpi("Anggota aktif", [aktif, "Aktif"], [team.length, "Total anggota"]) +
+  kpi("Undangan tertunda", [invites.length, "Belum diterima"], [segera, "Kedaluwarsa besok", true]) +
+  kpi("Ditangguhkan", [tang, "Tidak bisa masuk", true], [aktif, "Bisa masuk"]);
       $("#timBody").innerHTML = team.length ? team.map(function (m) {
         var st = STATUS[m.status];
-        var opts = Object.keys(PERAN).map(function (k) { return '<option value="' + k + '"' + (k === m.peran ? " selected" : "") + ">" + PERAN[k].nama + "</option>"; }).join("");
         return '<tr><td><span class="cell-title">' + esc(m.nama) + '</span><span class="cell-sub">' + esc(m.email) + " &middot; " + esc(m.terakhir) + "</span></td>" +
-          '<td><label class="pill-select sm"><span class="sr-only">Peran ' + esc(m.nama) + '</span><select data-role="' + m.id + '">' + opts + '</select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></label></td>' +
+          "<td>" + esc(PERAN[m.peran].nama) + "</td>" +
           "<td>" + esc(eventNames(m.akses)) + "</td><td>" + chip(st[0], st[1]) + "</td>" +
           '<td class="act"><button type="button" class="btn btn--ghost sm" data-toggle="' + m.id + '">' + (m.status === "ditangguhkan" ? "Aktifkan" : "Tangguhkan") + '</button> <button type="button" class="btn btn--ghost sm" data-remove="' + m.id + '">Cabut akses</button></td></tr>';
       }).join("") : '<tr><td colspan="5"><p class="tbl-empty">Belum ada anggota. Undang panitia pertamamu.</p></td></tr>';
       $("#invList").innerHTML = invites.length ? invites.map(function (i) {
-        return '<li class="inv"><div><b>' + esc(i.email) + "</b><small>" + esc(PERAN[i.peran].nama) + " &middot; dikirim " + esc(i.kirim) + " &middot; " + (i.sisa <= 1 ? "kedaluwarsa besok" : "berlaku " + i.sisa + " hari lagi") + '</small></div><div class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Kirim ulang</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></div></li>';
-      }).join("") : '<li><p class="tbl-empty">Tidak ada undangan tertunda.</p></li>';
+  return '<tr><td><span class="cell-title">' + esc(i.email) + "</span></td>" +
+    "<td>" + esc(PERAN[i.peran].nama) + " &middot; dikirim " + esc(i.kirim) + " &middot; " + (i.sisa <= 1 ? "kedaluwarsa besok" : "berlaku " + i.sisa + " hari lagi") + "</td>" +
+    '<td class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Kirim ulang</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></td></tr>';
+}).join("") : '<tr><td colspan="3"><p class="tbl-empty">Tidak ada undangan tertunda.</p></td></tr>';
     }
     function member(id) { return team.filter(function (m) { return String(m.id) === String(id); })[0]; }
-    $("#timBody").addEventListener("change", function (ev) {
-      var s = ev.target.closest("[data-role]"); if (!s) { return; }
-      var m = member(s.dataset.role); m.peran = s.value;
-      toast("Peran " + m.nama + " diubah menjadi " + PERAN[m.peran].nama + ". Data contoh.");
-    });
     $("#timBody").addEventListener("click", function (ev) {
       var t = ev.target.closest("[data-toggle]"), r = ev.target.closest("[data-remove]");
       if (t) {
@@ -703,8 +869,23 @@
     });
   }
 
+    /* ---------- Profil ketua panitia (data contoh di localStorage) ---------- */
+  var PKEY = "simevent_ketua_profile_v1";
+  function getProfile() { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } }
+  function setProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); return true; } catch (e) { return false; } }
+    function sbInitials(n) { return n.trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; }
+  function applySidebarName() {
+    var pr = getProfile(), b = $(".eo-user b"), ava = $(".eo-user__ava");
+    if (pr.nama && b) { b.textContent = pr.nama; }
+    if (ava) {
+      ava.style.backgroundImage = pr.foto ? 'url("' + pr.foto + '")' : "";
+      ava.textContent = pr.foto ? "" : sbInitials(b ? b.textContent : "");
+    }
+  }
+
   var pages = { dashboard: pageDashboard, event: pageEvent, peserta: pagePeserta, pendapatan: pagePendapatan, log: pageLog, support: pageSupport, pengaturan: pagePengaturan };  
   var fn = pages[document.body.dataset.page];
   if (fn) { fn(); }
+  applySidebarName(); 
   initNewEvent();
 })();

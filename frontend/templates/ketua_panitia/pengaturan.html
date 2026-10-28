@@ -4,34 +4,42 @@
 {% block nav_pengaturan %} class="is-active" aria-current="page"{% endblock %}
 {% block fab %}{% endblock %}
 {% block content %}
-<header class="eo-head"><h1>Pengaturan</h1></header>
-
-<div class="set-top">
-  <nav class="card set-menu" id="setNav" aria-label="Bagian pengaturan">
+<header class="eo-head eo-head--stack"><h1>Pengaturan</h1><p>Kelola profil, anggota panitia, dan undangan yang masih tertunda.</p></header>
+<div class="adm-toolbar">
+  <nav class="tabs set-tabs" id="setNav" aria-label="Bagian pengaturan">
     <a href="#profil" data-tab="profil">Profil saya</a>
     <a href="#tim" data-tab="tim">Tim panitia</a>
-    <a href="#notifikasi" data-tab="notifikasi">Notifikasi <span id="setNotifCount" hidden></span></a>
+    <a href="#notifikasi" data-tab="notifikasi">Undangan tertunda <span id="setNotifCount" hidden></span></a>
   </nav>
-  <div class="contents" id="timStats"></div>
 </div>
 
 <div class="card set-main">
   <!-- PROFIL SAYA -->
   <section class="set-panel" id="panel-profil" data-panel="profil" aria-labelledby="h-profil" hidden>
-    <div class="set-sec">
-      <h2 id="h-profil" class="set-h">Profil saya</h2>
-      <p class="set-sub">Informasi ini tampil pada tim panitia dan di halaman event yang kamu kelola.</p>
-      <form id="profilForm" class="set-form" novalidate>
-        <div class="set-avatar"><span id="avatarInit" aria-hidden="true">KP</span><div><b id="avatarName">{{ request.user.get_full_name|default:"Ketua Panitia" }}</b><small>Ketua Panitia</small></div></div>
-        <div class="set-grid">
-          <div class="field"><label for="pfNama">Nama lengkap</label><input id="pfNama" name="nama" type="text" value="{{ request.user.get_full_name }}" maxlength="80"></div>
-          <div class="field"><label for="pfEmail">Email (untuk masuk)</label><input id="pfEmail" type="email" value="{{ request.user.email }}" readonly aria-describedby="pfEmailNote"><small class="hint" id="pfEmailNote">Email tidak bisa diubah sendiri. Hubungi admin platform bila perlu.</small></div>
-          <div class="field"><label for="pfHp">Nomor HP</label><input id="pfHp" name="hp" type="tel" placeholder="08xxxxxxxxxx" inputmode="tel"></div>
-          <div class="field"><label for="pfOrg">Komunitas / organisasi</label><input id="pfOrg" name="org" type="text" placeholder="Contoh: BEM Fakultas Teknik" maxlength="80"></div>
-        </div>
-        <div class="set-actions"><button type="submit" class="btn">Simpan perubahan</button></div>
-      </form>
+    <h2 id="h-profil" class="set-h">Akun ketua panitia</h2>
+<p class="set-sub">Kelola foto profil, data diri, dan kata sandi akunmu.</p>
+    <div class="sp-top">
+  <div class="sp-profile">
+    <span class="sp-ava" id="avatarInit" aria-hidden="true">KP</span>
+    <div>
+      <b id="avatarName">{{ request.user.get_full_name|default:"Ketua Panitia" }}</b><small>Ketua Panitia</small>
+      <div class="sp-profile__act"><label class="btn btn--ghost sm sp-file" for="profFoto">Unggah foto<input id="profFoto" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only"></label><button type="button" class="btn btn--ghost sm" id="profFotoDel">Hapus foto</button></div>
+      <small class="hint">JPG, PNG, atau WebP, maksimal 5 MB. Foto dipotong menjadi persegi.</small>
+      <div id="profMsg" aria-live="polite"></div>
     </div>
+  </div>
+  <div class="sp-acc">
+    <form id="nameForm" novalidate><div class="field"><label for="pfNama">Nama lengkap</label><div class="sp-inline__row"><input id="pfNama" name="nama" type="text" maxlength="80" value="{{ request.user.get_full_name|default:'Ketua Panitia' }}" autocomplete="name"><button type="submit" class="btn">Simpan nama</button></div></div></form>
+    <div class="field"><label for="pfEmail">Email (untuk masuk)</label><input id="pfEmail" type="email" value="{{ request.user.email }}" readonly aria-describedby="pfEmailNote"><small class="hint" id="pfEmailNote">Email tidak bisa diubah sendiri. Hubungi admin platform bila perlu.</small></div>
+  </div>
+</div>
+<form id="profilForm" class="set-form" novalidate>
+  <div class="set-grid">
+    <div class="field"><label for="pfHp">Nomor HP</label><input id="pfHp" name="hp" type="tel" placeholder="08xxxxxxxxxx" inputmode="tel"></div>
+    <div class="field"><label for="pfOrg">Komunitas / organisasi</label><input id="pfOrg" name="org" type="text" placeholder="Contoh: BEM Fakultas Teknik" maxlength="80"></div>
+  </div>
+  <div class="set-actions"><button type="submit" class="btn">Simpan perubahan</button></div>
+</form>
 
     <div class="set-sec">
       <h2 class="set-h">Ganti kata sandi</h2>
@@ -56,25 +64,35 @@
 
   <!-- TIM PANITIA -->
   <section class="set-panel" id="panel-tim" data-panel="tim" aria-labelledby="h-tim" hidden>
+    <section class="kpi-grid kpi-grid--3" id="timStats" aria-label="Ringkasan tim"></section>
     <div class="set-row"><div><h2 id="h-tim" class="set-h">Anggota Panitia</h2><p class="set-sub">Atur peran dan event yang boleh diakses setiap anggota.</p></div>
     <button type="button" class="btn" id="inviteBtn"><svg class="icon" aria-hidden="true" style="width:18px;height:18px"><use href="#i-plus"/></svg>Undang panitia</button></div>
-    <div class="table-wrap"><table class="tbl"><thead><tr><th>Anggota</th><th>Peran</th><th>Akses event</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="timBody"></tbody></table></div>
+    <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Anggota</th><th>Peran</th><th>Akses event</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="timBody"></tbody></table></div></article>
   </section>
 
-  <!-- NOTIFIKASI -->
-  <section class="set-panel" id="panel-notifikasi" data-panel="notifikasi" aria-labelledby="h-notif" hidden>
-    <div class="set-sec">
-      <h2 id="h-undangan" class="set-h">Undangan tertunda</h2>
-      <p class="set-sub">Tautan undangan berlaku 7 hari. Setelah itu undangan harus dikirim ulang.</p>
-      <ul class="inv-list" id="invList"></ul>
-    </div>
-    <div class="set-sec">
-      <h2 id="h-notif" class="set-h">Notifikasi email</h2>
-      <p class="set-sub">Pilih kabar yang dikirim ke emailmu.</p>
-      <ul class="tog-list" id="togList"></ul>
-    </div>
+  <!-- UNDANGAN TERTUNDA -->
+  <section class="set-panel" id="panel-notifikasi" data-panel="notifikasi" aria-labelledby="h-undangan" hidden>
+    <h2 id="h-undangan" class="set-h">Undangan tertunda</h2>
+    <p class="set-sub">Tautan undangan berlaku 7 hari. Setelah itu undangan harus dikirim ulang.</p>
+    <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Penerima / Email</th><th>Informasi undangan</th><th class="num"><span class="sr-only">Aksi</span></th></tr></thead><tbody id="invList"></tbody></table></div></article>
   </section>
 </div>
+
+<!-- STYLE MODAL UNDANG -->
+<style>
+  /* Modal Kartu Warna Putih */
+  #inviteDlg, 
+  #inviteDlg .dlg__body, 
+  #inviteDlg .dlg__head, 
+  #inviteDlg .dlg__foot {
+    background-color: #ffffff !important;
+  }
+
+  /* Sembunyikan bagian Peran di Modal */
+  #inviteDlg fieldset:has(#ivPeran) {
+    display: none !important;
+  }
+</style>
 
 <dialog class="dlg dlg--wide" id="inviteDlg" aria-labelledby="invTitle">
   <form method="dialog" id="inviteForm" novalidate>
@@ -88,7 +106,7 @@
         <div id="ivEventList" class="iv-eventlist" hidden></div>
       </fieldset>
       <div class="field"><label for="ivPesan">Pesan (opsional)</label><textarea id="ivPesan" name="pesan" rows="2" maxlength="200" placeholder="Contoh: Tolong bantu check-in di hari H."></textarea></div>
-      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Kamu bisa mengirim ulang, menyalin tautan, atau membatalkan undangan kapan saja dari tab Notifikasi.</p>
+      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Kamu bisa mengirim ulang, menyalin tautan, atau membatalkan undangan kapan saja dari tab Undangan tertunda.</p>
     </div>
     <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Kirim undangan</button></div>
   </form>
@@ -101,4 +119,17 @@
     <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn btn--danger" id="cfOk">Lanjutkan</button></div>
   </form>
 </dialog>
+<div id="profileCropModal" class="profile-crop-modal" role="presentation" aria-hidden="true" hidden>
+  <section class="profile-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCropTitle" tabindex="-1">
+    <h3 id="profileCropTitle">Atur foto profil</h3>
+    <p>Geser foto untuk mengatur posisi, lalu gunakan penggeser untuk memperbesar.</p>
+    <div id="profileCropViewport" class="profile-crop-viewport" aria-label="Area crop foto profil">
+      <img id="profileCropImage" class="profile-crop-image" alt="Pratinjau foto yang akan dipotong" draggable="false">
+      <span class="profile-crop-guide" aria-hidden="true"></span>
+    </div>
+    <label for="profileCropZoom">Perbesar foto</label>
+    <input id="profileCropZoom" class="profile-crop-zoom" type="range" min="1" max="3" step="0.05" value="1">
+    <div class="profile-crop-actions"><button id="profileCropCancel" type="button" class="btn btn--ghost">Batal</button><button id="profileCropSave" type="button" class="btn">Gunakan foto</button></div>
+  </section>
+</div>
 {% endblock %}
