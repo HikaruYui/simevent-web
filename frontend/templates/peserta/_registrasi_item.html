@@ -6,7 +6,7 @@
   <div class="flex gap-1.5 flex-wrap mt-2 text-[11px] font-bold">
    <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white">Terdaftar</span>
    <span class="px-2.5 py-1 rounded-full {% if r.selesai %}bg-emerald-700 text-white{% else %}bg-brand-sand text-brand-muted{% endif %}">Event selesai</span>
-   <span class="px-2.5 py-1 rounded-full {% if r.punya_feedback %}bg-emerald-700 text-white{% else %}bg-brand-sand text-brand-muted{% endif %}">Feedback</span>
+   <span class="px-2.5 py-1 rounded-full {% if r.punya_feedback %}bg-emerald-700 text-white{% else %}bg-brand-sand text-brand-muted{% endif %}">Umpan Balik</span>
    <span class="px-2.5 py-1 rounded-full {% if r.punya_sertifikat %}bg-emerald-700 text-white{% else %}bg-brand-sand text-brand-muted{% endif %}">Sertifikat</span>
   </div>
  </div>
@@ -16,16 +16,16 @@
   <button class="px-4 py-2 rounded-full text-sm font-bold bg-brand-tan/60 text-brand-muted cursor-not-allowed" disabled>Menunggu event selesai</button>
  {% elif not r.punya_feedback %}
   <div class="text-right">
-   <button class="px-4 py-2 rounded-full text-sm font-bold bg-brand-olive text-brand-goldLight" onclick="document.getElementById('fb{{ r.pk }}').showModal()">Isi Feedback</button>
-   <p class="text-[11px] text-orange-800 mt-1"><i class="fa-solid fa-lock"></i> Sertifikat terkunci sampai feedback dikirim</p>
+   <button class="px-4 py-2 rounded-full text-sm font-bold bg-brand-olive text-brand-goldLight" onclick="document.getElementById('fb{{ r.pk }}').showModal()">Isi Umpan Balik</button>
+   <p class="text-[11px] text-orange-800 mt-1"><i class="fa-solid fa-lock"></i> Sertifikat terkunci sampai umpan balik dikirim</p>
   </div>
   <dialog id="fb{{ r.pk }}" class="rounded-3xl p-6 w-full max-w-lg backdrop:bg-black/50">
    <form method="post" action="{% url 'kirim_feedback' r.pk %}">{% csrf_token %}
-    <h3 class="font-display text-xl font-bold">Feedback Event</h3>
+    <h3 class="font-display text-xl font-bold">Umpan Balik Event</h3>
     <p class="text-sm text-brand-muted mb-3">{{ r.event.judul }}</p>
     <div class="rate">{% for n in '54321' %}<input type="radio" id="s{{ r.pk }}{{ n }}" name="rating" value="{{ n }}" required><label for="s{{ r.pk }}{{ n }}">★</label>{% endfor %}</div>
     <textarea name="komentar" rows="4" minlength="10" required class="w-full rounded-xl border border-brand-tan p-3 text-sm mt-2" placeholder="Apa yang kamu suka dan apa yang perlu ditingkatkan? (min. 10 karakter)"></textarea>
-    <div class="flex justify-end gap-2 mt-3"><button type="button" class="px-4 py-2 rounded-full text-sm font-bold border" onclick="this.closest('dialog').close()">Nanti</button><button class="px-4 py-2 rounded-full text-sm font-bold bg-brand-olive text-brand-goldLight">Kirim Feedback</button></div>
+    <div class="flex justify-end gap-2 mt-3"><button type="button" class="px-4 py-2 rounded-full text-sm font-bold border" onclick="this.closest('dialog').close()">Nanti</button><button class="px-4 py-2 rounded-full text-sm font-bold bg-brand-olive text-brand-goldLight">Kirim Umpan Balik</button></div>
    </form>
   </dialog>
  {% else %}

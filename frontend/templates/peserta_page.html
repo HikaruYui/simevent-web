@@ -1,6 +1,6 @@
 {% extends 'peserta/base_peserta.html' %}
 {% load static %}
-{% block ptitle %}Dashboard Peserta{% endblock %}
+{% block ptitle %}Beranda Peserta{% endblock %}
 {% block peserta %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -496,10 +496,10 @@ div:has(> img[src*="logo"]) {
   <section class="participant-card dashboard-hero participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
     {% include 'peserta/_pesut_hero_art.html' %}
     <div class="relative z-10 flex min-h-[126px] items-center sm:min-h-[148px]">
-      <div class="max-w-[72%] sm:max-w-[62%]">
+      <div class="w-full min-w-0 max-w-[88%] sm:max-w-[78%] lg:max-w-[72%]">
         <p class="text-sm font-semibold text-stone-700 sm:text-base">Halo,</p>
         <h1 class="mt-1 whitespace-nowrap font-display text-[clamp(1rem,4.8vw,2.25rem)] font-extrabold text-[#3F422E]">{{ request.user.get_full_name|default:request.user.email }}</h1>
-        <p class="mt-2 text-sm text-stone-700 sm:text-base">Terus ikuti event menarik dan raih lebih banyak pengalaman!</p>
+        <p class="mt-2 text-sm text-stone-700 sm:whitespace-nowrap sm:text-xs lg:text-base">Terus ikuti event menarik dan raih lebih banyak pengalaman!</p>
       </div>
     </div>
   </section>
@@ -531,7 +531,7 @@ div:has(> img[src*="logo"]) {
       <div class="flex items-center gap-4">
         <span class="dashboard-stat-icon grid h-20 w-20 shrink-0 place-items-center rounded-full {% if current_level.color == 'gold' or current_level.color == 'legend' %}bg-gradient-to-br from-amber-200 to-amber-500 text-white{% elif current_level %}text-[#8b510d]{% else %}bg-stone-200 text-stone-500{% endif %} text-4xl"><i class="fa-solid {% if current_level %}fa-medal{% else %}fa-lock{% endif %}"></i></span>
         <div class="flex min-h-[84px] min-w-0 flex-1 flex-col justify-between">
-          <span class="block text-base font-bold leading-5 text-brand-ink">Achievement</span>
+          <span class="block text-base font-bold leading-5 text-brand-ink">Pencapaian</span>
           <span class="block font-display {% if current_level %}text-[2rem]{% else %}text-2xl{% endif %} font-extrabold leading-none text-brand-ink">{{ current_level_display }}</span>
           <span class="block text-xs leading-4 text-stone-600">{% if progress_remaining %}{% if current_level %}Capai {{ next_threshold }} event untuk {{ next_level_display }}{% else %}Ikuti {{ next_threshold }} event untuk {{ next_level_display }}{% endif %}{% else %}Semua level tercapai{% endif %}</span>
         </div>
@@ -563,7 +563,7 @@ div:has(> img[src*="logo"]) {
       <article class="my-event-card">
         <div class="my-event-card__img" aria-hidden="true" style="background-image:url('{% if event.banner %}{{ event.banner.url }}{% else %}{% static 'img/hero.jpg' %}{% endif %}')"></div>
         <div class="my-event-card__chips">
-          <span class="my-chip my-chip--cream">{{ event.get_category_display|default:event.category|default:"Event" }}</span>
+          <span class="my-chip my-chip--cream">{% if event.event_type.code == "CONFERENCE" %}Konferensi{% elif event.event_type.code == "WORKSHOP" %}Lokakarya{% else %}{{ event.get_category_display|default:event.category|default:"Event" }}{% endif %}</span>
           <time class="my-chip my-chip--white" datetime="{{ event.start_datetime|date:'Y-m-d' }}">{{ event.start_datetime|date:"j M Y" }}</time>
         </div>
         {% if event.status == "COMPLETED" or event.end_datetime <= now %}
@@ -577,7 +577,7 @@ div:has(> img[src*="logo"]) {
           <a href="{% url 'detail_event' event.slug %}" class="my-event-card__link">{{ event.title }}</a>
         </h3>
         <ul class="my-event-card__meta">
-          <li><i class="fa-solid fa-location-dot"></i> {{ event.location|default:event.venue|default:"Online" }}</li>
+          <li><i class="fa-solid fa-location-dot"></i> {{ event.location|default:event.venue|default:"Daring" }}</li>
           <li><i class="fa-regular fa-user"></i> {{ event.organizer.get_full_name|default:event.organizer.email }}</li>
         </ul>
         {% if registration.certificate_ready %}
@@ -587,13 +587,13 @@ div:has(> img[src*="logo"]) {
         </div>
         {% elif event.status == "COMPLETED" and registration.attendance and registration.attendance.status == "PRESENT" and not registration.feedback %}
         <div class="my-event-card__actions">
-          <button type="button" onclick="document.getElementById('feedbackDialog{{ registration.pk }}').showModal()" class="participant-outline inline-flex justify-center rounded-lg px-3 py-2 text-sm font-bold">Isi Feedback</button>
+          <button type="button" onclick="document.getElementById('feedbackDialog{{ registration.pk }}').showModal()" class="participant-outline inline-flex justify-center rounded-lg px-3 py-2 text-sm font-bold">Isi Umpan Balik</button>
         </div>
         <dialog id="feedbackDialog{{ registration.pk }}" class="feedback-dialog">
           <form class="participant-feedback-form space-y-4 p-5 sm:p-7" method="post" action="{% url 'registrations:feedback' registration.pk %}">
             {% csrf_token %}
             <div class="flex items-start justify-between gap-3">
-              <div><h3 class="font-display text-xl font-extrabold text-brand-orangeDeep">Feedback Event</h3><p class="mt-1 text-sm text-stone-600">{{ event.title }}</p></div>
+              <div><h3 class="font-display text-xl font-extrabold text-brand-orangeDeep">Umpan Balik Event</h3><p class="mt-1 text-sm text-stone-600">{{ event.title }}</p></div>
               <button type="button" onclick="this.closest('dialog').close()" aria-label="Tutup" class="text-2xl text-brand-orangeDeep"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
@@ -612,7 +612,7 @@ div:has(> img[src*="logo"]) {
               <textarea name="suggestion" rows="2" maxlength="2000" class="mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 font-normal" placeholder="Apa yang bisa ditingkatkan?"></textarea>
             </label>
             <p class="feedback-error hidden rounded-lg bg-rose-50 p-3 text-sm text-rose-700" role="alert"></p>
-            <div class="flex justify-end gap-2"><button type="button" onclick="this.closest('dialog').close()" class="participant-outline rounded-lg px-4 py-2 text-sm font-bold">Nanti</button><button type="submit" class="participant-button rounded-lg px-4 py-2 text-sm font-bold">Kirim Feedback</button></div>
+            <div class="flex justify-end gap-2"><button type="button" onclick="this.closest('dialog').close()" class="participant-outline rounded-lg px-4 py-2 text-sm font-bold">Nanti</button><button type="submit" class="participant-button rounded-lg px-4 py-2 text-sm font-bold">Kirim Umpan Balik</button></div>
           </form>
         </dialog>
         {% endif %}
@@ -635,13 +635,13 @@ div:has(> img[src*="logo"]) {
   <section class="grid gap-4 lg:grid-cols-2">
     <div class="participant-card dashboard-summary-card achievement-summary-card overflow-hidden rounded-[22px]">
       <div class="dashboard-summary-heading flex items-center justify-between border-b border-amber-100 px-5 py-4">
-        <button type="button" data-open-achievement class="font-display text-left text-lg font-extrabold text-brand-orangeDeep"><i class="fa-solid fa-trophy mr-2"></i>Achievement Terbaru</button>
+        <button type="button" data-open-achievement class="font-display text-left text-lg font-extrabold text-brand-orangeDeep"><i class="fa-solid fa-trophy mr-2"></i>Pencapaian Terbaru</button>
         <a href="{% url 'peserta_achievement' %}" data-achievement-all class="relative z-10 text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
       </div>
       <button type="button" data-open-achievement class="flex w-full items-center gap-4 p-5 text-left transition hover:bg-amber-50/50">
         <span class="dashboard-empty-icon grid h-16 w-16 shrink-0 place-items-center rounded-full {% if current_level %}text-[#8b510d]{% else %}text-stone-500{% endif %} text-3xl"><i class="fa-solid {% if current_level %}fa-medal{% else %}fa-lock{% endif %}"></i></span>
         <div>
-          <p class="font-bold text-brand-olive">{% if current_level %}{{ current_level_display }}{% elif level_count == 0 %}Belum ada achievement{% else %}Menuju {{ next_level_display }}{% endif %}</p>
+          <p class="font-bold text-brand-olive">{% if current_level %}{{ current_level_display }}{% elif level_count == 0 %}Belum ada pencapaian{% else %}Menuju {{ next_level_display }}{% endif %}</p>
           <p class="mt-1 text-sm text-stone-600">Mengikuti {{ level_count }} event</p>
           <p class="mt-1 text-xs text-stone-500">{% if progress_remaining %}{{ progress_remaining }} event lagi untuk {{ next_level_display }}{% else %}Semua level tercapai{% endif %}</p>
           {% if progress_remaining %}<div class="mt-2 flex items-center gap-3"><div class="h-2 flex-1 overflow-hidden rounded-full bg-amber-100"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:{{ progress_percent }}%"></div></div><span class="whitespace-nowrap text-[11px] font-bold text-brand-orangeDeep">{{ level_count }}/{{ next_threshold }}</span></div>{% endif %}
@@ -675,7 +675,7 @@ div:has(> img[src*="logo"]) {
   <section class="p-5 sm:p-8">
     <div class="flex items-start justify-between gap-4">
       <div>
-        <h2 id="achievementModalTitle" class="font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl"><i class="fa-solid fa-trophy mr-2"></i>Achievement Saya</h2>
+        <h2 id="achievementModalTitle" class="font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl"><i class="fa-solid fa-trophy mr-2"></i>Pencapaian Saya</h2>
         <p class="mt-2 text-sm text-stone-600">Ikuti lebih banyak event untuk naik ke level berikutnya dan raih penghargaan.</p>
       </div>
       <button type="button" onclick="this.closest('dialog').close()" aria-label="Tutup" class="p-2 text-2xl text-brand-orangeDeep"><i class="fa-solid fa-xmark"></i></button>
@@ -720,29 +720,29 @@ div:has(> img[src*="logo"]) {
 
     <div class="mt-7 grid gap-4 md:grid-cols-[1.6fr_1fr]">
       <div class="achievement-progress-panel rounded-[20px] p-5">
-        <h3 class="font-extrabold text-brand-olive">Progress {% if progress_remaining %}ke {{ next_level.name }}{% else %}achievement{% endif %}</h3>
+        <h3 class="font-extrabold text-brand-olive">Progres {% if progress_remaining %}ke {{ next_level.name }}{% else %}pencapaian{% endif %}</h3>
         <div class="mt-4 flex items-center gap-4">
           <div class="achievement-track h-3 flex-1 overflow-hidden rounded-full">
             <div class="achievement-track-fill h-full rounded-full transition-all" style="width:{{ progress_percent }}%"></div>
           </div>
           <strong class="whitespace-nowrap text-brand-olive">{{ level_count }} / {{ next_threshold }}</strong>
         </div>
-        <p class="mt-3 text-sm text-stone-600">{% if progress_remaining %}Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.{% else %}Selamat, Anda telah mencapai seluruh level achievement!{% endif %}</p>
+        <p class="mt-3 text-sm text-stone-600">{% if progress_remaining %}Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.{% else %}Selamat, Anda telah mencapai seluruh level pencapaian!{% endif %}</p>
       </div>
 
       <div class="achievement-benefit-panel flex gap-4 rounded-[20px] p-5">
         <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-amber-100 text-2xl text-amber-700"><i class="fa-solid fa-gift"></i></span>
         <div>
-          <h3 class="font-extrabold text-brand-olive">Benefit Level {{ next_level.name }}</h3>
+          <h3 class="font-extrabold text-brand-olive">Manfaat Level {{ next_level.name }}</h3>
           <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-stone-600">
             {% if next_level.name == "Emas" %}
-            <li>Badge Emas di profil</li><li>Sertifikat spesial</li><li>Akses ke event eksklusif</li>
+            <li>Lencana Emas di profil</li><li>Sertifikat spesial</li><li>Akses ke event eksklusif</li>
             {% elif next_level.name == "Platinum" %}
-            <li>Badge Platinum di profil</li><li>Akses prioritas ke event eksklusif</li>
+            <li>Lencana Platinum di profil</li><li>Akses prioritas ke event eksklusif</li>
             {% elif next_level.name == "Legenda" %}
-            <li>Badge Legenda di profil</li><li>Semua benefit level sebelumnya</li><li>Reward spesial</li>
+            <li>Lencana Legenda di profil</li><li>Semua manfaat level sebelumnya</li><li>Hadiah spesial</li>
             {% else %}
-            <li>Badge Perak di profil</li>
+            <li>Lencana Perak di profil</li>
             {% endif %}
           </ul>
         </div>
@@ -815,12 +815,14 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     card.querySelector('.my-event-card__img').style.backgroundImage = `url("${bannerUrl}")`;
-    card.querySelector('.my-chip--cream').textContent = ev.categoryName || ev.category || 'Event';
+    const category = ev.categoryName || ev.category || 'Event';
+    const categoryLabels = { conference: 'Konferensi', workshop: 'Lokakarya' };
+    card.querySelector('.my-chip--cream').textContent = categoryLabels[String(category).toLocaleLowerCase('id')] || category;
     const timeEl = card.querySelector('time');
     timeEl.dateTime = ev.date || '';
     timeEl.textContent = ev.dateLabel || ev.date || '-';
     card.querySelector('.my-event-card__link').textContent = ev.title;
-    card.querySelector('.js-ev-venue').textContent = ev.venue || 'Online';
+    card.querySelector('.js-ev-venue').textContent = ev.venue || 'Daring';
     card.querySelector('.js-ev-org').textContent = ev.organizer || 'Panitia SIMEVENT';
 
     grid.prepend(card);
@@ -863,7 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. Cari berdasarkan posisi: elemen tepat di atas tombol menu "Dashboard" pada sidebar
   const dashLink = Array.from(document.querySelectorAll('a')).find(
-    (a) => !a.closest('#participantDashboard') && (a.textContent || '').trim() === 'Dashboard'
+    (a) => !a.closest('#participantDashboard') && (a.textContent || '').trim() === 'Beranda'
   );
   if (dashLink) {
     const sidebar = dashLink.closest('aside, nav') || dashLink.parentElement?.parentElement;
@@ -914,7 +916,7 @@ document.querySelectorAll('.participant-feedback-form').forEach((form) => {
    const result = await response.json();
    if (!response.ok) {
     const messages = Object.values(result.errors || {}).flat();
-    throw new Error(messages.join(' ') || result.error || 'Feedback gagal dikirim.');
+    throw new Error(messages.join(' ') || result.error || 'Umpan balik gagal dikirim.');
    }
    window.location.reload();
   } catch (error) {

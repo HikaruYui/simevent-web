@@ -1,6 +1,6 @@
 {% extends 'peserta/base_peserta.html' %}
 {% load static %}
-{% block ptitle %}Achievement{% endblock %}
+{% block ptitle %}Pencapaian{% endblock %}
 {% block peserta %}
 <style>
 #achievementProgress {
@@ -79,7 +79,7 @@
 <div class="mx-auto w-full min-w-0 max-w-[1440px] space-y-5">
  <header class="participant-page-intro participant-hero relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7">
   <div class="relative z-10 max-w-2xl lg:max-w-[52%] xl:max-w-[56%]">
-   <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Achievement</h1>
+   <h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Pencapaian</h1>
    <p class="mt-2">Selesaikan event pilihan dan raih semua penghargaan!</p>
   </div>
   {% include 'peserta/_pesut_hero_art.html' %}
@@ -87,7 +87,7 @@
  <section id="achievementProgress" class="rounded-[28px] p-5 sm:p-8">
   <div class="relative z-10">
    <div>
-    <h2 class="font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl"><i class="fa-solid fa-trophy mr-2"></i>Achievement Saya</h2>
+    <h2 class="font-display text-2xl font-extrabold text-brand-orangeDeep sm:text-3xl"><i class="fa-solid fa-trophy mr-2"></i>Pencapaian Saya</h2>
     <p class="mt-2 text-sm text-stone-600">Ikuti lebih banyak event untuk naik ke level berikutnya dan raih penghargaan.</p>
    </div>
 
@@ -130,22 +130,22 @@
 
    <div class="mt-7 grid gap-4 md:grid-cols-[1.6fr_1fr]">
     <div class="achievement-progress-panel rounded-[20px] p-5">
-     <h3 class="font-extrabold text-brand-olive">Progress {% if progress_remaining %}ke {{ next_level.name }}{% else %}achievement{% endif %}</h3>
+     <h3 class="font-extrabold text-brand-olive">Progres {% if progress_remaining %}ke {{ next_level.name }}{% else %}pencapaian{% endif %}</h3>
      <div class="mt-4 flex items-center gap-4">
       <div class="achievement-track h-3 flex-1 overflow-hidden rounded-full"><div class="achievement-track-fill h-full rounded-full transition-all" style="width:{{ progress_percent }}%"></div></div>
       <strong class="whitespace-nowrap text-brand-olive">{{ level_count }} / {{ next_threshold }}</strong>
      </div>
-     <p class="mt-3 text-sm text-stone-600">{% if progress_remaining %}Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.{% else %}Selamat, Anda telah mencapai seluruh level achievement!{% endif %}</p>
+     <p class="mt-3 text-sm text-stone-600">{% if progress_remaining %}Ikuti {{ progress_remaining }} event lagi untuk mencapai level {{ next_level.name }}.{% else %}Selamat, Anda telah mencapai seluruh level pencapaian!{% endif %}</p>
     </div>
     <div class="achievement-benefit-panel flex gap-4 rounded-[20px] p-5">
      <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-amber-100 text-2xl text-amber-700"><i class="fa-solid fa-gift"></i></span>
      <div>
-      <h3 class="font-extrabold text-brand-olive">Benefit Level {{ next_level.name }}</h3>
+      <h3 class="font-extrabold text-brand-olive">Manfaat Level {{ next_level.name }}</h3>
       <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-stone-600">
-       {% if next_level.name == "Emas" %}<li>Badge Emas di profil</li><li>Sertifikat spesial</li><li>Akses ke event eksklusif</li>
-       {% elif next_level.name == "Platinum" %}<li>Badge Platinum di profil</li><li>Akses prioritas ke event eksklusif</li>
-       {% elif next_level.name == "Legenda" %}<li>Badge Legenda di profil</li><li>Semua benefit level sebelumnya</li><li>Reward spesial</li>
-       {% else %}<li>Badge Perak di profil</li>{% endif %}
+       {% if next_level.name == "Emas" %}<li>Lencana Emas di profil</li><li>Sertifikat spesial</li><li>Akses ke event eksklusif</li>
+       {% elif next_level.name == "Platinum" %}<li>Lencana Platinum di profil</li><li>Akses prioritas ke event eksklusif</li>
+       {% elif next_level.name == "Legenda" %}<li>Lencana Legenda di profil</li><li>Semua manfaat level sebelumnya</li><li>Hadiah spesial</li>
+       {% else %}<li>Lencana Perak di profil</li>{% endif %}
       </ul>
      </div>
     </div>
@@ -156,9 +156,9 @@
   <div id="achievementListLayout" class="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(270px,0.8fr)]">
   <section>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-    <h2 class="font-display text-2xl font-extrabold text-brand-ink">Daftar Achievement</h2>
+    <h2 class="font-display text-2xl font-extrabold text-brand-ink">Daftar Pencapaian</h2>
     <div class="flex flex-wrap items-center gap-2">
-     <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter achievement">
+     <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter pencapaian">
       <button type="button" class="achievement-filter rounded-full border border-[#3F422E] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="all" aria-pressed="true">Semua</button>
       <button type="button" class="achievement-filter rounded-full border border-[#3F422E] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="pending" aria-pressed="false">Belum Selesai</button>
       <button type="button" class="achievement-filter rounded-full border border-[#3F422E] bg-white px-3 py-2 text-xs font-bold text-[#3F422E] transition-colors sm:text-sm" data-filter="done" aria-pressed="false">Selesai</button>
@@ -183,23 +183,23 @@
      <span class="rounded-lg px-3 py-2 text-center text-sm font-bold {% if achievement.is_completed %}bg-emerald-100 text-emerald-800{% else %}bg-stone-100 text-stone-500{% endif %}">{% if achievement.is_completed %}Selesai{% else %}Belum Selesai{% endif %}</span>
     </article>
     {% endfor %}
-      <div id="achievementEmpty" class="participant-card hidden min-h-[240px] rounded-2xl p-6 text-center text-base font-semibold text-stone-500" role="status" aria-live="polite">Tidak ada achievement pada filter ini.</div>
+      <div id="achievementEmpty" class="participant-card hidden min-h-[240px] rounded-2xl p-6 text-center text-base font-semibold text-stone-500" role="status" aria-live="polite">Tidak ada pencapaian pada filter ini.</div>
    </div>
   </section>
     <aside class="grid content-start gap-4 lg:grid-rows-[auto_minmax(min-content,1fr)]">
    <section class="participant-card rounded-2xl p-4">
-    <h2 class="font-display text-center text-lg font-extrabold">Total Achievement</h2>
+    <h2 class="font-display text-center text-lg font-extrabold">Total Pencapaian</h2>
     <div class="mt-2 grid justify-items-center">
      <div class="achievement-donut grid h-32 w-32 shrink-0 place-items-center rounded-full text-center" style="--achievement-progress: {{ completed_percentage }}%"><span class="grid h-20 w-20 place-items-center rounded-full bg-[#fff9f2] font-display text-2xl font-extrabold">{{ completed_count }}/{{ levels|length }}<small class="block text-xs font-semibold">level</small></span></div>
      <p class="mt-2 text-center text-xs text-stone-500">{{ level_count }} event terdaftar</p>
     </div>
    </section>
      <section class="participant-card flex flex-col justify-center rounded-2xl p-5">
-    <h2 class="text-center font-display text-lg font-extrabold"><i class="fa-solid fa-gift mr-2 text-brand-orangeDeep"></i>Reward Saya</h2>
+    <h2 class="text-center font-display text-lg font-extrabold"><i class="fa-solid fa-gift mr-2 text-brand-orangeDeep"></i>Hadiah Saya</h2>
     <div class="mt-3 flex items-baseline justify-center gap-2"><span class="font-display text-3xl font-extrabold">{{ completed_percentage }}%</span><span class="text-sm text-stone-600">level tercapai</span></div>
-    <p class="mt-2 text-center text-sm text-stone-600">Badge akan mengikuti level yang sudah Anda capai.</p>
+    <p class="mt-2 text-center text-sm text-stone-600">Lencana mengikuti level yang sudah Anda capai.</p>
     {% for level in levels %}{% if level.completed %}
-    <div class="mt-3 flex items-center gap-3 rounded-xl bg-amber-50 p-3"><i class="fa-solid fa-medal text-xl text-amber-600"></i><span class="text-sm font-bold">Badge {{ level.name }}</span><i class="fa-solid fa-check ml-auto text-emerald-600"></i></div>
+    <div class="mt-3 flex items-center gap-3 rounded-xl bg-amber-50 p-3"><i class="fa-solid fa-medal text-xl text-amber-600"></i><span class="text-sm font-bold">Lencana {{ level.name }}</span><i class="fa-solid fa-check ml-auto text-emerald-600"></i></div>
     {% endif %}{% endfor %}
    </section>
   </aside>
@@ -228,10 +228,10 @@ achievementFilters.forEach((button) => button.addEventListener('click', () => {
   if (show) visible += 1;
  });
   achievementEmpty.textContent = filter === 'done'
-   ? 'Belum ada achievement yang selesai.'
+   ? 'Belum ada pencapaian yang selesai.'
    : filter === 'pending'
-    ? 'Semua achievement sudah selesai.'
-    : 'Belum ada achievement.';
+    ? 'Semua pencapaian sudah selesai.'
+    : 'Belum ada pencapaian.';
  achievementEmpty.classList.toggle('hidden', visible !== 0);
  achievementFilters.forEach((item) => {
   const active = item === button;

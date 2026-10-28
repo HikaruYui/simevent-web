@@ -56,11 +56,11 @@
    <div class="space-y-3">
     {% if registration.certificate_ready %}
     <span class="inline-flex rounded-full bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800"><i class="fa-solid fa-circle-check mr-2"></i>Sertifikat Diterbitkan</span>
-    <p class="text-xs text-stone-600">Diterbitkan setelah kehadiran dan feedback terverifikasi.</p>
+    <p class="text-xs text-stone-600">Diterbitkan setelah kehadiran dan umpan balik terverifikasi.</p>
     <div class="flex gap-2"><a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline flex-1 rounded-lg px-3 py-2 text-center text-sm font-bold"><i class="fa-solid fa-eye mr-1"></i>Lihat Sertifikat</a><a href="{% url 'registrations:certificate-pdf' registration.pk %}" class="participant-button flex-1 rounded-lg px-3 py-2 text-center text-sm font-bold"><i class="fa-solid fa-download mr-1"></i>Unduh PDF</a></div>
     {% elif registration.event.status == "COMPLETED" %}
     <span class="inline-flex rounded-full bg-rose-100 px-3 py-2 text-sm font-bold text-rose-700"><i class="fa-solid fa-clock mr-2"></i>Sertifikat Belum Tersedia</span>
-    <p class="text-xs text-stone-500">{% if not registration.attendance or registration.attendance.status != "PRESENT" %}Sertifikat hanya untuk peserta yang hadir.{% elif not registration.feedback %}Kirim feedback untuk membuka sertifikat.{% elif not has_certificate_template %}Template sertifikat belum diatur oleh panitia.{% else %}Selesaikan persyaratan event untuk menerbitkan sertifikat.{% endif %}</p>
+    <p class="text-xs text-stone-500">{% if not registration.attendance or registration.attendance.status != "PRESENT" %}Sertifikat hanya untuk peserta yang hadir.{% elif not registration.feedback %}Kirim umpan balik untuk membuka sertifikat.{% elif not has_certificate_template %}Desain sertifikat belum diatur oleh panitia.{% else %}Selesaikan persyaratan event untuk menerbitkan sertifikat.{% endif %}</p>
     {% else %}
     <span class="inline-flex rounded-full bg-amber-100 px-3 py-2 text-sm font-bold text-amber-900"><i class="fa-solid fa-hourglass-half mr-2"></i>Menunggu Event Selesai</span>
     <p class="text-xs text-stone-500">Sertifikat akan tersedia setelah event selesai dan kehadiran terverifikasi.</p>
