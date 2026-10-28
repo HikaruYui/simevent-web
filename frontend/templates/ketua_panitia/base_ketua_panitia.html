@@ -363,6 +363,23 @@
 <script src="{% static 'js/simevent_shared.js' %}"></script>
 <script src="{% static 'js/ketua_panitia_data.js' %}"></script>
 
+{% if eo_peserta_data != None %}
+  {{ eo_peserta_data|json_script:"backend-participants" }}
+
+  <script>
+    (function () {
+      const element = document.getElementById("backend-participants");
+      const data = JSON.parse(element.textContent);
+
+      // Khusus halaman Peserta, ganti data demo
+      // dengan data asli dari PostgreSQL.
+      window.EO.events = data.events;
+      window.EO.participants = data.participants;
+    })();
+  </script>
+{% endif %}
+
+
 {% if backend_event_rows != None %}
   {{ backend_event_rows|json_script:"backend-event-rows" }}
 

@@ -16,7 +16,6 @@ from collections import Counter, defaultdict
 from datetime import timedelta
 from decimal import Decimal
 from apps.registrations.models import Ticket
-from apps.events.models import EventTransition, EventStatus
 from apps.registrations.models import (
     Attendance,
     CertificateTemplate,
@@ -1052,7 +1051,87 @@ def eo_dashboard(request):
         {"eo_dashboard_data": dashboard_data},
     )
 
-eo_peserta = _ketua_panitia("peserta")
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def eo_peserta(request):
+    _require_role(request, "ORGANIZER")
+
+    # Ambil event asli yang boleh dikelola akun ini.
+    events = list(
+        Event.objects.managed_by(request.user)
+        .order_by("-created_at", "-pk")
+    )
+
+    event_ids = [event.pk for event in events]
+
+    # Format mengikuti kebutuhan JS Ketua Panitia.
+    event_rows = [
+        {
+            "id": event.pk,
+            "nama": event.title,
+        }
+        for event in events
+    ]
+
+    # Ambil registrasi aktif yang sudah valid pembayarannya.
+    # Event gratis tidak membutuhkan pembayaran.
+    registrations = (
+        Registration.objects.filter(
+            event_id__in=event_ids,
+            status=RegistrationStatus.REGISTERED,
+        )
+        .filter(
+            Q(
+                event__price=0,
+                payment__isnull=True,
+            )
+            | Q(
+                payment__status=Payment.Status.APPROVED,
+            )
+        )
+        .select_related(
+            "event",
+            "participant",
+            "attendance",
+        )
+        .order_by("-registered_at", "-pk")
+    )
+
+    participant_rows = []
+
+    for index, registration in enumerate(registrations, start=1):
+        user = registration.participant
+        attendance = getattr(registration, "attendance", None)
+
+        is_present = (
+            attendance is not None
+            and attendance.status == Attendance.Status.PRESENT
+        )
+
+        participant_rows.append({
+            "no": index,
+            "eventId": registration.event_id,
+            "nama": user.get_full_name().strip() or user.email,
+            "email": user.email,
+            "terdaftar": timezone.localtime(
+                registration.registered_at
+            ).strftime("%Y-%m-%d"),
+            "status": "hadir" if is_present else "terdaftar",
+        })
+
+    return render(
+        request,
+        "ketua_panitia/peserta.html",
+        {
+            "eo_peserta_data": {
+                "events": event_rows,
+                "participants": participant_rows,
+            }
+        },
+    )
+
 eo_pendapatan = _ketua_panitia("pendapatan")
 eo_log = _ketua_panitia("log_aktivitas")
 eo_support = _ketua_panitia("support")
@@ -1158,11 +1237,6 @@ def eo_event(request):
         },
     )
 
-eo_peserta = _ketua_panitia("peserta")
-eo_pendapatan = _ketua_panitia("pendapatan")
-eo_log = _ketua_panitia("log_aktivitas")
-eo_support = _ketua_panitia("support")
-eo_pengaturan = _ketua_panitia("pengaturan")
 
 @never_cache
 @require_GET
