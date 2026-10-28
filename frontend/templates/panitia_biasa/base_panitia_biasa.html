@@ -2,274 +2,315 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Dashboard Panitia | SIMEVENT{% endblock %}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Dashboard Panitia | SIMEVENT{% endblock %}</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://unpkg.com/html5-qrcode" defer></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode" defer></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#8B510D',goldLight:'#F3D9A6',olive:'#3F422E',ink:'#17365D',muted:'#70664F'}}}}}
+</script>
+<style>
+:root {
+  --participant-shell: #f3e2b4;
+  --participant-card: rgba(255, 250, 240, 0.78);
+  --participant-border: rgba(174, 120, 49, 0.28);
+  --participant-accent: #c88d3a;
+  --participant-accent-deep: #8b510d;
+  --participant-olive: #3d422d;
+  --participant-ink: #1b3a5c;
+  --participant-muted: #6e6258;
+  /* Variabel warna panitia (dipakai oleh partial: _peserta, _scanner, _dokumentasi) */
+  --olive: #3F422E;
+  --olive-ink: #2A2C1E;
+  --taupe: #9F886F;
+  --orange: #D78B30;
+  --cream: #F5E6C5;
+  --cream-card: #FFFDF8;
+  --cream-soft: #F9F0DC;
+  --brown: #81531D;
+  --brown-deep: #8B510D;
+  --navy: #2A2C1E;
+  --muted: #6F6556;
+  --line: #E6DCC3;
+  --green: #17603F;
+  --green-bg: #E6F4ED;
+  --danger: #B42318;
+  --danger-bg: #FEE4E2;
+  --font-head: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+}
+html { font-size: 16px; }
+html, body {
+  min-height: 100%;
+  margin: 0;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--olive);
+  background: #f3e2b4 !important;
+  background-image: none !important;
+}
+body.participant-page { min-height: 100vh; overflow-x: hidden; }
 
-  <style>
-    :root {
-      --olive: #3F422E;
-      --olive-ink: #2A2C1E;
-      --taupe: #9F886F;
-      --orange: #D78B30;
-      --cream: #F5E6C5;
-      --cream-card: #FFFDF8;
-      --cream-soft: #F9F0DC;
-      --brown: #81531D;
-      --brown-deep: #8B510D;
-      --navy: #2A2C1E;
-      --muted: #6F6556;
-      --line: #E6DCC3;
-      --green: #17603F;
-      --green-bg: #E6F4ED;
-      --danger: #B42318;
-      --danger-bg: #FEE4E2;
+.participant-shell {
+  color: var(--participant-ink);
+  background: #f3e2b4 !important;
+  background-image: none !important;
+}
+.participant-main { position: relative; isolation: isolate; }
 
-      --font-head: "Plus Jakarta Sans", system-ui, sans-serif;
-      --font-body: "Manrope", system-ui, sans-serif;
+/* ===== SIDEBAR (sama dengan peserta) ===== */
+.participant-sidebar { position: relative; overflow: visible; background: transparent; }
+.participant-sidebar > * { position: relative; z-index: 1; }
+.participant-sidebar-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.76);
+  border-radius: 20px;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(135,96,42,.07), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.participant-sidebar-panel > * { position: relative; z-index: 1; }
+.participant-sidebar-brand {
+  position: relative;
+  display: block;
+  width: 180px;
+  height: 40px;
+  --participant-logo-mask: none;
+}
+.participant-sidebar-brand::before {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, #3f422e 0, #9f7546 28px, #d78b30 56px, #f5e6c5 84px, #d78b30 112px, #3f422e 140px);
+  background-size: 140px 100%;
+  background-position: 0 50%;
+  content: "";
+  animation: participant-logo-gradient 5.5s linear infinite;
+  mask-image: var(--participant-logo-mask);
+  mask-mode: alpha;
+  mask-repeat: no-repeat;
+  mask-position: left center;
+  mask-size: contain;
+  -webkit-mask-image: var(--participant-logo-mask);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  -webkit-mask-size: contain;
+  pointer-events: none;
+}
+@keyframes participant-logo-gradient {
+  from { background-position: 0 50%; }
+  to { background-position: 140px 50%; }
+}
 
-      --logo-url: url("{% static 'img/logo.svg' %}");
-      --logo-wave-dur: 6.7s;
-      --logo-wave: linear-gradient(
-        90deg, #3F422E 0%, #81531D 16%, #D78B30 30%,
-        #E9B76A 42%, #D78B30 54%, #81531D 70%, #3F422E 100%
-      );
-    }
+.participant-card {
+  background: #fff !important;
+  border: 1px solid var(--participant-border);
+  box-shadow: 0 6px 10px rgba(142, 100, 47, 0.04);
+}
+.participant-button {
+  background: #d9b777;
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(164,117,45,.12);
+}
+.participant-button:hover { background: #d0ad68; }
+.participant-user-chip { background: rgba(255,250,239,.26); }
 
-    *, *::before, *::after { box-sizing: border-box; }
+.participant-sidebar nav a,
+.participant-sidebar nav button {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: normal;
+  font-size: 1.05rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.participant-sidebar nav { width: 100%; min-width: 0; }
+.participant-sidebar nav .nav-btn:not(.participant-button) {
+  border: 1px solid transparent;
+  color: #17365d;
+}
+.participant-sidebar nav .nav-btn:not(.participant-button):hover { background: rgba(255,250,239,.28); }
+.participant-sidebar nav .nav-btn.participant-button {
+  border: 1px solid #e6d2a9;
+  background: #f3e2b4;
+  color: #3F422E;
+  box-shadow: none;
+}
+.participant-sidebar nav .nav-btn i {
+  width: 1.4rem;
+  text-align: center;
+  color: #8b510d;
+}
+.participant-sidebar nav .nav-btn.participant-button i { color: #3F422E; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: var(--font-body);
-      color: var(--olive);
-      background: #F5E6C5;
-    }
+.profile-box { border: 1px solid transparent; transition: background .2s; cursor: pointer; text-align: left; }
+.profile-box:hover { background: rgba(255,233,188,.4); }
+.profile-box.participant-button { background: #f3e2b4; color: #3F422E; border-color: #e6d2a9; box-shadow: none; }
 
-    /* ============ LAYOUT: 2 kolom (sidebar | konten), tidak bisa saling menimpa ============ */
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 270px minmax(0, 1fr);
-      gap: 22px;
-      align-items: start;
-      padding: 16px 24px 16px 6px;
-    }
+@media (min-width: 768px) {
+  .participant-sidebar {
+    position: fixed !important;
+    top: 16px !important;
+    bottom: 16px !important;
+    left: 6px !important;
+    display: block !important;
+    width: 304px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    z-index: 50 !important;
+  }
+  .participant-sidebar-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 40px 14px 22px !important;
+  }
+  .participant-main {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 326px !important;
+    padding: 16px 24px 18px !important;
+  }
+  .participant-sidebar nav { gap: 8px !important; overflow: visible !important; }
+  .participant-sidebar nav .nav-btn { min-height: 64px; font-size: 1.125rem; }
+  .participant-sidebar-panel > div:last-child { margin-top: auto !important; flex: 0 0 auto !important; padding: 14px 4px 0 !important; }
+}
 
-    /* ============ SIDEBAR ============ */
-    .sidebar-menu {
-      position: sticky;
-      top: 16px;
-      height: calc(100vh - 32px);
-      display: flex;
-      flex-direction: column;
-      padding: 40px 14px 22px;
-      overflow-x: hidden;
-      overflow-y: auto;
-      border: 1px solid #EADFC6;
-      border-radius: 20px;
-      background: #FFFDF8;
-      box-shadow: 0 4px 16px rgba(63, 66, 46, .06);
-    }
-    .sidebar-menu::-webkit-scrollbar { width: 0; }
-    .sidebar-menu > * { position: relative; z-index: 1; }
+/* ===== TOGGLE PESERTA <-> PANITIA ===== */
+.rs { margin: 0 0 14px; }
+.rs__track {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+  width: 100%; height: 44px; padding: 0; cursor: pointer;
+  border: 1px solid #e6d2a9; border-radius: 999px;
+  background: #f3e2b4;
+  box-shadow: inset 0 1px 3px rgba(63,66,46,.10);
+  transition: background .35s ease, border-color .35s ease;
+}
+.rs[data-mode="panitia"] .rs__track { background: #3F422E; border-color: #3F422E; }
+.rs__track:focus-visible { outline: 3px solid rgba(215,139,48,.55); outline-offset: 2px; }
+.rs__label {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font: 800 12.5px/1 'Manrope', sans-serif; color: #3F422E; transition: color .3s;
+}
+.rs[data-mode="panitia"] .rs__label { color: #F5E6C5; }
+.rs__knob {
+  position: absolute; z-index: 2; top: 3px; left: 3px;
+  width: calc(50% - 3px); height: calc(100% - 6px);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 999px; color: #fff; font: 800 12.5px/1 'Manrope', sans-serif;
+  background: #3F422E;
+  box-shadow: 0 2px 6px rgba(63,66,46,.30);
+  transition: transform .35s cubic-bezier(.5,1.4,.5,1), background .35s ease, color .35s ease;
+}
+.rs[data-mode="panitia"] .rs__knob {
+  transform: translateX(100%);
+  background: #f3e2b4;
+  color: #3F422E;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
 
-    /* Logo */
-    .brand { margin-bottom: 10px; padding: 0 1px; }
-    .navbar__brand { position: relative; display: block; width: 220px; }
-    .navbar__brand img { width: 100%; height: auto; display: block; }
-    @supports ((-webkit-mask-image: url("x")) or (mask-image: url("x"))) {
-      .navbar__brand::after {
-        content: ""; position: absolute; inset: 0; pointer-events: none;
-        -webkit-mask: var(--logo-url) left center / 100% 100% no-repeat;
-                mask: var(--logo-url) left center / 100% 100% no-repeat;
-        background-image: var(--logo-wave); background-size: 200% 100%;
-        background-repeat: repeat-x;
-        animation: logo-wave var(--logo-wave-dur) linear infinite;
-      }
-    }
-    @keyframes logo-wave { from { background-position: 200% 0; } to { background-position: 0% 0; } }
+/* ===== STAT CARDS ===== */
+.stat-card {
+  display: flex; align-items: center; gap: 18px;
+  padding: 22px 24px; border-radius: 20px;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.stat-card:hover { transform: translateY(-2px); border-color: rgba(194,143,62,.42); box-shadow: 0 10px 20px rgba(142,100,47,.09); }
+.stat-card__icon {
+  flex-shrink: 0; width: 62px; height: 62px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 26px; color: #fff;
+  background: var(--grad); box-shadow: 0 6px 14px var(--shadow);
+}
+.stat-card__body { flex: 1; min-width: 0; }
+.stat-card__label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--participant-muted); }
+.stat-card__val { margin: 2px 0 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 40px; font-weight: 800; line-height: 1.1; color: var(--olive); }
+.stat-card__hint { font-size: 12px; color: var(--participant-muted); margin-top: 2px; }
+.stat-card__bar { height: 6px; border-radius: 99px; background: rgba(63,66,46,.1); margin-top: 10px; overflow: hidden; }
+.stat-card__bar span { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--grad); transition: width .5s ease; }
+.stat-card--total   { --grad: linear-gradient(135deg, #8A8D6B, #3F422E); --shadow: rgba(63,66,46,.35); }
+.stat-card--absent  { --grad: linear-gradient(135deg, #F0B35A, #D78B30); --shadow: rgba(215,139,48,.4); }
+.stat-card--present { --grad: linear-gradient(135deg, #3FA077, #17603F); --shadow: rgba(23,96,63,.35); }
 
-    /* Menu */
-    .nav-list { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; }
-    .nav-btn {
-      display: flex; align-items: center; gap: 12px;
-      width: 100%; min-height: 64px; padding: 14px;
-      border: 1px solid transparent; border-radius: 12px;
-      background: transparent; color: var(--navy);
-      font: 700 18px/1.2 var(--font-body); text-align: left; cursor: pointer;
-      transition: all .2s ease;
-    }
-    .nav-btn i { width: 28px; flex-shrink: 0; text-align: center; font-size: 24px; color: var(--olive); }
-    .nav-btn:hover { background: rgba(245, 230, 197, .55); }
-    .nav-btn.is-active {
-      background: #F5E6C5;
-      color: var(--olive-ink);
-      border-color: transparent;
-      box-shadow: none;
-    }
-    .nav-btn.is-active i { color: var(--olive); }
+/* ===== KOMPONEN UMUM UNTUK HALAMAN ANAK ===== */
+.panel-card { background: #fff; border: 1px solid var(--participant-border); border-radius: 20px; box-shadow: 0 6px 10px rgba(142,100,47,.04); overflow: hidden; }
+.btn-primary, .btn-olive {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; border: 0;
+  background: #3F422E; color: #F5E6C5; font: 700 15px/1 'Manrope', sans-serif; cursor: pointer; transition: background .2s;
+}
+.btn-primary:hover, .btn-olive:hover { background: #2A2C1E; }
 
-    /* Toggle Peserta <-> Panitia (di bawah menu) */
-    .rs { margin: 18px 0 4px; padding: 0 2px; }
-    .rs__track {
-      position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center;
-      width: 100%; height: 50px; padding: 0; cursor: pointer;
-      border: 1px solid #E6DCC3; border-radius: 999px;
-      background: #F5E6C5;
-      box-shadow: inset 0 1px 3px rgba(63, 66, 46, .10);
-      transition: background .35s ease, border-color .35s ease;
-    }
-    .rs[data-mode="panitia"] .rs__track {
-      background: #3F422E;
-      border-color: #3F422E;
-    }
-    .rs__track:focus-visible { outline: 3px solid rgba(215, 139, 48, .55); outline-offset: 2px; }
-    .rs__label {
-      position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-      font: 800 12.5px/1 'Manrope', sans-serif; color: var(--olive); transition: color .3s;
-    }
-    .rs[data-mode="panitia"] .rs__label { color: #F5E6C5; }
-    .rs__knob {
-      position: absolute; z-index: 2; top: 4px; left: 4px;
-      width: calc(50% - 4px); height: calc(100% - 8px);
-      display: flex; align-items: center; justify-content: center; gap: 7px;
-      border-radius: 999px; color: #fff; font: 800 12.5px/1 'Manrope', sans-serif;
-      background: #3F422E;
-      box-shadow: 0 3px 8px rgba(63, 66, 46, .30);
-      transition: transform .35s cubic-bezier(.5, 1.4, .5, 1), background .35s ease, color .35s ease;
-    }
-    .rs[data-mode="panitia"] .rs__knob {
-      transform: translateX(100%);
-      background: #F5E6C5;
-      color: #3F422E;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
-    }
+.tab-pane { display: none; }
+.tab-pane.is-active { display: block; animation: fade-in .3s ease; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Bawah: profil + logout */
-    .sidebar-bottom { margin-top: auto; padding: 14px 4px 0; }
-    .profile-box {
-      display: flex; align-items: center; gap: 12px;
-      width: 100%; min-width: 0; padding: 16px 8px 8px;
-      border: 0; border-top: 1px solid #E6DCC3; border-radius: 12px;
-      background: transparent; cursor: pointer; text-align: left;
-      font-family: var(--font-body); transition: background .2s;
-    }
-    .profile-box:hover { background: rgba(245, 230, 197, .45); }
-    .profile-box.is-active { background: #F5E6C5; }
-    .profile-box__avatar {
-      width: 64px; height: 64px; flex-shrink: 0; overflow: hidden;
-      border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #fff;
-      display: grid; place-items: center; color: var(--olive); font-size: 24px;
-    }
-    .profile-box__avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
-    .profile-box__info { display: block; min-width: 0; line-height: 1.25; }
-    .profile-box .profile-box__name { display: block; font: 700 16px/1.25 var(--font-body); color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .profile-box .profile-box__role { display: block; font: 500 11.5px/1.25 var(--font-body); color: var(--muted); }
 
-    .btn-logout {
-      display: flex; align-items: center; gap: 12px;
-      width: 100%; min-height: 56px; margin-top: 8px; padding: 0 12px;
-      border-radius: 12px; color: var(--olive-ink);
-      font-size: 18px; font-weight: 700; text-decoration: none;
-      transition: background .2s;
-    }
-    .btn-logout i { width: 28px; text-align: center; font-size: 24px; }
-    .btn-logout:hover { background: rgba(245, 230, 197, .6); }
+/* ===== HERO / INTRO HALAMAN (dipakai halaman Profil Saya) ===== */
+.participant-page-intro {
+  box-sizing: border-box; display: flex; align-items: center;
+  min-height: 152px; padding-block: 12px;
+  border: 1px solid rgba(255,255,255,.8);
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(142,100,47,.06), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.participant-hero {
+  isolation: isolate; border: 1px solid rgba(255,255,255,.9);
+  background: #fff !important;
+  box-shadow: 0 12px 26px rgba(142,100,47,.08), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.participant-hero-illustration { z-index: 1; }
+.participant-hero-illustration img { filter: drop-shadow(0 8px 10px rgba(132,91,37,.12)); }
+.participant-hero-sparkle { transform-box: fill-box; transform-origin: center; animation: participant-mascot-sparkle 2.8s ease-in-out infinite; }
+@keyframes participant-mascot-sparkle { 0%,100% { opacity:.55; transform:scale(.86); } 50% { opacity:1; transform:scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .participant-hero-sparkle { animation: none; } }
+@media (max-width: 639px) { .participant-hero-illustration img { opacity: .72; } }
+@media (min-width: 640px)  { .participant-page-intro { min-height: 174px; } }
+@media (min-width: 1024px) { .participant-page-intro { min-height: 184px; } }
+#participantAccount .account-card,
+#participantAccount .account-section-title { background: #fff !important; background-image: none !important; }
+.participant-outline { border: 1px solid rgba(156,111,45,.54); color: #8b510d; background: rgba(255,255,255,.48); }
+.participant-outline:hover { background: rgba(255,233,188,.4); }
 
-    /* ============ KONTEN ============ */
-    .content-area { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding: 0 0 40px; }
-
-    .event-chip {
-      display: inline-flex; align-items: center; gap: 10px; align-self: flex-start;
-      padding: 8px 16px; border-radius: 999px;
-      background: #FFFDF8; border: 1px solid var(--line);
-      font-size: 13px; color: var(--muted);
-    }
-    .event-chip i { color: var(--olive); }
-    .event-chip strong { color: var(--olive); font-weight: 800; }
-
-    /* ============ STAT CARDS ============ */
-    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .stat-card {
-      position: relative; overflow: hidden;
-      display: flex; align-items: center; gap: 18px;
-      padding: 22px 24px; border-radius: 22px;
-      background: #FFFDF8;
-      border: 1px solid var(--line);
-      box-shadow: 0 4px 16px rgba(63,66,46,.07);
-      transition: transform .2s, box-shadow .2s;
-    }
-
-    .stat-card__icon {
-      position: relative; z-index: 1; flex-shrink: 0;
-      width: 62px; height: 62px; border-radius: 50%;
-      display: grid; place-items: center; font-size: 26px; color: #fff;
-      background: var(--grad); box-shadow: 0 6px 14px var(--shadow);
-    }
-    .stat-card__body { position: relative; z-index: 1; flex: 1; min-width: 0; }
-    .stat-card__label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-    .stat-card__val { margin: 2px 0 0; font-family: var(--font-head); font-size: 40px; font-weight: 800; line-height: 1.1; color: var(--olive); }
-    .stat-card__hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .stat-card__bar { height: 6px; border-radius: 99px; background: rgba(63,66,46,.1); margin-top: 10px; overflow: hidden; }
-    .stat-card__bar span { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--grad); transition: width .5s ease; }
-
-    .stat-card--total   { --grad: linear-gradient(135deg, #8A8D6B, var(--olive)); --shadow: rgba(63,66,46,.35); --tint: rgba(63,66,46,.08); }
-    .stat-card--absent  { --grad: linear-gradient(135deg, #F0B35A, var(--orange)); --shadow: rgba(215,139,48,.4); --tint: rgba(215,139,48,.14); }
-    .stat-card--present { --grad: linear-gradient(135deg, #3FA077, var(--green)); --shadow: rgba(23,96,63,.35); --tint: rgba(23,96,63,.10); }
-
-    .panel-card { background: #FFFDF8; border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 8px 24px rgba(129,83,29,.08); overflow: hidden; }
-    .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; border: 0; background: var(--olive); color: var(--cream); font: 700 15px/1 var(--font-body); cursor: pointer; transition: background .2s; }
-    .btn-primary:hover { background: var(--olive-ink); }
-    .btn-olive { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; border: 0; background: var(--olive); color: var(--cream); font: 700 15px/1 var(--font-body); cursor: pointer; transition: background .2s; }
-    .btn-olive:hover { background: var(--olive-ink); }
-
-    .tab-pane { display: none; }
-    .tab-pane.is-active { display: block; animation: fade-in .3s ease; }
-    @keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* ============ RESPONSIF ============ */
-    @media (max-width: 1100px) {
-      .stat-cards { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 860px) {
-      .dashboard-layout { grid-template-columns: 1fr; padding: 12px; }
-      .sidebar-menu { position: relative; top: 0; height: auto; overflow: hidden; padding: 24px 14px 16px; }
-      .nav-btn { min-height: 56px; font-size: 16px; }
-      .sidebar-bottom { margin-top: 18px; }
-    }
-  </style>
+@media (max-width: 767px) {
+  .rs__track { height: 44px; }
+}
+</style>
 </head>
-<body>
+{% url 'panitia_akun' as akun_url %}{% url 'panitia_biasa' as home_url %}
+<body class="participant-page" data-home-url="{{ home_url }}">
 
-  <main class="dashboard-layout">
+<div class="participant-shell min-h-screen md:flex">
 
-    <!-- SIDEBAR KIRI -->
-    <aside class="sidebar-menu">
+  <!-- SIDEBAR -->
+  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px]">
+    <div class="participant-sidebar-panel">
 
-      <div class="brand">
-        <a href="{% url 'landing' %}" class="navbar__brand" title="Kembali ke Beranda">
-          <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
-        </a>
-      </div>
+      <a href="{% url 'landing' %}" aria-label="SIMEVENT, kembali ke beranda" title="Kembali ke Beranda"
+         class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4"
+         style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')"></a>
+
       <!-- TOGGLE PESERTA <-> PANITIA -->
       <div class="rs" data-mode="panitia">
-        <button type="button"
-                class="rs__track"
-                role="switch"
-                aria-checked="true"
+        <button type="button" class="rs__track" role="switch" aria-checked="true"
                 aria-label="Ganti mode antara Peserta dan Panitia"
                 data-url="{% url 'peserta_dashboard' %}">
           <span class="rs__label"><i class="fa-solid fa-user"></i> Peserta</span>
           <span class="rs__label"><i class="fa-solid fa-user-shield"></i> Panitia</span>
-          <span class="rs__knob">
-            <i class="fa-solid fa-user-shield"></i> Panitia
-          </span>
+          <span class="rs__knob"><i class="fa-solid fa-user-shield"></i> Panitia</span>
         </button>
       </div>
       <script>
@@ -289,46 +330,52 @@
       </script>
 
       <!-- MENU -->
-      <nav class="nav-list" aria-label="Menu Navigasi Panitia">
-        <button type="button" class="nav-btn" data-target="tab-scanner" onclick="switchPanitiaTab('tab-scanner')">
-          <i class="fa-solid fa-qrcode"></i> Scan &amp; Input Absen
+      <nav class="grid grid-cols-2 gap-2 md:flex md:flex-col" aria-label="Menu Navigasi Panitia">
+        <button type="button" class="nav-btn rounded-xl px-3.5 py-3.5 text-lg font-bold text-slate-700" data-target="tab-scanner" onclick="switchPanitiaTab('tab-scanner')">
+          <i class="fa-solid fa-qrcode mr-3 w-7 text-2xl"></i>Scan &amp; Input Absen
         </button>
-        <button type="button" class="nav-btn" data-target="tab-peserta" onclick="switchPanitiaTab('tab-peserta')">
-          <i class="fa-solid fa-users-line"></i> Daftar Peserta
+        <button type="button" class="nav-btn rounded-xl px-3.5 py-3.5 text-lg font-bold text-slate-700" data-target="tab-peserta" onclick="switchPanitiaTab('tab-peserta')">
+          <i class="fa-solid fa-users-line mr-3 w-7 text-2xl"></i>Daftar Peserta
         </button>
-        <button type="button" class="nav-btn is-active" data-target="tab-dokumentasi" onclick="switchPanitiaTab('tab-dokumentasi')">
-          <i class="fa-regular fa-folder-open"></i> Dokumentasi Event
+        <button type="button" class="nav-btn {% if request.path != akun_url %}participant-button{% endif %} rounded-xl px-3.5 py-3.5 text-lg font-bold" data-target="tab-dokumentasi" onclick="switchPanitiaTab('tab-dokumentasi')">
+          <i class="fa-regular fa-folder-open mr-3 w-7 text-2xl"></i>Dokumentasi Event
         </button>
+        <a href="{{ akun_url }}" class="nav-btn {% if request.path == akun_url %}participant-button{% else %}text-slate-700{% endif %} rounded-xl px-3.5 py-3.5 text-lg font-bold">
+          <i class="fa-solid fa-gear mr-3 w-7 text-2xl"></i>Profil Saya
+        </a>
       </nav>
 
-
-
       <!-- BAWAH: PROFIL + LOGOUT -->
-      <div class="sidebar-bottom">
-        <button type="button" class="profile-box" id="profileBox" data-target="tab-profil" onclick="switchPanitiaTab('tab-profil')" title="Profil &amp; Event">
-          <span class="profile-box__avatar" id="headerAvatar">
-            <img src="{% static 'img/achievement-hero.png' %}" alt="">
+      <div>
+        <div class="participant-user-chip mt-4 flex w-full min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
+          <img src="{% static 'img/achievement-hero.png' %}" alt="" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
+          <span class="min-w-0">
+            <span class="block truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
+            <span class="block text-xs font-semibold text-brand-muted">Panitia Biasa</span>
           </span>
-          <span class="profile-box__info">
-            <span class="profile-box__name" id="headerUserName">{{ request.user.get_full_name|default:"Denny Mulia" }}</span>
-            <span class="profile-box__role">Panitia Biasa</span>
-          </span>
-        </button>
-        <a href="{% url 'logout_page' %}" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> keluar</a>
+        </div>
+        <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}
+          <button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100">
+            <i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout
+          </button>
+        </form>
       </div>
-    </aside>
+    </div>
+  </aside>
 
-    <!-- AREA KONTEN KANAN -->
-    <div class="content-area">
+  <!-- AREA KONTEN -->
+  <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+    <div class="mx-auto flex w-full max-w-[1080px] flex-col gap-5">
 
-      <div class="event-chip">
-        <i class="fa-regular fa-calendar-check"></i>
-        Event: <strong id="sidebarEventName">Seminar Teknologi Nusantara</strong>
+      {% block panitia_header %}
+      <div class="participant-card inline-flex items-center gap-2.5 self-start rounded-full px-4 py-2 text-sm text-brand-muted">
+        <i class="fa-regular fa-calendar-check text-brand-olive"></i>
+        Event: <strong id="sidebarEventName" class="font-extrabold text-brand-olive">Seminar Teknologi Nusantara</strong>
       </div>
 
       <!-- STATISTIK -->
-      <div class="stat-cards">
-        <div class="stat-card stat-card--total">
+      <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div class="stat-card stat-card--total participant-card">
           <div class="stat-card__icon"><i class="fa-solid fa-users"></i></div>
           <div class="stat-card__body">
             <div class="stat-card__label">Total Peserta</div>
@@ -337,7 +384,7 @@
           </div>
         </div>
 
-        <div class="stat-card stat-card--absent">
+        <div class="stat-card stat-card--absent participant-card">
           <div class="stat-card__icon"><i class="fa-regular fa-clock"></i></div>
           <div class="stat-card__body">
             <div class="stat-card__label">Belum Hadir</div>
@@ -346,7 +393,7 @@
           </div>
         </div>
 
-        <div class="stat-card stat-card--present">
+        <div class="stat-card stat-card--present participant-card">
           <div class="stat-card__icon"><i class="fa-solid fa-check"></i></div>
           <div class="stat-card__body">
             <div class="stat-card__label">Sudah Hadir</div>
@@ -357,6 +404,8 @@
         </div>
       </div>
 
+      {% endblock %}
+
       <!-- KONTEN TAB -->
       <div>
         {% block content %}{% endblock %}
@@ -364,40 +413,48 @@
 
     </div>
   </main>
+</div>
 
-  <script>
-    // GANTI MENU TAB
-    function switchPanitiaTab(tabId) {
-      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('is-active'));
-      document.querySelectorAll('.nav-btn, .profile-box').forEach(btn => {
-        btn.classList.toggle('is-active', btn.dataset.target === tabId);
-      });
-      const target = document.getElementById(tabId);
-      if (target) target.classList.add('is-active');
+<script>
+  // GANTI MENU TAB (jika sedang di halaman Profil Saya, kembali ke beranda panitia)
+  function switchPanitiaTab(tabId) {
+    const target = document.getElementById(tabId);
+    if (!target) {
+      const home = document.body.dataset.homeUrl;
+      if (home) window.location.href = home + '#' + tabId;
+      return;
     }
-
-    // PERSENTASE KEHADIRAN (otomatis mengikuti angka statistik)
-    function updateAttendanceBar() {
-      const total = parseInt(document.getElementById('statTotal').textContent, 10) || 0;
-      const present = parseInt(document.getElementById('statPresent').textContent, 10) || 0;
-      const pct = total > 0 ? Math.round((present / total) * 100) : 0;
-      document.getElementById('statPercent').textContent = pct + '%';
-      document.getElementById('statBar').style.width = pct + '%';
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedEventName = localStorage.getItem('simevent_panitia_event_name');
-      if (savedEventName) {
-        const sidebarTitle = document.getElementById('sidebarEventName');
-        if (sidebarTitle) sidebarTitle.textContent = savedEventName;
-      }
-
-      ['statTotal', 'statPresent'].forEach(id => {
-        new MutationObserver(updateAttendanceBar)
-          .observe(document.getElementById(id), { childList: true, characterData: true, subtree: true });
-      });
-      updateAttendanceBar();
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('is-active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.toggle('participant-button', btn.dataset.target === tabId);
+      btn.classList.toggle('is-active', btn.dataset.target === tabId);
     });
-  </script>
+    target.classList.add('is-active');
+  }
+
+  // PERSENTASE KEHADIRAN
+  function updateAttendanceBar() {
+    const totalEl = document.getElementById('statTotal');
+    const presentEl = document.getElementById('statPresent');
+    if (!totalEl || !presentEl) return;
+    const total = parseInt(totalEl.textContent, 10) || 0;
+    const present = parseInt(presentEl.textContent, 10) || 0;
+    const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+    document.getElementById('statPercent').textContent = pct + '%';
+    document.getElementById('statBar').style.width = pct + '%';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ['statTotal', 'statPresent'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) new MutationObserver(updateAttendanceBar)
+        .observe(el, { childList: true, characterData: true, subtree: true });
+    });
+    updateAttendanceBar();
+
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById(hash)) switchPanitiaTab(hash);
+  });
+</script>
 </body>
 </html>

@@ -25,6 +25,7 @@ def masuk(request):
     return render(request, "masuk.html", ctx)
 
 
+
 # ---------------------------------------------------------------- Jelajah
 STATUS_CHOICES = [
     ("berlangsung", "Sedang Berlangsung"),
