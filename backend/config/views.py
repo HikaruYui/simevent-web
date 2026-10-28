@@ -2,6 +2,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -295,6 +296,27 @@ def peserta_akun(request, template_name="peserta/akun.html", success_url="pesert
         "completed_profile_fields": completed_profile_fields,
         "profile_progress": round(completed_profile_fields * 100 / len(profile_values)),
     })
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def peserta_hapus_foto(request):
+    if request.user.role != "PARTICIPANT":
+        return JsonResponse({"error": "Aksi ini hanya tersedia untuk peserta."}, status=403)
+
+    photo = request.user.profile_photo
+    if not photo:
+        return JsonResponse({"deleted": False})
+
+    photo_name = photo.name
+    photo_storage = photo.storage
+    request.user.profile_photo = ""
+    request.user.save(update_fields=["profile_photo"])
+    if photo_name:
+        photo_storage.delete(photo_name)
+
+    return JsonResponse({"deleted": True})
 
 
 @never_cache
