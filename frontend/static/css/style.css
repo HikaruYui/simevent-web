@@ -540,11 +540,13 @@ button, input { font: inherit; }
 }
 .form .btn:hover { background: var(--krem); color: var(--oranye); }
 .forgot { align-self: flex-end; margin-top: 0.5rem; margin-bottom: 1rem; font-size: 1rem; color: #fff; text-decoration: underline; }
- 
+
+/* style.css memberi body zoom 0.8 di layar >1100px, jadi 100vh hanya jadi 80% tinggi layar -> dikompensasi */
 @media (min-width: 1101px) {
-  body {
-    zoom: 0.8;
-  }
+  .ps-side { height: calc(100vh / 0.8); height: calc(100dvh / 0.8); }
+}
+@media (max-width: 960px) {
+  .participant-shell { padding-left: 0 !important; }
   /* body di-zoom 0.8, jadi 100vh hanya menjadi 80% layar -> dikompensasi supaya halaman login memenuhi layar */
   .auth {
     min-height: calc(100vh / 0.8);

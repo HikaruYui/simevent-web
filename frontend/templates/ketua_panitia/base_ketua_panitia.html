@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Dashboard{% endblock %} · SIMEVENT Ketua Panitia</title>
+  <title>{% block title %}Beranda{% endblock %} · SIMEVENT Ketua Panitia</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -72,12 +72,12 @@
       <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" height="36">
     </a>
     <nav class="eo-nav" aria-label="Menu ketua panitia">
-      <a href="{% url 'eo_dashboard' %}" {% block nav_dashboard %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Dashboard</a>
+      <a href="{% url 'eo_dashboard' %}" {% block nav_dashboard %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Beranda</a>
       <a href="{% url 'eo_event' %}" {% block nav_event %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Kelola Event</a>
       <a href="{% url 'eo_peserta' %}" {% block nav_peserta %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg>Peserta</a>
       <a href="{% url 'eo_pendapatan' %}" {% block nav_pendapatan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-wallet"/></svg>Pendapatan</a>
       <a href="{% url 'eo_log' %}" {% block nav_log %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-log"/></svg>Log Aktivitas</a>
-      <a href="{% url 'eo_support' %}" {% block nav_support %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg>Support</a>
+      <a href="{% url 'eo_support' %}" {% block nav_support %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg>Bantuan</a>
       <a href="{% url 'eo_pengaturan' %}" {% block nav_pengaturan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
     </nav>
     <div class="eo-user">

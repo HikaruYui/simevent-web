@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{% block ptitle %}Dashboard Peserta{% endblock %} | SIMEVENT{% endblock %}
+{% block title %}{% block ptitle %}Beranda Peserta{% endblock %} | SIMEVENT{% endblock %}
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block notifications %}{% endblock %}
@@ -301,33 +301,87 @@ html, body, .participant-page .page, .participant-page .page > main {
 .participant-page .text-slate-600 {
   color:#63684f !important;
 }
+/* ===== Sidebar peserta: disamakan dengan sidebar panel admin / ketua panitia ===== */
+:root { --ps-side-w: clamp(210px, 14.5vw, 244px); }
+.participant-shell { display: block !important; padding-left: var(--ps-side-w) !important; min-height: 100vh; }
+.participant-main { margin-left: 0 !important; width: auto !important; max-width: none !important; }
+.ps-side {
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+  width: var(--ps-side-w); height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 26px 20px 20px; background: #fff; overflow-y: auto;
+  --ps-olive: #3F422E; --ps-muted: #6F6556; --ps-cream: #F5E6C5; --ps-cream-card: #F9F0DC; --ps-taupe: #9F886F; --ps-orange-deep: #B46F1C;
+}
+.ps-side .ps-side__brand { display: inline-flex !important; align-items: center; width: auto !important; max-width: 100% !important; padding: 0 8px !important; }
+.ps-side .ps-side__brand img { width: min(100%, 156px) !important; max-width: none !important; height: auto !important; margin: 0 !important; transform: none !important; display: block !important; }
+.ps-nav { display: grid; gap: 4px; margin-top: clamp(20px, 3vh, 36px); margin-bottom: auto; align-content: start; flex: 0 0 auto; }
+.ps-nav a {
+  display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 12px;
+  font: 600 14px/1 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ps-muted); text-decoration: none;
+}
+.ps-side .icon { width: 18px; height: 18px; flex: none; }
+.ps-nav a:hover { background: var(--ps-cream-card); color: var(--ps-olive); }
+.ps-nav a.is-active { background: var(--ps-cream); color: var(--ps-olive); font-weight: 700; }
+.ps-user { margin-top: 24px; padding: 14px 8px 0; border-top: 1px solid var(--ps-taupe); }
+.ps-user__id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ps-user__txt { min-width: 0; }
+.ps-user__ava { flex: none; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--ps-olive); }
+.ps-user b { display: block; font: 700 15px/1.3 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ps-olive); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps-user p { margin-top: 2px; font: 600 12px/1.35 "Manrope", system-ui, sans-serif; color: var(--ps-muted); }
+.ps-user button {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 4px 0; border: 0; background: none; cursor: pointer;
+  font: 700 13.5px/1 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ps-olive);
+}
+.ps-user button .icon { width: 17px; height: 17px; }
+.ps-user button:hover { color: var(--ps-orange-deep); text-decoration: underline; }
+/* Matikan zoom 0.8 dari style.css agar ukuran & jarak sama persis dengan panel ketua panitia */
+body.participant-page { zoom: 1; }
+/* Jarak konten ke sidebar & tepi atas, sama dengan .eo-main di ketua panitia */
+.participant-main { padding: 36px 40px 56px !important; }
+@media (max-width: 960px) {
+  .participant-main { padding: 24px 20px 48px !important; }
+}
+@media (max-width: 960px) {
+  .participant-shell { padding-left: 0 !important; }
+  .ps-side { position: static; width: auto; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; overflow: visible; }
+  .ps-nav { display: flex; flex-wrap: wrap; order: 3; width: 100%; margin: 0; }
+  .ps-user { display: flex; align-items: center; gap: 12px; margin: 0 0 0 auto; padding: 0; border: 0; }
+  .ps-user b, .ps-user p { display: none; }
+  .ps-user button { margin: 0; }
+}
 </style>
 {% endblock %}
 {% block content %}
-<div class="participant-shell min-h-screen md:flex">
-  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px]">
-    <div class="participant-sidebar-panel">
-      <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4" style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')">
-      </a>
-      <nav class="grid grid-cols-2 gap-2 md:flex md:flex-col" aria-label="Menu peserta">
-        {% url 'peserta_dashboard' as dashboard_url %}
-        {% url 'peserta_daftar_event' as daftar_event_url %}
-        {% url 'peserta_sertifikat' as sertifikat_url %}
-        {% url 'peserta_achievement' as achievement_url %}
-        {% url 'peserta_akun' as akun_url %}
-        <a href="{{ dashboard_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-house mr-3 w-7 text-2xl"></i>Dashboard</a>
-        <a href="{{ daftar_event_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-calendar-plus mr-3 w-7 text-2xl"></i>Daftar Event</a>
-        <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
-        <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
-        <a href="{{ akun_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == akun_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-gear mr-3 w-7 text-2xl"></i>Profil Saya</a>
-      </nav>
-      <div>
-        <div class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
-          <img data-profile-photo-preview data-saved-src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% endif %}" data-default-src="{% static 'img/achievement-hero.png' %}" src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}" alt="Foto profil {{ request.user.get_full_name|default:request.user.email }}" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
-          <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
-        </div>
-        <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
+{% include "ketua_panitia/_icons.html" %}
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 01-8 0V4zM8 6H5v1a3 3 0 003 3M16 6h3v1a3 3 0 01-3 3M12 13v4M8.5 20h7M10 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cert" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM15 3v4h4M9.5 12h6M9.5 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs></svg>
+<div class="participant-shell min-h-screen">
+  <aside class="ps-side">
+    <a class="ps-side__brand" href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke beranda peserta">
+      <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT" height="36">
+    </a>
+    <nav class="ps-nav" aria-label="Menu peserta">
+      {% url 'peserta_dashboard' as dashboard_url %}
+      {% url 'peserta_daftar_event' as daftar_event_url %}
+      {% url 'peserta_sertifikat' as sertifikat_url %}
+      {% url 'peserta_achievement' as achievement_url %}
+      {% url 'peserta_akun' as akun_url %}
+      <a href="{{ dashboard_url }}"{% if request.path == dashboard_url %} class="is-active" aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Beranda</a>
+      <a href="{{ daftar_event_url }}"{% if request.path == daftar_event_url %} class="is-active" aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Daftar Event</a>
+      <a href="{{ sertifikat_url }}"{% if request.path == sertifikat_url %} class="is-active" aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-cert"/></svg>Sertifikat Saya</a>
+      <a href="{{ achievement_url }}"{% if request.path == achievement_url %} class="is-active" aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-trophy"/></svg>Pencapaian</a>
+      <a href="{{ akun_url }}"{% if request.path == akun_url %} class="is-active" aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>Profil Saya</a>
+    </nav>
+    <div class="ps-user">
+      <div class="ps-user__id">
+        <img class="ps-user__ava" src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}" alt="Foto profil {{ request.user.get_full_name|default:request.user.email }}">
+        <div class="ps-user__txt"><b>{{ request.user.get_full_name|default:request.user.email }}</b><p>Peserta</p></div>
       </div>
+      <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
+        <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
+      </form>
     </div>
   </aside>
   <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
