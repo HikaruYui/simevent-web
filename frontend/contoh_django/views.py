@@ -3,6 +3,7 @@ from datetime import date
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect, render
 
+from apps.events.seeds import load_demo_catalog
 
 def beranda(request):
     return render(request, "index.html", {
@@ -42,20 +43,10 @@ KATEGORI = {
     "konferensi": "Konferensi",
 }
 
-# Data contoh. Ganti dengan Event.objects.all() dari model kamu.
+# Contoh terpisah dari URL aplikasi aktif; sumber data tetap katalog seed.
 CONTOH_EVENTS = [
-    {"pk": 1, "judul": "Webinar Karier di Era AI", "kategori_slug": "webinar",
-     "tanggal": date(2026, 10, 11), "status": "berlangsung", "lokasi": "Live via Zoom",
-     "penyelenggara": "Contoh Penyelenggara A", "harga": 0},
-    {"pk": 2, "judul": "Sosialisasi Beasiswa", "kategori_slug": "sosialisasi",
-     "tanggal": date(2026, 10, 15), "status": "akan_datang", "lokasi": "Aula Rektorat",
-     "penyelenggara": "Contoh Penyelenggara B", "harga": 0},
-    {"pk": 3, "judul": "Seminar Nasional Teknologi", "kategori_slug": "seminar",
-     "tanggal": date(2026, 10, 18), "status": "berlangsung", "lokasi": "Auditorium Unmul, Samarinda",
-     "penyelenggara": "Contoh Penyelenggara C", "harga": 50000},
-    {"pk": 4, "judul": "Workshop Desain UI", "kategori_slug": "workshop",
-     "tanggal": date(2026, 10, 25), "status": "akan_datang", "lokasi": "Lab Komputer",
-     "penyelenggara": "Contoh Penyelenggara D", "harga": 75000},
+    {**event, "tanggal": date.fromisoformat(event["tanggal"])}
+    for event in load_demo_catalog()["ui"]["example_events"]
 ]
 for _e in CONTOH_EVENTS:
     _e["kategori"] = KATEGORI[_e["kategori_slug"]]

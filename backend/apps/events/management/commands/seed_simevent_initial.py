@@ -23,174 +23,17 @@ from apps.registrations.models import (
     Attendance,
 )
 from apps.partnerships.models import OrganizerProposal, ProposalStatus
-from .seed_dummy_events import KATEGORI, VENUES, HARGA
-
-
-
-# SIMEVENT INITIAL DATA
-# Berdasarkan dummy frontend dan seed event sebelumnya.
-# Khusus DEVELOPMENT, bukan production.
-
-
-DEMO_ACCOUNTS = [
-    ("admin@simevent.id", "Super Administrator", "ADMIN"),
-    ("budi@simevent.id", "Budi Santoso", "ORGANIZER"),
-    ("ahmad.fauzi@simevent.id", "Prof. Ahmad Fauzi", "ORGANIZER"),
-    ("rina.kartika@simevent.id", "Dr. Rina Kartika", "ORGANIZER"),
-    ("sari.wulandari@simevent.id", "Sari Wulandari", "ORGANIZER"),
-    ("andi.pratama@simevent.id", "Andi Pratama", "ORGANIZER"),
-    ("lina.marlina@simevent.id", "Dr. Lina Marlina", "ORGANIZER"),
-    ("biro.kemahasiswaan@simevent.id", "Biro Kemahasiswaan", "ORGANIZER"),
-    ("seni.rupa@simevent.id", "Himpunan Seni Rupa", "ORGANIZER"),
-
-    ("siti.rahma@mail.com", "Siti Rahma", "COMMITTEE"),
-    ("rafi.hidayat@mail.com", "Rafi Hidayat", "COMMITTEE"),
-    ("nabila.a@mail.com", "Nabila Amalia", "COMMITTEE"),
-    ("dimas.p@mail.com", "Dimas Prakoso", "COMMITTEE"),
-
-    ("rizky.ananda@mail.com", "Rizky Ananda", "PARTICIPANT"),
-    ("salsa.putri@mail.com", "Salsa Putri", "PARTICIPANT"),
-    ("fajar.nugroho@mail.com", "Fajar Nugroho", "PARTICIPANT"),
-]
-
-
-
-# 12 EVENT KETUA PANITIA
-#
-# Format:
-# (judul, jenis, tanggal, lokasi, kuota, terjual,
-#  harga, status)
-
-
-EVENTS_KP = [
-    ("Konferensi Meja Bundar", "CONFERENCE", "2026-10-16",
-     "Aula Utama Universitas Mulawarman", 60, 42, 150000, "berlangsung"),
-
-    ("Workshop UI/UX Dasar", "WORKSHOP", "2026-10-16",
-     "Lab Komputer Gedung Informatika", 40, 35, 100000, "berlangsung"),
-
-    ("Seminar Kewirausahaan Digital", "SEMINAR", "2026-10-17",
-     "Ruang Seminar Fakultas Ekonomi", 50, 28, 75000, "berlangsung"),
-
-    ("Webinar Karier Teknologi", "WEBINAR", "2026-10-17",
-     "Online (Zoom)", 100, 31, 0, "berlangsung"),
-
-    ("Konferensi Pendidikan Kaltim", "CONFERENCE", "2026-10-24",
-     "Hotel Mercure Samarinda", 80, 24, 150000, "mendatang"),
-
-    ("Workshop Data Science", "WORKSHOP", "2026-10-28",
-     "Lab Komputer Gedung Informatika", 30, 20, 130000, "mendatang"),
-
-    ("Seminar Kesehatan Mental", "SEMINAR", "2026-11-02",
-     "Aula Fakultas Kedokteran", 70, 18, 50000, "mendatang"),
-
-    ("Webinar Literasi Keuangan", "WEBINAR", "2026-11-08",
-     "Online (Zoom)", 150, 22, 0, "mendatang"),
-
-    ("Kuliah Umum Kecerdasan Buatan", "SEMINAR", "2026-09-18",
-     "Auditorium Universitas Mulawarman", 120, 30, 100000, "selesai"),
-
-    ("Workshop Fotografi Jurnalistik", "WORKSHOP", "2026-09-27",
-     "Gedung Kesenian Samarinda", 25, 16, 150000, "selesai"),
-
-    ("Seminar Lingkungan Hidup", "SEMINAR", "2026-09-30",
-     "Ruang Rapat Dinas Lingkungan Hidup", 60, 19, 50000, "selesai"),
-
-    ("Konferensi Pariwisata Kaltim", "CONFERENCE", "2026-10-05",
-     "Hotel Aston Samarinda", 40, 15, 150000, "selesai"),
-]
-
-
-
-# 9 EVENT TAMBAHAN ADMIN
-#
-# Format:
-# (judul, jenis, tanggal, lokasi, kuota, terjual,
-#  harga, status, email organizer)
-
-
-EVENTS_ADMIN = [
-    ("Hackathon PTIK 2026", "CONFERENCE", "2026-11-12",
-     "Gedung Serbaguna Samarinda", 120, 0, 50000, "diajukan",
-     "ahmad.fauzi@simevent.id"),
-
-    ("Workshop AI & Machine Learning", "WORKSHOP", "2026-12-05",
-     "Lab Komputer FKTI", 60, 0, 85000, "diajukan",
-     "sari.wulandari@simevent.id"),
-
-    ("Sosialisasi Beasiswa dan Program Magang Nasional",
-     "SOSIALISASI", "2026-11-15",
-     "Aula Rektorat", 200, 0, 0, "diajukan",
-     "biro.kemahasiswaan@simevent.id"),
-
-    ("Seminar Nasional Teknologi Informasi 2026",
-     "SEMINAR", "2026-10-18",
-     "Auditorium Unmul, Samarinda", 300, 248, 0, "berlangsung",
-     "rina.kartika@simevent.id"),
-
-    ("Workshop UI/UX untuk Pemula", "WORKSHOP", "2026-10-24",
-     "Lab Komputer FKTI", 30, 22, 25000, "mendatang",
-     "andi.pratama@simevent.id"),
-
-    ("Konferensi Pendidikan & Riset Kalimantan",
-     "CONFERENCE", "2026-11-05",
-     "Aula Utama, Samarinda", 180, 96, 50000, "mendatang",
-     "ahmad.fauzi@simevent.id"),
-
-    ("Webinar Metodologi Penelitian Modern",
-     "WEBINAR", "2026-10-02",
-     "Online (Zoom)", 150, 131, 0, "selesai",
-     "lina.marlina@simevent.id"),
-
-    ("Workshop Analisis Data dengan Python",
-     "WORKSHOP", "2026-11-12",
-     "Online (Zoom)", 75, 41, 35000, "mendatang",
-     "sari.wulandari@simevent.id"),
-
-    ("Konser Amal Kampus", "CONFERENCE", "2026-11-21",
-     "Lapangan Utama", 500, 0, 30000, "ditolak",
-     "seni.rupa@simevent.id"),
-]
-
-
-PROPOSALS = [
-    (
-        "rizky.ananda@mail.com",
-        "Komunitas Pecinta Alam Mahakam",
-        "Kegiatan edukasi lingkungan dan susur sungai untuk pelajar, tiga kali setahun.",
-        "2026-10-19",
-    ),
-    (
-        "salsa.putri@mail.com",
-        "BEM Fakultas Hukum",
-        "Seminar hukum dan kuliah umum dengan praktisi, sekitar 200 peserta per acara.",
-        "2026-10-17",
-    ),
-    (
-        "fajar.nugroho@mail.com",
-        "Himpunan Mahasiswa Sistem Informasi",
-        "Workshop pemrograman dan pelatihan karier bagi mahasiswa tingkat awal.",
-        "2026-10-14",
-    ),
-]
-
-
-FIRST_NAMES = [
-    "Ahmad", "Aisyah", "Alya", "Andi", "Annisa", "Bagas",
-    "Bayu", "Cahya", "Citra", "Dewi", "Dimas", "Eka",
-    "Farhan", "Fitri", "Gita", "Hafiz", "Indah", "Irfan",
-    "Jihan", "Kevin", "Lestari", "Maulana", "Nabila",
-    "Nanda", "Putri", "Rafi", "Rizky", "Salsabila",
-    "Syarafina", "Tegar", "Vina", "Wahyu", "Yusuf", "Zahra",
-]
-
-LAST_NAMES = [
-    "Pratama", "Saputra", "Ramadhani", "Wijaya",
-    "Nugraha", "Amalia", "Hidayat", "Lestari",
-    "Kurniawan", "Permata", "Firmansyah", "Maharani",
-    "Setiawan", "Anggraini", "Syahputra", "Utami",
-    "Prasetyo", "Rahmawati", "Hakim", "Safitri",
-]
+from apps.events.seeds import (
+    DEMO_ACCOUNTS,
+    EVENTS_ADMIN,
+    EVENTS_KP,
+    HARGA,
+    KATEGORI,
+    PROPOSALS,
+    VENUES,
+    demo_participants,
+    load_demo_catalog,
+)
 
 
 STATUS_MAP = {
@@ -206,19 +49,6 @@ def tanggal(value, hour=9):
     dt = datetime.strptime(value, "%Y-%m-%d")
     dt = dt.replace(hour=hour)
     return timezone.make_aware(dt, timezone.get_current_timezone())
-
-
-class DemoRNG:
-    """Generator deterministik yang sama dengan dummy JS."""
-
-    def __init__(self, seed=2026):
-        self.state = seed
-
-    def random(self):
-        self.state = (
-            self.state * 1664525 + 1013904223
-        ) & 0xFFFFFFFF
-        return self.state / 4294967296
 
 
 class Command(BaseCommand):
@@ -516,16 +346,12 @@ class Command(BaseCommand):
                     defaults={
                         "actor": admin,
                         "from_status": EventStatus.SUBMITTED,
-                        "reason": (
-                            "Dokumen izin kegiatan dari kampus "
-                            "belum dilampirkan."
-                        ),
+                        "reason": load_demo_catalog()["ui"]["event_rejection_reason"],
                     },
                 )
 
         # 300 PESERTA & REGISTRASI KETUA PANITIA
 
-        rng = DemoRNG(2026)
         pool = []
         total_reg = 0
         total_ticket = 0
@@ -594,54 +420,17 @@ class Command(BaseCommand):
                 if made:
                     total_attendance += 1
 
-        for event, sold, status in kp_events:
-            ratio = (
-                0.60 if status == "berlangsung"
-                else 0.85 if status == "selesai"
-                else 0
+        for participant in demo_participants():
+            event, _, _ = kp_events[participant["eventId"] - 1]
+            user = ensure_user(participant["email"], participant["nama"])
+            pool.append(user)
+            add_registration(
+                user=user,
+                event=event,
+                registered_at=tanggal(participant["terdaftar"]),
+                hadir=participant["status"] == "hadir",
+                verifier=budi,
             )
-
-            present_count = int(sold * ratio + 0.5)
-
-            for i in range(sold):
-                first = FIRST_NAMES[
-                    int(rng.random() * len(FIRST_NAMES))
-                ]
-
-                last = LAST_NAMES[
-                    int(rng.random() * len(LAST_NAMES))
-                ]
-
-                number = int(rng.random() * 90) + 10
-                day = int(rng.random() * 20) + 1
-
-                email = (
-                    f"{first}.{last}{number}@mail.com"
-                ).lower()
-
-                user = ensure_user(
-                    email,
-                    f"{first} {last}",
-                    role="PARTICIPANT",
-                )
-
-                pool.append(user)
-
-                month = (
-                    9 if status == "selesai" else 10
-                )
-
-                registered_at = tanggal(
-                    f"2026-{month:02d}-{day:02d}"
-                )
-
-                add_registration(
-                    user=user,
-                    event=event,
-                    registered_at=registered_at,
-                    hadir=i < present_count,
-                    verifier=budi,
-                )
 
         # REGISTRASI EVENT ADMIN
 
