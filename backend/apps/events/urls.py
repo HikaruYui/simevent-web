@@ -9,6 +9,12 @@ urlpatterns = [
     path("manage/", views.ManagedEventListView.as_view(), name="manage-list"),
     path("manage/<int:pk>/", views.ManagedEventDetailView.as_view(), name="manage-detail"),
     path("manage/<int:pk>/delete/", views.EventDeleteView.as_view(), name="delete"),
+    path(
+        "manage/<int:pk>/proposal/",
+        views.download_event_proposal,
+        name="download-proposal",
+    ),
     path("manage/<int:pk>/<str:action>/", views.EventTransitionView.as_view(), name="transition"),
     path("<slug:slug>/", views.EventDetailView.as_view(), name="detail"),
+    
 ]

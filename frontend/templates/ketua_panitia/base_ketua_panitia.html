@@ -97,16 +97,99 @@
 {% block fab %}<button type="button" class="fab fab--fixed" data-open-new-event><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Event baru</button>{% endblock %}
 
 <dialog class="dlg" id="newEventDlg" aria-labelledby="neTitle">
-  <form method="dialog" novalidate>
+  <form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
     <div class="dlg__head"><h2 id="neTitle">Event baru</h2><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
     <div class="dlg__body">
-      <div class="field"><label for="neNama">Nama event</label><input id="neNama" name="nama" type="text" maxlength="80"></div>
-      <div class="field"><label for="neJenis">Jenis</label>
-        <select id="neJenis" name="jenis"><option>Seminar</option><option>Workshop</option><option>Konferensi</option><option>Webinar</option><option>Pelatihan</option></select></div>
-      <div class="field"><label for="neTanggal">Tanggal</label><input id="neTanggal" name="tanggal" type="date"></div>
-      <div class="field"><label for="neLokasi">Lokasi</label><input id="neLokasi" name="lokasi" type="text" maxlength="80"></div>
-      <div class="field"><label for="neKuota">Kuota</label><input id="neKuota" name="kuota" type="number" min="1" value="100"></div>
-      <div class="field"><label for="neHarga">Harga tiket (Rp, 0 = gratis)</label><input id="neHarga" name="harga" type="number" min="0" value="0"></div>
+            
+      <!-- NAMA EVENT -->
+      <div class="field">
+        <label for="neNama">Nama event</label>
+        <input id="neNama" name="nama" type="text" maxlength="80" required>
+      </div>
+
+      <!-- DESKRIPSI EVENT -->
+      <div class="field">
+        <label for="neDeskripsi">Deskripsi event</label>
+        <textarea
+          id="neDeskripsi"
+          name="deskripsi"
+          rows="4"
+          maxlength="20000"
+          placeholder="Jelaskan tujuan, materi, dan informasi event..."
+          required
+        ></textarea>
+      </div>
+
+      <!-- JENIS EVENT -->
+      <div class="field">
+        <label for="neJenis">Jenis event</label>
+        <select id="neJenis" name="jenis" required>
+          <option value="">Pilih jenis event</option>
+          {% for jenis in event_types %}
+            <option value="{{ jenis.pk }}">{{ jenis.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- TANGGAL EVENT -->
+      <div class="field">
+        <label for="neTanggal">Tanggal Event</label>
+        <input id="neTanggal" name="tanggal" type="date" required>
+      </div>
+
+      <!-- JAM MULAI -->
+      <div class="field">
+        <label for="neJamMulai">Jam mulai</label>
+        <input id="neJamMulai" name="jam_mulai" type="time" value="09:00" required>
+      </div>
+
+      <!-- JAM SELESAI -->
+      <div class="field">
+        <label for="neJamSelesai">Jam selesai</label>
+        <input id="neJamSelesai" name="jam_selesai" type="time" value="12:00" required>
+      </div>
+
+      <!-- MODE PELAKSANAAN -->
+      <div class="field">
+        <label for="neMode">Mode pelaksanaan</label>
+        <select id="neMode" name="mode" required>
+          <option value="OFFLINE">Offline</option>
+          <option value="ONLINE">Online</option>
+          <option value="HYBRID">Hybrid</option>
+        </select>
+      </div>
+
+      <!-- LINK MEETING -->
+      <div class="field" id="neMeetingField" hidden>
+        <label for="neMeetingUrl">Link meeting (HTTPS)</label>
+        <input
+          id="neMeetingUrl"
+          name="meeting_url"
+          type="url"
+          maxlength="1000"
+          placeholder="https://..."
+        >
+      </div>
+
+      <!-- LOKASI -->
+      <div class="field">
+        <label for="neLokasi">Lokasi</label>
+        <input id="neLokasi" name="lokasi" type="text" maxlength="80">
+      </div>
+
+      <!-- KUOTA -->
+      <div class="field">
+        <label for="neKuota">Kuota</label>
+        <input id="neKuota" name="kuota" type="number" min="1" value="100" required>
+      </div>
+
+      <!-- HARGA TIKET -->
+      <div class="field">
+        <label for="neHarga">Harga tiket (Rp, 0 = gratis)</label>
+        <input id="neHarga" name="harga" type="number" min="0" value="0" required>
+      </div>
+
       
       <!-- 1. FIELD UPLOAD GAMBAR COVER EVENT -->
       <div class="field">
@@ -278,6 +361,27 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="{% static 'js/simevent_shared.js' %}"></script>
 <script src="{% static 'js/ketua_panitia_data.js' %}"></script>
-<script src="{% static 'js/ketua_panitia.js' %}?v=4"></script>
+
+{% if backend_event_rows != None %}
+  {{ backend_event_rows|json_script:"backend-event-rows" }}
+
+  <script>
+    window.EO.events = JSON.parse(
+      document.getElementById("backend-event-rows").textContent
+    );
+
+    Object.assign(window.EO.statusEvent, {
+      draft: "Draft",
+      diajukan: "Menunggu Persetujuan",
+      disetujui: "Disetujui",
+      revisi: "Perlu Revisi",
+      ditolak: "Ditolak",
+      dibatalkan: "Dibatalkan"
+    });
+
+    window.EO_EVENTS_FROM_BACKEND = true;
+  </script>
+{% endif %}
+<script src="{% static 'js/ketua_panitia.js' %}?v=9"></script>
 </body>
 </html>

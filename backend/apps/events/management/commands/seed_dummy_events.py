@@ -2,12 +2,10 @@
 
 from datetime import timedelta
 from decimal import Decimal
-
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-
 from apps.events.models import DeliveryMode, Event, EventStatus, EventType
 
 KATEGORI = {

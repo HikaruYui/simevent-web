@@ -1,19 +1,15 @@
 # Fungsi file: Pengujian app achievements: policy reward, perhitungan diskon, eligibility, dan akses endpoint.
-
 from decimal import Decimal
-
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
-
 from apps.accounts.models import User
 from apps.events.models import Event, EventStatus, EventType
 from apps.events.tests.support import event_data, setup_users
 from apps.events.workflow import EventWorkflow
 from apps.registrations.attendance import AttendanceService
-
 from ..discounts import DiscountService, RewardPolicyService
 from ..models import Achievement, EventRewardPolicy, Reward, UserAchievement
 from ..services import AchievementService

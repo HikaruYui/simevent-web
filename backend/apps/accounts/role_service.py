@@ -90,18 +90,19 @@ def set_account_role(*, actor, user_id, role, reason):
         return user
 
 
+
 @transaction.atomic
 def promote_platform_admin(*, actor, user_id, reason):
     reason = (reason or "").strip()
 
     if not reason or len(reason) > 2000:
         raise ValidationError(
-            "Alasan wajib diisi (maksimal 2000 karakter)"
+            "Alasan wajib diisi (maksimal 2000 karakter)."
         )
 
     if not actor.is_authenticated:
-        raise PermissionDenied("Silakan login terlebih dahulu")
-    
+        raise PermissionDenied("Silakan login terlebih dahulu.")
+
     actor_db = User.objects.select_for_update().get(pk=actor.pk)
 
     if not actor_db.is_active or not actor_db.is_superuser:
@@ -111,11 +112,16 @@ def promote_platform_admin(*, actor, user_id, reason):
 
     user = User.objects.select_for_update().get(pk=user_id)
 
+    if user.pk == actor_db.pk or user.is_superuser:
+        raise PermissionDenied("Akun ini tidak dapat dipromosikan.")
+
     if not user.is_active:
         raise ValidationError("Aktifkan akun tujuan terlebih dahulu.")
 
     if user.has_perm("accounts.manage_platform"):
-        raise ValidationError("Pengguna sudah memiliki akses Admin Platform.")
+        raise ValidationError(
+            "Pengguna sudah memiliki akses Admin Platform."
+        )
 
     try:
         admin_group = Group.objects.get(name="Platform Admin")
@@ -124,37 +130,46 @@ def promote_platform_admin(*, actor, user_id, reason):
             "Grup Platform Admin belum tersedia. Jalankan bootstrap_roles."
         )
 
-    if not admin_group.permission.filter(
-        content_type__app_label = "accounts",
-        codename = "manage_platform",
+    if not admin_group.permissions.filter(
+        content_type__app_label="accounts",
+        codename="manage_platform",
     ).exists():
         raise ValidationError(
             "Permission Platform Admin belum dikonfigurasi."
         )
 
-    old_groups = Permission.objects.filter(
-        content_type__app_label = "accounts",
-        codename__in = [
+    # Hapus grup role panitia sebelumnya
+    old_groups = user.groups.filter(
+        name__in=["Organizer", "ketua-panitia"]
+    )
+    user.groups.remove(*old_groups)
+
+    # Hapus permission role panitia sebelumnya
+    old_permissions = Permission.objects.filter(
+        content_type__app_label="accounts",
+        codename__in=[
             "access_organizer",
             "access_head_organizer",
         ],
     )
     user.user_permissions.remove(*old_permissions)
+
+    # Tambahkan akses Admin Platform
     user.groups.add(admin_group)
     user.is_staff = True
     user.save(update_fields=["is_staff"])
 
-    # Bersihkan hasil pemeriksaan permission sebelum role berubah.
+    # Hapus cache permission
     for cache_name in (
         "_perm_cache",
         "_user_perm_cache",
         "_group_perm_cache",
     ):
-
         user.__dict__.pop(cache_name, None)
 
+    # Simpan riwayat perubahan
     AccountAccessChange.objects.create(
-        user=user, 
+        user=user,
         actor=actor_db,
         action=AccountAccessChange.Action.SET_ADMIN,
         reason=reason,

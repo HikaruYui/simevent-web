@@ -4,6 +4,12 @@
   var E = window.EO, S = window.SIM, st = S.state;
   var ADMIN = (document.querySelector(".eo-user b") || {}).textContent || "Super Administrator";
   var ORG = "Budi Santoso";   /* pemilik 12 event contoh Ketua Panitia */
+  // Data database hanya tersedia di halaman Kelola Event Admin.
+  var adminRowsElement = document.getElementById("admin-event-rows");
+
+  var backendAdminEvents = adminRowsElement
+    ? JSON.parse(adminRowsElement.textContent)
+    : null;
 
   /* ---------- Helper ---------- */
   function $(s, r) { return (r || document).querySelector(s); }
@@ -69,20 +75,178 @@
     o.pendapatan = o.terjual * o.harga;
   });
   function events() {
-    E.events.forEach(function (e) { e.organizer = ORG; e.pendapatan = e.terjual * e.harga; });
+    // Halaman Kelola Event menggunakan PostgreSQL.
+    if (backendAdminEvents !== null) {
+      return backendAdminEvents;
+    }
+
+    // Halaman Admin lain tetap menggunakan sumber
+    // sebelumnya sampai integrasinya dilakukan.
+    E.events.forEach(function (e) {
+      e.organizer = ORG;
+      e.pendapatan = e.terjual * e.harga;
+    });
+
     return E.events.concat(OTHERS);
   }
+
+  async function adminEventTransition(e, action, reason) {
+    if (!e) {
+      toast("Event tidak ditemukan.");
+      return false;
+    }
+
+    if (backendAdminEvents === null) {
+      toast("Data backend belum tersedia.");
+      return false;
+    }
+
+    var csrfInput = document.querySelector(
+      '#adminEventCsrf [name="csrfmiddlewaretoken"]'
+    );
+
+    if (!csrfInput) {
+      toast("Token keamanan tidak ditemukan. Refresh halaman.");
+      return false;
+    }
+
+    var body = new URLSearchParams();
+    body.set("reason", reason || "");
+
+    try {
+      var response = await fetch(
+        "/events/manage/" +
+          encodeURIComponent(e.id) +
+          "/" +
+          action +
+          "/",
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "X-CSRFToken": csrfInput.value,
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json"
+          },
+          body: body.toString()
+        }
+      );
+
+      var data = await response.json().catch(function () {
+        return null;
+      });
+
+      if (!response.ok) {
+        if (response.redirected) {
+          throw new Error(
+            "Sesi login berakhir. Silakan login kembali."
+          );
+        }
+
+        if (data && data.errors) {
+          var errors = Object.entries(data.errors)
+            .map(function (entry) {
+              return (
+                entry[0] + ": " +
+                (Array.isArray(entry[1])
+                  ? entry[1].join(", ")
+                  : String(entry[1]))
+              );
+            })
+            .join(" | ");
+
+          throw new Error(errors);
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            "Akses ditolak. Periksa permission Admin atau CSRF."
+          );
+        }
+
+        throw new Error(
+          (data && (data.error || data.detail)) ||
+          "Gagal memproses event (HTTP " +
+            response.status + ")."
+        );
+      }
+
+      if (!data || !data.id || !data.status) {
+        throw new Error(
+          "Respons backend tidak sesuai."
+        );
+      }
+
+      var labels = {
+        approve: "disetujui",
+        reject: "ditolak",
+        request_revision: "diminta revisi",
+        publish: "dipublikasikan"
+      };
+
+      toast(
+        'Event "' + e.nama + '" berhasil ' +
+        (labels[action] || "diproses") + "."
+      );
+
+      // Reload agar Admin mengambil status yang
+      // benar-benar tersimpan di PostgreSQL.
+      window.setTimeout(function () {
+        window.location.reload();
+      }, 800);
+
+      return true;
+
+    } catch (error) {
+      console.error("Admin event transition:", error);
+
+      toast(
+        error.message ||
+        "Terjadi kesalahan saat memproses event."
+      );
+
+      return false;
+    }
+  }
+
   function eventById(id) { return events().filter(function (e) { return e.id === id; })[0]; }
   var STATUS_EVENT = E.statusEvent;
+  Object.assign(STATUS_EVENT, {
+  draft: "Draft",
+  diajukan: "Menunggu Persetujuan",
+  revisi: "Perlu Revisi",
+  disetujui: "Disetujui",
+  ditolak: "Ditolak",
+  dibatalkan: "Dibatalkan"
+});
   function setStatus(e, status, reason) {
     if (status === "ditangguhkan") { st.eventPrev[e.id] = e.status; }
     st.eventStatus[e.id] = status;
     if (reason) { st.eventReason[e.id] = reason; } else { delete st.eventReason[e.id]; }
     e.status = status; e.alasan = reason || "";
   }
+
   function logEvent(e, teks) { S.log("event", teks, ADMIN, "Admin Platform", { eo: e.organizer === ORG }); }
-  function approveEvent(e) { setStatus(e, "mendatang"); logEvent(e, 'Event "' + e.nama + '" disetujui admin'); toast('Event "' + e.nama + '" disetujui. Ketua panitia langsung melihat statusnya.'); }
-  function rejectEvent(e, why) { setStatus(e, "ditolak", why); logEvent(e, 'Event "' + e.nama + '" ditolak admin: ' + why); toast('Event "' + e.nama + '" ditolak. Alasan dikirim ke penyelenggara.'); }
+  function approveEvent(e) {
+  if (backendAdminEvents !== null) {
+    return adminEventTransition(e, "approve", "");
+  }
+
+  setStatus(e, "mendatang");
+  logEvent(e, 'Event "' + e.nama + '" disetujui admin');
+  toast('Event "' + e.nama + '" disetujui.');
+}
+
+function rejectEvent(e, why) {
+  if (backendAdminEvents !== null) {
+    return adminEventTransition(e, "reject", why);
+  }
+
+  setStatus(e, "ditolak", why);
+  logEvent(e, 'Event "' + e.nama + '" ditolak admin: ' + why);
+  toast('Event "' + e.nama + '" ditolak.');
+}
   function suspendEvent(e, why) { setStatus(e, "ditangguhkan", why); logEvent(e, 'Event "' + e.nama + '" ditangguhkan admin: ' + why); toast('Event "' + e.nama + '" ditangguhkan.'); }
   function restoreEvent(e) { var prev = st.eventPrev[e.id] || "mendatang"; setStatus(e, prev); logEvent(e, 'Event "' + e.nama + '" dipulihkan admin'); toast('Event "' + e.nama + '" dipulihkan.'); }
   function askReject(e, after) { ask({ title: "Tolak event?", text: '"' + e.nama + '" oleh ' + e.organizer + ".", reason: "Alasan penolakan (dikirim ke penyelenggara)", ok: "Tolak event", danger: true, onOk: function (r) { rejectEvent(e, r); after(); } }); }
@@ -97,46 +261,316 @@
     Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
     "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
   };
+  
   function proposalOf(e) {
-    var n = st.newEvents.filter(function (x) { return x.id === e.id; })[0];
-    if (n && n.proposal) { return { file: n.proposal.file, size: n.proposal.size, uploaded: n.proposal.uploaded, ringkasan: n.proposal.ringkasan || RINGKAS[e.jenis] || RINGKAS.Seminar, asli: true }; }
-    var slug = e.nama.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
-    return { file: "Proposal_" + slug + ".pdf", size: (0.8 + (e.id % 7) * 0.35).toFixed(1).replace(".", ",") + " MB", uploaded: e.tanggal, ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar, asli: false };
+    // Halaman Kelola Event Admin membaca PostgreSQL.
+    if (backendAdminEvents !== null) {
+      return {
+        file: e.has_proposal
+          ? "Proposal event (PDF)"
+          : "Belum ada proposal",
+        size: e.has_proposal
+          ? "Dokumen tersimpan di server"
+          : "Tidak ada dokumen",
+        uploaded: null,
+        ringkasan: e.deskripsi || "Belum ada deskripsi event.",
+        asli: Boolean(e.has_proposal),
+        backend: true
+      };
+    }
+
+    // Fallback untuk halaman Admin yang masih dummy.
+    var n = st.newEvents.filter(function (x) {
+      return x.id === e.id;
+    })[0];
+
+    if (n && n.proposal) {
+      return {
+        file: n.proposal.file,
+        size: n.proposal.size,
+        uploaded: n.proposal.uploaded,
+        ringkasan: n.proposal.ringkasan ||
+          RINGKAS[e.jenis] || RINGKAS.Seminar,
+        asli: true,
+        backend: false
+      };
+    }
+
+    return {
+      file: "Proposal contoh",
+      size: "Data contoh",
+      uploaded: e.tanggal,
+      ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar,
+      asli: false,
+      backend: false
+    };
   }
-  var detailCtx = null;
-  function openDetail(e, after) {
-    var dlgD = $("#propDlg"), p = proposalOf(e), anggaran = Math.round(e.kuota * Math.max(e.harga, 25000) * 0.6 / 100000) * 100000;
-    detailCtx = { id: e.id, after: after };
-    $("#propDlgTitle").textContent = e.nama;
-    $("#propDlgBody").innerHTML =
-      '<dl class="dl"><dt>Penyelenggara</dt><dd>' + esc(e.organizer) + "</dd><dt>Jenis</dt><dd>" + esc(e.jenis) + "</dd><dt>Tanggal</dt><dd>" + fmtDate(e.tanggal) + "</dd><dt>Lokasi</dt><dd>" + esc(e.lokasi) + "</dd>" +
-      "<dt>Status</dt><dd>" + chip(e.status, STATUS_EVENT[e.status]) + "</dd><dt>Kuota &amp; harga</dt><dd>" + e.kuota + " peserta &middot; " + rp(e.harga) + "</dd>" +
-      (e.status === "diajukan" ? "" : "<dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " &middot; " + rp0(e.terjual * e.harga) + "</dd>") +
-      (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "") + "</dl>" +
-      '<h3 class="prop-h">Proposal</h3><div class="pdoc"><span class="pdoc__ico" aria-hidden="true">PDF</span><div><b>' + esc(p.file) + "</b><small>" + esc(p.size) + " &middot; diunggah " + fmtDate(p.uploaded) + '</small></div><button type="button" class="btn btn--ghost sm" data-open-doc>Buka proposal</button></div>' +
-      '<dl class="dl dl--prop"><dt>Tujuan &amp; ringkasan</dt><dd>' + esc(p.ringkasan) + "</dd><dt>Target peserta</dt><dd>" + e.kuota + " peserta, mahasiswa dan umum</dd><dt>Estimasi anggaran</dt><dd>" + rp0(anggaran) + "</dd></dl>" +
-      (p.asli ? "" : '<p class="pdoc__note">Isi proposal ini data contoh. File asli tersedia setelah unggah proposal tersambung ke backend.</p>');
-    var f = '<button type="button" class="btn btn--ghost" data-close>Tutup</button>';
-    if (e.status === "diajukan") { f += '<button type="button" class="btn btn--ghost" data-act="no">Tolak</button><button type="button" class="btn" data-act="ok">Setujui</button>'; }
-    else if (e.status === "mendatang" || e.status === "berlangsung") { f += '<button type="button" class="btn btn--ghost" data-act="sus">Tangguhkan</button>'; }
-    else if (e.status === "ditangguhkan") { f += '<button type="button" class="btn" data-act="res">Pulihkan</button>'; }
-    $("#propDlgFoot").innerHTML = f;
-    dlgD.showModal();
+
+var detailCtx = null;
+function openDetail(e, after) {
+  if (!e) {
+    toast("Event tidak ditemukan.");
+    return;
   }
+
+  var dlgD = $("#propDlg");
+  if (!dlgD) {
+    console.error("Modal #propDlg tidak ditemukan");
+    return;
+  }
+
+  var p = proposalOf(e);
+
+  var anggaran = Math.round(
+    e.kuota * Math.max(e.harga, 25000) * 0.6 / 100000
+  ) * 100000;
+
+  detailCtx = {
+    id: e.id,
+    after: after
+  };
+
+  $("#propDlgTitle").textContent = e.nama;
+
+  var proposalMeta = p.backend
+    ? p.size
+    : p.size + " · diunggah " + fmtDate(p.uploaded);
+
+  var proposalButton = (!p.backend || p.asli)
+    ? '<button type="button" class="btn btn--ghost sm" data-open-doc>Buka proposal</button>'
+    : "";
+
+  var proposalNote = p.backend
+    ? (
+        p.asli
+          ? ""
+          : '<p class="pdoc__note">Belum ada proposal PDF yang diunggah.</p>'
+      )
+    : (
+        p.asli
+          ? ""
+          : '<p class="pdoc__note">Proposal ini masih data contoh.</p>'
+      );
+
+  $("#propDlgBody").innerHTML =
+    '<dl class="dl">' +
+      '<dt>Penyelenggara</dt><dd>' + esc(e.organizer) + '</dd>' +
+      '<dt>Jenis</dt><dd>' + esc(e.jenis) + '</dd>' +
+      '<dt>Tanggal</dt><dd>' + fmtDate(e.tanggal) + '</dd>' +
+      '<dt>Lokasi</dt><dd>' + esc(e.lokasi) + '</dd>' +
+      '<dt>Status</dt><dd>' +
+        chip(e.status, STATUS_EVENT[e.status]) + '</dd>' +
+      '<dt>Kuota &amp; harga</dt><dd>' +
+        e.kuota + ' peserta &middot; ' + rp(e.harga) + '</dd>' +
+
+      (
+        e.status === "diajukan"
+          ? ""
+          : '<dt>Tiket terjual</dt><dd>' +
+            e.terjual + ' dari ' + e.kuota +
+            ' &middot; ' + rp0(e.terjual * e.harga) + '</dd>'
+      ) +
+
+      (
+        e.alasan
+          ? '<dt>Catatan admin</dt><dd>' +
+            esc(e.alasan) + '</dd>'
+          : ""
+      ) +
+    '</dl>' +
+
+    '<h3 class="prop-h">Proposal</h3>' +
+
+    '<div class="pdoc">' +
+      '<span class="pdoc__ico" aria-hidden="true">PDF</span>' +
+      '<div>' +
+        '<b>' + esc(p.file) + '</b>' +
+        '<small>' + esc(proposalMeta) + '</small>' +
+      '</div>' +
+      proposalButton +
+    '</div>' +
+
+    '<dl class="dl dl--prop">' +
+      '<dt>Tujuan &amp; ringkasan</dt>' +
+      '<dd>' + esc(p.ringkasan) + '</dd>' +
+      '<dt>Target peserta</dt>' +
+      '<dd>' + e.kuota + ' peserta, mahasiswa dan umum</dd>' +
+      '<dt>Estimasi anggaran</dt>' +
+      '<dd>' + rp0(anggaran) + '</dd>' +
+    '</dl>' +
+
+    proposalNote;
+
+  // TOMBOL APPROVAL
+  var f =
+    '<button type="button" class="btn btn--ghost" data-close>Tutup</button>';
+
+  if (e.status === "diajukan") {
+    f +=
+      '<button type="button" class="btn btn--ghost" data-act="rev">Minta Revisi</button>' +
+      '<button type="button" class="btn btn--ghost" data-act="no">Tolak</button>' +
+      '<button type="button" class="btn" data-act="ok">Setujui</button>';
+
+  } else if (
+    backendAdminEvents !== null &&
+    e.status === "disetujui"
+  ) {
+    f +=
+      '<button type="button" class="btn" data-act="pub">Publikasikan</button>';
+
+  } else if (
+    backendAdminEvents === null &&
+    (e.status === "mendatang" || e.status === "berlangsung")
+  ) {
+    f +=
+      '<button type="button" class="btn btn--ghost" data-act="sus">Tangguhkan</button>';
+
+  } else if (
+    backendAdminEvents === null &&
+    e.status === "ditangguhkan"
+  ) {
+    f +=
+      '<button type="button" class="btn" data-act="res">Pulihkan</button>';
+  }
+
+  $("#propDlgFoot").innerHTML = f;
+
+  dlgD.showModal();
+}
+
   (function () {
-    var d = $("#propDlg"); if (!d) { return; }
+    var d = $("#propDlg");
+    if (!d) return;
+
     d.addEventListener("click", function (ev) {
-      if (ev.target === d || ev.target.closest("[data-close]")) { d.close(); return; }
-      if (ev.target.closest("[data-open-doc]")) { toast("Contoh data: file proposal asli bisa dibuka setelah unggah tersambung ke backend."); return; }
-      var b = ev.target.closest("[data-act]"); if (!b || !detailCtx) { return; }
-      var e = eventById(detailCtx.id), after = detailCtx.after;
+
+      // Tutup modal
+      if (
+        ev.target === d ||
+        ev.target.closest("[data-close]")
+      ) {
+        d.close();
+        return;
+      }
+
+      // Buka proposal
+      // Buka proposal PDF asli dari PostgreSQL
+    if (ev.target.closest("[data-open-doc]")) {
+      if (backendAdminEvents === null) {
+        toast("Proposal ini masih data contoh.");
+        return;
+      }
+
+      var eventData = detailCtx && eventById(detailCtx.id);
+
+      if (!eventData || !eventData.has_proposal) {
+        toast("Proposal belum diunggah.");
+        return;
+      }
+
+      window.open(
+        "/events/manage/" + eventData.id + "/proposal/",
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      return;
+    }
+
+      // Ambil tombol aksi terlebih dahulu
+      var b = ev.target.closest("[data-act]");
+
+      if (!b || !detailCtx) return;
+
+      var e = eventById(detailCtx.id);
+      var after = detailCtx.after;
+
+      if (!e) {
+        toast("Event tidak ditemukan.");
+        return;
+      }
+
+      var action = b.dataset.act;
+
       d.close();
-      if (b.dataset.act === "ok") { approveEvent(e); after(); }
-      else if (b.dataset.act === "no") { askReject(e, after); }
-      else if (b.dataset.act === "sus") { askSuspend(e, after); }
-      else if (b.dataset.act === "res") { restoreEvent(e); after(); }
-    });
-  })();
+
+      // SETUJUI EVENT
+      if (action === "ok") {
+        if (backendAdminEvents !== null) {
+          adminEventTransition(e, "approve", "");
+        } else {
+          approveEvent(e);
+          if (after) after();
+        }
+      }
+
+      // TOLAK EVENT
+      else if (action === "no") {
+        if (backendAdminEvents !== null) {
+          ask({
+            title: "Tolak event?",
+            text: 'Event "' + e.nama +
+              '" akan ditolak dan alasannya dicatat.',
+            reason: "Alasan penolakan",
+            ok: "Tolak Event",
+            danger: true,
+            onOk: function (reason) {
+              adminEventTransition(e, "reject", reason);
+            }
+          });
+        } else {
+          askReject(e, after);
+        }
+      }
+
+      // MINTA REVISI
+      else if (action === "rev") {
+        ask({
+          title: "Minta revisi event?",
+          text: 'Event "' + e.nama +
+            '" akan dikembalikan kepada Ketua Panitia.',
+          reason: "Bagian yang harus diperbaiki",
+          ok: "Kirim Revisi",
+          onOk: function (reason) {
+            adminEventTransition(
+              e,
+              "request_revision",
+              reason
+            );
+          }
+        });
+      }
+
+      // PUBLIKASIKAN
+      else if (action === "pub") {
+        ask({
+          title: "Publikasikan event?",
+          text: 'Event "' + e.nama +
+            '" akan ditampilkan di Jelajah Event.',
+          ok: "Publikasikan",
+          onOk: function () {
+            adminEventTransition(e, "publish", "");
+          }
+        });
+      }
+
+    // TANGGUHKAN (HANYA MODE DUMMY LAMA)
+    else if (action === "sus") {
+      if (backendAdminEvents === null) {
+        askSuspend(e, after);
+      }
+    }
+
+    // PULIHKAN (HANYA MODE DUMMY LAMA)
+    else if (action === "res") {
+      if (backendAdminEvents === null) {
+        restoreEvent(e);
+        if (after) after();
+      }
+    }
+  });
+})();
+
 
   /* ---------- Data: pengguna ---------- */
   var PERAN = { admin: "Admin Platform", penyelenggara: "Ketua Panitia", panitia: "Panitia", peserta: "Peserta" };
@@ -350,11 +784,34 @@
      ========================================================= */
   function pageEvents() {
     var tab = "semua", q = $("#evSearch"), body = $("#evBody"), tabs = $("#evTabs");
-    var TABS = [["semua", "Semua"], ["diajukan", "Menunggu Persetujuan"], ["aktif", "Aktif"], ["selesai", "Selesai"], ["tidak", "Ditolak / Ditangguhkan"]];
+    var TABS = [
+      ["semua", "Semua"],
+      ["diajukan", "Menunggu Persetujuan"],
+      ["revisi", "Perlu Revisi"],
+      ["disetujui", "Disetujui"],
+      ["aktif", "Aktif"],
+      ["selesai", "Selesai"],
+      ["tidak", "Ditolak / Dibatalkan"],
+      ["draft", "Draft"]
+    ];
     function inTab(e, t) {
-      if (t === "semua") { return true; }
-      if (t === "aktif") { return e.status === "mendatang" || e.status === "berlangsung"; }
-      if (t === "tidak") { return e.status === "ditolak" || e.status === "ditangguhkan"; }
+      if (t === "semua") return true;
+
+      if (t === "aktif") {
+        return (
+          e.status === "mendatang" ||
+          e.status === "berlangsung"
+        );
+      }
+
+      if (t === "tidak") {
+        return (
+          e.status === "ditolak" ||
+          e.status === "dibatalkan" ||
+          e.status === "ditangguhkan"
+        );
+      }
+
       return e.status === t;
     }
     function render() {

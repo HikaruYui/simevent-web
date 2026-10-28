@@ -1,3 +1,4 @@
+
 services:
   db:
     image: postgres:17
@@ -14,7 +15,7 @@ services:
   backend:
     build: ./backend
     env_file:
-      - backend/.env
+      - ./backend/.env
     environment:
       POSTGRES_HOST: db
     ports:
@@ -23,6 +24,7 @@ services:
       - ./backend:/app
       - ./frontend:/frontend:z
       - media:/app/media
+      - private_event_files:/app/private_media
     depends_on:
       db:
         condition: service_healthy
@@ -30,3 +32,4 @@ services:
 volumes:
   pgdata:
   media:
+  private_event_files:

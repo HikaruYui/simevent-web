@@ -184,7 +184,7 @@ class AccountAccessChange(models.Model):
         SET_PARTICIPANT = ("SET_PARTICIPANT", "Jadikan Peserta")
         SET_COMMITTEE = ("SET_COMMITTEE", "Jadikan Panitia")
         SET_ORGANIZER = ("SET_ORGANIZER", "Jadikan Ketua Panitia")
-        SET_ADMIN=("SET_ADMIN", "Jadikan Admin PLatform")
+        SET_ADMIN=("SET_ADMIN", "Jadikan Admin Platform")
 
         # Tetap disimpan agar riwayat dan service lama tidak rusak.
         GRANT_ORGANIZER = (
@@ -234,6 +234,7 @@ class AccountAccessChange(models.Model):
         auto_now_add=True,
     )
 
+    
     class Meta:
         verbose_name = "Riwayat Perubahan Akses"
         verbose_name_plural = "Riwayat Perubahan Akses"
@@ -250,6 +251,7 @@ class AccountAccessChange(models.Model):
                         "SET_PARTICIPANT",
                         "SET_COMMITTEE",
                         "SET_ORGANIZER",
+                        "SET_ADMIN",
                         "GRANT_ORGANIZER",
                         "REVOKE_ORGANIZER",
                         "SUSPEND",
@@ -263,10 +265,3 @@ class AccountAccessChange(models.Model):
                 name="accounts_access_reason_required",
             ),
         ]
-
-    def __str__(self):
-        return (
-            f"{self.actor} - "
-            f"{self.get_action_display()} - "
-            f"{self.user}"
-        )

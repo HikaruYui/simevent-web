@@ -10,9 +10,13 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.accounts.forms import ProfileForm
 from apps.accounts.permissions import require_organizer
 from apps.events.forms import AdminEventForm, EventForm
-from apps.events.models import Event, EventStatus, EventType
 from apps.achievements.models import Achievement
 from django.core.exceptions import PermissionDenied
+from collections import Counter, defaultdict
+from datetime import timedelta
+from decimal import Decimal
+from apps.registrations.models import Ticket
+from apps.events.models import EventTransition, EventStatus
 from apps.registrations.models import (
     Attendance,
     CertificateTemplate,
@@ -20,6 +24,13 @@ from apps.registrations.models import (
     Registration,
     RegistrationStatus,
 )
+from apps.events.models import (
+    Event,
+    EventStatus,
+    EventType,
+    EventTransition,
+)
+
 
 @never_cache
 @require_GET
@@ -214,9 +225,11 @@ def detail_event(request, slug):
     )
 
 def _participant_redirect(request):
-    if request.user.role != "PARTICIPANT":
+    # Admin dan ketua tetap diarahkan ke dashboard masing-masing.
+    if request.user.role in ("ADMIN", "ORGANIZER"):
         return redirect(_dashboard_name(request.user))
-    
+
+    # Peserta dan panitia biasa boleh memakai halaman peserta.
     if not request.user.profile_complete:
         return redirect("peserta_akun")
 
@@ -289,8 +302,8 @@ def after_login(request):
 @login_required(login_url="login_page")
 def peserta_akun(request, template_name="peserta/akun.html", success_url="peserta_dashboard"):
     if (
-        template_name == "peserta/akun.html" 
-        and request.user.role != "PARTICIPANT"
+        template_name == "peserta/akun.html"
+        and request.user.role in ("ADMIN", "ORGANIZER")
     ):
         return redirect(_dashboard_name(request.user))
         
@@ -674,8 +687,432 @@ def _ketua_panitia(template):
 
     return view
 
-eo_dashboard = _ketua_panitia("dashboard")
-eo_event = _ketua_panitia("event")
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def eo_dashboard(request):
+    _require_role(request, "ORGANIZER")
+
+    now = timezone.now()
+
+    # Hanya event yang dapat dikelola akun yang sedang login.
+    events = list(
+        Event.objects.managed_by(request.user)
+        .select_related("event_type")
+        .order_by("-start_datetime", "-pk")
+    )
+    event_ids = [event.pk for event in events]
+    event_by_id = {event.pk: event for event in events}
+
+    # Tiket valid: registrasi aktif, tiket aktif, dan
+    # pembayaran disetujui (atau event gratis).
+    tickets = list(
+        Ticket.objects.filter(
+            registration__event_id__in=event_ids,
+            registration__status=RegistrationStatus.REGISTERED,
+            is_active=True,
+        )
+        .filter(
+            Q(registration__payment__status=Payment.Status.APPROVED)
+            | Q(
+                registration__event__price=0,
+                registration__payment__isnull=True,
+            )
+        )
+        .select_related(
+            "registration__participant",
+            "registration__event",
+        )
+    )
+
+    # Pendapatan hanya dari pembayaran yang APPROVED.
+    payments = list(
+        Payment.objects.filter(
+            registration__event_id__in=event_ids,
+            registration__status=RegistrationStatus.REGISTERED,
+            status=Payment.Status.APPROVED,
+        )
+        .select_related("registration__event")
+    )
+
+    valid_registration_ids = [
+        ticket.registration_id for ticket in tickets
+    ]
+
+    attendances = list(
+        Attendance.objects.filter(
+            registration_id__in=valid_registration_ids,
+            status=Attendance.Status.PRESENT,
+        )
+        .select_related("registration__event")
+    )
+
+    sold_by_event = Counter(
+        ticket.registration.event_id for ticket in tickets
+    )
+    present_by_event = Counter(
+        attendance.registration.event_id
+        for attendance in attendances
+    )
+
+    revenue_by_event = defaultdict(lambda: Decimal("0"))
+    for payment in payments:
+        revenue_by_event[payment.registration.event_id] += payment.amount
+
+    
+    # Status event mengikuti waktu sebenarnya.
+    
+    status_map = {
+        "DRAFT": "draft",
+        "SUBMITTED": "diajukan",
+        "APPROVED": "disetujui",
+        "NEEDS_REVISION": "revisi",
+        "REJECTED": "ditolak",
+        "COMPLETED": "selesai",
+        "CANCELLED": "dibatalkan",
+    }
+
+    event_rows = []
+
+    for event in events:
+        if event.status == EventStatus.PUBLISHED:
+            if event.end_datetime <= now:
+                status = "selesai"
+            elif event.start_datetime <= now:
+                status = "berlangsung"
+            else:
+                status = "mendatang"
+        else:
+            status = status_map.get(event.status, "draft")
+
+        # Ambil alasan dari keputusan Admin terbaru
+        alasan = ""
+
+        if event.status in (
+            EventStatus.REJECTED,
+            EventStatus.NEEDS_REVISION,
+            EventStatus.CANCELLED,
+        ):
+            alasan = (
+                EventTransition.objects
+                .filter(
+                    event_id=event.pk,
+                    to_status=event.status,
+                )
+                .order_by("-created_at", "-pk")
+                .values_list("reason", flat=True)
+                .first()
+                or ""
+            )
+        event_rows.append({
+            "id": event.pk,
+            "nama": event.title,
+            "jenis": event.event_type.name,
+            "tanggal": timezone.localtime(
+                event.start_datetime
+            ).strftime("%Y-%m-%d"),
+            "lokasi": event.venue or "Online",
+            "kuota": event.capacity,
+            "terjual": sold_by_event[event.pk],
+            "hadir": present_by_event[event.pk],
+            "harga": float(event.price),
+            "pendapatan": float(revenue_by_event[event.pk]),
+            "status": status,
+            "alasan": alasan,
+        })
+
+    
+    # Grafik pendapatan dan tiket 6 bulan terakhir.
+    
+    nama_bulan = [
+        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+        "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+    ]
+
+    current_month = now.year * 12 + now.month - 1
+
+    months = []
+    for offset in range(5, -1, -1):
+        year, month_zero = divmod(current_month - offset, 12)
+        months.append((year, month_zero + 1))
+
+    month_index = {
+        key: index for index, key in enumerate(months)
+    }
+
+    monthly_tickets = [0] * 6
+    monthly_revenue = [0.0] * 6
+
+    for ticket in tickets:
+        dt = timezone.localtime(ticket.registration.registered_at)
+        index = month_index.get((dt.year, dt.month))
+        if index is not None:
+            monthly_tickets[index] += 1
+
+    for payment in payments:
+        if not payment.reviewed_at:
+            continue
+
+        dt = timezone.localtime(payment.reviewed_at)
+        index = month_index.get((dt.year, dt.month))
+
+        if index is not None:
+            monthly_revenue[index] += float(payment.amount)
+
+    monthly = {
+        "labels": [nama_bulan[m - 1] for _, m in months],
+        "pendapatan": monthly_revenue,
+        "tiket": monthly_tickets,
+    }
+
+    
+    # Grafik kehadiran per event.
+    # onsite/online: jam 08.00 sampai 14.00
+    # daftar: H-6 sampai hari H.
+    
+    attendance_series = {
+        str(event.pk): {
+            "onsite": [0] * 7,
+            "online": [0] * 7,
+            "daftar": [0] * 7,
+        }
+        for event in events
+    }
+
+    for ticket in tickets:
+        reg = ticket.registration
+        event = event_by_id[reg.event_id]
+
+        registered_date = timezone.localtime(
+            reg.registered_at
+        ).date()
+        event_date = timezone.localtime(
+            event.start_datetime
+        ).date()
+
+        days_before = (event_date - registered_date).days
+
+        if 0 <= days_before <= 6:
+            index = 6 - days_before
+            attendance_series[str(event.pk)]["daftar"][index] += 1
+
+    for attendance in attendances:
+        event = event_by_id[attendance.registration.event_id]
+
+        checked_at = timezone.localtime(
+            attendance.checked_in_at
+        )
+        event_date = timezone.localtime(
+            event.start_datetime
+        ).date()
+
+        if checked_at.date() != event_date:
+            continue
+
+        hour_index = checked_at.hour - 8
+
+        if not 0 <= hour_index < 7:
+            continue
+
+        # Model Attendance belum membedakan mode
+        # kehadiran dalam event HYBRID.
+        metric = (
+            "online"
+            if event.delivery_mode == "ONLINE"
+            else "onsite"
+        )
+
+        attendance_series[str(event.pk)][metric][hour_index] += 1
+
+    
+    # Log aktivitas dari registrasi, pembayaran,
+    # dan kehadiran yang benar-benar tersimpan.
+    
+    activity_records = []
+
+    latest_tickets = sorted(
+        tickets,
+        key=lambda ticket: ticket.registration.registered_at,
+        reverse=True,
+    )[:8]
+
+    for ticket in latest_tickets:
+        reg = ticket.registration
+        name = (
+            reg.participant.get_full_name().strip()
+            or reg.participant.email
+        )
+
+        activity_records.append((
+            reg.registered_at,
+            "daftar",
+            f"{name} mendaftar ke {reg.event.title}",
+        ))
+
+    latest_payments = sorted(
+        payments,
+        key=lambda p: p.reviewed_at or p.registration.registered_at,
+        reverse=True,
+    )[:8]
+
+    for payment in latest_payments:
+        activity_records.append((
+            payment.reviewed_at or payment.registration.registered_at,
+            "bayar",
+            f"Pembayaran Rp {payment.amount:,.0f} "
+            f"untuk {payment.registration.event.title} disetujui",
+        ))
+
+    latest_attendances = sorted(
+        attendances,
+        key=lambda attendance: attendance.checked_in_at,
+        reverse=True,
+    )[:8]
+
+    for attendance in latest_attendances:
+        activity_records.append((
+            attendance.checked_in_at,
+            "hadir",
+            f"Peserta check-in di "
+            f"{attendance.registration.event.title}",
+        ))
+
+    activity_records.sort(
+        key=lambda item: item[0],
+        reverse=True,
+    )
+
+    activity = []
+
+    for dt, kind, message in activity_records[:8]:
+        activity.append({
+            "tipe": kind,
+            "teks": message,
+            "waktu": timezone.localtime(
+                dt
+            ).strftime("%d %b %Y, %H:%M"),
+        })
+
+    dashboard_data = {
+        "events": event_rows,
+        "monthly": monthly,
+        "activity": activity,
+        "attendance_series": attendance_series,
+    }
+
+    return render(
+        request,
+        "ketua_panitia/dashboard.html",
+        {"eo_dashboard_data": dashboard_data},
+    )
+
+eo_peserta = _ketua_panitia("peserta")
+eo_pendapatan = _ketua_panitia("pendapatan")
+eo_log = _ketua_panitia("log_aktivitas")
+eo_support = _ketua_panitia("support")
+eo_pengaturan = _ketua_panitia("pengaturan")
+
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def eo_event(request):
+    _require_role(request, "ORGANIZER")
+
+    events = (
+        Event.objects.managed_by(request.user)
+        .select_related("event_type")
+        .annotate(
+            ticket_count=Count(
+                "registrations",
+                filter=Q(
+                    registrations__status=RegistrationStatus.REGISTERED,
+                ) & (
+                    Q(registrations__payment__isnull=True)
+                    | Q(
+                        registrations__payment__status=
+                        Payment.Status.APPROVED
+                    )
+                ),
+                distinct=True,
+            ),
+        )
+        .order_by("-created_at", "-pk")
+    )
+
+    status_map = {
+        "DRAFT": "draft",
+        "SUBMITTED": "diajukan",
+        "APPROVED": "disetujui",
+        "NEEDS_REVISION": "revisi",
+        "REJECTED": "ditolak",
+        "COMPLETED": "selesai",
+        "CANCELLED": "dibatalkan",
+    }
+
+    now = timezone.now()
+    event_rows = []
+
+    for event in events:
+        if event.status == EventStatus.PUBLISHED:
+            if event.end_datetime <= now:
+                status = "selesai"
+            elif event.start_datetime <= now:
+                status = "berlangsung"
+            else:
+                status = "mendatang"
+        else:
+            status = status_map.get(event.status, "draft")
+
+        # Ambil alasan keputusan Admin dari PostgreSQL.
+        alasan = ""
+
+        if event.status in (
+            EventStatus.REJECTED,
+            EventStatus.NEEDS_REVISION,
+            EventStatus.CANCELLED,
+        ):
+            alasan = (
+                EventTransition.objects
+                .filter(
+                    event_id=event.pk,
+                    to_status=event.status,
+                )
+                .order_by("-created_at", "-pk")
+                .values_list("reason", flat=True)
+                .first()
+                or ""
+            )
+
+        event_rows.append({
+            "id": event.pk,
+            "nama": event.title,
+            "jenis": event.event_type.name,
+            "tanggal": timezone.localtime(
+                event.start_datetime
+            ).strftime("%Y-%m-%d"),
+            "lokasi": event.venue or "Online",
+            "kuota": event.capacity,
+            "terjual": event.ticket_count,
+            "harga": float(event.price),
+            "status": status,
+            "has_proposal": bool(event.proposal),
+            "alasan": alasan,
+            "deskripsi": event.description,
+        })
+
+    return render(
+        request,
+        "ketua_panitia/event.html",
+        {
+            "backend_event_rows": event_rows,
+            "event_types": EventType.objects.filter(
+                is_active=True
+            ).order_by("name"),
+        },
+    )
+
 eo_peserta = _ketua_panitia("peserta")
 eo_pendapatan = _ketua_panitia("pendapatan")
 eo_log = _ketua_panitia("log_aktivitas")
@@ -727,7 +1164,111 @@ def _admin_panel(template):
 
 admin_dashboard = _admin_panel("dashboard_admin")
 admin_users = _admin_panel("kelola_pengguna")
-admin_events = _admin_panel("event_admin")
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def admin_events(request):
+    _require_role(request, "ADMIN")
+
+    now = timezone.now()
+
+    # Ambil seluruh event dari PostgreSQL.
+    # Halaman ini hanya boleh diakses Admin Platform.
+    events = list(
+        Event.objects
+        .select_related("event_type", "organizer")
+        .annotate(
+            ticket_count=Count(
+                "registrations",
+                filter=(
+                    Q(
+                        registrations__status=RegistrationStatus.REGISTERED,
+                        registrations__ticket__is_active=True,
+                    )
+                    & (
+                        Q(price=0)
+                        | Q(
+                            registrations__payment__status=
+                            Payment.Status.APPROVED
+                        )
+                    )
+                ),
+                distinct=True,
+            )
+        )
+        .order_by("-created_at", "-pk")
+    )
+
+    # Ambil catatan keputusan terbaru dari database.
+    reasons = {}
+
+    for transition in (
+        EventTransition.objects
+        .filter(event_id__in=[e.pk for e in events])
+        .order_by("-created_at", "-pk")
+    ):
+        reasons.setdefault(
+            transition.event_id,
+            transition.reason,
+        )
+
+    status_map = {
+        EventStatus.DRAFT: "draft",
+        EventStatus.SUBMITTED: "diajukan",
+        EventStatus.NEEDS_REVISION: "revisi",
+        EventStatus.APPROVED: "disetujui",
+        EventStatus.REJECTED: "ditolak",
+        EventStatus.COMPLETED: "selesai",
+        EventStatus.CANCELLED: "dibatalkan",
+    }
+
+    event_rows = []
+
+    for event in events:
+        if event.status == EventStatus.PUBLISHED:
+            if event.end_datetime <= now:
+                status = "selesai"
+            elif event.start_datetime <= now:
+                status = "berlangsung"
+            else:
+                status = "mendatang"
+        else:
+            status = status_map.get(
+                event.status,
+                "draft",
+            )
+
+        event_rows.append({
+            "id": event.pk,
+            "nama": event.title,
+            "jenis": event.event_type.name,
+            "tanggal": timezone.localtime(
+                event.start_datetime
+            ).strftime("%Y-%m-%d"),
+            "lokasi": event.venue or "Online",
+            "kuota": event.capacity,
+            "terjual": event.ticket_count,
+            "harga": float(event.price),
+            "status": status,
+            "organizer": (
+                event.organizer.get_full_name().strip()
+                or event.organizer.email
+            ),
+            "organizer_email": event.organizer.email,
+            "deskripsi": event.description,
+            "has_proposal": bool(event.proposal),
+            "alasan": reasons.get(event.pk, ""),
+        })
+
+    return render(
+        request,
+        "admin/event_admin.html",
+        {
+            "backend_admin_event_rows": event_rows,
+        },
+    )
+
 admin_support = _admin_panel("support_admin")
 admin_finance = _admin_panel("keuangan_admin")
 admin_audit = _admin_panel("audit_admin")
@@ -737,7 +1278,7 @@ admin_settings = _admin_panel("pengaturan_admin")
 @require_http_methods(["GET", "POST"])
 @login_required(login_url="login_page")
 def panitia_akun(request):
-    _require_role(request, "COMITTEE")
+    _require_role(request, "COMMITTEE")
 
     return peserta_akun(
         request,

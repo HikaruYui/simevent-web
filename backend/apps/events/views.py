@@ -9,6 +9,10 @@ from apps.accounts.permissions import require_organizer
 from .forms import DeleteDraftForm, TransitionForm
 from .models import Event
 from .workflow import EventWorkflow
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_GET
 
 def event_data(event):
     """Explicit public fields; never serialize a model or its relations wholesale."""
@@ -131,3 +135,32 @@ class EventDeleteView(EventManagementMixin, DetailView):
             raise ValidationError(form.errors.as_data())
         EventWorkflow(request.user).delete_draft(pk)
         return JsonResponse({"deleted": True})
+
+    
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def download_event_proposal(request, pk):
+    # Admin dapat melihat semua event.
+    # Ketua Panitia hanya dapat melihat event miliknya.
+    event = get_object_or_404(
+        Event.objects.managed_by(request.user),
+        pk=pk,
+    )
+
+    if not event.proposal:
+        raise Http404("Proposal belum diunggah.")
+
+    try:
+        proposal_file = event.proposal.open("rb")
+    except OSError:
+        raise Http404("File proposal tidak ditemukan.")
+
+    return FileResponse(
+        proposal_file,
+        content_type="application/pdf",
+        as_attachment=False,
+        filename=f"proposal-event-{event.pk}.pdf",
+    )
+

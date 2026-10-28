@@ -199,10 +199,15 @@
   }
 
   function growth(arr) {
-    var a = arr[arr.length - 1], b = arr[arr.length - 2];
-    var p = (a / b - 1) * 100;
-    return (p >= 0 ? "+" : "") + p.toFixed(2) + "%";
+  if (!arr || arr.length < 2) return "Belum ada data";
+  var a = Number(arr[arr.length - 1]) || 0;
+  var b = Number(arr[arr.length - 2]) || 0;
+  if (b === 0) {
+    return a > 0 ? "Mulai ada transaksi" : "Belum ada perubahan";
   }
+  var p = (a / b - 1) * 100;
+  return (p >= 0 ? "+" : "") + p.toFixed(2) + "%";
+}
 
   /* ---------- Dialog "Event baru" (dipakai semua halaman) ---------- */
   var onEventsChanged = function () {};
@@ -266,61 +271,393 @@
     sync();
   }
 
+  
   function initNewEvent() {
-    var dlg = $("#newEventDlg"); if (!dlg) { return; }
+    var dlg = $("#newEventDlg");
+    if (!dlg) return;
+
     var form = $("form", dlg);
-    /* Jenis event mengikuti kategori aktif yang diatur Admin (Pengaturan > Kategori) */
-    if (window.SIM && form.jenis) {
-      var cats = Object.keys(SIM.state.settings.categories).filter(function (k) { return SIM.state.settings.categories[k]; });
-      if (cats.length) { form.jenis.innerHTML = cats.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join(""); }
+    var buttons = $$("[data-open-new-event]");
+    var modeInput = $("#neMode", form);
+    var meetingField = $("#neMeetingField", form);
+    var meetingInput = $("#neMeetingUrl", form);
+    var saveButton = $('button[type="submit"]', form);
+
+    function field(name) {
+      return form.elements.namedItem(name);
     }
-    enhanceSelect(form.jenis);
-    $$("[data-open-new-event]").forEach(function (b) {
-      b.addEventListener("click", function () { form.reset(); $$("small", form).forEach(function (s) { s.remove(); }); dlg.showModal(); $("#neNama").focus(); });
-    });
-    $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
-    dlg.addEventListener("click", function (ev) { if (ev.target === dlg) { dlg.close(); } });
 
-    form.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-      $$("small", form).forEach(function (s) { s.remove(); });
-      var v = {
-        nama: form.nama.value.trim(), jenis: form.jenis.value, tanggal: form.tanggal.value,
-        lokasi: form.lokasi.value.trim(), kuota: parseInt(form.kuota.value, 10), harga: parseInt(form.harga.value || "0", 10)
-      };
-      var errs = {};
-      if (v.nama.length < 3) { errs.nama = "Nama event minimal 3 karakter."; }
-      if (!v.tanggal) { errs.tanggal = "Pilih tanggal event."; }
-      if (!v.lokasi) { errs.lokasi = "Isi lokasi event."; }
-      if (!(v.kuota >= 1)) { errs.kuota = "Kuota minimal 1."; }
-      if (!(v.harga >= 0)) { errs.harga = "Harga tidak boleh negatif."; }
-      var needDoc = !window.SIM || window.SIM.state.settings.approvalRequired, pf = form.proposal && form.proposal.files[0];
-      if (needDoc && !pf) { errs.proposal = "Unggah proposal event untuk diajukan ke admin."; }
-      else if (pf && !/\.(pdf|docx?)$/i.test(pf.name)) { errs.proposal = "Format proposal harus PDF atau Word."; }
-      else if (pf && pf.size > 10 * 1024 * 1024) { errs.proposal = "Ukuran proposal maksimal 10 MB."; }
-      Object.keys(errs).forEach(function (k) {
-        var s = document.createElement("small"); s.textContent = errs[k];
-        form[k].closest(".field").appendChild(s);
-      });
-      if (Object.keys(errs).length) { var f = $("small", form); if (f) { f.closest(".field").querySelector("input,select").focus(); } return; }
+    function val(name) {
+      var input = field(name);
+      return input ? String(input.value).trim() : "";
+    }
 
-      var S = window.SIM, needApproval = !S || S.state.settings.approvalRequired;
-      var status = needApproval ? "diajukan" : "mendatang";
-      var id = Math.max.apply(null, E.events.map(function (e) { return e.id; }).concat([200])) + 1;
-      var imgInput = form.querySelector("#neGambar");
-      var gambarUrl = imgInput && imgInput.files[0] ? URL.createObjectURL(imgInput.files[0]) : "/static/img/default-event.jpg";
-      E.events.push({ id: id, nama: v.nama, gambarUrl: gambarUrl, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, terjual: 0, harga: v.harga, status: status, hadir: 0, pendapatan: 0 });
-      var teks = needApproval ? "Event \"" + v.nama + "\" diajukan, menunggu persetujuan admin" : "Event baru \"" + v.nama + "\" dibuat";
-      E.activity.unshift({ tipe: "event", teks: teks, waktu: "Baru saja" });
-      if (S) {
-        var up = new Date(), prop = pf ? { file: pf.name, size: (pf.size >= 1048576 ? (pf.size / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(pf.size / 1024)) + " KB"), uploaded: up.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + up.getDate()).slice(-2), ringkasan: form.ringkasan.value.trim() } : null;
-        S.state.newEvents.push({ id: id, nama: v.nama, jenis: v.jenis, tanggal: v.tanggal, lokasi: v.lokasi, kuota: v.kuota, harga: v.harga, status: status, proposal: prop });
-        S.log("event", teks, "Budi Santoso", "Ketua Panitia", { eo: true });
+    function localDatetime(date) {
+      function pad(n) {
+        return String(n).padStart(2, "0");
       }
-      dlg.close();
-      onEventsChanged();
-      toast(needApproval ? "Event \"" + v.nama + "\" dikirim ke admin untuk disetujui. Data contoh, belum tersimpan ke database." : "Event \"" + v.nama + "\" ditambahkan. Ini data contoh, belum tersimpan ke database.");
+
+      return (
+        date.getFullYear() + "-" +
+        pad(date.getMonth() + 1) + "-" +
+        pad(date.getDate()) + "T" +
+        pad(date.getHours()) + ":" +
+        pad(date.getMinutes())
+      );
+    }
+
+    function clearErrors() {
+      $$(".event-form-error", form).forEach(function (node) {
+        node.remove();
+      });
+    }
+
+    function showError(name, message) {
+      var input = field(name);
+      var parent = input && input.closest(".field");
+
+      if (parent) {
+        var error = document.createElement("small");
+        error.className = "event-form-error";
+        error.style.color = "#b91c1c";
+        error.textContent = message;
+        parent.appendChild(error);
+        input.focus();
+      } else {
+        toast(message);
+      }
+    }
+
+    function syncMode() {
+      var mode = val("mode");
+
+      var showMeeting = mode !== "OFFLINE";
+
+      meetingField.hidden = !showMeeting;
+      meetingField.style.display = showMeeting ? "" : "none";
+      meetingInput.required = showMeeting;
+
+      field("lokasi").required = mode !== "ONLINE";
+    }
+
+    modeInput.addEventListener("change", syncMode);
+
+    // Pertahankan kategori yang dikirim Django.
+    // Jangan diganti dengan kategori localStorage.
+    enhanceSelect(field("jenis"));
+
+    buttons.forEach(function (button) {
+      button.disabled = false;
+      button.removeAttribute("title");
+
+      button.addEventListener("click", function () {
+        if (document.body.dataset.page !== "event") {
+          window.location.href = "/ketua-panitia/event/";
+          return;
+        }
+
+        form.reset();
+        clearErrors();
+
+        if (typeof resetGambarInput === "function") {
+          resetGambarInput();
+        }
+
+        if (typeof resetProposalInput === "function") {
+          resetProposalInput();
+        }
+
+        syncMode();
+        dlg.showModal();
+        $("#neNama", form).focus();
+      });
     });
+
+    $$("[data-close]", dlg).forEach(function (button) {
+      button.addEventListener("click", function () {
+        dlg.close();
+      });
+    });
+
+    dlg.addEventListener("click", function (event) {
+      if (event.target === dlg) {
+        dlg.close();
+      }
+    });
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      clearErrors();
+
+      var title = val("nama");
+      var description = val("deskripsi");
+      var eventType = val("jenis");
+      var eventDate = val("tanggal");
+      var startTime = val("jam_mulai");
+      var endTime = val("jam_selesai");
+      var mode = val("mode");
+      var meetingUrl = val("meeting_url");
+      var venue = val("lokasi");
+
+      var capacity = Number(val("kuota"));
+      var price = Number(val("harga"));
+
+      var banner = $("#neGambar", form).files[0];
+      var proposal = $("#neProposal", form).files[0];
+
+      // VALIDASI
+      if (title.length < 3) {
+        showError("nama", "Nama event minimal 3 karakter.");
+        return;
+      }
+
+      if (!description) {
+        showError("deskripsi", "Deskripsi event wajib diisi.");
+        return;
+      }
+
+      if (!eventType) {
+        showError("jenis", "Pilih jenis event.");
+        return;
+      }
+
+      if (!eventDate || !startTime || !endTime) {
+        showError("tanggal", "Tanggal dan jam wajib diisi.");
+        return;
+      }
+
+      var start = new Date(eventDate + "T" + startTime);
+      var end = new Date(eventDate + "T" + endTime);
+
+      if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime())
+      ) {
+        showError("tanggal", "Tanggal atau jam tidak valid.");
+        return;
+      }
+
+      if (start <= new Date()) {
+        showError("tanggal", "Waktu event harus di masa depan.");
+        return;
+      }
+
+      if (end <= start) {
+        showError(
+          "jam_selesai",
+          "Jam selesai harus setelah jam mulai."
+        );
+        return;
+      }
+
+      if (mode !== "ONLINE" && !venue) {
+        showError("lokasi", "Lokasi wajib diisi.");
+        return;
+      }
+
+      if (mode !== "OFFLINE") {
+        try {
+          var meeting = new URL(meetingUrl);
+
+          if (meeting.protocol !== "https:") {
+            throw new Error("invalid");
+          }
+        } catch (error) {
+          showError(
+            "meeting_url",
+            "Link meeting wajib menggunakan HTTPS."
+          );
+          return;
+        }
+      }
+
+      if (!Number.isInteger(capacity) || capacity < 1) {
+        showError("kuota", "Kuota minimal 1 peserta.");
+        return;
+      }
+
+      if (!Number.isFinite(price) || price < 0) {
+        showError("harga", "Harga tiket tidak valid.");
+        return;
+      }
+
+      if (banner) {
+        if (!["image/jpeg", "image/png"].includes(banner.type)) {
+          showError("gambar", "Cover harus JPG atau PNG.");
+          return;
+        }
+
+        if (banner.size > 5 * 1024 * 1024) {
+          showError("gambar", "Cover maksimal 5 MB.");
+          return;
+        }
+      }
+
+      if (proposal) {
+        if (!proposal.name.toLowerCase().endsWith(".pdf")) {
+          showError("proposal", "Proposal harus PDF.");
+          return;
+        }
+
+        if (proposal.size > 10 * 1024 * 1024) {
+          showError("proposal", "Proposal maksimal 10 MB.");
+          return;
+        }
+      }
+
+      // SIAPKAN DATA UNTUK DJANGO
+      var now = new Date();
+
+      var registrationOpen = new Date(
+        now.getTime() - 60 * 1000
+      );
+
+      var registrationClose = new Date(
+        start.getTime() - 30 * 60 * 1000
+      );
+
+      if (registrationClose <= registrationOpen) {
+        showError(
+          "tanggal",
+          "Waktu event terlalu dekat untuk membuka pendaftaran."
+        );
+        return;
+      }
+
+      var payload = new FormData();
+
+      var csrfInput = form.querySelector(
+        '[name="csrfmiddlewaretoken"]'
+      );
+
+      if (!csrfInput) {
+        toast("Token keamanan tidak ditemukan. Refresh halaman.");
+        return;
+      }
+
+      payload.append(
+        "csrfmiddlewaretoken",
+        csrfInput.value
+      );
+
+      payload.append("title", title);
+      payload.append("description", description);
+      payload.append("event_type", eventType);
+
+      payload.append("delivery_mode", mode);
+      payload.append("start_datetime", localDatetime(start));
+      payload.append("end_datetime", localDatetime(end));
+
+      payload.append(
+        "venue",
+        mode === "ONLINE" ? "" : venue
+      );
+
+      payload.append("capacity", String(capacity));
+      payload.append("price", String(price));
+
+      payload.append(
+        "registration_open",
+        localDatetime(registrationOpen)
+      );
+
+      payload.append(
+        "registration_close",
+        localDatetime(registrationClose)
+      );
+
+      // LINK MEETING ONLINE / HYBRID
+      if (mode !== "OFFLINE") {
+        payload.append("meeting_url", meetingUrl);
+      }
+
+      // FILE UPLOAD
+      if (banner) {
+        payload.append("banner", banner);
+      }
+
+      if (proposal) {
+        payload.append("proposal", proposal);
+      }
+
+      // KIRIM KE BACKEND
+      var previousLabel = saveButton.textContent;
+      saveButton.disabled = true;
+      saveButton.textContent = "Menyimpan...";
+
+      try {
+        var response = await fetch("/events/manage/", {
+          method: "POST",
+          credentials: "same-origin",
+          body: payload,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        });
+
+        var data = await response.json().catch(function () {
+          return null;
+        });
+
+        if (!response.ok) {
+          if (data && data.errors) {
+            var details = Object.entries(data.errors)
+              .map(function (entry) {
+                return entry[0] + ": " +
+                  (Array.isArray(entry[1])
+                    ? entry[1].join(", ")
+                    : String(entry[1]));
+              })
+              .join(" | ");
+
+            throw new Error(details);
+          }
+
+          if (response.redirected) {
+            throw new Error(
+              "Sesi login mungkin berakhir. Silakan login kembali."
+            );
+          }
+
+          throw new Error(
+            data && (data.error || data.detail)
+              ? data.error || data.detail
+              : "HTTP " + response.status +
+                ": Event gagal disimpan."
+          );
+        }
+
+        if (!data || !data.id) {
+          throw new Error(
+            "Backend tidak mengembalikan ID event."
+          );
+        }
+
+        dlg.close();
+
+        toast(
+          'Event "' + title +
+          '" berhasil disimpan ke database.'
+        );
+
+        window.setTimeout(function () {
+          window.location.reload();
+        }, 900);
+
+      } catch (error) {
+        toast(
+          error.message ||
+          "Terjadi kesalahan saat menyimpan event."
+        );
+
+        console.error("Create event error:", error);
+      } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = previousLabel;
+      }
+    });
+
+    syncMode();
   }
 
   /* ---------- Halaman: Dashboard ---------- */
@@ -351,9 +688,16 @@
       var id = parseInt(selEvent.value, 10), k = selMetrik.value, m = E.metrik[k];
       lineChart(plot, { labels: m.labels, values: E.series(id, k), name: m.nama, fmt: function (v) { return num(v) + " orang"; } });
     }
-    selEvent.addEventListener("change", drawChart);
-    selMetrik.addEventListener("change", drawChart);
-    drawChart();
+    if (selEvent.options.length > 0) {
+      selEvent.addEventListener("change", drawChart);
+      selMetrik.addEventListener("change", drawChart);
+      drawChart();
+    } else {
+      plot.innerHTML =
+        '<p style="padding:40px 20px;text-align:center;color:#64748b">' +
+        'Belum ada data kehadiran untuk event yang kamu kelola.' +
+        '</p>';
+    }
 
     /* log aktivitas */
     var ICON = { daftar: "i-user", hadir: "i-check", bayar: "i-card", support: "i-help", event: "i-calendar" };
@@ -382,7 +726,15 @@
     var tbody = $("#evBody"), tabsEl = $("#evTabs"), q = $("#evSearch"), filter = "semua";
     var dlg = $("#detailDlg");
     var TABS = [["semua", "Semua"], ["berlangsung", "Sedang Berlangsung"], ["mendatang", "Mendatang"], ["selesai", "Selesai"]];
-    var TABS_EXTRA = [["diajukan", "Menunggu Persetujuan"], ["ditolak", "Ditolak"], ["ditangguhkan", "Ditangguhkan"]];
+    var TABS_EXTRA = [
+      ["draft", "Draft"],
+      ["diajukan", "Menunggu Persetujuan"],
+      ["disetujui", "Disetujui"],
+      ["revisi", "Perlu Revisi"],
+      ["ditolak", "Ditolak"],
+      ["dibatalkan", "Dibatalkan"],
+      ["ditangguhkan", "Ditangguhkan"]
+    ];
     function counts() {
       return TABS.concat(TABS_EXTRA).map(function (t) { return [t[0], t[1], t[0] === "semua" ? E.events.length : E.events.filter(function (e) { return e.status === t[0]; }).length]; })
         .filter(function (t, i) { return i < TABS.length || t[2] > 0; });   /* tab tambahan hanya muncul bila ada isinya */
@@ -414,39 +766,287 @@
       Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
       "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
     };
-    function proposalOf(e) {
-      var S = window.SIM, n = S && S.state.newEvents.filter(function (x) { return x.id === e.id; })[0];
-      if (n && n.proposal) {
-        return { file: n.proposal.file, size: n.proposal.size, uploaded: n.proposal.uploaded, ringkasan: n.proposal.ringkasan || RINGKAS[e.jenis] || RINGKAS.Seminar, asli: true };
-      }
-      var slug = e.nama.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
-      return { file: "Proposal_" + slug + ".pdf", size: (0.8 + (e.id % 7) * 0.35).toFixed(1).replace(".", ",") + " MB", uploaded: e.tanggal, ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar, asli: false };
+    
+  function proposalOf(e) {
+    // Jika data event berasal dari PostgreSQL,
+    // jangan membuat nama, ukuran, atau tanggal PDF palsu.
+    if (window.EO_EVENTS_FROM_BACKEND) {
+      return {
+        file: e.has_proposal
+          ? "Proposal event (PDF)"
+          : "Belum ada proposal",
+        size: e.has_proposal
+          ? "Dokumen tersimpan di server"
+          : "Tidak ada dokumen",
+        uploaded: null,
+        ringkasan: e.deskripsi || "Belum ada deskripsi event.",
+        asli: Boolean(e.has_proposal),
+        backend: true
+      };
     }
+
+    // Fallback untuk mode dummy lama.
+    var S = window.SIM;
+    var n = S && S.state.newEvents.filter(function (x) {
+      return x.id === e.id;
+    })[0];
+
+    if (n && n.proposal) {
+      return {
+        file: n.proposal.file,
+        size: n.proposal.size,
+        uploaded: n.proposal.uploaded,
+        ringkasan: n.proposal.ringkasan ||
+          RINGKAS[e.jenis] || RINGKAS.Seminar,
+        asli: true,
+        backend: false
+      };
+    }
+
+    return {
+      file: "Proposal contoh",
+      size: "Data contoh",
+      uploaded: e.tanggal,
+      ringkasan: RINGKAS[e.jenis] || RINGKAS.Seminar,
+      asli: false,
+      backend: false
+    };
+  }
+
     dlg.addEventListener("click", function (ev) {
-      if (ev.target.closest("[data-open-doc]")) { toast("Contoh data: file proposal asli bisa dibuka setelah unggah tersambung ke backend."); }
+      if (!ev.target.closest("[data-open-doc]")) return;
+
+      if (!window.EO_EVENTS_FROM_BACKEND) {
+        toast("Proposal ini masih data contoh.");
+        return;
+      }
+
+      var eventId = Number(dlg.dataset.eventId);
+      var e = eventById(eventId);
+
+      if (!e || !e.has_proposal) {
+        toast("Proposal belum diunggah untuk event ini.");
+        return;
+      }
+
+      window.open(
+        "/events/manage/" + eventId + "/proposal/",
+        "_blank",
+        "noopener,noreferrer"
+      );
     });
+    
     tabsEl.addEventListener("click", function (ev) { var b = ev.target.closest("button[data-f]"); if (b) { filter = b.dataset.f; render(); } });
     q.addEventListener("input", render);
     tbody.addEventListener("click", function (ev) {
       var b = ev.target.closest("[data-detail]"); if (!b) { return; }
       var e = eventById(parseInt(b.dataset.detail, 10));
+      dlg.dataset.eventId = String(e.id);
       $("#detailTitle").textContent = e.nama;
       $("#detailBody").innerHTML =
         "<dt>Jenis</dt><dd>" + esc(e.jenis) + "</dd><dt>Tanggal</dt><dd>" + fmtDate(e.tanggal) + "</dd><dt>Lokasi</dt><dd>" + esc(e.lokasi) + "</dd>" +
         "<dt>Status</dt><dd>" + chip(e.status, E.statusEvent[e.status]) + "</dd><dt>Tiket terjual</dt><dd>" + e.terjual + " dari " + e.kuota + " kuota</dd>" +
         "<dt>Hadir</dt><dd>" + e.hadir + " peserta</dd><dt>Harga tiket</dt><dd>" + rp(e.harga) + "</dd><dt>Pendapatan</dt><dd>" + (e.pendapatan ? "Rp " + num(e.pendapatan) : "Rp 0") + "</dd>" +
         (e.alasan ? "<dt>Catatan admin</dt><dd>" + esc(e.alasan) + "</dd>" : "");
-      var p = proposalOf(e), anggaran = Math.round(e.kuota * Math.max(e.harga, 25000) * 0.6 / 100000) * 100000;
-      $("#detailProposal").innerHTML =
-        '<h3 class="prop-h">Proposal</h3>' +
-        '<div class="pdoc"><span class="pdoc__ico" aria-hidden="true">PDF</span><div><b>' + esc(p.file) + "</b><small>" + esc(p.size) + " &middot; diunggah " + fmtDate(p.uploaded) + '</small></div>' +
-        '<button type="button" class="btn btn--ghost" style="height:36px;padding:0 16px;font-size:13px" data-open-doc>Buka proposal</button></div>' +
-        '<dl class="detail-grid dl--prop"><dt>Tujuan &amp; ringkasan</dt><dd>' + esc(p.ringkasan) + "</dd><dt>Target peserta</dt><dd>" + e.kuota + " peserta, mahasiswa dan umum</dd><dt>Estimasi anggaran</dt><dd>Rp " + num(anggaran) + "</dd></dl>" +
-        (p.asli ? "" : '<p class="pdoc__note">Isi proposal ini data contoh. File asli tersedia setelah unggah proposal tersambung ke backend.</p>');
+      
+var proposalMeta = p.backend
+  ? p.size
+  : p.size + " · diunggah " + fmtDate(p.uploaded);
+
+var proposalButton = (!p.backend || p.asli)
+  ? '<button type="button" class="btn btn--ghost" ' +
+    'style="height:36px;padding:0 16px;font-size:13px" ' +
+    'data-open-doc>Buka proposal</button>'
+  : "";
+
+    var proposalNote = p.backend
+      ? (p.asli
+          ? ""
+          : '<p class="pdoc__note">Belum ada proposal PDF ' +
+            'yang diunggah untuk event ini.</p>')
+      : (p.asli
+          ? ""
+          : '<p class="pdoc__note">Proposal ini masih data contoh.</p>');
+
+    $("#detailProposal").innerHTML =
+      '<h3 class="prop-h">Proposal</h3>' +
+      '<div class="pdoc">' +
+        '<span class="pdoc__ico" aria-hidden="true">PDF</span>' +
+        '<div><b>' + esc(p.file) + '</b>' +
+        '<small>' + esc(proposalMeta) + '</small></div>' +
+        proposalButton +
+      '</div>' +
+      '<dl class="detail-grid dl--prop">' +
+        '<dt>Tujuan &amp; ringkasan</dt>' +
+        '<dd>' + esc(p.ringkasan) + '</dd>' +
+        '<dt>Target peserta</dt>' +
+        '<dd>' + e.kuota + ' peserta, mahasiswa dan umum</dd>' +
+        '<dt>Estimasi anggaran</dt>' +
+        '<dd>Rp ' + num(anggaran) + '</dd>' +
+      '</dl>' +
+      proposalNote;
+
+      // Tombol Ajukan ke Admin hanya untuk event
+      // Draft atau event yang perlu revisi.
+      dlg.dataset.eventId = String(e.id);
+
+      if (
+        window.EO_EVENTS_FROM_BACKEND &&
+        (e.status === "draft" || e.status === "revisi")
+      ) {
+        $("#detailProposal").insertAdjacentHTML(
+          "beforeend",
+          `
+          <div style="
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid #e5dfcf;
+          ">
+            <button
+              type="button"
+              class="btn"
+              data-submit-event
+              style="min-width: 180px;"
+            >
+              Ajukan ke Admin
+            </button>
+          </div>
+          `
+        );
+      }
       dlg.showModal();
     });
     $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
     dlg.addEventListener("click", function (ev) { if (ev.target === dlg) { dlg.close(); } });
+    
+    // AJUKAN EVENT KE ADMIN PLATFORM
+    dlg.addEventListener("click", async function (ev) {
+      var button = ev.target.closest("[data-submit-event]");
+      if (!button) return;
+
+      var eventId = Number(dlg.dataset.eventId);
+      var selectedEvent = eventById(eventId);
+
+      if (!selectedEvent) {
+        toast("Event tidak ditemukan.");
+        return;
+      }
+
+      if (
+        selectedEvent.status !== "draft" &&
+        selectedEvent.status !== "revisi"
+      ) {
+        toast("Event ini tidak dapat diajukan.");
+        return;
+      }
+
+      var confirmed = window.confirm(
+        'Ajukan event "' + selectedEvent.nama +
+        '" ke Admin Platform untuk diperiksa?'
+      );
+
+      if (!confirmed) return;
+
+      // CSRF token dari form Event Baru.
+      var csrfInput = document.querySelector(
+        '#newEventDlg [name="csrfmiddlewaretoken"]'
+      );
+
+      if (!csrfInput) {
+        toast("Token CSRF tidak ditemukan. Refresh halaman.");
+        return;
+      }
+
+      var originalText = button.textContent;
+
+      button.disabled = true;
+      button.textContent = "Mengajukan...";
+
+      try {
+        var response = await fetch(
+          "/events/manage/" + eventId + "/submit/",
+          {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "X-CSRFToken": csrfInput.value,
+              "X-Requested-With": "XMLHttpRequest",
+              "Accept": "application/json"
+            }
+          }
+        );
+
+        var data = await response.json().catch(function () {
+          return null;
+        });
+
+        if (!response.ok) {
+          if (response.redirected) {
+            throw new Error(
+              "Sesi login berakhir. Silakan login kembali."
+            );
+          }
+
+          if (data && data.errors) {
+            var errors = Object.entries(data.errors)
+              .map(function (entry) {
+                var message = Array.isArray(entry[1])
+                  ? entry[1].join(", ")
+                  : String(entry[1]);
+
+                return entry[0] + ": " + message;
+              })
+              .join(" | ");
+
+            throw new Error(errors);
+          }
+
+          if (response.status === 403) {
+            throw new Error(
+              "Akses ditolak. Akun tidak memiliki izin " +
+              "mengajukan event atau token CSRF tidak valid."
+            );
+          }
+
+          throw new Error(
+            (data && (data.error || data.detail)) ||
+            "Gagal mengajukan event (HTTP " +
+            response.status + ")."
+          );
+        }
+
+        // Sinkronkan data frontend dengan perubahan status.
+        selectedEvent.status = "diajukan";
+
+        dlg.close();
+
+        toast(
+          'Event "' + selectedEvent.nama +
+          '" berhasil diajukan ke Admin Platform.'
+        );
+
+        // Reload agar status terbaru berasal
+        // langsung dari PostgreSQL.
+        window.setTimeout(function () {
+          window.location.reload();
+        }, 1000);
+
+      } catch (error) {
+        console.error("Submit event error:", error);
+
+        toast(
+          error.message ||
+          "Terjadi kesalahan saat mengajukan event."
+        );
+
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    });
+
     onEventsChanged = render;
     render();
   }

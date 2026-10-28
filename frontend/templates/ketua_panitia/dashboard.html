@@ -215,4 +215,33 @@
     });
   });
 </script>
+
+{% if eo_dashboard_data %}
+  {{ eo_dashboard_data|json_script:"eo-dashboard-data" }}
+
+  <script>
+    (function () {
+      const element = document.getElementById("eo-dashboard-data");
+      const data = JSON.parse(element.textContent);
+
+      // Timpa data dummy khusus halaman dashboard.
+      window.EO.events = data.events;
+      window.EO.monthly = data.monthly;
+      window.EO.activity = data.activity;
+
+      // Ambil titik grafik kehadiran dari PostgreSQL.
+      window.EO.series = function (eventId, metric) {
+        const eventData = data.attendance_series[String(eventId)];
+
+        if (!eventData || !eventData[metric]) {
+          return [0, 0, 0, 0, 0, 0, 0];
+        }
+
+        return eventData[metric];
+      };
+
+      window.EO_DASHBOARD_FROM_BACKEND = true;
+    })();
+  </script>
+{% endif %}
 {% endblock %}

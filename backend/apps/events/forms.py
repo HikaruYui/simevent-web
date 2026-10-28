@@ -30,6 +30,34 @@ class BannerField(forms.ImageField):
         return upload
 
 
+class ProposalField(forms.FileField):
+    def to_python(self, data):
+        upload = super().to_python(data)
+
+        if upload is None:
+            return None
+
+        if upload.size > 10 * 1024 * 1024:
+            raise forms.ValidationError(
+                "Proposal maksimal 10 MB."
+            )
+
+        if not upload.name.lower().endswith(".pdf"):
+            raise forms.ValidationError(
+                "Proposal harus berformat PDF."
+            )
+
+        signature = upload.read(5)
+        upload.seek(0)
+
+        if signature != b"%PDF-":
+            raise forms.ValidationError(
+                "Berkas bukan PDF yang valid."
+            )
+
+        return upload
+
+
 # Inheritance: memakai validasi dan penyimpanan ModelForm, lalu menambahkan aturan event.
 class EventForm(forms.ModelForm):
     banner = BannerField(required=False)
@@ -37,14 +65,25 @@ class EventForm(forms.ModelForm):
     meeting_url = forms.URLField(
         required=False, max_length=1000, validators=[URLValidator(schemes=["https"])]
     )
+    proposal = ProposalField(required=False)
     access_instructions = forms.CharField(required=False, max_length=5000)
 
     class Meta:
         model = Event
         fields = (
-            "title", "description", "event_type", "delivery_mode",
-            "start_datetime", "end_datetime", "venue", "capacity", "price",
-            "registration_open", "registration_close", "banner",
+            "title",
+            "description",
+            "event_type",
+            "delivery_mode",
+            "start_datetime",
+            "end_datetime",
+            "venue",
+            "capacity",
+            "price",
+            "registration_open",
+            "registration_close",
+            "banner",
+            "proposal",
         )
 
     def __init__(self, *args, **kwargs):
