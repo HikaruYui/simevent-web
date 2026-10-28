@@ -21,10 +21,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/app:z #bagian sini yang gada
       - ./frontend:/frontend:z
       - media:/app/media
-      - private_event_files:/app/private_media
+      - private_event_files:/app/private_media:z
     depends_on:
       db:
         condition: service_healthy
