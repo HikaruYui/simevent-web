@@ -291,7 +291,7 @@ body.participant-page { min-height: 100vh; overflow-x: hidden; }
       <!-- BAWAH: PROFIL + LOGOUT -->
       <div>
         <div class="participant-user-chip mt-[16px] flex w-full min-w-0 items-center gap-[12px] rounded-[12px] border-t border-amber-200/80 px-[8px] pb-[8px] pt-[16px]">
-          <img src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}" data-profile-photo-preview data-saved-src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% endif %}" data-default-src="{% static 'img/achievement-hero.png' %}" alt="" class="h-[48px] w-[48px] shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
+          <img src="{% if request.user.profile_photo %}{% url 'foto_profil' %}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}" data-profile-photo-preview data-saved-src="{% if request.user.profile_photo %}{% url 'foto_profil' %}{% endif %}" data-default-src="{% static 'img/achievement-hero.png' %}" alt="" class="h-[48px] w-[48px] shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white" onerror="this.onerror=null; this.src=this.dataset.defaultSrc">
           <span class="min-w-0">
             <span class="block truncate text-[13px] font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
             <span class="block text-[11px] font-semibold text-brand-muted">Panitia Biasa</span>

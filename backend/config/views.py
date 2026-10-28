@@ -2,7 +2,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -382,6 +382,28 @@ def peserta_hapus_foto(request):
         photo_storage.delete(photo_name)
 
     return JsonResponse({"deleted": True})
+
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def foto_profil(request):
+    photo = request.user.profile_photo
+    if not photo:
+        raise Http404("Foto profil tidak ditemukan.")
+
+    try:
+        image_file = photo.open("rb")
+    except (FileNotFoundError, OSError):
+        raise Http404("File foto profil tidak ditemukan.")
+
+    content_type = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+    }.get(photo.name[photo.name.rfind("."):].lower(), "application/octet-stream")
+    return FileResponse(image_file, content_type=content_type)
 
 
 @never_cache

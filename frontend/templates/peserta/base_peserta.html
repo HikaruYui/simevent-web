@@ -824,9 +824,13 @@ html {
         >
 
           <img
-            src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}"
+            src="{% if request.user.profile_photo %}{% url 'foto_profil' %}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}"
+            data-profile-photo-preview
+            data-saved-src="{% if request.user.profile_photo %}{% url 'foto_profil' %}{% endif %}"
+            data-default-src="{% static 'img/achievement-hero.png' %}"
             alt="Foto profil {{ request.user.get_full_name|default:request.user.email }}"
             class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white"
+            onerror="this.onerror=null; this.src=this.dataset.defaultSrc"
           >
 
           <span

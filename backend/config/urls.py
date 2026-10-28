@@ -125,6 +125,11 @@ urlpatterns = [
     ),
 
     path(
+        "akun/foto-profil/",
+        views.foto_profil,
+        name="foto_profil",
+    ),
+    path(
         "peserta/akun/",
         views.peserta_akun,
         name="peserta_akun",
