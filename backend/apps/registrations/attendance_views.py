@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
-
 from .attendance import AttendanceService
 from .models import Registration
 from .views import ParticipantAccessMixin, attendance_data

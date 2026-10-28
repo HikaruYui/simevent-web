@@ -1,10 +1,8 @@
 # Fungsi file: Pengujian app registrations: scan QR, validitas tiket, attendance, void, dan pembatasan akses.
-
-from datetime import timedelta
+from datetime import date, timedelta
 from io import BytesIO
 from unittest.mock import patch
 from uuid import uuid4
-
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.http import Http404
@@ -12,21 +10,37 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
-
-from apps.events.models import Event, EventAccess, EventStatus
+from apps.events.models import (
+    Event, EventAccess, EventStatus, EventCommitteeAssignment
+)
 from apps.events.tests.support import published_event, setup_users
 from apps.registrations.attendance import AttendanceService
 from apps.registrations.models import Attendance, Ticket
 from apps.registrations.services import RegistrationService
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 
 
 class AttendanceTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
+
+        # Lengkapi biodata akun peserta khusus pengujian.
+        cls.participant.ktp_number = "1234567890123456"
+        cls.participant.gender = "L"
+        cls.participant.birth_place = "Samarinda"
+        cls.participant.birth_date = date(2004, 1, 1)
+        cls.participant.address = "Alamat dummy untuk pengujian"
+        cls.participant.phone_number = "081234567890"
+        cls.participant.save()
+
         cls.event = published_event(cls.owner, cls.admin)
-        cls.registration = RegistrationService(cls.participant).register(cls.event.pk)
+        cls.registration = RegistrationService(cls.participant).register(
+            cls.event.pk
+        )
         cls.token = cls.registration.ticket.token
+
 
     def scan(self, actor=None, token=None):
         with patch("apps.registrations.attendance.timezone.now", return_value=self.event.start_datetime):
@@ -49,6 +63,56 @@ class AttendanceTests(TestCase):
         with self.assertRaises(PermissionDenied):
             self.scan(self.participant)
         self.assertTrue(self.scan(self.admin)[1])
+
+    
+    def test_assigned_committee_can_scan_and_revoked_committee_cannot(self):
+        committee = get_user_model().objects.create_user(
+            email="scanner-committee@example.com",
+            password="Test-password-123!",
+            first_name="Panitia",
+        )
+
+        committee.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="accounts",
+                codename="access_organizer",
+            )
+        )
+
+        self.assertEqual(committee.role, "COMMITTEE")
+
+        # Tanpa penugasan, panitia tidak boleh scan.
+        with self.assertRaises(Http404):
+            self.scan(actor=committee)
+
+        # Tugaskan ke event pengujian.
+        assignment = EventCommitteeAssignment.objects.create(
+            event=self.event,
+            member=committee,
+            is_active=True,
+        )
+
+        # Panitia yang ditugaskan boleh melakukan presensi.
+        attendance, created = self.scan(actor=committee)
+
+        self.assertTrue(created)
+        self.assertEqual(attendance.verified_by, committee)
+        self.assertEqual(Attendance.objects.count(), 1)
+
+        # Scan berulang tidak membuat attendance baru.
+        repeated, created_again = self.scan(actor=committee)
+
+        self.assertFalse(created_again)
+        self.assertEqual(repeated.pk, attendance.pk)
+        self.assertEqual(Attendance.objects.count(), 1)
+
+        # Setelah penugasan dicabut, akses ditolak.
+        assignment.is_active = False
+        assignment.save(update_fields=["is_active"])
+
+        with self.assertRaises(Http404):
+            self.scan(actor=committee)
+
 
     def test_invalid_and_wrong_event_tokens_are_rejected(self):
         other_event = published_event(self.owner, self.admin)

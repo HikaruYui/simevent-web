@@ -140,6 +140,16 @@ urlpatterns = [
         name="peserta_hapus_foto",
     ),
     path(
+        "panitia_biasa/dokumentasi/simpan/",
+        views.panitia_simpan_dokumentasi,
+        name="panitia_simpan_dokumentasi",
+    ),
+    path(
+        "peserta/dokumentasi/<int:pk>/",
+        views.peserta_dokumentasi,
+        name="peserta_dokumentasi",
+    ),
+    path(
         "peserta/",
         views.peserta_dashboard,
         name="peserta_dashboard",

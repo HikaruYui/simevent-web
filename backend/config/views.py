@@ -15,6 +15,7 @@ from django.core.exceptions import PermissionDenied
 from collections import Counter, defaultdict
 from datetime import timedelta
 from decimal import Decimal
+from urllib.parse import urlsplit
 from apps.registrations.models import Ticket
 from apps.registrations.models import (
     Attendance,
@@ -737,21 +738,117 @@ def peserta_achievement(request):
         "track_segment": min(3, max(0, len(completed_levels) - 1)),
     })
 
+
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
 def panitia_biasa_dashboard(request):
     _require_role(request, "COMMITTEE")
 
-    documentation_events = (
-        Event.objects.managed_by(request.user)
-        .filter(status__in=(EventStatus.PUBLISHED, EventStatus.COMPLETED))
-        .select_related("event_type")
+    assigned_events = (
+        Event.objects.filter(
+            committee_assignments__member=request.user,
+            committee_assignments__is_active=True,
+        )
+        .distinct()
         .order_by("-start_datetime", "-pk")
     )
-    return render(request, "panitia_biasa_page.html", {
-        "documentation_events": documentation_events,
-    })
+
+    event_list = list(assigned_events)
+    selected_event = None
+    participant_rows = []
+
+    if event_list:
+        selected_id = request.GET.get("event_id")
+
+        if selected_id:
+            selected_event = get_object_or_404(
+                assigned_events,
+                pk=selected_id,
+            )
+        else:
+            selected_event = event_list[0]
+
+        registrations = (
+            Registration.objects.filter(
+                event=selected_event,
+                status=RegistrationStatus.REGISTERED,
+                ticket__is_active=True,
+            )
+            .filter(
+                Q(
+                    event__price=0,
+                    payment__isnull=True,
+                )
+                | Q(
+                    payment__status=Payment.Status.APPROVED,
+                )
+            )
+            .select_related(
+                "participant",
+                "ticket",
+                "attendance",
+            )
+            .order_by("registered_at", "pk")
+        )
+
+        for registration in registrations:
+            participant = registration.participant
+            attendance = getattr(
+                registration, "attendance", None
+            )
+
+            is_present = bool(
+                attendance
+                and attendance.status == Attendance.Status.PRESENT
+            )
+
+            checkin_time = "-"
+
+            if is_present:
+                checkin_time = (
+                    timezone.localtime(
+                        attendance.checked_in_at
+                    ).strftime("%H:%M") + " WITA"
+                )
+
+            participant_rows.append({
+                "registrationId": registration.pk,
+                "code": str(registration.ticket.identifier),
+                "name": (
+                    participant.get_full_name().strip()
+                    or participant.email
+                ),
+                "email": participant.email,
+                "present": is_present,
+                "checkinTime": checkin_time,
+            })
+
+    panitia_db_data = None
+
+    if selected_event:
+        panitia_db_data = {
+            "eventId": selected_event.pk,
+            "eventName": selected_event.title,
+            "documentationUrl": selected_event.documentation_url,
+            "events": [
+                {
+                    "id": event.pk,
+                    "name": event.title,
+                }
+                for event in event_list
+            ],
+            "participants": participant_rows,
+        }
+
+    return render(
+        request,
+        "panitia_biasa_page.html",
+        {
+            "panitia_db_data": panitia_db_data,
+        },
+    )
+
 
 @never_cache
 @require_GET
@@ -1453,3 +1550,74 @@ def panitia_akun(request):
         template_name="panitia_biasa/akun_panitia_biasa.html",
         success_url="panitia_akun",
     )
+
+
+
+@require_POST
+@login_required(login_url="login_page")
+def panitia_simpan_dokumentasi(request):
+    if request.user.role != "COMMITTEE" or not request.user.is_active:
+        raise PermissionDenied
+
+    event = get_object_or_404(
+        Event.objects.filter(
+            committee_assignments__member=request.user,
+            committee_assignments__is_active=True,
+        ),
+        pk=request.POST.get("event_id"),
+    )
+
+    url = request.POST.get("documentation_url", "").strip()
+    parsed = urlsplit(url)
+
+    if (
+        len(url) > 500
+        or parsed.scheme != "https"
+        or parsed.hostname != "drive.google.com"
+        or not parsed.path.startswith("/drive/folders/")
+    ):
+        messages.error(request, "Masukkan URL folder Google Drive yang valid.")
+    else:
+        event.documentation_url = url
+        event.save(update_fields=["documentation_url"])
+        messages.success(request, "Dokumentasi berhasil disimpan ke PostgreSQL.")
+
+    return redirect(f"/panitia_biasa/?event_id={event.pk}#tab-dokumentasi")
+
+
+@require_GET
+@login_required(login_url="login_page")
+def peserta_dokumentasi(request, pk):
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
+
+    registration = get_object_or_404(
+        Registration.objects.owned_by(request.user)
+        .select_related("event", "attendance", "feedback", "payment"),
+        pk=pk,
+        status=RegistrationStatus.REGISTERED,
+        event__status=EventStatus.COMPLETED,
+        event__end_datetime__lte=timezone.now(),
+        attendance__status=Attendance.Status.PRESENT,
+        feedback__isnull=False,
+    )
+
+    if (
+        hasattr(registration, "payment")
+        and registration.payment.status != Payment.Status.APPROVED
+    ):
+        raise PermissionDenied
+
+    url = registration.event.documentation_url
+
+    if (
+        not url
+        or urlsplit(url).scheme != "https"
+        or urlsplit(url).hostname != "drive.google.com"
+        or not urlsplit(url).path.startswith("/drive/folders/")
+    ):
+        raise Http404("Dokumentasi belum tersedia.")
+
+    return redirect(url)
+

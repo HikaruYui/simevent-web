@@ -57,7 +57,7 @@
     <div class="profile-avatar-preview" id="profileAvatarPreview">
       <i class="fa-solid fa-user"></i>
     </div>
-    <h3 id="profileCardName" style="margin:0; font-size:19px; font-weight:800;">{{ request.user.get_full_name|default:"Denny Mulia" }}</h3>
+    <h3 id="profileCardName" style="margin:0; font-size:19px; font-weight:800;">{{ request.user.get_full_name|default:committee_demo.profile_name }}</h3>
     <p style="margin:4px 0 16px; font-size:13px; color:var(--muted);">Panitia Biasa - SIMEVENT</p>
 
     <label for="avatarUploadInput" class="btn-primary" style="width:100%; cursor:pointer;">
@@ -81,7 +81,7 @@
     <form onsubmit="handleProfileSave(event)">
       <div class="form-group">
         <label for="inputNamaPanitia">Nama Lengkap Panitia</label>
-        <input type="text" id="inputNamaPanitia" class="form-input" value="{{ request.user.get_full_name|default:'Denny Mulia' }}" required>
+        <input type="text" id="inputNamaPanitia" class="form-input" value="{{ request.user.get_full_name|default:committee_demo.profile_name }}" required>
       </div>
 
       <div class="form-group">
@@ -111,13 +111,7 @@
 
 <script>
   const STORAGE_KEY_PESERTA = 'simevent_panitia_biasa_peserta_list';
-  const defaultParticipants = [
-    { code: 'SIM-001', name: 'Andi Pratama', email: 'andi.pratama@unmul.ac.id', present: true, checkinTime: '08:15 WITA' },
-    { code: 'SIM-002', name: 'Siti Rahmawati', email: 'siti.rahma@gmail.com', present: true, checkinTime: '08:22 WITA' },
-    { code: 'SIM-003', name: 'Budi Santoso', email: 'budi.santoso@polnes.ac.id', present: false, checkinTime: '-' },
-    { code: 'SIM-004', name: 'Nabila Putri', email: 'nabila.putri@gmail.com', present: false, checkinTime: '-' },
-    { code: 'SIM-005', name: 'Rizky Ramadhan', email: 'rizky.rmd@itk.ac.id', present: false, checkinTime: '-' }
-  ];
+  const defaultParticipants = window.SIMEVENT_DEMO.committee.participants;
 
   let participants = [];
   let currentFilter = 'all';
@@ -208,7 +202,7 @@
       resultBox.innerHTML = `
         <div class="scan-success-card" style="border-color:var(--danger); background:#fff5f5;">
           <h4 style="margin:0 0 6px; color:var(--danger);"><i class="fa-solid fa-circle-exclamation"></i> Kode "${code}" Tidak Terdaftar</h4>
-          <p style="margin:0; font-size:13px; color:var(--muted);">Pastikan kode tiket sesuai dengan daftar peserta (contoh: SIM-003).</p>
+          <p style="margin:0; font-size:13px; color:var(--muted);">Pastikan kode tiket sesuai dengan daftar peserta (contoh: ${defaultParticipants[2].code}).</p>
         </div>
       `;
       return;

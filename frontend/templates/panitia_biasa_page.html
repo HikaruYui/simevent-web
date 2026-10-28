@@ -17,9 +17,44 @@
   </div>
 
   <!-- ISI MENU 3: DAFTAR NAMA PESERTA -->
+  
   <div id="tab-peserta" class="tab-pane">
+
+    {% if panitia_db_data %}
+      <div class="panel-card" style="padding:16px; margin-bottom:16px;">
+        <form method="get"
+              action="{% url 'panitia_biasa' %}#tab-peserta">
+          <label for="selectedEvent"
+                style="font-weight:700; display:block; margin-bottom:8px;">
+            Event yang Ditugaskan
+          </label>
+
+          <select
+            id="selectedEvent"
+            name="event_id"
+            onchange="this.form.submit()"
+            style="width:100%; padding:12px; border-radius:10px;"
+          >
+            {% for event in panitia_db_data.events %}
+              <option
+                value="{{ event.id }}"
+                {% if event.id == panitia_db_data.eventId %}selected{% endif %}
+              >
+                {{ event.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+    {% else %}
+      <p style="margin-bottom:16px; font-weight:700;">
+        Mode Demo — belum ada penugasan event database.
+      </p>
+    {% endif %}
+
     {% include 'panitia_biasa/_peserta_panitia_biasa.html' %}
   </div>
+
 
   <!-- ISI MENU 4: PROFIL PANITIA & EVENT -->
   <div id="tab-profil" class="tab-pane">
@@ -30,7 +65,7 @@
       <h3 style="margin:0 0 6px; font-size:20px; font-weight:800;">Ubah Judul Event</h3>
       <p style="margin:0 0 16px; font-size:13px; color:var(--muted);">Sesuaikan nama event yang sedang dikelola saat ini.</p>
       <form onsubmit="handleEventNameSave(event)">
-        <input type="text" id="inputNamaEvent" style="width:100%; height:46px; padding:0 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px; margin-bottom:12px;" value="Seminar Teknologi Nusantara" required>
+        <input type="text" id="inputNamaEvent" style="width:100%; height:46px; padding:0 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px; margin-bottom:12px;" value="{{ committee_demo.event_name }}" required>
         <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Judul Event</button>
       </form>
     </div>
@@ -55,4 +90,188 @@
       }
     });
   </script>
+
+{% if panitia_db_data %}
+  {{ panitia_db_data|json_script:"committee-backend-data" }}
+
+  <script>
+    (function () {
+      const element = document.getElementById(
+        "committee-backend-data"
+      );
+
+      const backend = JSON.parse(element.textContent);
+
+      // Gunakan PostgreSQL, bukan localStorage.
+      window.loadParticipants = function () {
+        participants = backend.participants.map(
+          item => ({ ...item })
+        );
+      };
+
+      // Dalam mode DB, jangan menyimpan presensi simulasi.
+      window.saveParticipants = function () {};
+
+      // Pertahankan tabel dan filter yang sudah ada.
+      const originalRender = window.renderParticipantTable;
+
+      window.renderParticipantTable = function () {
+        originalRender();
+
+        // Sembunyikan aksi presensi lokal.
+        document.querySelectorAll(
+          "#participantTableBody td:last-child"
+        ).forEach(cell => {
+          cell.replaceChildren();
+        });
+      };
+
+      window.togglePresence = function () {
+        alert(
+          "Pembatalan presensi database hanya dapat dilakukan " +
+          "oleh Admin melalui mekanisme pembatalan resmi."
+        );
+      };
+
+    // Scanner database akan dihubungkan pada tahap berikutnya.  
+    let scanInProgress = false;
+
+    window.markParticipantPresent = async function (rawToken) {
+      if (scanInProgress) return;
+
+      const token = String(rawToken || "").trim();
+      if (!token) return;
+
+      const element = document.getElementById("committee-backend-data");
+      if (!element) {
+        alert("Data event PostgreSQL belum tersedia.");
+        return;
+      }
+
+      const data = JSON.parse(element.textContent);
+      const badge = document.getElementById("scanStatusBadge");
+      const resultBox = document.getElementById("scanResultContainer");
+
+      function showResult(title, message, success) {
+        badge.textContent = success ? "SCAN BERHASIL" : "SCAN GAGAL";
+        badge.style.background = success
+          ? "var(--green-bg)"
+          : "var(--danger-bg)";
+        badge.style.color = success
+          ? "var(--green)"
+          : "var(--danger)";
+
+        const card = document.createElement("div");
+        card.className = "scan-success-card";
+
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+
+        const description = document.createElement("p");
+        description.textContent = message;
+
+        card.append(heading, description);
+        resultBox.replaceChildren(card);
+      }
+
+      scanInProgress = true;
+      badge.textContent = "MEMPROSES...";
+
+      try {
+        const csrfToken = document.querySelector(
+          'input[name="csrfmiddlewaretoken"]'
+        )?.value;
+
+        if (!csrfToken) {
+          throw new Error("CSRF token tidak ditemukan. Muat ulang halaman.");
+        }
+
+        const response = await fetch(
+          `/registrations/events/${data.eventId}/scan/`,
+          {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-CSRFToken": csrfToken,
+            },
+            body: new URLSearchParams({ token }),
+          }
+        );
+
+        
+        const contentType = response.headers.get("content-type") || "";
+
+        const result = contentType.includes("application/json")
+          ? await response.json()
+          : {};
+
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            throw new Error("Tidak memiliki izin scan event ini.");
+          }
+
+          if (response.status === 404) {
+            throw new Error("Event tidak ditemukan atau tidak dapat diakses.");
+          }
+
+          const details = result.errors
+            ? Object.values(result.errors).flat().join(", ")
+            : result.error;
+
+          throw new Error(details || `HTTP ${response.status}`);
+        }
+
+        const participant = participants.find(
+          p => p.registrationId === result.registration_id
+        );
+
+        if (participant) {
+          participant.present = true;
+
+          if (result.checked_in_at) {
+            participant.checkinTime = new Intl.DateTimeFormat(
+              "id-ID",
+              {
+                timeZone: "Asia/Makassar",
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            ).format(new Date(result.checked_in_at)) + " WITA";
+          }
+
+          updateStatsAndUI();
+        }
+
+        showResult(
+          result.already_checked_in
+            ? "Peserta sudah pernah absen"
+            : "Presensi berhasil disimpan!",
+          participant
+            ? `${participant.name} — ${participant.email}`
+            : `Registrasi ID ${result.registration_id}`,
+          true
+        );
+
+        // Hentikan kamera setelah scan berhasil agar tidak scan berulang.
+        if (cameraActive && html5QrScanner) {
+          await html5QrScanner.stop();
+          cameraActive = false;
+
+          document.getElementById("cameraPlaceholder").style.display = "block";
+          document.getElementById("btnToggleCamera").innerHTML =
+            '<i class="fa-solid fa-camera"></i> Nyalakan Kamera';
+        }
+
+      } catch (error) {
+        showResult("Presensi tidak berhasil", error.message, false);
+        console.error("Scanner PostgreSQL:", error);
+      } finally {
+        scanInProgress = false;
+      }
+    };
+    })();
+  </script>
+{% endif %}
 {% endblock %}
