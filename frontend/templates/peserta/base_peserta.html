@@ -60,6 +60,7 @@ tailwind.config = {
 
 <style>
 :root {
+  --side-w: 14.64rem; /* = sidebar admin (210-244px) */
   --participant-shell: #f3e2b4;
   --participant-shell-strong: #e1cb8d;
   --participant-card: rgba(255,250,240,.78);
@@ -617,21 +618,21 @@ body,
    ========================================= */
 
 html {
-  font-size: 14px;
+  font-size: clamp(14.3px, 0.99vw, 16.67px); /* sama skala dgn sidebar admin */
 }
 
 @media (min-width: 768px) {
 
   /* Sidebar dan jarak konten mengikuti tata letak pada contoh. */
   .participant-shell {
-    padding-left: 205px !important;
+    padding-left: var(--side-w) !important;
   }
 
   .participant-sidebar {
     left: 0 !important;
     top: 0 !important;
     bottom: 0 !important;
-    width: 205px !important;
+    width: var(--side-w) !important;
   }
 
   .participant-sidebar-panel {
@@ -642,9 +643,9 @@ html {
     box-shadow: none !important;
   }
 
-  .participant-main > div[class*="max-w-[1440px]"] {
-    max-width: 1210px !important;
-  }
+  .participant-main {
+  padding: 36px 40px 56px !important;
+}
 
   /* Logo */
   .participant-sidebar-brand {
