@@ -13,6 +13,7 @@
 
 </head>
 <body>
+  {% include 'partials/icons.html' %}
   <div class="page jj-page">
     <header class="site-header jj-site-header">
       <nav class="navbar" aria-label="Navigasi utama">
@@ -114,51 +115,10 @@
         <nav class="jj-pagination" id="jj-pagination" aria-label="Navigasi halaman event"></nav>
       </section>
     </main>
-    <footer class="footer jj-footer" id="bantuan">
-      <div class="footer__inner">
-        <div class="footer__grid">
-          <div class="footer__brand">
-            <img
-              src="{% static 'img/logo.svg' %}"
-              alt="SIMEVENT"
-            >
-            <p>Platform pendaftaran dan pembuatan event formal. Menghubungkan peserta, penyelenggara, dan komunitas dalam satu sistem.</p>
-          </div>
-          <div>
-            <h3>Kategori Event</h3>
-            <ul>
-              <li><a href="{% url 'jelajah' %}?kategori=conference">Konferensi</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=workshop">Workshop</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=seminar">Seminar</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=webinar">Webinar</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=sosialisasi">Sosialisasi</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3>SIMEVENT</h3>
-            <ul>
-              <li>
-                <a href="{% url 'tentang' %}">
-                  Tentang Kami
-                </a>
-              </li>
-              <li><a href="{% url 'bantuan' %}">Bantuan</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3>Kontak dan Alamat</h3>
-            <ul class="footer__contact">
-              <li><a href="mailto:halo@simevent.id">halo@simevent.id</a></li>
-              <li><span>Samarinda, Kalimantan Timur</span></li>
-            </ul>
-          </div>
-        </div>
-        <div class="footer__bottom">
-          <p>&copy; 2026 SIMEVENT | All Right Reserved</p>
-          <div><a href="#">Kebijakan Privasi</a><a href="#">Syarat &amp; Ketentuan</a></div>
-        </div>
-      </div>
-    </footer>
+        </main>
+    {% include 'partials/footer.html' %}
+  </div>
+  {{ event_data|json_script:"backend-events" }}
   </div>
   {{ event_data|json_script:"backend-events" }}
   <script>

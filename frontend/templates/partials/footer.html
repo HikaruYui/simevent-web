@@ -1,5 +1,5 @@
 {% load static %}
-<footer class="footer">
+<footer class="footer" id="bantuan">
   <div class="footer__inner">
     <div class="footer__grid">
       <div class="footer__brand">
@@ -10,9 +10,11 @@
       <div>
         <h3>Kategori Event</h3>
         <ul>
-          {% for k in kategori_list %}
-          <li><a href="{% url 'jelajah' %}?kategori={{ k.slug }}">{{ k.nama }}</a></li>
-          {% endfor %}
+          <li><a href="{% url 'jelajah' %}?kategori=conference">Konferensi</a></li>
+          <li><a href="{% url 'jelajah' %}?kategori=workshop">Workshop</a></li>
+          <li><a href="{% url 'jelajah' %}?kategori=seminar">Seminar</a></li>
+          <li><a href="{% url 'jelajah' %}?kategori=webinar">Webinar</a></li>
+          <li><a href="{% url 'jelajah' %}?kategori=sosialisasi">Sosialisasi</a></li>
         </ul>
       </div>
 
@@ -29,7 +31,11 @@
         <ul class="footer__contact">
           <li><svg class="icon"><use href="#ic-mail"/></svg><a href="mailto:halo@simevent.id">halo@simevent.id</a></li>
           <li><svg class="icon"><use href="#ic-instagram"/></svg><a href="https://instagram.com/simivent.id">@simivent.id</a></li>
-          <li><svg class="icon"><use href="#ic-pin"/></svg><span>Samarinda, Kalimantan Timur</span></li>
+          <li>
+  <svg class="icon"><use href="#ic-pin"/></svg>
+  <a href="https://www.google.com/maps/search/?api=1&query=Jl.+Sambaliung%2C+Sempaja+Sel.%2C+Kec.+Samarinda+Utara%2C+Kota+Samarinda%2C+Kalimantan+Timur+75242"
+     target="_blank" rel="noopener noreferrer">Samarinda, Kalimantan Timur</a>
+</li>
         </ul>
       </div>
     </div>

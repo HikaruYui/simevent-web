@@ -22,7 +22,7 @@
 
 
 <body>
-
+{% include 'partials/icons.html' %}
   <div class="page bt-page">
 
     <header class="site-header bt-site-header">
@@ -291,65 +291,11 @@
     </main>
 
 
-    <footer class="footer bt-footer" id="bantuan">
+        </main>
 
-      <div class="footer__inner">
+    {% include 'partials/footer.html' %}
 
-        <div class="footer__grid">
-
-          <div class="footer__brand">
-            <img src="{% static 'img/logo.svg' %}" alt="SIMEVENT">
-            <p>
-              Platform pendaftaran dan pembuatan event formal.
-              Menghubungkan peserta, penyelenggara, dan komunitas
-              dalam satu sistem.
-            </p>
-          </div>
-
-          <div>
-            <h3>Kategori Event</h3>
-            <ul>
-              <li><a href="{% url 'jelajah' %}?kategori=conference">Konferensi</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=workshop">Workshop</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=seminar">Seminar</a></li>
-              <li><a href="{% url 'jelajah' %}?kategori=webinar">Webinar</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3>SIMEVENT</h3>
-            <ul>
-              <li><a href="{% url 'tentang' %}">Tentang Kami</a></li>
-              <li><a href="{% url 'bantuan' %}">Bantuan</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3>Kontak dan Alamat</h3>
-            <ul class="footer__contact">
-              <li>
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-                <a href="mailto:halo@simevent.id">halo@simevent.id</a>
-              </li>
-              <li>
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>Samarinda, Kalimantan Timur</span>
-              </li>
-            </ul>
-          </div>
-
-        </div>
-
-        <div class="footer__bottom">
-          <p>&copy; 2026 SIMEVENT | All Right Reserved</p>
-          <div>
-            <a href="#">Kebijakan Privasi</a>
-            <a href="#">Syarat &amp; Ketentuan</a>
-          </div>
-        </div>
-
-      </div>
-    </footer>
+  </div>
 
   </div>
 

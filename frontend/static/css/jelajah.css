@@ -301,17 +301,8 @@
 .jj-pagination button.is-current { border-color: var(--orange); background: var(--orange); color: #fff; }
 .jj-pagination button:disabled { opacity: .45; cursor: not-allowed; }
 
-.jj-footer .footer__grid { grid-template-columns: 1.7fr .8fr .8fr 1.2fr; gap: 28px; }
-.jj-footer .footer__brand img { width: 180px; }
-
 @media (min-width: 700px) and (max-width: 900px) {
   .jj-toolbar, .jj-note, .jj-empty, .jj-pagination { margin-left: -32px; margin-right: -32px; }
-  .jj-footer .footer__inner { padding: 30px 6vw 0; }
-  .jj-footer .footer__grid { grid-template-columns: 1.5fr .75fr .7fr 1.2fr; gap: 18px; padding-bottom: 26px; }
-  .jj-footer .footer__brand img { width: 140px; }
-  .jj-footer .footer__brand p, .jj-footer li { font-size: 10px; line-height: 15px; }
-  .jj-footer h3 { margin-bottom: 10px; font-size: 12px; }
-  .jj-footer .footer__bottom { font-size: 9px; }
 }
 
 @media (max-width: 699px) {
@@ -336,8 +327,6 @@
   .jj-reset-button { justify-self: start; }
   .jj-event-grid { grid-template-columns: minmax(0, 296px); }
   .jj-event-card { min-height: 174px; }
-  .jj-footer .footer__inner { padding-top: 32px; }
-  .jj-footer .footer__grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 420px) {
   .jj { padding-inline: 18px; }
@@ -351,4 +340,4 @@
 .jj-page { min-height: 100vh; display: flex; flex-direction: column; }
 @media (min-width: 1101px) { .jj-page { min-height: calc(100vh / 0.8); } }   /* body di-zoom 0.8 pada layar lebar */
 .jj-page > .jj { flex: 1 0 auto; width: 100%; }
-.jj-page > .jj-footer { flex: none; margin-top: auto; }
+.jj-page > .footer { flex: none; margin-top: auto; }
