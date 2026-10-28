@@ -3,11 +3,10 @@ services:
     image: postgres:17
     env_file:
       - ./backend/.env
-    
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,11 +19,10 @@ services:
       POSTGRES_HOST: db
     ports:
       - "8000:8000"
-
     volumes:
+      - ./backend:/app
       - ./frontend:/frontend:z
       - media:/app/media
-    
     depends_on:
       db:
         condition: service_healthy

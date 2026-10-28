@@ -8,7 +8,7 @@
   <article class="card kpi kpi--split"><p class="kpi__label">Pengguna</p><div class="kpi__pair"><div><span class="kpi__num" id="kUsers">0</span><span class="kpi__cap">Akun Aktif</span></div><i></i><div><span class="kpi__num kpi__num--orange" id="kProp">0</span><span class="kpi__cap kpi__cap--orange">Pengajuan</span></div></div></article>
   <article class="card kpi kpi--split"><p class="kpi__label">Event</p><div class="kpi__pair"><div><span class="kpi__num" id="kEvents">0</span><span class="kpi__cap">Terdaftar</span></div><i></i><div><span class="kpi__num kpi__num--orange" id="kLiveEv">0</span><span class="kpi__cap kpi__cap--orange">Berlangsung</span></div></div></article>
   <article class="card kpi kpi--split"><p class="kpi__label">Persetujuan Event</p><div class="kpi__pair"><div><span class="kpi__num kpi__num--orange" id="kPend">0</span><span class="kpi__cap kpi__cap--orange">Perlu Review</span></div><i></i><div><span class="kpi__num" id="kOk">0</span><span class="kpi__cap">Disetujui</span></div></div></article>
-  <article class="card kpi kpi--split"><p class="kpi__label">Tiket Support</p><div class="kpi__pair"><div><span class="kpi__num kpi__num--orange" id="kTkOpen">0</span><span class="kpi__cap kpi__cap--orange">Diaudit</span></div><i></i><div><span class="kpi__num" id="kTkDone">0</span><span class="kpi__cap">Selesai</span></div></div></article>
+  <article class="card kpi kpi--split"><p class="kpi__label">Tiket Bantuan</p><div class="kpi__pair"><div><span class="kpi__num kpi__num--orange" id="kTkOpen">0</span><span class="kpi__cap kpi__cap--orange">Diaudit</span></div><i></i><div><span class="kpi__num" id="kTkDone">0</span><span class="kpi__cap">Selesai</span></div></div></article>
 </section>
 <section class="dash-row">
   <div><h2 class="sec-title sec-title--out"><span>Event Menunggu Persetujuan</span><a href="{% url 'admin_events' %}">Kelola event &rarr;</a></h2>
@@ -17,7 +17,7 @@
     <article class="card mini-card"><ul class="mini-list" id="actMini"></ul></article></div>
 </section>
 <section class="dash-row dash-row--even">
-  <div><h2 class="sec-title sec-title--out"><span>Tiket Support Terbuka</span><a href="{% url 'admin_support' %}">Buka support &rarr;</a></h2>
+  <div><h2 class="sec-title sec-title--out"><span>Tiket Support Terbuka</span><a href="{% url 'admin_support' %}">Buka bantuan &rarr;</a></h2>
     <article class="card mini-card"><ul class="mini-list" id="tkMini"></ul></article></div>
   <div><h2 class="sec-title sec-title--out"><span>Pengajuan Penyelenggara</span><a href="{% url 'admin_users' %}#pengajuan">Tinjau semua &rarr;</a></h2>
     <article class="card mini-card"><ul class="mini-list" id="propMini" data-href="{% url 'admin_users' %}#pengajuan"></ul></article></div>

@@ -566,7 +566,7 @@
      ========================================================= */
   function pageAudit() {
     var tab = "semua", page = 1, PER = 12, q = $("#auSearch"), tabs = $("#auTabs"), list = $("#auList"), info = $("#auInfo"), pg = $("#auPager");
-    var TABS = [["semua", "Semua"], ["event", "Event"], ["pengguna", "Pengguna"], ["support", "Support"], ["keuangan", "Keuangan"], ["pengaturan", "Pengaturan"], ["peserta", "Aktivitas Peserta"]];
+    var TABS = [["semua", "Semua"], ["event", "Event"], ["pengguna", "Pengguna"], ["support", "Bantuan"], ["keuangan", "Keuangan"], ["pengaturan", "Pengaturan"], ["peserta", "Aktivitas Peserta"]];
     var ICON = { event: "i-calendar", pengguna: "i-users", support: "i-help", keuangan: "i-wallet", pengaturan: "i-gear", peserta: "i-user" };
     function filtered() {
       var term = q.value.trim().toLowerCase();

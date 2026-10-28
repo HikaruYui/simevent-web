@@ -555,7 +555,7 @@
       ["hadir", "Kehadiran"],
       ["bayar", "Pembayaran"],
       ["event", "Event"],
-      ["support", "Support"]
+      ["support", "Bantuan"]
     ];
     var filter = "semua", tabsEl = $("#lgTabs"), listEl = $("#lgList"), q = $("#lgSearch");
     if (!tabsEl || !listEl) { return; }
