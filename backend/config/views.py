@@ -118,11 +118,13 @@ def bantuan(request):
         "bantuan.html",
     )
 
+
 @never_cache
 @require_GET
 def jelajah(request):
     now = timezone.now()
 
+    # Hanya event publik dari PostgreSQL.
     events = (
         Event.objects
         .public()
@@ -139,6 +141,8 @@ def jelajah(request):
     event_data = []
 
     for event in events:
+
+        # Status tampilan berdasarkan jadwal event.
         if (
             event.status == EventStatus.COMPLETED
             or event.end_datetime <= now
@@ -151,6 +155,7 @@ def jelajah(request):
         else:
             ui_status = "soon"
 
+        # Nama penyelenggara asli.
         organizer_name = (
             event.organizer
             .get_full_name()
@@ -160,25 +165,41 @@ def jelajah(request):
         if not organizer_name:
             organizer_name = event.organizer.email
 
+        # Konversi waktu mengikuti timezone Django.
         local_start = timezone.localtime(
             event.start_datetime
+        )
+
+        # Pendaftaran hanya boleh dilakukan ketika
+        # event sudah PUBLISHED dan dalam periode daftar.
+        registration_open = (
+            event.status == EventStatus.PUBLISHED
+            and event.registration_open <= now
+            and now < event.registration_close
+            and event.start_datetime > now
         )
 
         event_data.append(
             {
                 "id": event.pk,
                 "slug": event.slug,
+
                 "category": event.event_type.code.lower(),
                 "categoryName": event.event_type.name,
+
                 "status": ui_status,
+                "registrationOpen": registration_open,
+
                 "date": local_start.date().isoformat(),
                 "dateLabel": local_start.strftime(
                     "%d %b %Y"
                 ).lstrip("0"),
+
                 "amount": int(event.price),
                 "title": event.title,
                 "venue": event.venue or "Online",
                 "organizer": organizer_name,
+
                 "bannerUrl": (
                     event.banner.url
                     if event.banner
@@ -187,6 +208,7 @@ def jelajah(request):
             }
         )
 
+    # Pilihan filter kategori dari PostgreSQL.
     kategori_list = (
         EventType.objects
         .filter(is_active=True)
@@ -201,6 +223,7 @@ def jelajah(request):
             "kategori_list": kategori_list,
         },
     )
+
 
 
 @never_cache

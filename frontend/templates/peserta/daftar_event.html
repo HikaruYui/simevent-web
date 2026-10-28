@@ -49,7 +49,15 @@
  </div>
  <div class="space-y-3">
   {% for event in events %}
-   <article class="participant-card event-row grid gap-4 rounded-2xl p-4 sm:p-5 md:grid-cols-[240px_minmax(0,1fr)_minmax(235px,290px)] md:items-center" data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}" data-category="{{ event.event_type.name|lower }}" data-status="{{ event.ui_status }}">
+
+  <article
+    id="event-{{ event.pk }}"
+    class="participant-card event-row grid gap-4 rounded-2xl p-4 sm:p-5 md:grid-cols-[240px_minmax(0,1fr)_minmax(235px,290px)] md:items-center"
+    data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}"
+    data-category="{{ event.event_type.name|lower }}"
+    data-status="{{ event.ui_status }}"
+  >
+
    <a href="{% url 'detail_event' event.slug %}" class="event-poster {% if not event.banner %}event-poster--art{% endif %} flex h-36 items-center justify-center overflow-hidden rounded-xl text-center text-white" data-kind="{{ event.event_type.code|lower }}">
     {% if event.banner %}<img src="{{ event.banner.url }}" alt="Banner {{ event.title }}" class="h-full w-full object-cover">{% else %}
     <span class="relative flex h-full w-full items-center justify-between overflow-hidden px-4 py-3 text-left">

@@ -9,8 +9,33 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;800&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<style>
+/* Mengembalikan efek glass navbar Beranda */
+@media (min-width: 901px) {
+  .home-page .navbar {
+    background: rgba(245, 226, 188, 0.42) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(145%);
+    backdrop-filter: blur(18px) saturate(145%);
+
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    box-shadow:
+      0 8px 24px rgba(46, 37, 20, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  .home-page .navbar__menu {
+    background: rgba(255, 245, 222, 0.22) !important;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+}
+</style>
+
 </head>
-<body class="">
+<body class="home-page">
   
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <defs>

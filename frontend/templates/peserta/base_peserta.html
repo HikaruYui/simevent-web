@@ -1,74 +1,136 @@
+
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{% block ptitle %}Beranda Peserta{% endblock %} | SIMEVENT{% endblock %}
+
+{% block title %}
+  {% block ptitle %}Dashboard Peserta{% endblock %} | SIMEVENT
+{% endblock %}
+
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block notifications %}{% endblock %}
 {% block body_class %}participant-page{% endblock %}
+
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+  rel="stylesheet"
+>
+
 <script>
-tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif'],display:['Plus Jakarta Sans','Manrope','sans-serif']},colors:{brand:{cream:'#F3E2BF',creamLight:'#FBF3E4',sand:'#E6D2A9',tan:'#CDB68E',orange:'#DB9743',orangeDeep:'#8B510D',goldLight:'#F3D9A6',olive:'#3F422E',ink:'#3F422E',muted:'#70664F'}}}}}
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Manrope', 'sans-serif'],
+        display: [
+          'Plus Jakarta Sans',
+          'Manrope',
+          'sans-serif'
+        ]
+      },
+      colors: {
+        brand: {
+          cream: '#F3E2BF',
+          creamLight: '#FBF3E4',
+          sand: '#E6D2A9',
+          tan: '#CDB68E',
+          orange: '#DB9743',
+          orangeDeep: '#8B510D',
+          goldLight: '#F3D9A6',
+          olive: '#3F422E',
+          ink: '#3F422E',
+          muted: '#70664F'
+        }
+      }
+    }
+  }
+};
 </script>
+
 <style>
 :root {
   --participant-shell: #f3e2b4;
   --participant-shell-strong: #e1cb8d;
-  --participant-card: rgba(255, 250, 240, 0.78);
-  --participant-card-strong: rgba(255, 247, 233, 0.92);
-  --participant-border: rgba(174, 120, 49, 0.28);
+  --participant-card: rgba(255,250,240,.78);
+  --participant-card-strong: rgba(255,247,233,.92);
+  --participant-border: rgba(174,120,49,.28);
   --participant-accent: #c88d3a;
   --participant-accent-deep: #8b510d;
   --participant-olive: #3d422d;
   --participant-ink: #3f422e;
   --participant-muted: #6e6258;
 }
-.participant-page .text-brand-orangeDeep,
-.participant-page [class*="text-amber-"],
-.participant-page [class*="text-orange-"],
-.participant-page [class*="text-[#8b510d]"] { color:#4b5037 !important; }
-html { font-size: 16px; }
-html, body, .page, .page>main {
-  min-height: 100%;
-  background: linear-gradient(180deg, #f2e3b6 0%, #f7efd4 52%, #efe0b0 100%);
+
+html {
+  font-size: 16px;
 }
-body.participant-page, .participant-page .page, .participant-page .page>main {
+
+html,
+body,
+.page,
+.page > main {
+  min-height: 100%;
+  background: #f3e2b4;
+}
+
+body.participant-page,
+.participant-page .page,
+.participant-page .page > main {
   min-height: 100vh;
 }
-.participant-page .page { overflow-x: hidden; }
-.participant-shell {
-  color: var(--participant-ink);
-  background-image:
-    radial-gradient(circle at 2% 12%, rgba(255,255,255,.5), transparent 20%),
-    radial-gradient(circle at 96% 86%, rgba(199,149,63,.12), transparent 22%),
-    radial-gradient(circle, rgba(151,105,42,.07) .8px, transparent 1px);
-  background-size: auto, auto, 25px 25px;
+
+.participant-page .page {
+  overflow-x: hidden;
 }
+
+/* =========================================
+   LAYOUT UTAMA
+   ========================================= */
+
+.participant-shell {
+  position: relative;
+  min-height: 100vh;
+  color: var(--participant-ink);
+  background: #f3e2b4;
+}
+
+/* Area konten */
 .participant-main {
   position: relative;
   isolation: isolate;
+  min-width: 0;
 }
+
 .participant-main::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background-image:
-    radial-gradient(circle at 96% 5%, transparent 0 84px, rgba(191,145,67,.12) 85px 86px, transparent 87px),
-    radial-gradient(circle at 96% 5%, transparent 0 112px, rgba(191,145,67,.075) 113px 114px, transparent 115px),
-    radial-gradient(circle at 5% 68%, rgba(255,255,255,.38), transparent 18%);
-  content: "";
-  pointer-events: none;
+  content: none;
 }
+
+/* =========================================
+   SIDEBAR
+   ========================================= */
+
 .participant-sidebar {
   position: relative;
   overflow: visible;
   background: transparent;
 }
-.participant-sidebar > * { position: relative; z-index: 1; }
+
+.participant-sidebar > * {
+  position: relative;
+  z-index: 1;
+}
+
 .participant-sidebar-panel {
   position: relative;
   display: flex;
@@ -76,25 +138,37 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.76);
   border-radius: 20px;
+
   background:
-    radial-gradient(ellipse at 0% 100%, rgba(255,255,255,.5), transparent 38%),
-    linear-gradient(145deg, rgba(255,250,238,.9), rgba(250,239,216,.83));
-  box-shadow: 0 8px 24px rgba(135,96,42,.07), inset 0 1px 0 rgba(255,255,255,.8);
+    radial-gradient(
+      ellipse at 0% 100%,
+      rgba(255,255,255,.5),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255,250,238,.9),
+      rgba(250,239,216,.83)
+    );
+
+  box-shadow:
+    0 8px 24px rgba(135,96,42,.07),
+    inset 0 1px 0 rgba(255,255,255,.8);
 }
+
 .participant-sidebar-panel::after {
-  position: absolute;
-  right: -72px;
-  bottom: -22px;
-  width: 230px;
-  height: 230px;
-  border: 1px solid rgba(185,139,66,.12);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,.4), transparent 68%);
-  box-shadow: 0 0 0 18px rgba(185,139,66,.035), 0 0 0 38px rgba(185,139,66,.025), 0 0 0 62px rgba(185,139,66,.02);
-  content: "";
-  pointer-events: none;
+  content: none;
 }
-.participant-sidebar-panel > * { position: relative; z-index: 1; }
+
+.participant-sidebar-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================================
+   LOGO SIDEBAR
+   ========================================= */
+
 .participant-sidebar-brand {
   position: relative;
   display: block;
@@ -102,99 +176,236 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   height: 40px;
   --participant-logo-mask: none;
 }
+
 .participant-sidebar-brand::before {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(90deg, #3f422e 0, #9f7546 28px, #d78b30 56px, #f5e6c5 84px, #d78b30 112px, #3f422e 140px);
+
+  background: repeating-linear-gradient(
+    90deg,
+    #3f422e 0,
+    #9f7546 28px,
+    #d78b30 56px,
+    #f5e6c5 84px,
+    #d78b30 112px,
+    #3f422e 140px
+  );
+
   background-size: 140px 100%;
   background-position: 0 50%;
   content: "";
-  animation: participant-logo-gradient 5.5s linear infinite;
+
+  animation:
+    participant-logo-gradient 5.5s linear infinite;
+
   mask-image: var(--participant-logo-mask);
   mask-mode: alpha;
   mask-repeat: no-repeat;
   mask-position: left center;
   mask-size: contain;
+
   -webkit-mask-image: var(--participant-logo-mask);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: left center;
   -webkit-mask-size: contain;
+
   pointer-events: none;
 }
+
 @keyframes participant-logo-gradient {
-  from { background-position: 0 50%; }
-  to { background-position: 140px 50%; }
+  from {
+    background-position: 0 50%;
+  }
+
+  to {
+    background-position: 140px 50%;
+  }
 }
+
+/* =========================================
+   KOMPONEN DASHBOARD
+   ========================================= */
+
 .participant-card {
-  background: rgba(255, 249, 242, 0.8);
+  background: rgba(255,249,242,.8);
   border: 1px solid var(--participant-border);
-  box-shadow: 0 6px 10px rgba(142, 100, 47, 0.04);
+
+  box-shadow:
+    0 6px 10px rgba(142,100,47,.04);
 }
+
 .participant-page-intro {
   box-sizing: border-box;
   display: flex;
   align-items: center;
   min-height: 152px;
   padding-block: 12px;
-  border: 1px solid rgba(255,255,255,.8);
-  background: linear-gradient(112deg, rgba(255,251,242,.97), rgba(245,228,193,.88));
-  box-shadow: 0 8px 24px rgba(142,100,47,.06), inset 0 1px 0 rgba(255,255,255,.8);
+
+  border:
+    1px solid rgba(255,255,255,.8);
+
+  background:
+    linear-gradient(
+      112deg,
+      rgba(255,251,242,.97),
+      rgba(245,228,193,.88)
+    );
+
+  box-shadow:
+    0 8px 24px rgba(142,100,47,.06),
+    inset 0 1px 0 rgba(255,255,255,.8);
 }
+
 .participant-hero {
   isolation: isolate;
-  border: 1px solid rgba(255,255,255,.9);
+
+  border:
+    1px solid rgba(255,255,255,.9);
+
   background:
-    radial-gradient(ellipse at 89% 105%, rgba(220,190,130,.2), transparent 39%),
-    radial-gradient(ellipse at 3% 0%, rgba(255,255,255,.88), transparent 44%),
-    linear-gradient(112deg, #fffaf0 0%, #fbf1dd 58%, #f2dfb8 100%);
-  box-shadow: 0 12px 26px rgba(142,100,47,.08), inset 0 1px 0 rgba(255,255,255,.9);
+    radial-gradient(
+      ellipse at 89% 105%,
+      rgba(220,190,130,.2),
+      transparent 39%
+    ),
+    radial-gradient(
+      ellipse at 3% 0%,
+      rgba(255,255,255,.88),
+      transparent 44%
+    ),
+    linear-gradient(
+      112deg,
+      #fffaf0 0%,
+      #fbf1dd 58%,
+      #f2dfb8 100%
+    );
+
+  box-shadow:
+    0 12px 26px rgba(142,100,47,.08),
+    inset 0 1px 0 rgba(255,255,255,.9);
 }
-.participant-hero-illustration { z-index:1; }
-.participant-hero-illustration img { filter:drop-shadow(0 8px 10px rgba(132,91,37,.12)); }
+
+.participant-hero-illustration {
+  z-index: 1;
+}
+
+.participant-hero-illustration img {
+  filter:
+    drop-shadow(
+      0 8px 10px rgba(132,91,37,.12)
+    );
+}
+
 .participant-hero-sparkle {
-  transform-box:fill-box;
-  transform-origin:center;
-  animation:participant-mascot-sparkle 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+
+  animation:
+    participant-mascot-sparkle 2.8s ease-in-out infinite;
 }
+
 @keyframes participant-mascot-sparkle {
-  0%,100% { opacity:.55; transform:scale(.86); }
-  50% { opacity:1; transform:scale(1.08); }
+  0%, 100% {
+    opacity: .55;
+    transform: scale(.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .participant-hero-sparkle { animation:none; }
+  .participant-hero-sparkle {
+    animation: none;
+  }
 }
+
 @media (max-width: 639px) {
-  .participant-hero-illustration img { opacity:.72; }
+  .participant-hero-illustration img {
+    opacity: .72;
+  }
 }
+
 @media (min-width: 640px) {
-  .participant-page-intro { min-height: 174px; }
+  .participant-page-intro {
+    min-height: 174px;
+  }
 }
+
 @media (min-width: 1024px) {
-  .participant-page-intro { min-height: 184px; }
+  .participant-page-intro {
+    min-height: 184px;
+  }
 }
-.event-row, .certificate-row, .achievement-row {
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+
+/* =========================================
+   KARTU EVENT, SERTIFIKAT, ACHIEVEMENT
+   ========================================= */
+
+.event-row,
+.certificate-row,
+.achievement-row {
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease;
 }
-.event-row:hover, .certificate-row:hover, .achievement-row:hover {
+
+.event-row:hover,
+.certificate-row:hover,
+.achievement-row:hover {
   transform: translateY(-2px);
-  border-color: rgba(194,143,62,.42);
-  box-shadow: 0 10px 20px rgba(142,100,47,.09);
+
+  border-color:
+    rgba(194,143,62,.42);
+
+  box-shadow:
+    0 10px 20px rgba(142,100,47,.09);
 }
+
+/* =========================================
+   TOMBOL
+   ========================================= */
+
 .participant-button {
   background: #d9b777;
   color: #fff;
-  box-shadow: 0 5px 12px rgba(164,117,45,.12);
+
+  box-shadow:
+    0 5px 12px rgba(164,117,45,.12);
 }
-.participant-button:hover { background: #d0ad68; }
+
+.participant-button:hover {
+  background: #d0ad68;
+}
+
 .participant-outline {
-  border: 1px solid rgba(156, 111, 45, 0.54);
-  color: #4b5037;
-  background: rgba(255,255,255,0.48);
+  border:
+    1px solid rgba(156,111,45,.54);
+
+  color: #8b510d;
+  background: rgba(255,255,255,.48);
 }
-.participant-outline:hover { background: rgba(255, 233, 188, 0.4); }
+
+.participant-outline:hover {
+  background: rgba(255,233,188,.4);
+}
+
 .participant-user-chip {
   background: rgba(255,250,239,.26);
 }
+
+/* =========================================
+   MENU SIDEBAR
+   ========================================= */
+
+.participant-sidebar nav {
+  width: 100%;
+  min-width: 0;
+}
+
 .participant-sidebar nav a {
   display: flex;
   align-items: center;
@@ -204,78 +415,173 @@ body.participant-page, .participant-page .page, .participant-page .page>main {
   box-sizing: border-box;
   white-space: normal;
   font-size: 1.05rem;
-  transition: all 0.2s ease;
+
+  transition: all .2s ease;
 }
-.participant-sidebar nav { width: 100%; min-width: 0; }
+
 .participant-sidebar nav a:not(.participant-button) {
   border: 1px solid transparent;
-  color: #3F422E;
+  color: #3f422e;
 }
+
 .participant-sidebar nav a:not(.participant-button):hover {
   background: rgba(255,250,239,.28);
 }
+
 .participant-sidebar nav a.participant-button {
   border: 1px solid #e6d2a9;
-  background:#f3e2b4;
-  color:#3F422E;
-  box-shadow:none;
+  background: #f3e2b4;
+  color: #3f422e;
+  box-shadow: none;
 }
+
 .participant-sidebar nav a i {
   width: 1.4rem;
   text-align: center;
-  color: #4b5037;
+  color: #8b510d;
 }
-.participant-sidebar nav a.participant-button i { color: #3F422E; }
+
+.participant-sidebar nav a.participant-button i {
+  color: #3f422e;
+}
+
+/* =========================================
+   LAYOUT DESKTOP
+   SATU SIDEBAR + SATU AREA KONTEN
+   ========================================= */
+
 @media (min-width: 768px) {
+
+  .participant-shell {
+    display: block !important;
+    padding-left: 326px !important;
+    min-height: 100vh;
+  }
+
   .participant-sidebar {
     position: fixed !important;
     top: 16px !important;
     bottom: 16px !important;
     left: 6px !important;
+
     display: block !important;
+
     width: 304px !important;
     height: auto !important;
     min-height: 0 !important;
+
     padding: 0 !important;
     z-index: 50 !important;
   }
+
   .participant-sidebar-panel {
     display: flex !important;
     flex-direction: column !important;
+
     width: 100% !important;
     height: 100% !important;
+
     min-height: 0 !important;
     max-height: none !important;
+
     padding: 40px 14px 22px !important;
   }
+
   .participant-main {
-    width: auto !important;
+    display: block !important;
+
+    width: 100% !important;
     max-width: none !important;
-    margin-left: 326px !important;
-    padding: 16px 24px 18px!important;
+
+    margin-left: 0 !important;
+    box-sizing: border-box;
+
+    padding: 16px 24px 18px !important;
   }
-  .participant-sidebar nav { gap: 8px!important; overflow: visible!important; }
-  .participant-sidebar nav a { min-height: 64px; font-size: 1.125rem; }
-  .participant-sidebar-panel > div:last-child { margin-top: auto !important; flex: 0 0 auto !important; padding: 14px 4px 0 !important; }
+
+  .participant-sidebar nav {
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+
+  .participant-sidebar nav a {
+    min-height: 64px;
+    font-size: 1.125rem;
+  }
+
+  .participant-sidebar-panel > div:last-child {
+    margin-top: auto !important;
+    flex: 0 0 auto !important;
+    padding: 14px 4px 0 !important;
+  }
 }
-/* Halaman peserta memakai latar cokelat polos dan panel putih. */
-html, body, .participant-page .page, .participant-page .page > main {
+
+/* =========================================
+   LAYOUT MOBILE
+   ========================================= */
+
+@media (max-width: 767px) {
+
+  .participant-shell {
+    display: block !important;
+    padding-left: 0 !important;
+  }
+
+  .participant-sidebar {
+    position: relative !important;
+    inset: auto !important;
+
+    width: 100% !important;
+    height: auto !important;
+
+    padding: 16px !important;
+  }
+
+  .participant-sidebar-panel {
+    width: 100% !important;
+    height: auto !important;
+    padding: 20px 14px !important;
+  }
+
+  .participant-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .participant-sidebar nav a {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+}
+
+/* =========================================
+   WARNA HALAMAN PESERTA
+   ========================================= */
+
+html,
+body,
+.participant-page .page,
+.participant-page .page > main {
   background: #f3e2b4 !important;
   background-image: none !important;
 }
+
 .participant-shell {
   background: #f3e2b4 !important;
   background-image: none !important;
 }
+
 .participant-main::before {
   content: none !important;
   background: none !important;
 }
+
 .participant-page .participant-sidebar-panel::after {
-  content:none !important;
-  background:none !important;
-  box-shadow:none !important;
+  content: none !important;
+  background: none !important;
+  box-shadow: none !important;
 }
+
 .participant-page .participant-sidebar-panel,
 .participant-page .participant-card,
 .participant-page .participant-page-intro,
@@ -291,107 +597,285 @@ html, body, .participant-page .page, .participant-page .page > main {
   background: #fff !important;
   background-image: none !important;
 }
+
 #participantDashboard .dashboard-stat-card::after {
   content: none !important;
 }
+
 .participant-page .text-brand-ink,
 .participant-page .text-slate-700 {
-  color:#3F422E !important;
+  color: #3f422e !important;
 }
+
 .participant-page .text-slate-600 {
-  color:#63684f !important;
+  color: #63684f !important;
 }
-/* ===== Sidebar peserta: disamakan dengan sidebar panel admin / ketua panitia ===== */
-:root { --ps-side-w: clamp(210px, 14.5vw, 244px); }
-.participant-shell { display: block !important; padding-left: var(--ps-side-w) !important; min-height: 100vh; }
-.participant-main { margin-left: 0 !important; width: auto !important; max-width: none !important; }
-.ps-side {
-  position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
-  width: var(--ps-side-w); height: 100vh; height: 100dvh;
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 26px 20px 20px; background: #fff; overflow-y: auto;
-  --ps-olive: #3F422E; --ps-muted: #6F6556; --ps-cream: #F5E6C5; --ps-cream-card: #F9F0DC; --ps-taupe: #9F886F; --ps-orange-deep: #B46F1C;
+
+
+/* =========================================
+   COMPACT LAYOUT PESERTA
+   ========================================= */
+
+html {
+  font-size: 14px;
 }
-.ps-side .ps-side__brand { display: inline-flex !important; align-items: center; width: auto !important; max-width: 100% !important; padding: 0 8px !important; }
-.ps-side .ps-side__brand img { width: min(100%, 156px) !important; max-width: none !important; height: auto !important; margin: 0 !important; transform: none !important; display: block !important; }
-.ps-nav { display: grid; gap: 4px; margin-top: clamp(20px, 3vh, 36px); margin-bottom: auto; align-content: start; flex: 0 0 auto; }
-.ps-nav a {
-  display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 12px;
-  font: 600 14px/1 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ps-muted); text-decoration: none;
+
+@media (min-width: 768px) {
+
+  /* Sidebar lebih ramping */
+  .participant-shell {
+    padding-left: 272px !important;
+  }
+
+  .participant-sidebar {
+    left: 10px !important;
+    top: 12px !important;
+    bottom: 12px !important;
+    width: 250px !important;
+  }
+
+  .participant-sidebar-panel {
+    padding: 25px 12px 16px !important;
+    border-radius: 18px;
+  }
+
+  /* Logo */
+  .participant-sidebar-brand {
+    width: 165px;
+    height: 36px;
+    margin-bottom: 18px !important;
+  }
+
+  /* Menu sidebar */
+  .participant-sidebar nav {
+    gap: 5px !important;
+  }
+
+  .participant-sidebar nav a {
+    min-height: 48px !important;
+    padding: 10px 12px !important;
+    font-size: 0.98rem !important;
+    border-radius: 10px;
+  }
+
+  .participant-sidebar nav a i {
+    width: 22px !important;
+    font-size: 1.2rem !important;
+    margin-right: 10px !important;
+  }
+
+  /* Profil */
+  .participant-user-chip {
+    gap: 10px !important;
+    padding-top: 12px !important;
+  }
+
+  .participant-user-chip img {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  /* Tombol logout */
+  .participant-sidebar form button {
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+    font-size: 0.98rem !important;
+  }
+
+  /* Konten dashboard */
+  .participant-main {
+    padding: 14px 18px !important;
+  }
+
+  /* Banner sambutan */
+  .participant-page-intro {
+    min-height: 135px !important;
+  }
+
+  /* Kartu statistik dan event */
+  .participant-card {
+    border-radius: 16px;
+  }
 }
-.ps-side .icon { width: 18px; height: 18px; flex: none; }
-.ps-nav a:hover { background: var(--ps-cream-card); color: var(--ps-olive); }
-.ps-nav a.is-active { background: var(--ps-cream); color: var(--ps-olive); font-weight: 700; }
-.ps-user { margin-top: 24px; padding: 14px 8px 0; border-top: 1px solid var(--ps-taupe); }
-.ps-user__id { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.ps-user__txt { min-width: 0; }
-.ps-user__ava { flex: none; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--ps-olive); }
-.ps-user b { display: block; font: 700 15px/1.3 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ps-olive); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ps-user p { margin-top: 2px; font: 600 12px/1.35 "Manrope", system-ui, sans-serif; color: var(--ps-muted); }
-.ps-user button {
-  display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 4px 0; border: 0; background: none; cursor: pointer;
-  font: 700 13.5px/1 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ps-olive);
+
+/* Mobile tetap responsif */
+@media (max-width: 767px) {
+  html {
+    font-size: 14px;
+  }
+
+  .participant-sidebar nav a {
+    font-size: 1rem;
+  }
 }
-.ps-user button .icon { width: 17px; height: 17px; }
-.ps-user button:hover { color: var(--ps-orange-deep); text-decoration: underline; }
-/* Matikan zoom 0.8 dari style.css agar ukuran & jarak sama persis dengan panel ketua panitia */
-body.participant-page { zoom: 1; }
-/* Jarak konten ke sidebar & tepi atas, sama dengan .eo-main di ketua panitia */
-.participant-main { padding: 36px 40px 56px !important; }
-@media (max-width: 960px) {
-  .participant-main { padding: 24px 20px 48px !important; }
-}
-@media (max-width: 960px) {
-  .participant-shell { padding-left: 0 !important; }
-  .ps-side { position: static; width: auto; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; overflow: visible; }
-  .ps-nav { display: flex; flex-wrap: wrap; order: 3; width: 100%; margin: 0; }
-  .ps-user { display: flex; align-items: center; gap: 12px; margin: 0 0 0 auto; padding: 0; border: 0; }
-  .ps-user b, .ps-user p { display: none; }
-  .ps-user button { margin: 0; }
-}
+
 </style>
 {% endblock %}
+
 {% block content %}
-<div class="participant-shell min-h-screen md:flex">
-  <aside class="participant-sidebar flex w-full shrink-0 flex-col justify-between p-4 md:sticky md:top-0 md:h-screen md:w-[290px]">
+
+<div class="participant-shell min-h-screen">
+
+  <!-- =======================================
+       SIDEBAR PESERTA
+       ======================================= -->
+
+  <aside class="participant-sidebar">
+
     <div class="participant-sidebar-panel">
-      <a href="{% url 'peserta_dashboard' %}" aria-label="SIMEVENT, ke dashboard peserta" class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4" style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')">
-      </a>
-      <nav class="grid grid-cols-2 gap-2 md:flex md:flex-col" aria-label="Menu peserta">
+
+      <!-- LOGO -->
+
+      <a
+        href="{% url 'peserta_dashboard' %}"
+        aria-label="SIMEVENT, ke dashboard peserta"
+        class="participant-sidebar-brand mb-6 border-b border-amber-200/70 px-2 pb-4"
+        style="--participant-logo-mask: url('{% static 'img/logo.svg' %}')"
+      ></a>
+
+      <!-- MENU -->
+
+      <nav
+        class="grid grid-cols-2 gap-2 md:flex md:flex-col"
+        aria-label="Menu peserta"
+      >
+
         {% url 'peserta_dashboard' as dashboard_url %}
         {% url 'peserta_daftar_event' as daftar_event_url %}
         {% url 'peserta_sertifikat' as sertifikat_url %}
         {% url 'peserta_achievement' as achievement_url %}
         {% url 'peserta_akun' as akun_url %}
-        <a href="{{ dashboard_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-house mr-3 w-7 text-2xl"></i>Dashboard</a>
-        <a href="{{ daftar_event_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-calendar-plus mr-3 w-7 text-2xl"></i>Daftar Event</a>
-        <a href="{{ sertifikat_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>Sertifikat Saya</a>
-        <a href="{{ achievement_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>Achievement</a>
-        <a href="{{ akun_url }}" class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == akun_url %}participant-button{% else %}text-slate-700{% endif %}"><i class="fa-solid fa-gear mr-3 w-7 text-2xl"></i>Profil Saya</a>
+
+        <!-- DASHBOARD -->
+
+        <a
+          href="{{ dashboard_url }}"
+          class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == dashboard_url %}participant-button{% else %}text-slate-700{% endif %}"
+        >
+          <i class="fa-solid fa-house mr-3 w-7 text-2xl"></i>
+          Dashboard
+        </a>
+
+        <!-- DAFTAR EVENT -->
+
+        <a
+          href="{{ daftar_event_url }}"
+          class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == daftar_event_url %}participant-button{% else %}text-slate-700{% endif %}"
+        >
+          <i class="fa-solid fa-calendar-plus mr-3 w-7 text-2xl"></i>
+          Daftar Event
+        </a>
+
+        <!-- SERTIFIKAT -->
+
+        <a
+          href="{{ sertifikat_url }}"
+          class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == sertifikat_url %}participant-button{% else %}text-slate-700{% endif %}"
+        >
+          <i class="fa-solid fa-file-lines mr-3 w-7 text-2xl"></i>
+          Sertifikat Saya
+        </a>
+
+        <!-- ACHIEVEMENT -->
+
+        <a
+          href="{{ achievement_url }}"
+          class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == achievement_url %}participant-button{% else %}text-slate-700{% endif %}"
+        >
+          <i class="fa-solid fa-trophy mr-3 w-7 text-2xl"></i>
+          Achievement
+        </a>
+
+        <!-- PROFIL -->
+
+        <a
+          href="{{ akun_url }}"
+          class="rounded-xl px-3.5 py-3.5 text-lg font-bold {% if request.path == akun_url %}participant-button{% else %}text-slate-700{% endif %}"
+        >
+          <i class="fa-solid fa-gear mr-3 w-7 text-2xl"></i>
+          Profil Saya
+        </a>
+
+        <!-- MODE PANITIA -->
+        <!-- HANYA TAMPIL UNTUK COMMITTEE -->
+
         {% if request.user.role == "COMMITTEE" %}
+
           <a
             href="{% url 'panitia_biasa' %}"
             class="rounded-xl px-3.5 py-3.5 text-lg font-bold text-slate-700"
           >
-            <i class="fa-solid fa-user-shield mr-3"></i>
+            <i class="fa-solid fa-user-shield mr-3 w-7 text-2xl"></i>
             Mode Panitia
           </a>
+
         {% endif %}
+
       </nav>
-      <div>
-        <div class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4">
-          <img src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}" alt="Foto profil {{ request.user.get_full_name|default:request.user.email }}" class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white">
-          <span class="truncate text-base font-bold text-brand-ink">{{ request.user.get_full_name|default:request.user.email }}</span>
+
+      <!-- =======================================
+           PROFIL & LOGOUT
+           ======================================= -->
+
+      <div class="mt-auto">
+
+        <div
+          class="participant-user-chip mt-4 flex min-w-0 items-center gap-3 rounded-xl border-t border-amber-200/80 px-2 pb-2 pt-4"
+        >
+
+          <img
+            src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'img/achievement-hero.png' %}{% endif %}"
+            alt="Foto profil {{ request.user.get_full_name|default:request.user.email }}"
+            class="h-16 w-16 shrink-0 rounded-full bg-white object-cover object-center ring-2 ring-white"
+          >
+
+          <span
+            class="truncate text-base font-bold text-brand-ink"
+          >
+            {{ request.user.get_full_name|default:request.user.email }}
+          </span>
+
         </div>
-        <form method="post" action="{% url 'logout_page' %}" class="mt-2">{% csrf_token %}<button type="submit" class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"><i class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"></i>Logout</button></form>
+
+        <!-- SATU TOMBOL LOGOUT SAJA -->
+
+        <form
+          method="post"
+          action="{% url 'logout_page' %}"
+          class="mt-2"
+        >
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-lg font-bold text-brand-orangeDeep transition hover:bg-amber-100"
+          >
+            <i
+              class="fa-solid fa-arrow-right-from-bracket w-7 text-2xl"
+            ></i>
+
+            Logout
+          </button>
+
+        </form>
+
       </div>
-      <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
-        <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
-      </form>
+
     </div>
+
   </aside>
-  <main class="participant-main min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+
+  <!-- =======================================
+       KONTEN HALAMAN PESERTA
+       ======================================= -->
+
+  <main
+    class="participant-main min-w-0 px-4 py-5 sm:px-6 lg:px-8"
+  >
     {% block peserta %}{% endblock %}
   </main>
+
 </div>
+
 {% endblock %}
