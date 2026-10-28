@@ -17,7 +17,7 @@
 #participantAccount .account-field { color:#485d3d !important; font-size:1rem !important; }
 #participantAccount .account-section-title > span {
   background:transparent !important;
-  color:#8a5e13 !important;
+  color:#4b5037 !important;
   font-size:1.35rem !important;
 }
 #participantAccount .account-field input,
@@ -188,10 +188,20 @@
     margin-top: 6px;
 }
 #participantAccount .profile-photo-control { min-width:0; }
-#participantAccount .account-field input[type="file"],
-#participantAccount .profile-photo-control input[type="file"] { display:block; width:100%; height:auto; min-height:52px; box-sizing:border-box; margin-top:7px; border:1px solid rgba(167,157,105,.38); border-radius:11px; background:#fff; padding:8px; color:#40563b; font-size:.875rem; }
-#participantAccount .account-field input[type="file"]::file-selector-button,
-#participantAccount .profile-photo-control input[type="file"]::file-selector-button { margin-right:10px; border:0; border-radius:7px; background:#e6edcb; padding:7px 10px; color:#40563b; font-weight:700; cursor:pointer; }
+#participantAccount .account-upload-input input[type="file"],
+#participantAccount .profile-photo-upload input[type="file"] { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+#participantAccount .account-upload-action { display:inline-flex; min-height:42px; align-items:center; gap:8px; border:1px solid #4b5037; border-radius:999px; background:#4b5037; padding:8px 16px; color:#fff; font-size:.875rem; font-weight:700; line-height:1.2; cursor:pointer; }
+#participantAccount .account-upload-action:hover { border-color:#555b40; background:#555b40; }
+#participantAccount .account-upload-filename { min-width:0; overflow:hidden; color:#40563b; font-size:.875rem; text-overflow:ellipsis; white-space:nowrap; }
+#participantAccount .profile-photo-row { display:flex; min-width:0; align-items:center; gap:14px; margin-top:7px; }
+#participantAccount .profile-photo-info { min-width:0; flex:1; }
+#participantAccount .profile-photo-actions { display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+#participantAccount .profile-photo-action { display:inline-flex; min-height:42px; align-items:center; justify-content:center; gap:8px; border:1px solid #4b5037; border-radius:999px; background:#fff; padding:8px 16px; color:#4b5037; font-size:.875rem; font-weight:700; line-height:1.2; cursor:pointer; }
+#participantAccount .profile-photo-action:hover { background:#f0f2e8; }
+#participantAccount .profile-photo-action.account-upload-action { border-color:#4b5037; background:#4b5037; color:#fff; }
+#participantAccount .profile-photo-action.account-upload-action:hover { border-color:#555b40; background:#555b40; }
+#participantAccount .profile-photo-delete[hidden] { display:none; }
+#participantAccount .profile-photo-action:disabled { cursor:wait; opacity:.65; }
 #participantAccount .profile-crop-modal { position:fixed; z-index:1000; inset:0; display:flex; align-items:center; justify-content:center; overflow-y:auto; padding:20px; background:rgba(31,39,28,.62); }
 #participantAccount .profile-crop-modal[hidden] { display:none; }
 #participantAccount .profile-crop-dialog { width:min(100%,460px); border:1px solid #e6d2a9; border-radius:22px; background:#fff; padding:22px; box-shadow:0 24px 70px rgba(18,25,16,.28); }
@@ -255,16 +265,31 @@
               <p class="gender-picker-error mt-1 hidden text-xs font-semibold" data-gender-error>Pilih jenis kelamin.</p>
               {% for error in form.gender.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}
             </div>
-            <label class="account-field text-sm font-bold text-brand-ink" for="id_ktp_document">Unggah KTP (PDF) {{ form.ktp_document }}{% for error in form.ktp_document.errors %}<span class="mt-1 block text-sm font-semibold text-rose-700">{{ error }}</span>{% endfor %}<span class="mt-1 block text-sm font-normal text-stone-500">Format PDF, maksimal 5 MB.{% if request.user.ktp_document %} File tersimpan: <strong class="font-bold text-[#4b5037]">{% with ktp_filename=request.user.ktp_document.name %}{{ ktp_filename|cut:'private/ktp_documents/' }}{% endwith %}</strong>. <a class="font-bold text-[#4b5037] underline" href="{% url 'accounts:ktp_document' %}" target="_blank" rel="noopener">Lihat KTP PDF</a>{% endif %}</span></label>
+            <div class="account-field text-sm font-bold text-brand-ink">
+              <span class="block">Unggah KTP (PDF)</span>
+              <div class="account-upload-input mt-2 flex min-w-0 flex-wrap items-center gap-3">
+                <label class="account-upload-action" for="id_ktp_document"><i class="fa-solid fa-upload" aria-hidden="true"></i>Unggah PDF{{ form.ktp_document }}</label>
+                <span id="ktpDocumentFileName" class="account-upload-filename">{% if request.user.ktp_document %}Pilih file baru untuk mengganti{% else %}Belum ada file dipilih{% endif %}</span>
+              </div>
+              {% for error in form.ktp_document.errors %}<span class="mt-1 block text-sm font-semibold text-rose-700">{{ error }}</span>{% endfor %}
+              <span class="mt-1 block text-sm font-normal text-stone-500">Format PDF, maksimal 5 MB.{% if request.user.ktp_document %} File tersimpan: <strong class="font-bold text-[#4b5037]">{% with ktp_filename=request.user.ktp_document.name %}{{ ktp_filename|cut:'private/ktp_documents/' }}{% endwith %}</strong>. <a class="font-bold text-[#4b5037] underline" href="{% url 'accounts:ktp_document' %}" target="_blank" rel="noopener">Lihat KTP PDF</a>{% endif %}</span>
+            </div>
           </div>
 
           <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
             <label class="account-field text-sm font-bold text-brand-ink" for="id_birth_date">Tanggal lahir {{ form.birth_date }}{% for error in form.birth_date.errors %}<span class="mt-1 block text-xs font-semibold text-rose-700">{{ error }}</span>{% endfor %}</label>
             <div class="profile-photo-control">
-              <label class="block text-sm font-bold text-brand-ink" for="id_profile_photo">Foto profil</label>
-              {{ form.profile_photo }}
+              <span class="block text-sm font-bold text-brand-ink">Foto profil</span>
+              <div class="profile-photo-row">
+                <div class="profile-photo-info">
+                  <div class="profile-photo-actions">
+                    <label class="profile-photo-action account-upload-action profile-photo-upload" for="id_profile_photo"><i class="fa-solid fa-camera" aria-hidden="true"></i>Unggah foto{{ form.profile_photo }}</label>
+                    <button id="profilePhotoDelete" class="profile-photo-action profile-photo-delete" type="button" data-delete-url="{% url 'peserta_hapus_foto' %}" {% if not request.user.profile_photo %}hidden{% endif %}><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Hapus foto</button>
+                  </div>
+                  <p id="profilePhotoStatus" class="mt-2 text-xs font-normal text-stone-500">JPG, PNG, atau WebP, maksimal 5 MB. Foto dipotong menjadi persegi.{% if request.user.profile_photo %} Foto tersimpan; pilih foto baru untuk menggantinya.{% endif %}</p>
+                </div>
+              </div>
               {% for error in form.profile_photo.errors %}<span class="mt-1 block text-sm font-semibold text-rose-700">{{ error }}</span>{% endfor %}
-              <p id="profilePhotoStatus" class="mt-1 text-xs font-normal text-stone-500">JPG, PNG, atau WebP, maksimal 5 MB.{% if request.user.profile_photo %} Foto tersimpan; pilih foto baru untuk menggantinya.{% endif %}</p>
               <p id="profilePhotoError" class="mt-1 text-sm font-semibold text-rose-700" role="alert" hidden></p>
             </div>
           </div>
@@ -490,6 +515,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const saveButton = document.getElementById("profileCropSave");
   const status = document.getElementById("profilePhotoStatus");
   const error = document.getElementById("profilePhotoError");
+  const deleteButton = document.getElementById("profilePhotoDelete");
+  const photoPreviews = [...document.querySelectorAll("[data-profile-photo-preview]")];
+  const ktpInput = document.getElementById("id_ktp_document");
+  const ktpFileName = document.getElementById("ktpDocumentFileName");
+  if (ktpInput && ktpFileName) {
+    ktpInput.addEventListener("change", () => {
+      ktpFileName.textContent = ktpInput.files?.[0]?.name || "Belum ada file dipilih";
+    });
+  }
   if (!input || !modal || !viewport || !image || !zoom || !cancelButton || !saveButton || !error) return;
 
   let sourceFile = null;
@@ -499,6 +533,24 @@ document.addEventListener("DOMContentLoaded", function () {
   let imageTop = 0;
   let dragStart = null;
   let previouslyFocused = null;
+  const sidebarPhotoPreview = photoPreviews[0];
+  const savedPhotoUrl = sidebarPhotoPreview?.dataset.savedSrc || "";
+  const defaultPhotoUrl = sidebarPhotoPreview?.dataset.defaultSrc || "";
+  let hasSavedPhoto = Boolean(savedPhotoUrl);
+  let previewObjectUrl = null;
+
+  const updatePhotoPreviews = (source) => {
+    if (previewObjectUrl) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = null;
+    }
+    let previewSource = source;
+    if (source instanceof Blob) {
+      previewObjectUrl = URL.createObjectURL(source);
+      previewSource = previewObjectUrl;
+    }
+    photoPreviews.forEach((preview) => { preview.src = previewSource; });
+  };
 
   const showError = (message) => {
     error.textContent = message;
@@ -631,11 +683,49 @@ document.addEventListener("DOMContentLoaded", function () {
       const transfer = new DataTransfer();
       transfer.items.add(croppedFile);
       input.files = transfer.files;
+      updatePhotoPreviews(croppedFile);
+      if (deleteButton) deleteButton.hidden = false;
       if (status) status.textContent = `Foto siap disimpan: ${croppedFile.name}.`;
       showError("");
       closeModal(false);
       if (previouslyFocused) previouslyFocused.focus();
     }, "image/jpeg", 0.9);
+  });
+
+  deleteButton?.addEventListener("click", async () => {
+    if (!hasSavedPhoto) {
+      input.value = "";
+      updatePhotoPreviews(defaultPhotoUrl);
+      deleteButton.hidden = true;
+      if (status) status.textContent = "JPG, PNG, atau WebP, maksimal 5 MB. Foto dipotong menjadi persegi.";
+      showError("");
+      return;
+    }
+
+    const csrfToken = document.querySelector('#participantAccount input[name="csrfmiddlewaretoken"]')?.value;
+    deleteButton.disabled = true;
+    showError("");
+    try {
+      const response = await fetch(deleteButton.dataset.deleteUrl, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "X-CSRFToken": csrfToken || "", "Accept": "application/json" },
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || typeof result.deleted !== "boolean") {
+        throw new Error(result.error || "Sesi berakhir atau foto profil gagal dihapus. Coba lagi.");
+      }
+
+      hasSavedPhoto = false;
+      input.value = "";
+      updatePhotoPreviews(defaultPhotoUrl);
+      deleteButton.hidden = true;
+      if (status) status.textContent = "Foto profil berhasil dihapus.";
+    } catch (deleteError) {
+      showError(deleteError.message || "Foto profil gagal dihapus. Coba lagi.");
+    } finally {
+      deleteButton.disabled = false;
+    }
   });
 })();
 </script>

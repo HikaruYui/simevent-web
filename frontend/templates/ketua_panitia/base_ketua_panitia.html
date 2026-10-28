@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/ketua_panitia.css' %}?v=7">
   <style>
     :root { --side-w: clamp(210px, 14.5vw, 244px); }
     .sr-only {
@@ -51,6 +51,9 @@
       font: 700 13.5px/1 var(--font-head) !important; color: var(--olive) !important;
     }
     .eo-user button .icon { width: 17px !important; height: 17px !important; }
+    .eo-user__id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.eo-user__txt { min-width: 0; }
+.eo-user__ava { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--olive) center / cover no-repeat; color: var(--cream); font: 800 15px/1 var(--font-head); }
     @media (max-width: 960px) {
       .eo { padding-left: 0 !important; }
       .eo-side { position: static !important; width: 100% !important; height: auto !important; flex-direction: row !important; flex-wrap: wrap !important; padding: 16px 20px !important; }
@@ -78,7 +81,7 @@
       <a href="{% url 'eo_pengaturan' %}" {% block nav_pengaturan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
     </nav>
     <div class="eo-user">
-      <b>{{ request.user.get_full_name|default:"Senku Sartika" }}</b><p>Ketua Panitia</p>
+      <div class="eo-user__id"><span class="eo-user__ava" aria-hidden="true">SS</span><div class="eo-user__txt"><b>{{ request.user.get_full_name|default:"Senku Sartika" }}</b><p>Ketua Panitia</p></div></div>
       <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
         <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
       </form>
@@ -104,6 +107,8 @@
       <div class="field"><label for="neLokasi">Lokasi</label><input id="neLokasi" name="lokasi" type="text" maxlength="80"></div>
       <div class="field"><label for="neKuota">Kuota</label><input id="neKuota" name="kuota" type="number" min="1" value="100"></div>
       <div class="field"><label for="neHarga">Harga tiket (Rp, 0 = gratis)</label><input id="neHarga" name="harga" type="number" min="0" value="0"></div>
+      <div class="field"><label for="neProposal">Proposal event (PDF atau Word, maks 10 MB)</label><input id="neProposal" name="proposal" type="file" accept=".pdf,.doc,.docx"></div>
+      <div class="field"><label for="neRingkasan">Tujuan &amp; ringkasan event</label><textarea id="neRingkasan" name="ringkasan" rows="3" maxlength="300" placeholder="Jelaskan singkat tujuan dan isi acara"></textarea></div>
       
       <!-- 1. FIELD UPLOAD GAMBAR COVER EVENT -->
       <div class="field">
@@ -275,6 +280,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="{% static 'js/simevent_shared.js' %}"></script>
 <script src="{% static 'js/ketua_panitia_data.js' %}"></script>
-<script src="{% static 'js/ketua_panitia.js' %}"></script>
+<script src="{% static 'js/ketua_panitia.js' %}?v=4"></script>
 </body>
 </html>

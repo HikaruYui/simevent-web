@@ -1,9 +1,3 @@
-/* =========================================================
-   SIMEVENT - Dashboard Ketua Panitia (EO)
-   Berdiri sendiri: tidak memuat style.css (halaman publik),
-   jadi tidak terkena zoom/ukuran halaman landing.
-   ========================================================= */
-
 :root {
   --olive: #3F422E;
   --olive-ink: #2A2C1E;
@@ -335,6 +329,19 @@ dialog.dlg::backdrop { background: rgba(42, 44, 30, .55); backdrop-filter: blur(
 .detail-grid dt { color: var(--muted); font-weight: 700; }
 .detail-grid dd { margin: 0; }
 
+/* Proposal di dialog detail event */
+.prop-h { margin: 22px 0 10px; font: 700 16px/1.2 var(--font-head); }
+.pdoc { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--cream-card); }
+.pdoc > div { flex: 1; min-width: 0; }
+.pdoc b { display: block; font: 700 14px/1.3 var(--font-head); overflow-wrap: anywhere; }
+.pdoc small { display: block; margin-top: 2px; font: 500 12.5px/1.3 var(--font-body); color: var(--muted); }
+.pdoc__ico { display: grid; place-items: center; flex: none; width: 44px; height: 52px; border-radius: 10px; background: var(--bad); color: #fff; font: 800 12px/1 var(--font-head); }
+.dl--prop { margin-top: 16px; }
+#detailDlg[open] { display: flex; flex-direction: column; max-height: 90vh; }
+#detailDlg .dlg__body { overflow-y: auto; display: block; }
+.pdoc__note { margin-top: 12px; font: 500 12.5px/1.45 var(--font-body); color: var(--muted); }
+@media (max-width: 640px) { .pdoc { flex-wrap: wrap; } }
+
 .toast {
   position: fixed; left: 50%; bottom: 28px; z-index: 100; max-width: min(520px, calc(100vw - 32px));
   padding: 14px 22px; border-radius: 14px; transform: translateX(-50%);
@@ -466,7 +473,7 @@ td.act, .inv .act { white-space: nowrap; text-align: right; }
 .set-main .set-actions { margin-top: 20px; }
 .eo-main { min-width: 0; }
 #pwForm .set-grid { grid-template-columns: minmax(0, 420px); }
-#pwForm .set-actions { justify-content: flex-start; }
+#pwForm .set-actions { justify-content: flex-end; }
 .set-danger .set-h { color: var(--bad); }
 .tog-list .tog:first-child { padding-top: 6px; }
 @media (max-width: 1100px) { .set-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -514,3 +521,90 @@ body[data-page="pendapatan"] .table-wrap { margin-top: 24px; }
 .chip--aktif, .chip--dicairkan, .chip--disetujui { background: var(--good-bg); color: var(--good); }
 .chip--belum { background: #E9E4D6; color: var(--muted); }
 .ticket__reply { padding: 10px 14px; border-radius: 12px; background: var(--white); font: 500 14px/1.5 var(--font-body); }
+/* ---------- Support: kartu pesan berwarna putih ---------- */
+body[data-page="support"] .ticket { background: var(--white); }
+body[data-page="support"] .ticket__reply { background: var(--cream-card); }
+/* ---------- Pengaturan > Profil saya (foto, nama, email) ---------- */
+.sp-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; margin-top: 20px; }
+.sp-profile { display: flex; align-items: center; gap: 20px; padding: 0 48px 0 0; }
+.sp-profile b { display: block; font: 700 18px/1.2 var(--font-head); }
+.sp-profile small { display: block; margin-top: 2px; font: 500 14px/1.4 var(--font-body); color: var(--muted); }
+.sp-profile small.hint { margin-top: 8px; font-size: 12.5px; }
+.sp-profile__act { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.sp-file { cursor: pointer; }
+.sp-file:focus-within { outline: 2px solid var(--orange); outline-offset: 2px; }
+.sp-ava { display: grid; place-items: center; flex: none; width: 84px; height: 84px; border-radius: 50%; background: var(--olive) center / cover no-repeat; color: var(--cream); font: 800 26px/1 var(--font-head); }
+.sp-acc { display: grid; gap: 18px; padding-left: 48px; border-left: 1px solid var(--line); }
+.sp-inline__row { display: flex; align-items: center; gap: 10px; }
+.sp-inline__row input { flex: 1 1 0; min-width: 0; }
+.sp-inline__row .btn { flex: none; }
+.sp-top + .set-form { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--line); }
+@media (max-width: 900px) {
+  .sp-top { grid-template-columns: 1fr; }
+  .sp-profile { padding: 0 0 24px; }
+  .sp-acc { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+
+/* Dialog atur foto profil */
+.profile-crop-modal { position: fixed; z-index: 1000; inset: 0; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; background: rgba(31, 39, 28, .62); }
+.profile-crop-modal[hidden] { display: none; }
+.profile-crop-dialog { width: min(100%, 460px); border: 1px solid #E6D2A9; border-radius: 22px; background: #fff; padding: 24px; box-shadow: 0 24px 70px rgba(18, 25, 16, .28); }
+.profile-crop-dialog h3 { font: 700 22px/1.2 var(--font-head); }
+.profile-crop-dialog p { margin-top: 6px; font: 500 14px/1.5 var(--font-body); color: var(--muted); }
+.profile-crop-dialog label { display: block; font: 700 14px/1.2 var(--font-head); }
+.profile-crop-viewport { position: relative; width: min(100%, 340px); aspect-ratio: 1; overflow: hidden; margin: 18px auto 14px; border-radius: 14px; background: #30362E; touch-action: none; cursor: grab; }
+.profile-crop-image { position: absolute; max-width: none; max-height: none; user-select: none; pointer-events: none; }
+.profile-crop-guide { position: absolute; inset: 5%; border: 2px solid rgba(255, 255, 255, .9); border-radius: 50%; box-shadow: 0 0 0 999px rgba(28, 34, 26, .16); pointer-events: none; }
+.profile-crop-zoom { display: block; width: 100%; margin-top: 8px; accent-color: var(--olive); }
+.profile-crop-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+/* ---------- Pengaturan: tata letak seperti Pengaturan admin ---------- */
+.eo-head--stack { display: block; }
+.eo-head--stack p { margin-top: 6px; }
+.adm-toolbar { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 12px; margin: 24px 0 20px; }
+.adm-toolbar .tabs { flex: 0 1 auto; min-width: 0; }
+.adm-toolbar + .set-main { margin-top: 0; }
+.set-tabs a { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 1.5px solid var(--olive); border-radius: 999px; font: 600 14px/1 var(--font-body); color: var(--olive); transition: background-color .2s, color .2s; }
+.set-tabs a:hover { background: rgba(63, 66, 46, .08); }
+.set-tabs a.is-active { background: var(--olive); color: var(--cream); }
+.set-tabs a:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.set-tabs a span { min-width: 22px; height: 22px; padding: 0 6px; display: grid; place-items: center; border-radius: 999px; background: rgba(63, 66, 46, .14); font: 800 12px/1 var(--font-body); }
+.set-tabs a.is-active span { background: rgba(245, 230, 197, .22); }
+#panel-profil > .set-sub { margin-bottom: 24px; }
+/* ---------- Pengaturan > Tim panitia & Undangan: kartu KPI dan tabel seperti dashboard admin ---------- */
+.set-main:has(#panel-tim:not([hidden])),
+.set-main:has(#panel-notifikasi:not([hidden])) { background: transparent; box-shadow: none; padding: 0; }
+.kpi-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 0; }
+@media (max-width: 1100px) { .kpi-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .kpi-grid--3 { grid-template-columns: 1fr; } }
+#panel-tim .set-row { margin: 32px 0 14px; }
+#panel-notifikasi .adm-table { margin-top: 16px; }
+.adm-table { overflow: hidden; border-radius: 24px; }
+.adm-table .table-wrap { overflow-x: auto; margin-top: 0; }
+.adm-table table.tbl { min-width: 0; }
+.adm-table .tbl thead th { padding: 18px 14px; background: var(--olive); color: var(--cream); text-align: center; font: 700 13px/1 var(--font-head); letter-spacing: .06em; }
+.adm-table .tbl td { padding: 14px; text-align: center; white-space: nowrap; }
+.adm-table .tbl td:first-child, .adm-table .tbl th:first-child { text-align: left; white-space: normal; min-width: 200px; padding-left: 22px; }
+.adm-table .tbl td.num, .adm-table .tbl th.num { text-align: center; }
+.adm-table .tbl td.act { text-align: right; padding-right: 22px; }
+.adm-table .tbl tbody tr:hover td { background: #FCF7EA; }
+#timBody td.act, #invList td.act { white-space: nowrap; }
+#timBody td:nth-child(3) { white-space: normal; min-width: 180px; max-width: 300px; }
+/* ---------- Dropdown kustom (form Event baru) ---------- */
+.dd { position: relative; }
+.dd > select { display: none; }
+.dd__btn {
+  position: relative; width: 100%; height: 48px; padding: 0 44px 0 16px; text-align: left; cursor: pointer;
+  border: 1.5px solid var(--taupe); border-radius: 12px; background: var(--cream-card);
+  font: 500 15px/1 var(--font-body); color: var(--olive);
+}
+.dd__btn:focus-visible, .dd.is-open .dd__btn { outline: 2px solid var(--olive); outline-offset: 1px; }
+.dd__btn .icon { position: absolute; right: 14px; top: 50%; width: 16px; height: 16px; margin-top: -8px; transition: transform .15s; }
+.dd.is-open .dd__btn .icon { transform: rotate(180deg); }
+.dd__menu {
+  position: fixed; z-index: 1000; overflow-y: auto; padding: 8px; border-radius: 16px;
+  background: #fff; box-shadow: 0 12px 32px rgba(42, 44, 30, .22);
+}
+.dd__menu[hidden] { display: none; }
+.dd__item { padding: 12px 16px; border-radius: 12px; cursor: pointer; font: 600 15px/1.3 var(--font-body); color: var(--olive); }
+.dd__item:hover, .dd__item.is-active { background: var(--cream-card); }
+.dd__item.is-selected { background: var(--olive-ink, #2A2C1E); color: #fff; }
