@@ -3,13 +3,13 @@
 {% block page_key %}admin_events{% endblock %}
 {% block nav_admin_events %} class="is-active" aria-current="page"{% endblock %}
 {% block content %}
+
 <header class="eo-head eo-head--stack"><h1>Kelola Event</h1><p>Setujui, tolak, atau tangguhkan event dari semua penyelenggara.</p></header>
 <div class="adm-toolbar">
   <div class="tabs" id="evTabs" role="group" aria-label="Filter status"></div>
   <label class="adm-search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari event</span><input id="evSearch" type="search" placeholder="Cari event..."></label>
 </div>
 <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Penyelenggara</th><th>Tanggal</th><th>Tiket</th><th class="num">Harga</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead><tbody id="evBody"></tbody></table></div></article>
-<!-- Data event dari PostgreSQL -->
 {{ backend_admin_event_rows|json_script:"admin-event-rows" }}
 
 <!-- CSRF untuk aksi approval melalui JavaScript -->

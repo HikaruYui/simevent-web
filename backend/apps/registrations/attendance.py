@@ -5,14 +5,13 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.debug import sensitive_variables
-
 from apps.accounts.models import User
 from apps.accounts.permissions import require_organizer
 from apps.accounts.services import lock_accounts, require_platform_permission
 from apps.events.models import Event, EventStatus
-
 from .forms import TicketScanForm
 from .models import Attendance, RegistrationStatus, Ticket
+from django.db.models import Q
 
 
 class AttendanceService:
@@ -22,19 +21,55 @@ class AttendanceService:
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
+    
 
-    def _scanner(self):
-        actor = get_object_or_404(User, pk=self._actor_id)
+    def _require_scanner_access(self, actor):
+        if not actor.is_active:
+            raise PermissionDenied
+
+        # Panitia Biasa menggunakan penugasan event sebagai izin.
+        if actor.role == "COMMITTEE":
+            return
+
+        # Hak akses Organizer/Admin tetap seperti semula.
         require_organizer(actor)
         if not actor.has_perm("registrations.scan_ticket"):
             raise PermissionDenied
+
+    
+  
+    
+    def _scannable_events(self, actor):
+        managed_events = Event.objects.managed_by(actor)
+
+        if actor.role == "COMMITTEE":
+            assigned_event_ids = Event.objects.filter(
+                committee_assignments__member=actor,
+                committee_assignments__is_active=True,
+            ).values("pk")
+
+            return Event.objects.filter(
+                Q(pk__in=managed_events.values("pk"))
+                | Q(pk__in=assigned_event_ids)
+            )
+
+        return managed_events
+
+
+
+
+
+    def _scanner(self):
+        actor = get_object_or_404(User, pk=self._actor_id)
+        self._require_scanner_access(actor)
         return actor
+
 
     @sensitive_variables("token", "ticket")
     @transaction.atomic
     def scan(self, event_id, *, token):
         actor = self._scanner()
-        get_object_or_404(Event.objects.managed_by(actor), pk=event_id)
+        get_object_or_404(self._scannable_events(actor), pk=event_id)
         form = TicketScanForm({"token": token})
         if not form.is_valid():
             raise ValidationError("Invalid ticket.")
@@ -48,12 +83,13 @@ class AttendanceService:
         # Account locks precede event locks in every workflow to avoid deadlocks.
         users = lock_accounts(actor.pk, ticket.registration.participant_id)
         actor = users[actor.pk]
-        require_organizer(actor)
-        if not actor.has_perm("registrations.scan_ticket"):
-            raise PermissionDenied
+        self._require_scanner_access(actor)
+        
         event = get_object_or_404(
-            Event.objects.managed_by(actor).select_for_update(), pk=event_id,
+            self._scannable_events(actor).select_for_update(),
+            pk=event_id,
         )
+
         ticket = Ticket.objects.filter(
             token=token, registration__event=event,
         ).select_related("registration__payment").first()

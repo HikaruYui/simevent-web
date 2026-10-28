@@ -758,14 +758,7 @@
       }).join("");
     }
     /* Data proposal: pakai yang diunggah saat "Event baru" (tersimpan di SIM.state.newEvents), kalau tidak ada pakai data contoh */
-    var RINGKAS = {
-      Konferensi: "Mempertemukan akademisi, praktisi, dan mahasiswa untuk berbagi riset dan membangun jejaring kolaborasi.",
-      Workshop: "Pelatihan praktik langsung agar peserta menguasai keterampilan baru dan membawa pulang hasil kerja nyata.",
-      Seminar: "Menghadirkan narasumber ahli untuk membahas isu terkini dan membuka ruang tanya jawab dengan peserta.",
-      Webinar: "Sesi daring terbuka agar peserta dari berbagai daerah dapat belajar tanpa terkendala jarak.",
-      Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
-      "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
-    };
+    var RINGKAS = window.SIMEVENT_DEMO.proposal_summaries;
     
   function proposalOf(e) {
     // Jika data event berasal dari PostgreSQL,
@@ -1138,7 +1131,7 @@ var proposalButton = (!p.backend || p.asli)
       if (window.SIM) {
         var prev = SIM.state.tickets[b.dataset.done] || {};
         SIM.state.tickets[b.dataset.done] = { status: "selesai", balasan: prev.balasan || "" };
-        SIM.log("support", "Tiket " + b.dataset.done + " ditandai selesai oleh Ketua Panitia", "Budi Santoso", "Ketua Panitia", { eo: true });
+        SIM.log("support", "Tiket " + b.dataset.done + " ditandai selesai oleh Ketua Panitia", window.SIMEVENT_DEMO.organizer_name, "Ketua Panitia", { eo: true });
       }
       toast("Tiket " + b.dataset.done + " ditandai selesai. Ini data contoh, belum tersimpan ke database.");
       render();
@@ -1189,25 +1182,11 @@ var proposalButton = (!p.backend || p.asli)
                  poin: ["Check-in peserta", "Mengerjakan tugas", "Unggah dokumentasi"] }
     };
     var STATUS = { aktif: ["hadir", "Aktif"], tertunda: ["mendatang", "Menunggu"], ditangguhkan: ["selesai", "Ditangguhkan"] };
-    var team = [
-      { id: 1, nama: "Siti Rahma",       email: "siti.rahma@mail.com",   peran: "panitia", akses: "semua", status: "aktif",        terakhir: "Hari ini" },
-      { id: 2, nama: "Rafi Hidayat",     email: "rafi.hidayat@mail.com", peran: "panitia", akses: [1, 2],  status: "aktif",        terakhir: "Kemarin" },
-      { id: 3, nama: "Nabila Amalia",    email: "nabila.a@mail.com",     peran: "panitia", akses: "semua", status: "aktif",        terakhir: "3 hari lalu" },
-      { id: 4, nama: "Dimas Prakoso",    email: "dimas.p@mail.com",      peran: "panitia", akses: [3],     status: "ditangguhkan", terakhir: "2 minggu lalu" }
-    ];
+    var team = window.SIMEVENT_DEMO.team;
     /* akun yang dibekukan Admin tidak bisa masuk: tampil sebagai ditangguhkan */
     if (window.SIM) { team.forEach(function (m) { var u = SIM.state.users[m.email]; if (u && u.status === "dibekukan") { m.status = "ditangguhkan"; } }); }
-    var invites = [
-      { id: 11, email: "putri.amelia@mail.com", peran: "panitia", kirim: "2 hari lalu", sisa: 5 },
-      { id: 12, email: "agus.salim@mail.com",   peran: "panitia", kirim: "6 hari lalu", sisa: 1 }
-    ];
-    var NOTIF = [
-      { k: "daftar",  t: "Pendaftaran peserta baru",       d: "Setiap ada peserta yang mendaftar ke eventmu.", on: true },
-      { k: "bayar",   t: "Pembayaran diterima",            d: "Ringkasan saat tiket berbayar terjual.",        on: true },
-      { k: "support", t: "Balasan tiket support",          d: "Saat admin platform membalas atau menutup tiket.", on: true },
-      { k: "h1",      t: "Pengingat H-1 event",            d: "Satu hari sebelum event dimulai.",              on: true },
-      { k: "tim",     t: "Anggota tim bergabung atau keluar", d: "Saat undangan diterima atau akses dicabut.", on: false }
-    ];
+    var invites = window.SIMEVENT_DEMO.invites;
+    var NOTIF = window.SIMEVENT_DEMO.organizer_notifications;
 
     /* ----- Tab (hash) ----- */
     var tabs = $$("#setNav a"), panels = $$("[data-panel]");

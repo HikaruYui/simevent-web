@@ -10,24 +10,7 @@
   var KEY = "simevent_shared_v1";
 
   function defaults() {
-    return {
-      eventStatus: {},      /* id event -> status baru ("mendatang", "ditolak", ...) */
-      eventReason: {},      /* id event -> alasan tolak / tangguhkan */
-      eventPrev: {},        /* id event -> status sebelum ditangguhkan */
-      newEvents: [],        /* event baru dari Ketua Panitia */
-      tickets: {},          /* id tiket -> { status, balasan } */
-      users: {},            /* email -> { status, peran } */
-      customUsers: [],      /* akun yang ditambah admin */
-      proposals: {},        /* id pengajuan -> { status, alasan } */
-      payouts: {},          /* nama penyelenggara -> total yang sudah dicairkan */
-      activity: [],         /* jejak audit bersama */
-      settings: {
-        feePct: 5,
-        approvalRequired: true,
-        categories: { "Konferensi": true, "Workshop": true, "Seminar": true, "Webinar": true, "Sosialisasi": true, "Kuliah Umum": true, "Pelatihan": true },
-        notif: { event: true, support: true, pengajuan: true, keuangan: false }
-      }
-    };
+    return JSON.parse(JSON.stringify(window.SIMEVENT_DEMO.shared_defaults));
   }
 
   function load() {

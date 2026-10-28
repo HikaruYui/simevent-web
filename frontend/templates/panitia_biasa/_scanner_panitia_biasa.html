@@ -150,14 +150,24 @@
       <label class="manual-box__label" for="manualCodeInput">
         <i class="fa-solid fa-keyboard"></i> Tidak Bisa Scan? Input Manual Kode Tiket / ID Peserta:
       </label>
+      
       <form class="manual-form" onsubmit="handleManualCheckin(event)">
-        <input type="text" id="manualCodeInput" class="manual-input" placeholder="Contoh: SIM-001 atau SIM-002" required>
+        {% csrf_token %}
+
+        <input type="text" id="manualCodeInput" class="manual-input" placeholder="{% if panitia_db_data %}Masukkan token UUID tiket peserta{% else %}CONTOH: SIM-001 ATAU SIM-002{% endif %}" required>
         <button type="submit" class="btn-olive">
           <i class="fa-solid fa-check-double"></i> Tandai Hadir
         </button>
       </form>
       <small style="display:block; margin-top:8px; color:var(--muted); font-size:12px;">
-        *Kode percobaan: <strong>SIM-001</strong>, <strong>SIM-002</strong>, <strong>SIM-003</strong>, <strong>SIM-004</strong>, <strong>SIM-005</strong>
+        {% if panitia_db_data %}
+          *Gunakan token UUID dari QR tiket asli peserta untuk melakukan presensi.
+        {% else %}
+          *Kode percobaan:
+          {% for participant in committee_demo.participants %}
+            <strong>{{ participant.code }}</strong>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        {% endif %}
       </small>
     </div>
   </div>

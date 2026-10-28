@@ -2,8 +2,8 @@
   "use strict";
 
   var E = window.EO, S = window.SIM, st = S.state;
-  var ADMIN = (document.querySelector(".eo-user b") || {}).textContent || "Super Administrator";
-  var ORG = "Budi Santoso";   /* pemilik 12 event contoh Ketua Panitia */
+  var ADMIN = (document.querySelector(".eo-user b") || {}).textContent || window.SIMEVENT_DEMO.admin_name;
+  var ORG = window.SIMEVENT_DEMO.organizer_name;   /* pemilik 12 event contoh Ketua Panitia */
   // Data database hanya tersedia di halaman Kelola Event Admin.
   var adminRowsElement = document.getElementById("admin-event-rows");
 
@@ -58,17 +58,7 @@
   }
 
   /* ---------- Data: event ---------- */
-  var OTHERS = [
-    { id: 101, organizer: "Ahmad Fauzi",     nama: "Hackathon PTIK 2026",                              jenis: "Konferensi", tanggal: "2026-11-12", lokasi: "Gedung Serbaguna Samarinda", kuota: 120, terjual: 0,  harga: 50000,  status: "diajukan" },
-    { id: 102, organizer: "Sari Wulandari",  nama: "Workshop AI & Machine Learning",                   jenis: "Workshop",   tanggal: "2026-12-05", lokasi: "Lab Komputer FKTI",           kuota: 60,  terjual: 0,  harga: 85000,  status: "diajukan" },
-    { id: 103, organizer: "Biro Kemahasiswaan", nama: "Sosialisasi Beasiswa dan Program Magang Nasional", jenis: "Sosialisasi", tanggal: "2026-11-15", lokasi: "Aula Rektorat",         kuota: 200, terjual: 0,  harga: 0,      status: "diajukan" },
-    { id: 104, organizer: "Dr. Rina Kartika", nama: "Seminar Nasional Teknologi Informasi 2026",       jenis: "Seminar",    tanggal: "2026-10-18", lokasi: "Auditorium Unmul, Samarinda", kuota: 300, terjual: 248, harga: 0,    status: "berlangsung" },
-    { id: 105, organizer: "Andi Pratama",    nama: "Workshop UI/UX untuk Pemula",                      jenis: "Workshop",   tanggal: "2026-10-24", lokasi: "Lab Komputer FKTI",           kuota: 30,  terjual: 22, harga: 25000,  status: "mendatang" },
-    { id: 106, organizer: "Prof. Ahmad Fauzi", nama: "Konferensi Pendidikan & Riset Kalimantan",       jenis: "Konferensi", tanggal: "2026-11-05", lokasi: "Aula Utama, Samarinda",       kuota: 180, terjual: 96, harga: 50000,  status: "mendatang" },
-    { id: 107, organizer: "Dr. Lina Marlina", nama: "Webinar Metodologi Penelitian Modern",            jenis: "Webinar",    tanggal: "2026-10-02", lokasi: "Online (Zoom)",               kuota: 150, terjual: 131, harga: 0,     status: "selesai" },
-    { id: 108, organizer: "Sari Wulandari",  nama: "Workshop Analisis Data dengan Python",             jenis: "Workshop",   tanggal: "2026-11-12", lokasi: "Online (Zoom)",               kuota: 75,  terjual: 41, harga: 35000,  status: "mendatang" },
-    { id: 109, organizer: "Himpunan Seni Rupa", nama: "Konser Amal Kampus",                            jenis: "Konferensi", tanggal: "2026-11-21", lokasi: "Lapangan Utama",              kuota: 500, terjual: 0,  harga: 30000,  status: "ditolak", alasan: "Dokumen izin kegiatan dari kampus belum dilampirkan." }
-  ];
+  var OTHERS = window.SIMEVENT_DEMO.admin_events;
   OTHERS.forEach(function (o) {
     if (st.eventStatus[o.id]) { o.status = st.eventStatus[o.id]; }
     if (st.eventReason[o.id]) { o.alasan = st.eventReason[o.id]; }
@@ -253,14 +243,7 @@ function rejectEvent(e, why) {
   function askSuspend(e, after) { ask({ title: "Tangguhkan event?", text: 'Event "' + e.nama + '" tidak lagi tampil untuk peserta sampai dipulihkan.', reason: "Alasan penangguhan", ok: "Tangguhkan", danger: true, onOk: function (r) { suspendEvent(e, r); after(); } }); }
 
   /* ---------- Proposal & detail event (dialog bersama) ---------- */
-  var RINGKAS = {
-    Konferensi: "Mempertemukan akademisi, praktisi, dan mahasiswa untuk berbagi riset dan membangun jejaring kolaborasi.",
-    Workshop: "Pelatihan praktik langsung agar peserta menguasai keterampilan baru dan membawa pulang hasil kerja nyata.",
-    Seminar: "Menghadirkan narasumber ahli untuk membahas isu terkini dan membuka ruang tanya jawab dengan peserta.",
-    Webinar: "Sesi daring terbuka agar peserta dari berbagai daerah dapat belajar tanpa terkendala jarak.",
-    Sosialisasi: "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
-    "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
-  };
+  var RINGKAS = window.SIMEVENT_DEMO.proposal_summaries;
   
   function proposalOf(e) {
     // Halaman Kelola Event Admin membaca PostgreSQL.
@@ -572,21 +555,7 @@ function openDetail(e, after) {
 
   /* ---------- Data: pengguna ---------- */
   var PERAN = { admin: "Admin Platform", penyelenggara: "Ketua Panitia", panitia: "Panitia", peserta: "Peserta" };
-  var BASE_USERS = [
-    { email: "admin@simevent.id", nama: "Super Administrator", peran: "admin", org: "Platform SIMEVENT" },
-    { email: "budi@simevent.id", nama: "Budi Santoso", peran: "penyelenggara", org: "BEM Fakultas Teknik" },
-    { email: "ahmad.fauzi@simevent.id", nama: "Prof. Ahmad Fauzi", peran: "penyelenggara", org: "Fakultas Keguruan" },
-    { email: "rina.kartika@simevent.id", nama: "Dr. Rina Kartika", peran: "penyelenggara", org: "Fakultas Teknik" },
-    { email: "sari.wulandari@simevent.id", nama: "Sari Wulandari", peran: "penyelenggara", org: "Himpunan Data Science" },
-    { email: "andi.pratama@simevent.id", nama: "Andi Pratama", peran: "penyelenggara", org: "Komunitas Desain Kaltim" },
-    { email: "siti.rahma@mail.com", nama: "Siti Rahma", peran: "panitia", org: "Tim " + ORG },
-    { email: "rafi.hidayat@mail.com", nama: "Rafi Hidayat", peran: "panitia", org: "Tim " + ORG },
-    { email: "nabila.a@mail.com", nama: "Nabila Amalia", peran: "panitia", org: "Tim " + ORG },
-    { email: "dimas.p@mail.com", nama: "Dimas Prakoso", peran: "panitia", org: "Tim " + ORG, status: "ditangguhkan" },
-    { email: "rizky.ananda@mail.com", nama: "Rizky Ananda", peran: "peserta", org: "-" },
-    { email: "salsa.putri@mail.com", nama: "Salsa Putri", peran: "peserta", org: "-" },
-    { email: "fajar.nugroho@mail.com", nama: "Fajar Nugroho", peran: "peserta", org: "-" }
-  ];
+  var BASE_USERS = window.SIMEVENT_DEMO.admin_users;
   var PESERTA = (function () {
     var seen = {}, out = [];
     E.participants.forEach(function (p) {
@@ -603,11 +572,7 @@ function openDetail(e, after) {
     return all;
   }
   function userByEmail(em) { return users().filter(function (u) { return u.email === em; })[0]; }
-  var PROPOSALS = [
-    { id: 1, nama: "Rizky Ananda", email: "rizky.ananda@mail.com", org: "Komunitas Pecinta Alam Mahakam", rencana: "Kegiatan edukasi lingkungan dan susur sungai untuk pelajar, tiga kali setahun.", tanggal: "2026-10-19" },
-    { id: 2, nama: "Salsa Putri", email: "salsa.putri@mail.com", org: "BEM Fakultas Hukum", rencana: "Seminar hukum dan kuliah umum dengan praktisi, sekitar 200 peserta per acara.", tanggal: "2026-10-17" },
-    { id: 3, nama: "Fajar Nugroho", email: "fajar.nugroho@mail.com", org: "Himpunan Mahasiswa Sistem Informasi", rencana: "Workshop pemrograman dan pelatihan karier bagi mahasiswa tingkat awal.", tanggal: "2026-10-14" }
-  ];
+  var PROPOSALS = window.SIMEVENT_DEMO.proposals;
   function proposals() {
     return PROPOSALS.map(function (p) { var o = st.proposals[p.id] || {}; return Object.assign({}, p, { status: o.status || "diajukan", alasan: o.alasan || "" }); });
   }
@@ -619,11 +584,7 @@ function openDetail(e, after) {
   }
 
   /* ---------- Data: tiket support ---------- */
-  var EXTRA_TICKETS = [
-    { id: "SUP-0110", judul: "Permintaan akses fitur pencairan dana", pelapor: "Ahmad Fauzi", org: "Ahmad Fauzi", eventId: 106, tanggal: "2026-10-18", status: "diaudit", isi: "Mohon dibukakan pencairan dana untuk event yang sudah selesai agar bisa dipakai membayar vendor." },
-    { id: "SUP-0109", judul: "Banner event tidak tampil di halaman Jelajah", pelapor: "Sari Wulandari", org: "Sari Wulandari", eventId: 108, tanggal: "2026-10-17", status: "diaudit", isi: "Banner yang diunggah tampil kosong di kartu event. Format file PNG, ukuran 1,4 MB." },
-    { id: "SUP-0100", judul: "Lupa kata sandi akun penyelenggara", pelapor: "Andi Pratama", org: "Andi Pratama", eventId: 105, tanggal: "2026-09-20", status: "selesai", isi: "Tidak bisa masuk dan tautan atur ulang tidak sampai ke email.", balasan: "Tautan atur ulang sudah dikirim ulang dan akun berhasil dipulihkan." }
-  ];
+  var EXTRA_TICKETS = window.SIMEVENT_DEMO.extra_tickets;
   function tickets() {
     var mine = E.tickets.map(function (t) { return { id: t.id, judul: t.judul, pelapor: t.pelapor, org: ORG, eventId: t.eventId, tanggal: t.tanggal, status: t.status, isi: t.isi, balasan: t.balasan || "" }; });
     var more = EXTRA_TICKETS.map(function (t) { var o = st.tickets[t.id] || {}; return Object.assign({}, t, { status: o.status || t.status, balasan: o.balasan || t.balasan || "" }); });
@@ -649,13 +610,7 @@ function openDetail(e, after) {
   }
 
   /* ---------- Data: audit ---------- */
-  var AUDIT_SEED = [
-    { tipe: "pengguna", teks: "Admin masuk ke Control Panel", aktor: ADMIN, peran: "Admin Platform", waktu: "Hari ini" },
-    { tipe: "pengguna", teks: "Akun Dimas Prakoso ditangguhkan oleh Ketua Panitia", aktor: ORG, peran: "Ketua Panitia", waktu: "2 minggu lalu" },
-    { tipe: "event", teks: 'Event "Seminar Nasional Teknologi Informasi 2026" disetujui admin', aktor: ADMIN, peran: "Admin Platform", waktu: "3 minggu lalu" },
-    { tipe: "pengaturan", teks: "Biaya platform diatur ke 5%", aktor: ADMIN, peran: "Admin Platform", waktu: "1 bulan lalu" },
-    { tipe: "pengguna", teks: "Pengajuan penyelenggara Komunitas Desain Kaltim disetujui", aktor: ADMIN, peran: "Admin Platform", waktu: "1 bulan lalu" }
-  ];
+  var AUDIT_SEED = window.SIMEVENT_DEMO.audit.map(function (item) { return Object.assign({}, item, { aktor: item.aktor === "{admin}" ? ADMIN : item.aktor }); });
   var CAT = { daftar: "peserta", hadir: "peserta", bayar: "keuangan", support: "support", event: "event", pengguna: "pengguna", keuangan: "keuangan", pengaturan: "pengaturan" };
   function audit() {
     var nEo = st.activity.filter(function (a) { return a.eo; }).length;
@@ -1117,7 +1072,7 @@ function openDetail(e, after) {
     renderCats();
 
     /* Notifikasi */
-    var NOTIF = [["event", "Event baru menunggu persetujuan", "Kirim email saat ketua panitia mengajukan event."], ["support", "Tiket support baru", "Saat penyelenggara membuat tiket support."], ["pengajuan", "Pengajuan penyelenggara baru", "Saat peserta mengajukan diri menjadi penyelenggara."], ["keuangan", "Permintaan pencairan dana", "Saat dana event selesai siap dicairkan."]];
+    var NOTIF = window.SIMEVENT_DEMO.admin_notifications;
     $("#togList").innerHTML = NOTIF.map(function (n) {
       return '<li class="tog"><div><b id="tg-' + n[0] + '">' + n[1] + "</b><small>" + n[2] + '</small></div><button type="button" class="switch" role="switch" aria-labelledby="tg-' + n[0] + '" aria-checked="' + !!st.settings.notif[n[0]] + '" data-k="' + n[0] + '"><i></i></button></li>';
     }).join("");

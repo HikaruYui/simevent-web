@@ -77,6 +77,18 @@ Tambahkan ke `backend/requirements.txt`, lalu jalankan `docker compose up -d --b
 
 ## Data yang tersimpan
 
+Data contoh untuk demo dipusatkan di
+[`backend/apps/events/seeds/demo.json`](backend/apps/events/seeds/demo.json).
+Setelah migrasi, isi data demo dengan:
+
+```bash
+docker compose exec backend python manage.py seed_simevent_initial
+```
+
+Perintah ini memerlukan `DEBUG=True`. Panduan isi katalog, perilaku seed, dan
+bagian yang masih memakai alur demo tersedia di
+[`backend/apps/events/seeds/README.md`](backend/apps/events/seeds/README.md).
+
 Docker Compose membuat dua volume bernama:
 
 - `pgdata`: data PostgreSQL. Tetap ada selama kamu tidak memakai `down -v`.

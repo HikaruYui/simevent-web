@@ -127,6 +127,12 @@ class Event(models.Model):
         blank=True,
     )
 
+    documentation_url = models.URLField(
+        max_length=500,
+        blank=True,
+        default="",
+    )
+
     capacity = models.PositiveIntegerField()
 
     price = models.DecimalField(
@@ -389,3 +395,30 @@ class EventTransition(models.Model):
                 name="event_transition_reason_required",
             ),
         ]
+
+
+class EventCommitteeAssignment(models.Model):
+    event = models.ForeignKey(
+        "events.Event",
+        on_delete=models.CASCADE,
+        related_name="committee_assignments",
+    )
+    member = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="committee_assignments",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "member"],
+                name="unique_event_committee_assignment",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.member_id} - {self.event_id}"
+
