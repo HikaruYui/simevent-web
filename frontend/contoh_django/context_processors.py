@@ -1,4 +1,9 @@
+from apps.events.seeds import KATEGORI
+
+
 def kategori(request):
-    data = [("konferensi", "Konferensi"), ("workshop", "Workshop"), ("seminar", "Seminar"),
-            ("webinar", "Webinar"), ("sosialisasi", "Sosialisasi")]
-    return {"kategori_list": [{"slug": s, "nama": n, "jumlah": 10} for s, n in data]}  # jumlah: ganti dari DB
+    return {"kategori_list": [
+        {"slug": "konferensi" if code == "CONFERENCE" else code.lower(),
+         "nama": name, "jumlah": len(titles)}
+        for code, (name, titles) in KATEGORI.items()
+    ]}  # Contoh tampilan; integrasi jumlah dari DB dilakukan terpisah.

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static demo_seed %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -118,6 +118,8 @@
         </main>
     {% include 'partials/footer.html' %}
   </div>
+  {% demo_seed "catalogue" as demo_catalogue %}
+  {{ demo_catalogue|json_script:"demo-catalogue" }}
   {{ event_data|json_script:"backend-events" }}
   </div>
   {{ event_data|json_script:"backend-events" }}
@@ -135,20 +137,14 @@
     const pageSize = 8;
     /* Data contoh: dipakai hanya bila database belum berisi event publik. */
     function makeDemoEvents() {
-      const names = { conference: 'Konferensi', workshop: 'Workshop', seminar: 'Seminar', webinar: 'Webinar', sosialisasi: 'Sosialisasi' };
-      const titles = {
-        conference: ['Konferensi Teknologi Nusantara 2026', 'Konferensi Meja Bundar', 'Forum Inovasi Kalimantan', 'Konferensi Pendidikan Kaltim', 'Konferensi Pariwisata Kaltim', 'Konferensi Ekonomi Kreatif', 'Konferensi Kesehatan Digital', 'Konferensi Mahasiswa Informatika', 'Konferensi Energi Terbarukan', 'Konferensi Kota Cerdas'],
-        workshop: ['Workshop UI/UX untuk Pemula', 'Workshop Product Design', 'Workshop Data Science', 'Workshop Fotografi Jurnalistik', 'Workshop Desain Pengalaman Digital', 'Pelatihan Kepemimpinan Mahasiswa', 'Workshop Pemrograman Web', 'Workshop Konten Kreatif', 'Workshop Penulisan Ilmiah', 'Workshop Video Editing'],
-        seminar: ['Seminar Nasional Pendidikan', 'Seminar Kewirausahaan Digital', 'Seminar Teknologi Nasional', 'Seminar Kesehatan Mental', 'Seminar Lingkungan Hidup', 'Kuliah Umum Kecerdasan Buatan', 'Seminar Kolaborasi Komunitas', 'Seminar Literasi Keuangan', 'Seminar Karier Fresh Graduate', 'Seminar Transformasi Pendidikan Digital'],
-        webinar: ['Webinar Inovasi Digital', 'Webinar Karier Teknologi', 'Webinar Literasi Keuangan', 'Webinar Keamanan Siber', 'Webinar Tips Beasiswa', 'Webinar Personal Branding', 'Webinar Analisis Data', 'Webinar Startup Kampus', 'Webinar Public Speaking', 'Webinar Riset dan Publikasi'],
-        sosialisasi: ['Sosialisasi Program Kampus', 'Sosialisasi Beasiswa Prestasi', 'Sosialisasi Kurikulum Merdeka', 'Sosialisasi Magang Bersertifikat', 'Sosialisasi Penerimaan Mahasiswa Baru', 'Sosialisasi Keselamatan Kerja', 'Sosialisasi Program Kreativitas Mahasiswa', 'Sosialisasi Pertukaran Pelajar', 'Sosialisasi Layanan Perpustakaan', 'Sosialisasi Organisasi Kemahasiswaan']
-      };
-      const venues = ['Hotel Mercure', 'Auditorium Kampus', 'Aula Kampus', 'Creative Hub', 'Convention Hall', 'Gedung Serbaguna'];
-      const organizers = ['Panitia SIMEVENT', 'Andi Pratama', 'Dr. Rina Kartika', 'BEM Fakultas', 'Himpunan Mahasiswa'];
+      const catalogue = JSON.parse(document.getElementById('demo-catalogue').textContent);
+      const categories = catalogue.categories;
+      const venues = catalogue.venues;
+      const organizers = catalogue.organizers;
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const list = [];
-      Object.keys(titles).forEach((category, ci) => {
-        titles[category].forEach((title, i) => {
+      Object.keys(categories).forEach((category, ci) => {
+        categories[category].titles.forEach((title, i) => {
           const offset = i === 0 ? 0 : ((i * 9 + ci * 4) % 60) - 14;
           const day = new Date(today); day.setDate(today.getDate() + offset);
           const iso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
@@ -158,11 +154,11 @@
             slug: `demo-${category}-${i + 1}`,
             demo: true,
             category,
-            categoryName: names[category],
+            categoryName: categories[category].name,
             status: offset < 0 ? 'done' : (offset <= 1 ? 'live' : 'soon'),
             date: iso,
             dateLabel: day.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-            amount: i % 3 === 0 ? 0 : [50000, 75000, 100000, 145000][(i + ci) % 4],
+            amount: i % 3 === 0 ? 0 : catalogue.prices[(i + ci) % catalogue.prices.length],
             title,
             venue: isOnline ? 'Online (Zoom)' : venues[(i + ci) % venues.length],
             organizer: organizers[(i + ci) % organizers.length],

@@ -1,0 +1,6 @@
+{% load demo_seed %}
+{% demo_seed as demo_seed_data %}
+{{ demo_seed_data|json_script:"simevent-demo-seed" }}
+<script>
+  window.SIMEVENT_DEMO = JSON.parse(document.getElementById("simevent-demo-seed").textContent);
+</script>

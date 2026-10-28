@@ -1,0 +1,1259 @@
+{
+  "kategori": {
+    "CONFERENCE": [
+      "Konferensi",
+      [
+        "Konferensi Teknologi Nusantara 2026",
+        "Konferensi Meja Bundar",
+        "Forum Inovasi Kalimantan",
+        "Konferensi Pendidikan Kaltim",
+        "Konferensi Pariwisata Kaltim",
+        "Konferensi Ekonomi Kreatif",
+        "Konferensi Kesehatan Digital",
+        "Konferensi Mahasiswa Informatika",
+        "Konferensi Energi Terbarukan",
+        "Konferensi Kota Cerdas"
+      ]
+    ],
+    "WORKSHOP": [
+      "Workshop",
+      [
+        "Workshop UI/UX untuk Pemula",
+        "Workshop Product Design",
+        "Workshop Data Science",
+        "Workshop Fotografi Jurnalistik",
+        "Workshop Desain Pengalaman Digital",
+        "Pelatihan Kepemimpinan Mahasiswa",
+        "Workshop Pemrograman Web",
+        "Workshop Konten Kreatif",
+        "Workshop Penulisan Ilmiah",
+        "Workshop Video Editing"
+      ]
+    ],
+    "SEMINAR": [
+      "Seminar",
+      [
+        "Seminar Nasional Pendidikan",
+        "Seminar Kewirausahaan Digital",
+        "Seminar Teknologi Nasional",
+        "Seminar Kesehatan Mental",
+        "Seminar Lingkungan Hidup",
+        "Kuliah Umum Kecerdasan Buatan",
+        "Seminar Kolaborasi Komunitas",
+        "Seminar Literasi Keuangan",
+        "Seminar Karier Fresh Graduate",
+        "Seminar Transformasi Pendidikan Digital"
+      ]
+    ],
+    "WEBINAR": [
+      "Webinar",
+      [
+        "Webinar Inovasi Digital",
+        "Webinar Karier Teknologi",
+        "Webinar Literasi Keuangan",
+        "Webinar Keamanan Siber",
+        "Webinar Tips Beasiswa",
+        "Webinar Personal Branding",
+        "Webinar Analisis Data",
+        "Webinar Startup Kampus",
+        "Webinar Public Speaking",
+        "Webinar Riset dan Publikasi"
+      ]
+    ],
+    "SOSIALISASI": [
+      "Sosialisasi",
+      [
+        "Sosialisasi Program Kampus",
+        "Sosialisasi Beasiswa Prestasi",
+        "Sosialisasi Kurikulum Merdeka",
+        "Sosialisasi Magang Bersertifikat",
+        "Sosialisasi Penerimaan Mahasiswa Baru",
+        "Sosialisasi Keselamatan Kerja",
+        "Sosialisasi Program Kreativitas Mahasiswa",
+        "Sosialisasi Pertukaran Pelajar",
+        "Sosialisasi Layanan Perpustakaan",
+        "Sosialisasi Organisasi Kemahasiswaan"
+      ]
+    ]
+  },
+  "venues": [
+    "Hotel Mercure",
+    "Auditorium Kampus",
+    "Aula Kampus",
+    "Creative Hub",
+    "Convention Hall",
+    "Gedung Serbaguna"
+  ],
+  "harga": [
+    50000,
+    75000,
+    100000,
+    145000
+  ],
+  "email_panitia": "panitia.demo@simevent.id",
+  "demo_accounts": [
+    [
+      "admin@simevent.id",
+      "Super Administrator",
+      "ADMIN"
+    ],
+    [
+      "budi@simevent.id",
+      "Budi Santoso",
+      "ORGANIZER"
+    ],
+    [
+      "ahmad.fauzi@simevent.id",
+      "Prof. Ahmad Fauzi",
+      "ORGANIZER"
+    ],
+    [
+      "rina.kartika@simevent.id",
+      "Dr. Rina Kartika",
+      "ORGANIZER"
+    ],
+    [
+      "sari.wulandari@simevent.id",
+      "Sari Wulandari",
+      "ORGANIZER"
+    ],
+    [
+      "andi.pratama@simevent.id",
+      "Andi Pratama",
+      "ORGANIZER"
+    ],
+    [
+      "lina.marlina@simevent.id",
+      "Dr. Lina Marlina",
+      "ORGANIZER"
+    ],
+    [
+      "biro.kemahasiswaan@simevent.id",
+      "Biro Kemahasiswaan",
+      "ORGANIZER"
+    ],
+    [
+      "seni.rupa@simevent.id",
+      "Himpunan Seni Rupa",
+      "ORGANIZER"
+    ],
+    [
+      "siti.rahma@mail.com",
+      "Siti Rahma",
+      "COMMITTEE"
+    ],
+    [
+      "rafi.hidayat@mail.com",
+      "Rafi Hidayat",
+      "COMMITTEE"
+    ],
+    [
+      "nabila.a@mail.com",
+      "Nabila Amalia",
+      "COMMITTEE"
+    ],
+    [
+      "dimas.p@mail.com",
+      "Dimas Prakoso",
+      "COMMITTEE"
+    ],
+    [
+      "rizky.ananda@mail.com",
+      "Rizky Ananda",
+      "PARTICIPANT"
+    ],
+    [
+      "salsa.putri@mail.com",
+      "Salsa Putri",
+      "PARTICIPANT"
+    ],
+    [
+      "fajar.nugroho@mail.com",
+      "Fajar Nugroho",
+      "PARTICIPANT"
+    ]
+  ],
+  "events_kp": [
+    [
+      "Konferensi Meja Bundar",
+      "CONFERENCE",
+      "2026-10-16",
+      "Aula Utama Universitas Mulawarman",
+      60,
+      42,
+      150000,
+      "berlangsung"
+    ],
+    [
+      "Workshop UI/UX Dasar",
+      "WORKSHOP",
+      "2026-10-16",
+      "Lab Komputer Gedung Informatika",
+      40,
+      35,
+      100000,
+      "berlangsung"
+    ],
+    [
+      "Seminar Kewirausahaan Digital",
+      "SEMINAR",
+      "2026-10-17",
+      "Ruang Seminar Fakultas Ekonomi",
+      50,
+      28,
+      75000,
+      "berlangsung"
+    ],
+    [
+      "Webinar Karier Teknologi",
+      "WEBINAR",
+      "2026-10-17",
+      "Online (Zoom)",
+      100,
+      31,
+      0,
+      "berlangsung"
+    ],
+    [
+      "Konferensi Pendidikan Kaltim",
+      "CONFERENCE",
+      "2026-10-24",
+      "Hotel Mercure Samarinda",
+      80,
+      24,
+      150000,
+      "mendatang"
+    ],
+    [
+      "Workshop Data Science",
+      "WORKSHOP",
+      "2026-10-28",
+      "Lab Komputer Gedung Informatika",
+      30,
+      20,
+      130000,
+      "mendatang"
+    ],
+    [
+      "Seminar Kesehatan Mental",
+      "SEMINAR",
+      "2026-11-02",
+      "Aula Fakultas Kedokteran",
+      70,
+      18,
+      50000,
+      "mendatang"
+    ],
+    [
+      "Webinar Literasi Keuangan",
+      "WEBINAR",
+      "2026-11-08",
+      "Online (Zoom)",
+      150,
+      22,
+      0,
+      "mendatang"
+    ],
+    [
+      "Kuliah Umum Kecerdasan Buatan",
+      "SEMINAR",
+      "2026-09-18",
+      "Auditorium Universitas Mulawarman",
+      120,
+      30,
+      100000,
+      "selesai"
+    ],
+    [
+      "Workshop Fotografi Jurnalistik",
+      "WORKSHOP",
+      "2026-09-27",
+      "Gedung Kesenian Samarinda",
+      25,
+      16,
+      150000,
+      "selesai"
+    ],
+    [
+      "Seminar Lingkungan Hidup",
+      "SEMINAR",
+      "2026-09-30",
+      "Ruang Rapat Dinas Lingkungan Hidup",
+      60,
+      19,
+      50000,
+      "selesai"
+    ],
+    [
+      "Konferensi Pariwisata Kaltim",
+      "CONFERENCE",
+      "2026-10-05",
+      "Hotel Aston Samarinda",
+      40,
+      15,
+      150000,
+      "selesai"
+    ]
+  ],
+  "events_admin": [
+    [
+      "Hackathon PTIK 2026",
+      "CONFERENCE",
+      "2026-11-12",
+      "Gedung Serbaguna Samarinda",
+      120,
+      0,
+      50000,
+      "diajukan",
+      "ahmad.fauzi@simevent.id"
+    ],
+    [
+      "Workshop AI & Machine Learning",
+      "WORKSHOP",
+      "2026-12-05",
+      "Lab Komputer FKTI",
+      60,
+      0,
+      85000,
+      "diajukan",
+      "sari.wulandari@simevent.id"
+    ],
+    [
+      "Sosialisasi Beasiswa dan Program Magang Nasional",
+      "SOSIALISASI",
+      "2026-11-15",
+      "Aula Rektorat",
+      200,
+      0,
+      0,
+      "diajukan",
+      "biro.kemahasiswaan@simevent.id"
+    ],
+    [
+      "Seminar Nasional Teknologi Informasi 2026",
+      "SEMINAR",
+      "2026-10-18",
+      "Auditorium Unmul, Samarinda",
+      300,
+      248,
+      0,
+      "berlangsung",
+      "rina.kartika@simevent.id"
+    ],
+    [
+      "Workshop UI/UX untuk Pemula",
+      "WORKSHOP",
+      "2026-10-24",
+      "Lab Komputer FKTI",
+      30,
+      22,
+      25000,
+      "mendatang",
+      "andi.pratama@simevent.id"
+    ],
+    [
+      "Konferensi Pendidikan & Riset Kalimantan",
+      "CONFERENCE",
+      "2026-11-05",
+      "Aula Utama, Samarinda",
+      180,
+      96,
+      50000,
+      "mendatang",
+      "ahmad.fauzi@simevent.id"
+    ],
+    [
+      "Webinar Metodologi Penelitian Modern",
+      "WEBINAR",
+      "2026-10-02",
+      "Online (Zoom)",
+      150,
+      131,
+      0,
+      "selesai",
+      "lina.marlina@simevent.id"
+    ],
+    [
+      "Workshop Analisis Data dengan Python",
+      "WORKSHOP",
+      "2026-11-12",
+      "Online (Zoom)",
+      75,
+      41,
+      35000,
+      "mendatang",
+      "sari.wulandari@simevent.id"
+    ],
+    [
+      "Konser Amal Kampus",
+      "CONFERENCE",
+      "2026-11-21",
+      "Lapangan Utama",
+      500,
+      0,
+      30000,
+      "ditolak",
+      "seni.rupa@simevent.id"
+    ]
+  ],
+  "proposals": [
+    [
+      "rizky.ananda@mail.com",
+      "Komunitas Pecinta Alam Mahakam",
+      "Kegiatan edukasi lingkungan dan susur sungai untuk pelajar, tiga kali setahun.",
+      "2026-10-19"
+    ],
+    [
+      "salsa.putri@mail.com",
+      "BEM Fakultas Hukum",
+      "Seminar hukum dan kuliah umum dengan praktisi, sekitar 200 peserta per acara.",
+      "2026-10-17"
+    ],
+    [
+      "fajar.nugroho@mail.com",
+      "Himpunan Mahasiswa Sistem Informasi",
+      "Workshop pemrograman dan pelatihan karier bagi mahasiswa tingkat awal.",
+      "2026-10-14"
+    ]
+  ],
+  "first_names": [
+    "Ahmad",
+    "Aisyah",
+    "Alya",
+    "Andi",
+    "Annisa",
+    "Bagas",
+    "Bayu",
+    "Cahya",
+    "Citra",
+    "Dewi",
+    "Dimas",
+    "Eka",
+    "Farhan",
+    "Fitri",
+    "Gita",
+    "Hafiz",
+    "Indah",
+    "Irfan",
+    "Jihan",
+    "Kevin",
+    "Lestari",
+    "Maulana",
+    "Nabila",
+    "Nanda",
+    "Putri",
+    "Rafi",
+    "Rizky",
+    "Salsabila",
+    "Syarafina",
+    "Tegar",
+    "Vina",
+    "Wahyu",
+    "Yusuf",
+    "Zahra"
+  ],
+  "last_names": [
+    "Pratama",
+    "Saputra",
+    "Ramadhani",
+    "Wijaya",
+    "Nugraha",
+    "Amalia",
+    "Hidayat",
+    "Lestari",
+    "Kurniawan",
+    "Permata",
+    "Firmansyah",
+    "Maharani",
+    "Setiawan",
+    "Anggraini",
+    "Syahputra",
+    "Utami",
+    "Prasetyo",
+    "Rahmawati",
+    "Hakim",
+    "Safitri"
+  ],
+  "ui": {
+    "eo": {
+      "monthly": {
+        "labels": [
+          "Mei",
+          "Jun",
+          "Jul",
+          "Agu",
+          "Sep",
+          "Okt"
+        ],
+        "pendapatan": [
+          2900000,
+          3600000,
+          4200000,
+          5062500,
+          5837500,
+          6000000
+        ],
+        "tiket": [
+          22,
+          34,
+          45,
+          53,
+          72,
+          74
+        ]
+      },
+      "tickets": [
+        {
+          "id": "SUP-0108",
+          "judul": "Kode QR peserta tidak terbaca di pintu masuk",
+          "pelapor": "Budi Santoso",
+          "eventId": 1,
+          "tanggal": "2026-10-16",
+          "status": "diaudit",
+          "isi": "Beberapa peserta gagal check-in karena QR tidak terbaca pada perangkat scan. Mohon dicek apakah format QR berubah."
+        },
+        {
+          "id": "SUP-0107",
+          "judul": "Permintaan perubahan jadwal sesi workshop",
+          "pelapor": "Budi Santoso",
+          "eventId": 6,
+          "tanggal": "2026-10-15",
+          "status": "diaudit",
+          "isi": "Sesi dimajukan 1 jam karena narasumber ada keperluan. Mohon persetujuan perubahan jadwal."
+        },
+        {
+          "id": "SUP-0106",
+          "judul": "Peserta ganda terdaftar dengan email sama",
+          "pelapor": "Siti Rahma",
+          "eventId": 2,
+          "tanggal": "2026-10-14",
+          "status": "diaudit",
+          "isi": "Ditemukan dua pendaftaran dengan email yang sama pada event ini. Mohon pengecekan data."
+        },
+        {
+          "id": "SUP-0105",
+          "judul": "Verifikasi ulang data penyelenggara",
+          "pelapor": "Siti Rahma",
+          "eventId": 5,
+          "tanggal": "2026-10-12",
+          "status": "diaudit",
+          "isi": "Dokumen legalitas komunitas diperbarui dan perlu diverifikasi ulang oleh admin."
+        },
+        {
+          "id": "SUP-0104",
+          "judul": "Sertifikat peserta belum terbit",
+          "pelapor": "Budi Santoso",
+          "eventId": 9,
+          "tanggal": "2026-09-25",
+          "status": "selesai",
+          "isi": "Sertifikat belum muncul untuk peserta yang hadir. Sudah diperbaiki dan diterbitkan ulang oleh admin."
+        },
+        {
+          "id": "SUP-0103",
+          "judul": "Pengembalian dana peserta yang batal hadir",
+          "pelapor": "Budi Santoso",
+          "eventId": 10,
+          "tanggal": "2026-09-22",
+          "status": "selesai",
+          "isi": "Dua peserta meminta pengembalian dana sebelum event. Sudah diproses sesuai kebijakan penyelenggara."
+        },
+        {
+          "id": "SUP-0102",
+          "judul": "Tautan Zoom tidak dapat diakses peserta",
+          "pelapor": "Siti Rahma",
+          "eventId": 4,
+          "tanggal": "2026-10-03",
+          "status": "selesai",
+          "isi": "Tautan rapat kedaluwarsa. Tautan baru sudah dikirim ke semua peserta terdaftar."
+        },
+        {
+          "id": "SUP-0101",
+          "judul": "Kuota event perlu ditambah",
+          "pelapor": "Budi Santoso",
+          "eventId": 12,
+          "tanggal": "2026-09-29",
+          "status": "selesai",
+          "isi": "Permintaan penambahan kuota 10 kursi telah disetujui admin."
+        }
+      ],
+      "activity": [
+        {
+          "tipe": "daftar",
+          "teks": "Nabila Amalia mendaftar ke Konferensi Meja Bundar",
+          "waktu": "5 menit lalu"
+        },
+        {
+          "tipe": "hadir",
+          "teks": "18 peserta check-in di Workshop UI/UX Dasar",
+          "waktu": "22 menit lalu"
+        },
+        {
+          "tipe": "bayar",
+          "teks": "Pembayaran 3 tiket Seminar Kewirausahaan Digital diterima",
+          "waktu": "1 jam lalu"
+        },
+        {
+          "tipe": "support",
+          "teks": "Tiket SUP-0108 masuk tahap audit",
+          "waktu": "2 jam lalu"
+        },
+        {
+          "tipe": "event",
+          "teks": "Workshop Data Science dijadwalkan 28 Oktober",
+          "waktu": "Kemarin"
+        },
+        {
+          "tipe": "daftar",
+          "teks": "Rafi Hidayat mendaftar ke Webinar Literasi Keuangan",
+          "waktu": "Kemarin"
+        },
+        {
+          "tipe": "bayar",
+          "teks": "Pembayaran 5 tiket Konferensi Pendidikan Kaltim diterima",
+          "waktu": "2 hari lalu"
+        },
+        {
+          "tipe": "support",
+          "teks": "Tiket SUP-0104 ditandai selesai",
+          "waktu": "3 hari lalu"
+        }
+      ],
+      "event_labels": {
+        "9": "Kuliah Umum"
+      }
+    },
+    "shared_defaults": {
+      "eventStatus": {},
+      "eventReason": {},
+      "eventPrev": {},
+      "newEvents": [],
+      "tickets": {},
+      "users": {},
+      "customUsers": [],
+      "proposals": {},
+      "payouts": {},
+      "activity": [],
+      "settings": {
+        "feePct": 5,
+        "approvalRequired": true,
+        "categories": {
+          "Konferensi": true,
+          "Workshop": true,
+          "Seminar": true,
+          "Webinar": true,
+          "Sosialisasi": true,
+          "Kuliah Umum": true,
+          "Pelatihan": true
+        },
+        "notif": {
+          "event": true,
+          "support": true,
+          "pengajuan": true,
+          "keuangan": false
+        }
+      }
+    },
+    "admin_users": [
+      {
+        "email": "admin@simevent.id",
+        "nama": "Super Administrator",
+        "peran": "admin",
+        "org": "Platform SIMEVENT"
+      },
+      {
+        "email": "budi@simevent.id",
+        "nama": "Budi Santoso",
+        "peran": "penyelenggara",
+        "org": "BEM Fakultas Teknik"
+      },
+      {
+        "email": "ahmad.fauzi@simevent.id",
+        "nama": "Prof. Ahmad Fauzi",
+        "peran": "penyelenggara",
+        "org": "Fakultas Keguruan"
+      },
+      {
+        "email": "rina.kartika@simevent.id",
+        "nama": "Dr. Rina Kartika",
+        "peran": "penyelenggara",
+        "org": "Fakultas Teknik"
+      },
+      {
+        "email": "sari.wulandari@simevent.id",
+        "nama": "Sari Wulandari",
+        "peran": "penyelenggara",
+        "org": "Himpunan Data Science"
+      },
+      {
+        "email": "andi.pratama@simevent.id",
+        "nama": "Andi Pratama",
+        "peran": "penyelenggara",
+        "org": "Komunitas Desain Kaltim"
+      },
+      {
+        "email": "siti.rahma@mail.com",
+        "nama": "Siti Rahma",
+        "peran": "panitia",
+        "org": "Tim Budi Santoso"
+      },
+      {
+        "email": "rafi.hidayat@mail.com",
+        "nama": "Rafi Hidayat",
+        "peran": "panitia",
+        "org": "Tim Budi Santoso"
+      },
+      {
+        "email": "nabila.a@mail.com",
+        "nama": "Nabila Amalia",
+        "peran": "panitia",
+        "org": "Tim Budi Santoso"
+      },
+      {
+        "email": "dimas.p@mail.com",
+        "nama": "Dimas Prakoso",
+        "peran": "panitia",
+        "org": "Tim Budi Santoso",
+        "status": "ditangguhkan"
+      },
+      {
+        "email": "rizky.ananda@mail.com",
+        "nama": "Rizky Ananda",
+        "peran": "peserta",
+        "org": "-"
+      },
+      {
+        "email": "salsa.putri@mail.com",
+        "nama": "Salsa Putri",
+        "peran": "peserta",
+        "org": "-"
+      },
+      {
+        "email": "fajar.nugroho@mail.com",
+        "nama": "Fajar Nugroho",
+        "peran": "peserta",
+        "org": "-"
+      }
+    ],
+    "extra_tickets": [
+      {
+        "id": "SUP-0110",
+        "judul": "Permintaan akses fitur pencairan dana",
+        "pelapor": "Ahmad Fauzi",
+        "org": "Ahmad Fauzi",
+        "eventId": 106,
+        "tanggal": "2026-10-18",
+        "status": "diaudit",
+        "isi": "Mohon dibukakan pencairan dana untuk event yang sudah selesai agar bisa dipakai membayar vendor."
+      },
+      {
+        "id": "SUP-0109",
+        "judul": "Banner event tidak tampil di halaman Jelajah",
+        "pelapor": "Sari Wulandari",
+        "org": "Sari Wulandari",
+        "eventId": 108,
+        "tanggal": "2026-10-17",
+        "status": "diaudit",
+        "isi": "Banner yang diunggah tampil kosong di kartu event. Format file PNG, ukuran 1,4 MB."
+      },
+      {
+        "id": "SUP-0100",
+        "judul": "Lupa kata sandi akun penyelenggara",
+        "pelapor": "Andi Pratama",
+        "org": "Andi Pratama",
+        "eventId": 105,
+        "tanggal": "2026-09-20",
+        "status": "selesai",
+        "isi": "Tidak bisa masuk dan tautan atur ulang tidak sampai ke email.",
+        "balasan": "Tautan atur ulang sudah dikirim ulang dan akun berhasil dipulihkan."
+      }
+    ],
+    "audit": [
+      {
+        "tipe": "pengguna",
+        "teks": "Admin masuk ke Control Panel",
+        "aktor": "{admin}",
+        "peran": "Admin Platform",
+        "waktu": "Hari ini"
+      },
+      {
+        "tipe": "pengguna",
+        "teks": "Akun Dimas Prakoso ditangguhkan oleh Ketua Panitia",
+        "aktor": "Budi Santoso",
+        "peran": "Ketua Panitia",
+        "waktu": "2 minggu lalu"
+      },
+      {
+        "tipe": "event",
+        "teks": "Event \"Seminar Nasional Teknologi Informasi 2026\" disetujui admin",
+        "aktor": "{admin}",
+        "peran": "Admin Platform",
+        "waktu": "3 minggu lalu"
+      },
+      {
+        "tipe": "pengaturan",
+        "teks": "Biaya platform diatur ke 5%",
+        "aktor": "{admin}",
+        "peran": "Admin Platform",
+        "waktu": "1 bulan lalu"
+      },
+      {
+        "tipe": "pengguna",
+        "teks": "Pengajuan penyelenggara Komunitas Desain Kaltim disetujui",
+        "aktor": "{admin}",
+        "peran": "Admin Platform",
+        "waktu": "1 bulan lalu"
+      }
+    ],
+    "proposal_summaries": {
+      "Konferensi": "Mempertemukan akademisi, praktisi, dan mahasiswa untuk berbagi riset dan membangun jejaring kolaborasi.",
+      "Workshop": "Pelatihan praktik langsung agar peserta menguasai keterampilan baru dan membawa pulang hasil kerja nyata.",
+      "Seminar": "Menghadirkan narasumber ahli untuk membahas isu terkini dan membuka ruang tanya jawab dengan peserta.",
+      "Webinar": "Sesi daring terbuka agar peserta dari berbagai daerah dapat belajar tanpa terkendala jarak.",
+      "Sosialisasi": "Menyampaikan informasi program dan peluang kepada mahasiswa agar lebih banyak yang memanfaatkannya.",
+      "Kuliah Umum": "Kuliah terbuka dari pakar untuk memperluas wawasan sivitas akademika dan masyarakat umum."
+    },
+    "team": [
+      {
+        "id": 1,
+        "nama": "Siti Rahma",
+        "email": "siti.rahma@mail.com",
+        "peran": "panitia",
+        "akses": "semua",
+        "status": "aktif",
+        "terakhir": "Hari ini"
+      },
+      {
+        "id": 2,
+        "nama": "Rafi Hidayat",
+        "email": "rafi.hidayat@mail.com",
+        "peran": "panitia",
+        "akses": [
+          1,
+          2
+        ],
+        "status": "aktif",
+        "terakhir": "Kemarin"
+      },
+      {
+        "id": 3,
+        "nama": "Nabila Amalia",
+        "email": "nabila.a@mail.com",
+        "peran": "panitia",
+        "akses": "semua",
+        "status": "aktif",
+        "terakhir": "3 hari lalu"
+      },
+      {
+        "id": 4,
+        "nama": "Dimas Prakoso",
+        "email": "dimas.p@mail.com",
+        "peran": "panitia",
+        "akses": [
+          3
+        ],
+        "status": "ditangguhkan",
+        "terakhir": "2 minggu lalu"
+      }
+    ],
+    "invites": [
+      {
+        "id": 11,
+        "email": "putri.amelia@mail.com",
+        "peran": "panitia",
+        "kirim": "2 hari lalu",
+        "sisa": 5
+      },
+      {
+        "id": 12,
+        "email": "agus.salim@mail.com",
+        "peran": "panitia",
+        "kirim": "6 hari lalu",
+        "sisa": 1
+      }
+    ],
+    "organizer_notifications": [
+      {
+        "k": "daftar",
+        "t": "Pendaftaran peserta baru",
+        "d": "Setiap ada peserta yang mendaftar ke eventmu.",
+        "on": true
+      },
+      {
+        "k": "bayar",
+        "t": "Pembayaran diterima",
+        "d": "Ringkasan saat tiket berbayar terjual.",
+        "on": true
+      },
+      {
+        "k": "support",
+        "t": "Balasan tiket support",
+        "d": "Saat admin platform membalas atau menutup tiket.",
+        "on": true
+      },
+      {
+        "k": "h1",
+        "t": "Pengingat H-1 event",
+        "d": "Satu hari sebelum event dimulai.",
+        "on": true
+      },
+      {
+        "k": "tim",
+        "t": "Anggota tim bergabung atau keluar",
+        "d": "Saat undangan diterima atau akses dicabut.",
+        "on": false
+      }
+    ],
+    "admin_notifications": [
+      [
+        "event",
+        "Event baru menunggu persetujuan",
+        "Kirim email saat ketua panitia mengajukan event."
+      ],
+      [
+        "support",
+        "Tiket support baru",
+        "Saat penyelenggara membuat tiket support."
+      ],
+      [
+        "pengajuan",
+        "Pengajuan penyelenggara baru",
+        "Saat peserta mengajukan diri menjadi penyelenggara."
+      ],
+      [
+        "keuangan",
+        "Permintaan pencairan dana",
+        "Saat dana event selesai siap dicairkan."
+      ]
+    ],
+    "committee": {
+      "event_name": "Seminar Teknologi Nusantara",
+      "profile_name": "Denny Mulia",
+      "participants": [
+        {
+          "code": "SIM-001",
+          "name": "Andi Pratama",
+          "email": "andi.pratama@unmul.ac.id",
+          "present": true,
+          "checkinTime": "08:15 WITA"
+        },
+        {
+          "code": "SIM-002",
+          "name": "Siti Rahmawati",
+          "email": "siti.rahma@gmail.com",
+          "present": true,
+          "checkinTime": "08:22 WITA"
+        },
+        {
+          "code": "SIM-003",
+          "name": "Budi Santoso",
+          "email": "budi.santoso@polnes.ac.id",
+          "present": false,
+          "checkinTime": "-"
+        },
+        {
+          "code": "SIM-004",
+          "name": "Nabila Putri",
+          "email": "nabila.putri@gmail.com",
+          "present": false,
+          "checkinTime": "-"
+        },
+        {
+          "code": "SIM-005",
+          "name": "Rizky Ramadhan",
+          "email": "rizky.rmd@itk.ac.id",
+          "present": false,
+          "checkinTime": "-"
+        }
+      ]
+    },
+    "legacy_events": [
+      {
+        "id": 1,
+        "t": "Webinar Karier di Era AI untuk Fresh Graduate",
+        "k": "Webinar",
+        "tp": "Tech & AI",
+        "s": "live",
+        "f": "Online",
+        "loc": "Live via Zoom",
+        "d": "2026-10-11",
+        "o": "Dewi Anggraini",
+        "q": 290,
+        "p": 0
+      },
+      {
+        "id": 2,
+        "t": "Sosialisasi Beasiswa dan Program Magang Nasional",
+        "k": "Sosialisasi",
+        "tp": "Pendidikan & Riset",
+        "s": "soon",
+        "f": "Offline",
+        "loc": "Aula Rektorat",
+        "d": "2026-10-15",
+        "o": "Biro Kemahasiswaan",
+        "q": 0,
+        "p": 0
+      },
+      {
+        "id": 3,
+        "t": "Seminar Nasional Teknologi Informasi 2026",
+        "k": "Seminar",
+        "tp": "Tech & AI",
+        "s": "live",
+        "f": "Offline",
+        "loc": "Auditorium Unmul, Samarinda",
+        "d": "2026-10-18",
+        "o": "Dr. Rina Kartika, M.Kom",
+        "q": 48,
+        "p": 0
+      },
+      {
+        "id": 4,
+        "t": "Workshop UI/UX untuk Pemula",
+        "k": "Workshop",
+        "tp": "Desain & Produk",
+        "s": "soon",
+        "f": "Offline",
+        "loc": "Lab Komputer FKTI",
+        "d": "2026-10-24",
+        "o": "Andi Pratama",
+        "q": 30,
+        "p": 25000
+      },
+      {
+        "id": 5,
+        "t": "Konferensi Pendidikan & Riset Kalimantan",
+        "k": "Konferensi",
+        "tp": "Pendidikan & Riset",
+        "s": "soon",
+        "f": "Offline",
+        "loc": "Aula Utama, Samarinda",
+        "d": "2026-11-05",
+        "o": "Prof. Ahmad Fauzi",
+        "q": 180,
+        "p": 50000
+      },
+      {
+        "id": 6,
+        "t": "Workshop Analisis Data dengan Python",
+        "k": "Workshop",
+        "tp": "Tech & AI",
+        "s": "soon",
+        "f": "Online",
+        "loc": "Live via Zoom",
+        "d": "2026-11-12",
+        "o": "Sari Wulandari",
+        "q": 75,
+        "p": 35000
+      },
+      {
+        "id": 7,
+        "t": "Seminar Wirausaha Muda & Bisnis Digital",
+        "k": "Seminar",
+        "tp": "Bisnis & Finansial",
+        "s": "soon",
+        "f": "Offline",
+        "loc": "Gedung Serbaguna",
+        "d": "2026-11-20",
+        "o": "Budi Santoso",
+        "q": 120,
+        "p": 0
+      },
+      {
+        "id": 8,
+        "t": "Webinar Metodologi Penelitian Modern",
+        "k": "Webinar",
+        "tp": "Pendidikan & Riset",
+        "s": "done",
+        "f": "Online",
+        "loc": "Live via Zoom",
+        "d": "2026-10-02",
+        "o": "Dr. Lina Marlina",
+        "q": 0,
+        "p": 0
+      }
+    ],
+    "legacy_today": "2026-10-08",
+    "catalogue_organizers": [
+      "Panitia SIMEVENT",
+      "Andi Pratama",
+      "Dr. Rina Kartika",
+      "BEM Fakultas",
+      "Himpunan Mahasiswa"
+    ],
+    "event_rejection_reason": "Dokumen izin kegiatan dari kampus belum dilampirkan.",
+    "example_events": [
+      {
+        "pk": 1,
+        "judul": "Webinar Karier di Era AI",
+        "kategori_slug": "webinar",
+        "tanggal": "2026-10-11",
+        "status": "berlangsung",
+        "lokasi": "Live via Zoom",
+        "penyelenggara": "Contoh Penyelenggara A",
+        "harga": 0
+      },
+      {
+        "pk": 2,
+        "judul": "Sosialisasi Beasiswa",
+        "kategori_slug": "sosialisasi",
+        "tanggal": "2026-10-15",
+        "status": "akan_datang",
+        "lokasi": "Aula Rektorat",
+        "penyelenggara": "Contoh Penyelenggara B",
+        "harga": 0
+      },
+      {
+        "pk": 3,
+        "judul": "Seminar Nasional Teknologi",
+        "kategori_slug": "seminar",
+        "tanggal": "2026-10-18",
+        "status": "berlangsung",
+        "lokasi": "Auditorium Unmul, Samarinda",
+        "penyelenggara": "Contoh Penyelenggara C",
+        "harga": 50000
+      },
+      {
+        "pk": 4,
+        "judul": "Workshop Desain UI",
+        "kategori_slug": "workshop",
+        "tanggal": "2026-10-25",
+        "status": "akan_datang",
+        "lokasi": "Lab Komputer",
+        "penyelenggara": "Contoh Penyelenggara D",
+        "harga": 75000
+      }
+    ],
+    "legacy_panitia": {
+      "name": "Budi Santoso",
+      "email": "budi.panitia@simevent.com",
+      "bio": "Event Director & Coordinator - SIMEVENT 2026. Berfokus pada pengelolaan ekosistem acara berskala nasional.",
+      "active_events": 3,
+      "total_events": 8,
+      "revenue": "75 Jt",
+      "satisfaction": "98%",
+      "photos": 142,
+      "events": [
+        {
+          "title": "Festival Seni Budaya 2026",
+          "detail": "1,200 Peserta Terdaftar",
+          "date": "25 Okt 2026"
+        },
+        {
+          "title": "National Tech Conference",
+          "detail": "850 Peserta Terdaftar",
+          "date": "12 Nov 2026"
+        },
+        {
+          "title": "Workshop UI/UX Design",
+          "detail": "Drafting Rundown",
+          "date": "05 Des 2026"
+        }
+      ],
+      "activity": [
+        {
+          "subject": "Anisa Rahma",
+          "detail": "Event Festival Seni Budaya 2026",
+          "time": "2 menit lalu"
+        },
+        {
+          "subject": "INV-2026-089",
+          "detail": "Nominal Rp 150.000 via QRIS",
+          "time": "15 menit lalu"
+        }
+      ]
+    },
+    "admin_event_organizers": {
+      "101": "Ahmad Fauzi"
+    },
+    "landing": {
+      "stats": {
+        "participants": "25k",
+        "organizers": "40+",
+        "completed": "500+"
+      },
+      "events": [
+        {
+          "category": "Konferensi",
+          "date_label": "6 Nov 2026",
+          "status": "live",
+          "status_label": "Sedang Berlangsung",
+          "title": "Konferensi Teknologi Nusantara 2026",
+          "venue": "Hotel Mercure",
+          "organizer": "Ir. Soekarno",
+          "price_label": "Rp145.000",
+          "query_slug": "conference-tech"
+        },
+        {
+          "category": "Workshop",
+          "date_label": "10 Nov 2026",
+          "status": "soon",
+          "status_label": "Akan Datang",
+          "title": "Workshop UI/UX untuk Pemula",
+          "venue": "Hotel Mercure",
+          "organizer": "Andi Pratama",
+          "price_label": "Rp145.000",
+          "query_slug": "workshop-uiux"
+        },
+        {
+          "category": "Seminar",
+          "date_label": "9 Nov 2026",
+          "status": "live",
+          "status_label": "Sedang Berlangsung",
+          "title": "Seminar Nasional Pendidikan",
+          "venue": "Hotel Mercure",
+          "organizer": "Dr. Rina Kartika",
+          "price_label": "Gratis",
+          "query_slug": "seminar-education"
+        },
+        {
+          "category": "Konferensi",
+          "date_label": "4 Nov 2026",
+          "status": "soon",
+          "status_label": "Akan Datang",
+          "title": "Forum Inovasi Kalimantan",
+          "venue": "Hotel Mercure",
+          "organizer": "Panitia SIMEVENT",
+          "price_label": "Gratis",
+          "query_slug": "forum-kalimantan"
+        }
+      ],
+      "testimonials": [
+        {
+          "quote": "“Acaranya sangat beragam dan proses pendaftarannya mudah”",
+          "role": "Peserta Seminar",
+          "name": "Jeff Satur",
+          "rating": 5
+        },
+        {
+          "quote": "“Acaranya sangat beragam dan proses pendaftarannya mudah”",
+          "role": "Peserta Workshop",
+          "name": "Jeff Satur",
+          "rating": 5
+        },
+        {
+          "quote": "“Membuat acara di sini sangat mudah dan ramah untuk pemula”",
+          "role": "Ketua Panitia",
+          "name": "Jeff Satur",
+          "rating": 5
+        }
+      ]
+    },
+    "about": {
+      "team": [
+        {
+          "name": "Senku Ishigami",
+          "role": "Head of Programmer"
+        },
+        {
+          "name": "Kohaku Inedo",
+          "role": "Head of Design"
+        },
+        {
+          "name": "Xie Quan Lie",
+          "role": "Head of Marketing"
+        }
+      ],
+      "chart_points": "65,339 123,305 169,341 212,296 277,320 370,267 452,298 499,252 541,236 650,179 791,236 836,195 881,177 928,141 981,128 1041,106"
+    }
+  }
+}

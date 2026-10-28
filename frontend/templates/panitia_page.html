@@ -1,3 +1,5 @@
+{% load demo_seed %}
+{% demo_seed "legacy_panitia" as demo %}
 <!DOCTYPE html>
 <html lang="id" class="h-full">
 <head>
@@ -206,7 +208,7 @@
                         <div class="space-y-1">
                             <div class="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
                                 <h2 class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive tracking-tight">
-                                    <span id="userName">Budi Santoso</span>
+                                    <span id="userName">{{ demo.name }}</span>
                                 </h2>
                                 <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-brand-olive text-brand-goldLight border border-brand-olive">
                                     Main Admin
@@ -215,7 +217,7 @@
 
                             <p class="text-brand-orangeDeep text-sm flex items-center justify-center sm:justify-start gap-2 font-mono">
                                 <i class="fa-regular fa-envelope text-brand-orangeDeep"></i>
-                                <span id="userEmail" class="break-all">budi.panitia@simevent.com</span>
+                                <span id="userEmail" class="break-all">{{ demo.email }}</span>
                             </p>
 
                             <p id="loginInfo" class="text-brand-muted text-xs flex items-center justify-center sm:justify-start gap-1.5">
@@ -224,7 +226,7 @@
 
                             <p class="text-brand-ink text-sm max-w-xl pt-1">
                                 <i class="fa-solid fa-quote-left text-brand-orange/60 text-xs mr-1"></i>
-                                Event Director & Coordinator - SIMEVENT 2026. Berfokus pada pengelolaan ekosistem acara berskala nasional.
+                                {{ demo.bio }}
                             </p>
                         </div>
                     </div>
@@ -254,7 +256,7 @@
                                 </h3>
                             </div>
                             <span class="text-xs text-brand-muted bg-brand-sand/60 px-3 py-1 rounded-full border border-brand-tan/70">
-                                3 Event Aktif
+                                {{ demo.active_events }} Event Aktif
                             </span>
                         </div>
 
@@ -273,10 +275,10 @@
                                     <!-- Row 1 -->
                                     <tr class="hover:bg-brand-sand/30 transition-colors">
                                         <td class="py-3.5 px-3 font-semibold text-brand-olive">
-                                            Festival Seni Budaya 2026
-                                            <span class="block text-xs font-normal text-brand-muted">1,200 Peserta Terdaftar</span>
+                                            {{ demo.events.0.title }}
+                                            <span class="block text-xs font-normal text-brand-muted">{{ demo.events.0.detail }}</span>
                                         </td>
-                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">25 Okt 2026</td>
+                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">{{ demo.events.0.date }}</td>
                                         <td class="py-3.5 px-3">
                                             <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-olive/10 text-brand-olive border border-brand-olive/40">
                                                 Active
@@ -291,10 +293,10 @@
                                     <!-- Row 2 -->
                                     <tr class="hover:bg-brand-sand/30 transition-colors">
                                         <td class="py-3.5 px-3 font-semibold text-brand-olive">
-                                            National Tech Conference
-                                            <span class="block text-xs font-normal text-brand-muted">850 Peserta Terdaftar</span>
+                                            {{ demo.events.1.title }}
+                                            <span class="block text-xs font-normal text-brand-muted">{{ demo.events.1.detail }}</span>
                                         </td>
-                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">12 Nov 2026</td>
+                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">{{ demo.events.1.date }}</td>
                                         <td class="py-3.5 px-3">
                                             <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-olive/10 text-brand-olive border border-brand-olive/40">
                                                 Active
@@ -309,10 +311,10 @@
                                     <!-- Row 3 -->
                                     <tr class="hover:bg-brand-sand/30 transition-colors">
                                         <td class="py-3.5 px-3 font-semibold text-brand-olive">
-                                            Workshop UI/UX Design
-                                            <span class="block text-xs font-normal text-brand-muted">Drafting Rundown</span>
+                                            {{ demo.events.2.title }}
+                                            <span class="block text-xs font-normal text-brand-muted">{{ demo.events.2.detail }}</span>
                                         </td>
-                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">05 Des 2026</td>
+                                        <td class="py-3.5 px-3 text-brand-ink font-mono text-xs whitespace-nowrap">{{ demo.events.2.date }}</td>
                                         <td class="py-3.5 px-3">
                                             <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-brand-orange/20 text-brand-orangeDeep border border-brand-orange/50">
                                                 Draft
@@ -349,7 +351,7 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            <h4 class="text-3xl font-display font-extrabold text-brand-olive">8</h4>
+                            <h4 class="text-3xl font-display font-extrabold text-brand-olive">{{ demo.total_events }}</h4>
                             <p class="text-xs text-brand-muted mt-1">Event dikelola tahun ini</p>
                         </div>
                     </div>
@@ -363,7 +365,7 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            <h4 class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive">75 Jt</h4>
+                            <h4 class="text-2xl sm:text-3xl font-display font-extrabold text-brand-olive">{{ demo.revenue }}</h4>
                             <p class="text-xs text-brand-muted mt-1">Total tiket terjual</p>
                         </div>
                     </div>
@@ -377,7 +379,7 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            <h4 class="text-3xl font-display font-extrabold text-brand-orangeDeep">98%</h4>
+                            <h4 class="text-3xl font-display font-extrabold text-brand-orangeDeep">{{ demo.satisfaction }}</h4>
                             <p class="text-xs text-brand-muted mt-1">Kepuasan Peserta</p>
                         </div>
                     </div>
@@ -391,7 +393,7 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            <h4 class="text-3xl font-display font-extrabold text-brand-olive">142</h4>
+                            <h4 class="text-3xl font-display font-extrabold text-brand-olive">{{ demo.photos }}</h4>
                             <p class="text-xs text-brand-muted mt-1">Foto & Dokumentasi</p>
                         </div>
                     </div>
@@ -418,11 +420,11 @@
                                 <i class="fa-solid fa-user-plus text-xs"></i>
                             </div>
                             <div>
-                                <p class="text-brand-olive font-medium">Peserta Baru Terdaftar: <span class="text-brand-olive font-semibold">Anisa Rahma</span></p>
-                                <p class="text-xs text-brand-muted">Event Festival Seni Budaya 2026</p>
+                                <p class="text-brand-olive font-medium">Peserta Baru Terdaftar: <span class="text-brand-olive font-semibold">{{ demo.activity.0.subject }}</span></p>
+                                <p class="text-xs text-brand-muted">{{ demo.activity.0.detail }}</p>
                             </div>
                         </div>
-                        <span class="text-xs text-brand-muted/80 font-mono">2 menit lalu</span>
+                        <span class="text-xs text-brand-muted/80 font-mono">{{ demo.activity.0.time }}</span>
                     </div>
 
                     <!-- Log Item 2 -->
@@ -432,11 +434,11 @@
                                 <i class="fa-solid fa-receipt text-xs"></i>
                             </div>
                             <div>
-                                <p class="text-brand-olive font-medium">Pembayaran Dikonfirmasi: <span class="text-brand-olive font-semibold">INV-2026-089</span></p>
-                                <p class="text-xs text-brand-muted">Nominal Rp 150.000 via QRIS</p>
+                                <p class="text-brand-olive font-medium">Pembayaran Dikonfirmasi: <span class="text-brand-olive font-semibold">{{ demo.activity.1.subject }}</span></p>
+                                <p class="text-xs text-brand-muted">{{ demo.activity.1.detail }}</p>
                             </div>
                         </div>
-                        <span class="text-xs text-brand-muted/80 font-mono">15 menit lalu</span>
+                        <span class="text-xs text-brand-muted/80 font-mono">{{ demo.activity.1.time }}</span>
                     </div>
                 </div>
             </div>

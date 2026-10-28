@@ -8,34 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 from apps.events.models import DeliveryMode, Event, EventStatus, EventType
 
-KATEGORI = {
-    "CONFERENCE": ("Konferensi", [
-        "Konferensi Teknologi Nusantara 2026", "Konferensi Meja Bundar", "Forum Inovasi Kalimantan",
-        "Konferensi Pendidikan Kaltim", "Konferensi Pariwisata Kaltim", "Konferensi Ekonomi Kreatif",
-        "Konferensi Kesehatan Digital", "Konferensi Mahasiswa Informatika", "Konferensi Energi Terbarukan",
-        "Konferensi Kota Cerdas"]),
-    "WORKSHOP": ("Workshop", [
-        "Workshop UI/UX untuk Pemula", "Workshop Product Design", "Workshop Data Science",
-        "Workshop Fotografi Jurnalistik", "Workshop Desain Pengalaman Digital", "Pelatihan Kepemimpinan Mahasiswa",
-        "Workshop Pemrograman Web", "Workshop Konten Kreatif", "Workshop Penulisan Ilmiah", "Workshop Video Editing"]),
-    "SEMINAR": ("Seminar", [
-        "Seminar Nasional Pendidikan", "Seminar Kewirausahaan Digital", "Seminar Teknologi Nasional",
-        "Seminar Kesehatan Mental", "Seminar Lingkungan Hidup", "Kuliah Umum Kecerdasan Buatan",
-        "Seminar Kolaborasi Komunitas", "Seminar Literasi Keuangan", "Seminar Karier Fresh Graduate",
-        "Seminar Transformasi Pendidikan Digital"]),
-    "WEBINAR": ("Webinar", [
-        "Webinar Inovasi Digital", "Webinar Karier Teknologi", "Webinar Literasi Keuangan", "Webinar Keamanan Siber",
-        "Webinar Tips Beasiswa", "Webinar Personal Branding", "Webinar Analisis Data", "Webinar Startup Kampus",
-        "Webinar Public Speaking", "Webinar Riset dan Publikasi"]),
-    "SOSIALISASI": ("Sosialisasi", [
-        "Sosialisasi Program Kampus", "Sosialisasi Beasiswa Prestasi", "Sosialisasi Kurikulum Merdeka",
-        "Sosialisasi Magang Bersertifikat", "Sosialisasi Penerimaan Mahasiswa Baru", "Sosialisasi Keselamatan Kerja",
-        "Sosialisasi Program Kreativitas Mahasiswa", "Sosialisasi Pertukaran Pelajar",
-        "Sosialisasi Layanan Perpustakaan", "Sosialisasi Organisasi Kemahasiswaan"]),
-}
-VENUES = ["Hotel Mercure", "Auditorium Kampus", "Aula Kampus", "Creative Hub", "Convention Hall", "Gedung Serbaguna"]
-HARGA = [50000, 75000, 100000, 145000]
-EMAIL_PANITIA = "panitia.demo@simevent.id"
+from apps.events.seeds import EMAIL_PANITIA, HARGA, KATEGORI, VENUES
 
 
 class Command(BaseCommand):
