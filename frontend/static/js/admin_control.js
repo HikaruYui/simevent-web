@@ -269,9 +269,7 @@ function rejectEvent(e, why) {
         file: e.has_proposal
           ? "Proposal event (PDF)"
           : "Belum ada proposal",
-        size: e.has_proposal
-          ? "Dokumen tersimpan di server"
-          : "Tidak ada dokumen",
+        size: "",
         uploaded: null,
         ringkasan: e.deskripsi || "Belum ada deskripsi event.",
         asli: Boolean(e.has_proposal),
@@ -333,7 +331,7 @@ function openDetail(e, after) {
   $("#propDlgTitle").textContent = e.nama;
 
   var proposalMeta = p.backend
-    ? p.size
+    ? ""
     : p.size + " · diunggah " + fmtDate(p.uploaded);
 
   var proposalButton = (!p.backend || p.asli)
