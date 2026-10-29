@@ -15,6 +15,11 @@ from apps.events.models import (
     EventType,
     EventTransition,
     DeliveryMode,
+    EventCommitteeAssignment,
+    CommitteePreference,
+    OrganizerInvitation,
+    OrganizerPreference,
+    OrganizerSupportTicket,
 )
 from apps.registrations.models import (
     Registration,
@@ -312,6 +317,98 @@ class Command(BaseCommand):
 
             kp_events.append((event, sold, status))
 
+        # DATA DEMO KETUA PANITIA: preferensi, tim, undangan, dan tiket support.
+        ui_seed = load_demo_catalog()["ui"]
+        organizer_preferences = ui_seed["organizer_notifications"]
+        OrganizerPreference.objects.get_or_create(
+            user=budi,
+            defaults={
+                "notifications": {
+                    item["k"]: item["on"]
+                    for item in organizer_preferences
+                },
+            },
+        )
+
+        seeded_team = 0
+        all_organizer_events = list(Event.objects.managed_by(budi))
+        for member_data in ui_seed["team"]:
+            member = accounts.get(member_data["email"].lower())
+            if not member:
+                continue
+            if member_data["akses"] == "semua":
+                member_events = all_organizer_events
+            else:
+                member_events = [
+                    kp_events[int(event_id) - 1][0]
+                    for event_id in member_data["akses"]
+                    if 0 < int(event_id) <= len(kp_events)
+                ]
+            for event in member_events:
+                _, created = EventCommitteeAssignment.objects.get_or_create(
+                    event=event,
+                    member=member,
+                    defaults={"is_active": member_data["status"] == "aktif"},
+                )
+                seeded_team += int(created)
+            selected_title = ui_seed["committee"]["event_name"]
+            selected_event = next(
+                (event for event in member_events if event.title == selected_title),
+                member_events[0] if member_events else None,
+            )
+            CommitteePreference.objects.get_or_create(
+                member=member,
+                defaults={"selected_event": selected_event},
+            )
+
+        seeded_invites = 0
+        for invite_data in ui_seed["invites"]:
+            remaining_days = max(0, min(7, int(invite_data["sisa"])))
+            sent_at = now - timedelta(days=7 - remaining_days)
+            _, created = OrganizerInvitation.objects.get_or_create(
+                organizer=budi,
+                email=invite_data["email"].lower(),
+                defaults={
+                    "sent_at": sent_at,
+                    "expires_at": sent_at + timedelta(days=7),
+                },
+            )
+            seeded_invites += int(created)
+
+        seeded_support = 0
+        for ticket_data in ui_seed["eo"]["tickets"]:
+            event_index = int(ticket_data["eventId"]) - 1
+            if not 0 <= event_index < len(kp_events):
+                continue
+            event = kp_events[event_index][0]
+            created_at = timezone.make_aware(
+                datetime.strptime(ticket_data["tanggal"], "%Y-%m-%d"),
+                timezone.get_current_timezone(),
+            )
+            ticket_status = (
+                OrganizerSupportTicket.Status.RESOLVED
+                if ticket_data["status"] == "selesai"
+                else OrganizerSupportTicket.Status.IN_PROGRESS
+            )
+            _, created = OrganizerSupportTicket.objects.get_or_create(
+                code=ticket_data["id"],
+                defaults={
+                    "organizer": budi,
+                    "event": event,
+                    "reporter": ticket_data["pelapor"],
+                    "title": ticket_data["judul"],
+                    "description": ticket_data["isi"],
+                    "status": ticket_status,
+                    "created_at": created_at,
+                    "resolved_at": (
+                        created_at
+                        if ticket_status == OrganizerSupportTicket.Status.RESOLVED
+                        else None
+                    ),
+                },
+            )
+            seeded_support += int(created)
+
         # EVENT TAMBAHAN ADMIN
 
         admin_events = []
@@ -517,6 +614,15 @@ class Command(BaseCommand):
         )
         self.stdout.write(
             f"Presensi baru      : {total_attendance}"
+        )
+        self.stdout.write(
+            f"Penugasan tim baru  : {seeded_team}"
+        )
+        self.stdout.write(
+            f"Undangan baru       : {seeded_invites}"
+        )
+        self.stdout.write(
+            f"Tiket support baru  : {seeded_support}"
         )
         self.stdout.write(
             f"Proposal baru      : {proposal_count}"

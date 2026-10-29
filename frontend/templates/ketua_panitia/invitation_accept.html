@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Terima Undangan Panitia · SIMEVENT{% endblock %}
+{% block content %}
+<section style="min-height:70vh; display:grid; place-items:center; padding:32px 16px;">
+  <article style="width:min(100%,520px); background:#fff; border:1px solid #e7e5e4; border-radius:20px; padding:clamp(22px,5vw,40px); box-shadow:0 16px 48px #292b2214;">
+    <p style="margin:0 0 8px; color:#8b4e18; font-weight:800; text-transform:uppercase; letter-spacing:.08em;">Undangan tim SIMEVENT</p>
+    <h1 style="margin:0 0 8px; font:800 clamp(24px,5vw,32px)/1.2 'Plus Jakarta Sans',sans-serif; color:#292b22;">Bergabung sebagai panitia</h1>
+    <p style="margin:0 0 24px; color:#57584e;">Buat akun untuk menerima undangan ke <strong>{{ invitation.organizer.get_full_name|default:invitation.organizer.email }}</strong>.</p>
+    <p style="margin:-12px 0 20px; color:#57584e;">Undangan untuk <strong>{{ invitation.email }}</strong></p>
+    <form method="post" style="display:grid; gap:16px;">
+      {% csrf_token %}
+      <input type="hidden" name="email" value="{{ invitation.email }}">
+      <div><label for="id_first_name">Nama depan</label>{{ form.first_name }}{{ form.first_name.errors }}</div>
+      <div><label for="id_last_name">Nama belakang</label>{{ form.last_name }}{{ form.last_name.errors }}</div>
+      <div><label for="id_password1">Kata sandi</label>{{ form.password1 }}{{ form.password1.errors }}</div>
+      <div><label for="id_password2">Ulangi kata sandi</label>{{ form.password2 }}{{ form.password2.errors }}</div>
+      {{ form.email.errors }}{{ form.non_field_errors }}
+      <button type="submit" style="min-height:48px; border:0; border-radius:12px; background:#3f422e; color:white; font-weight:800; cursor:pointer;">Terima undangan</button>
+    </form>
+  </article>
+</section>
+{% endblock %}

@@ -580,6 +580,29 @@ div:has(> img[src*="logo"]) {
           <li><i class="fa-solid fa-location-dot"></i> {{ event.location|default:event.venue|default:"Daring" }}</li>
           <li><i class="fa-regular fa-user"></i> {{ event.organizer.get_full_name|default:event.organizer.email }}</li>
         </ul>
+        {% if registration.ticket.is_valid %}
+        <div class="my-event-card__actions">
+          <a
+            href="{% url 'registrations:ticket-qr' registration.pk %}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="participant-button inline-flex justify-center rounded-lg px-3 py-2 text-sm font-bold"
+          >
+            <i class="fa-solid fa-qrcode mr-2"></i>
+            Lihat QR e-Tiket
+          </a>
+
+          <button
+            type="button"
+            class="participant-outline rounded-lg px-3 py-2 text-sm font-bold"
+            data-ticket-url="{% url 'registrations:ticket' registration.pk %}"
+            onclick="copyTicketToken(this)"
+          >
+            Salin Token Tiket
+          </button>
+        </div>
+        {% endif %}
+
         {% if registration.certificate_ready %}
         <div class="my-event-card__actions">
           <a href="{% url 'peserta_sertifikat_detail' registration.pk %}" class="participant-outline inline-flex justify-center rounded-lg px-3 py-2 text-sm font-bold">Lihat Sertifikat</a>
@@ -756,97 +779,6 @@ div:has(> img[src*="logo"]) {
   </section>
 </dialog>
 <script>
-// Render event yang didaftarkan dari halaman Jelajah ke seksi "Event Saya"
-document.addEventListener('DOMContentLoaded', () => {
-  const MY_EVENTS_STORAGE_KEY = 'simevent_my_events';
-  const fallbackBanner = "{% static 'img/hero.jpg' %}";
-  const detailBaseUrl = "{% url 'detail_event' 'SLUG_PLACEHOLDER' %}";
-  const daftarEventUrl = "{% url 'peserta_daftar_event' %}";
-
-  let savedEvents = [];
-  try {
-    savedEvents = JSON.parse(localStorage.getItem(MY_EVENTS_STORAGE_KEY) || '[]');
-  } catch (e) {
-    savedEvents = [];
-  }
-
-  if (!savedEvents.length) return;
-
-  const grid = document.getElementById('myEventsGrid');
-  const emptyState = document.getElementById('myEventsEmptyState');
-  if (!grid) return;
-
-  // Kumpulkan judul/slug event yang sudah dirender dari database agar tidak duplikat
-  const existingTitles = new Set(
-    Array.from(grid.querySelectorAll('.my-event-card__title')).map(el => el.textContent.trim().toLowerCase())
-  );
-
-  const statusConfig = {
-    live: { cls: 'my-status--live', label: 'Sedang Berlangsung' },
-    soon: { cls: 'my-status--soon', label: 'Akan Datang' },
-    done: { cls: 'my-status--done', label: 'Selesai' },
-  };
-
-  let addedCount = 0;
-
-  savedEvents.forEach((ev) => {
-    if (!ev || !ev.title) return;
-    if (existingTitles.has(ev.title.trim().toLowerCase())) return;
-
-    const st = statusConfig[ev.status] || statusConfig.soon;
-    const card = document.createElement('article');
-    card.className = 'my-event-card';
-    card.dataset.clientEventSlug = ev.slug || '';
-
-    const bannerUrl = ev.bannerUrl || fallbackBanner;
-    const eventLink = ev.demo
-      ? `${daftarEventUrl}?event=${encodeURIComponent(ev.slug || '')}`
-      : detailBaseUrl.replace('SLUG_PLACEHOLDER', encodeURIComponent(ev.slug || ''));
-
-    card.innerHTML = `
-      <div class="my-event-card__img" aria-hidden="true"></div>
-      <div class="my-event-card__chips">
-        <span class="my-chip my-chip--cream"></span>
-        <time class="my-chip my-chip--white"></time>
-      </div>
-      <span class="my-status ${st.cls}"><i></i> ${st.label}</span>
-      <h3 class="my-event-card__title">
-        <a class="my-event-card__link" href="${eventLink}"></a>
-      </h3>
-      <ul class="my-event-card__meta">
-        <li><i class="fa-solid fa-location-dot"></i> <span class="js-ev-venue"></span></li>
-        <li><i class="fa-regular fa-user"></i> <span class="js-ev-org"></span></li>
-      </ul>
-    `;
-
-    card.querySelector('.my-event-card__img').style.backgroundImage = `url("${bannerUrl}")`;
-    const category = ev.categoryName || ev.category || 'Event';
-    const categoryLabels = { conference: 'Konferensi', workshop: 'Lokakarya' };
-    card.querySelector('.my-chip--cream').textContent = categoryLabels[String(category).toLocaleLowerCase('id')] || category;
-    const timeEl = card.querySelector('time');
-    timeEl.dateTime = ev.date || '';
-    timeEl.textContent = ev.dateLabel || ev.date || '-';
-    card.querySelector('.my-event-card__link').textContent = ev.title;
-    card.querySelector('.js-ev-venue').textContent = ev.venue || 'Daring';
-    card.querySelector('.js-ev-org').textContent = ev.organizer || 'Panitia SIMEVENT';
-
-    grid.prepend(card);
-    existingTitles.add(ev.title.trim().toLowerCase());
-    addedCount += 1;
-  });
-
-  if (addedCount > 0 || grid.children.length > 0) {
-    grid.hidden = false;
-    if (emptyState) emptyState.hidden = true;
-  }
-
-  // Perbarui angka statistik "Event Diikuti" jika ada tambahan dari localStorage
-  const countEl = document.getElementById('totalRegistrationsCount');
-  if (countEl && addedCount > 0) {
-    const baseCount = parseInt(countEl.textContent.trim(), 10) || 0;
-    countEl.textContent = String(baseCount + addedCount);
-  }
-});
 
 // Arahkan logo SIMEVENT di sidebar ke landing page saat ditekan (Pasti Berhasil)
 document.addEventListener('DOMContentLoaded', () => {
@@ -902,6 +834,32 @@ document.querySelectorAll('[data-open-achievement]').forEach((button) => {
 achievementModal.addEventListener('click', (event) => {
  if (event.target === achievementModal) achievementModal.close();
 });
+
+
+async function copyTicketToken(button) {
+  try {
+    const response = await fetch(button.dataset.ticketUrl, {
+      credentials: "same-origin"
+    });
+
+    if (!response.ok) {
+      throw new Error("Tiket tidak tersedia.");
+    }
+
+    const data = await response.json();
+
+    if (!data.is_valid || !data.token) {
+      throw new Error("Tiket belum aktif atau tidak valid.");
+    }
+
+    await navigator.clipboard.writeText(data.token);
+
+    button.textContent = "Token Berhasil Disalin!";
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
 document.querySelectorAll('.participant-feedback-form').forEach((form) => {
  form.addEventListener('submit', async (event) => {
   event.preventDefault();

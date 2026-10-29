@@ -444,3 +444,87 @@ class EventCommitteeAssignment(models.Model):
     def __str__(self):
         return f"{self.member_id} - {self.event_id}"
 
+
+class CommitteePreference(models.Model):
+    member = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="committee_preference",
+    )
+    selected_event = models.ForeignKey(
+        Event,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="committee_preferences",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class OrganizerPreference(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="organizer_preferences",
+    )
+    organization_name = models.CharField(max_length=80, blank=True)
+    notifications = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class OrganizerInvitation(models.Model):
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="organizer_invitations",
+    )
+    email = models.EmailField()
+    token = models.UUIDField(default=uuid4, unique=True, editable=False)
+    message = models.CharField(max_length=200, blank=True)
+    access_all = models.BooleanField(default=True)
+    events = models.ManyToManyField(Event, related_name="committee_invitations", blank=True)
+    sent_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ("-sent_at", "-pk")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("organizer", "email"),
+                name="organizer_invitation_email_unique",
+            ),
+        ]
+
+
+class OrganizerSupportTicket(models.Model):
+    class Status(models.TextChoices):
+        IN_PROGRESS = "IN_PROGRESS", "Sedang ditangani"
+        RESOLVED = "RESOLVED", "Selesai"
+
+    code = models.CharField(max_length=20, unique=True)
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="support_tickets",
+    )
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="organizer_support_tickets",
+    )
+    reporter = models.CharField(max_length=150)
+    title = models.CharField(max_length=200)
+    description = models.TextField(max_length=3000)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.IN_PROGRESS,
+    )
+    reply = models.TextField(max_length=2000, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+

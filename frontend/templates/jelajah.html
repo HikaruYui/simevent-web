@@ -115,13 +115,10 @@
         <nav class="jj-pagination" id="jj-pagination" aria-label="Navigasi halaman event"></nav>
       </section>
     </main>
-        </main>
     {% include 'partials/footer.html' %}
   </div>
   {% demo_seed "catalogue" as demo_catalogue %}
   {{ demo_catalogue|json_script:"demo-catalogue" }}
-  {{ event_data|json_script:"backend-events" }}
-  </div>
   {{ event_data|json_script:"backend-events" }}
   <script>
     const grid = document.getElementById('jj-grid');
@@ -172,7 +169,7 @@
       document.getElementById('backend-events').textContent
     );
 
-    const events = backendEvents.length ? backendEvents : makeDemoEvents();
+    const events = backendEvents;
     const parameters = new URLSearchParams(location.search);
     let currentPage = 1;
     search.value = parameters.get('q') || '';
@@ -182,39 +179,7 @@
 
     const fallbackBannerUrl = "{% static 'img/hero.jpg' %}";
     const isLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
-    const detailEventBaseUrl = "{% url 'detail_event' 'SLUG_PLACEHOLDER' %}";
-    const MY_EVENTS_STORAGE_KEY = 'simevent_my_events';
 
-    function getSavedMyEvents() {
-      try {
-        return JSON.parse(localStorage.getItem(MY_EVENTS_STORAGE_KEY) || '[]');
-      } catch (e) {
-        return [];
-      }
-    }
-
-    function saveToMyEvents(event) {
-      const list = getSavedMyEvents();
-      const exists = list.some(item => item.slug === event.slug || item.id === event.id);
-      if (!exists) {
-        list.unshift({
-          id: event.id,
-          slug: event.slug,
-          title: event.title,
-          category: event.category,
-          categoryName: event.categoryName || event.category || 'Event',
-          status: event.status || 'soon',
-          date: event.date,
-          dateLabel: event.dateLabel,
-          venue: event.venue || 'Online',
-          organizer: event.organizer || 'Panitia SIMEVENT',
-          bannerUrl: event.bannerUrl || fallbackBannerUrl,
-          demo: Boolean(event.demo),
-          registeredAt: new Date().toISOString()
-        });
-        localStorage.setItem(MY_EVENTS_STORAGE_KEY, JSON.stringify(list));
-      }
-    }
 
     function createCard(event) {
       const card = document.createElement('article');
@@ -253,9 +218,7 @@
       status.append(document.createTextNode(` ${statusNames[event.status] || 'Status tidak diketahui'}`));
       const titleLink = card.querySelector('.event-card__link');
       titleLink.textContent = event.title;
-      titleLink.href = event.demo
-        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
-        : detailEventBaseUrl.replace('SLUG_PLACEHOLDER', encodeURIComponent(event.slug));
+      titleLink.href = `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
       const meta = card.querySelectorAll('.event-card__meta li');
       meta[0].append(document.createTextNode(` ${event.venue || 'Online'}`));
       meta[1].append(document.createTextNode(` ${event.organizer}`));
@@ -263,16 +226,23 @@
         ? `Rp${event.amount.toLocaleString('id-ID')}`
         : 'Gratis';
       const registerBtn = card.querySelector('.event-card__foot a');
-      const alreadyRegistered = getSavedMyEvents().some(item => item.slug === event.slug || item.id === event.id);
+      const alreadyRegistered = Boolean(event.isRegistered);
       if (alreadyRegistered && isLoggedIn) {
         registerBtn.innerHTML = `Terdaftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`;
       }
       registerBtn.href = !isLoggedIn
         ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
         : `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
-      registerBtn.addEventListener('click', () => {
-        saveToMyEvents(event);
-      });
+
+      if (alreadyRegistered && isLoggedIn) {
+        registerBtn.innerHTML = `Terdaftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`;
+      }
+
+      registerBtn.href = !isLoggedIn
+        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
+        : alreadyRegistered
+          ? "{% url 'peserta_dashboard' %}"
+          : `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
       return card;
     }
 

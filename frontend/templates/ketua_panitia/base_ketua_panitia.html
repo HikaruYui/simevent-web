@@ -400,6 +400,47 @@
     window.EO_EVENTS_FROM_BACKEND = true;
   </script>
 {% endif %}
-<script src="{% static 'js/ketua_panitia.js' %}?v=9"></script>
+
+{% if eo_dashboard_data %}
+{{ eo_dashboard_data|json_script:"eo-dashboard-data" }}
+<script>
+  (function () {
+    const element = document.getElementById("eo-dashboard-data");
+    if (!element || !window.EO) return;
+
+    const data = JSON.parse(element.textContent);
+
+    window.EO.events = data.events;
+    window.EO.monthly = data.monthly;
+    window.EO.activity = data.activity;
+    window.EO.tickets = data.tickets || [];
+
+    window.EO.series = function (eventId, metric) {
+      const series = data.attendance_series[String(eventId)];
+      return series && series[metric]
+        ? series[metric]
+        : [0, 0, 0, 0, 0, 0, 0];
+    };
+
+    window.EO_DASHBOARD_FROM_BACKEND = true;
+  })();
+</script>
+{% endif %}
+
+{% if eo_support_data %}
+  {{ eo_support_data|json_script:"eo-support-data" }}
+  <script>
+    window.EO_SUPPORT = JSON.parse(document.getElementById("eo-support-data").textContent);
+  </script>
+{% endif %}
+
+{% if eo_settings_data %}
+  {{ eo_settings_data|json_script:"eo-settings-data" }}
+  <script>
+    window.EO_SETTINGS = JSON.parse(document.getElementById("eo-settings-data").textContent);
+  </script>
+{% endif %}
+
+<script src="{% static 'js/ketua_panitia.js' %}?v=10"></script>
 </body>
 </html>

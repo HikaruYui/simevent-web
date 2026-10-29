@@ -46,8 +46,13 @@
     color: var(--olive);
   }
   .form-input:focus { outline: 2px solid var(--orange); border-color: transparent; }
+  .profile-password-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   @media (max-width: 860px) {
     .profile-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .profile-password-grid { grid-template-columns:1fr; gap:0; }
+    .profile-side, .profile-grid > .panel-card { padding:20px 16px !important; }
   }
 </style>
 
@@ -55,7 +60,11 @@
   <!-- KARTU FOTO PROFIL & AKSES PERAN -->
   <div class="panel-card profile-side">
     <div class="profile-avatar-preview" id="profileAvatarPreview">
-      <i class="fa-solid fa-user"></i>
+      {% if request.user.profile_photo %}
+        <img src="{{ request.user.profile_photo.url }}" alt="Foto profil {{ request.user.get_full_name }}">
+      {% else %}
+        <i class="fa-solid fa-user"></i>
+      {% endif %}
     </div>
     <h3 id="profileCardName" style="margin:0; font-size:19px; font-weight:800;">{{ request.user.get_full_name|default:committee_demo.profile_name }}</h3>
     <p style="margin:4px 0 16px; font-size:13px; color:var(--muted);">Panitia Biasa - SIMEVENT</p>
@@ -63,7 +72,12 @@
     <label for="avatarUploadInput" class="btn-primary" style="width:100%; cursor:pointer;">
       <i class="fa-solid fa-camera"></i> Ubah Foto Profil
     </label>
-    <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;" onchange="handleAvatarChange(event)">
+    <input type="file" id="avatarUploadInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleAvatarChange(event)">
+    {% if request.user.profile_photo %}
+      <button type="button" id="removeProfilePhotoButton" class="btn-olive" style="width:100%; margin-top:8px;" onclick="removeProfilePhoto()">
+        <i class="fa-solid fa-trash"></i> Hapus Foto Profil
+      </button>
+    {% endif %}
 
     <hr style="width:100%; border:0; border-top:1px solid var(--line); margin:22px 0;">
 
@@ -78,25 +92,26 @@
     <h3 style="margin:0 0 6px; font-size:20px; font-weight:800;">Pengaturan Profil &amp; Keamanan Panitia</h3>
     <p style="margin:0 0 22px; font-size:13px; color:var(--muted);">Perbarui nama tampilan dan kata sandi akun panitia Anda.</p>
 
-    <form onsubmit="handleProfileSave(event)">
+    <form id="committeeProfileForm" onsubmit="handleProfileSave(event)">
+      {% csrf_token %}
       <div class="form-group">
         <label for="inputNamaPanitia">Nama Lengkap Panitia</label>
-        <input type="text" id="inputNamaPanitia" class="form-input" value="{{ request.user.get_full_name|default:committee_demo.profile_name }}" required>
+        <input type="text" id="inputNamaPanitia" name="name" class="form-input" value="{{ request.user.get_full_name|default:committee_demo.profile_name }}" minlength="3" maxlength="80" autocomplete="name" required>
       </div>
 
       <div class="form-group">
         <label for="inputPasswordLama">Password Saat Ini</label>
-        <input type="password" id="inputPasswordLama" class="form-input" placeholder="Masukkan password saat ini (opsional jika hanya ganti nama)">
+        <input type="password" id="inputPasswordLama" name="current_password" class="form-input" autocomplete="current-password" placeholder="Masukkan password saat ini (opsional jika hanya ganti nama)">
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+      <div class="profile-password-grid">
         <div class="form-group">
           <label for="inputPasswordBaru">Password Baru</label>
-          <input type="password" id="inputPasswordBaru" class="form-input" placeholder="Minimal 12 karakter">
+          <input type="password" id="inputPasswordBaru" name="new_password" class="form-input" autocomplete="new-password" placeholder="Minimal 12 karakter">
         </div>
         <div class="form-group">
           <label for="inputKonfirmasiPassword">Konfirmasi Password Baru</label>
-          <input type="password" id="inputKonfirmasiPassword" class="form-input" placeholder="Ulangi password baru">
+          <input type="password" id="inputKonfirmasiPassword" name="confirm_password" class="form-input" autocomplete="new-password" placeholder="Ulangi password baru">
         </div>
       </div>
 
@@ -284,63 +299,113 @@
   function handleAvatarChange(event) {
     const file = event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      localStorage.setItem('simevent_panitia_biasa_avatar', dataUrl);
-      document.getElementById('profileAvatarPreview').innerHTML = `<img src="${dataUrl}" alt="Foto Profil">`;
-      document.getElementById('headerAvatar').innerHTML = `<img src="${dataUrl}" alt="Foto Profil">`;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handleProfileSave(event) {
-    event.preventDefault();
-    const newName = document.getElementById('inputNamaPanitia').value.trim();
-    const passBaru = document.getElementById('inputPasswordBaru').value;
-    const passKonf = document.getElementById('inputKonfirmasiPassword').value;
-    const alertBox = document.getElementById('profileAlertBox');
-
-    if (passBaru && passBaru !== passKonf) {
-      alertBox.style.display = 'block';
-      alertBox.style.background = 'var(--danger-bg)';
-      alertBox.style.color = 'var(--danger)';
-      alertBox.textContent = 'Konfirmasi password baru tidak cocok!';
+    if (file.size > 5 * 1024 * 1024) {
+      event.target.value = '';
+      showProfileMessage('Ukuran foto maksimal 5 MB.', false);
       return;
     }
+    const preview = document.getElementById('profileAvatarPreview');
+    const image = document.createElement('img');
+    image.alt = 'Pratinjau foto profil';
+    image.src = URL.createObjectURL(file);
+    preview.replaceChildren(image);
+    const removeButton = document.getElementById('removeProfilePhotoButton');
+    if (removeButton) removeButton.hidden = true;
+    showProfileMessage('Foto dipilih. Klik “Simpan Perubahan Profil” untuk menyimpan.', true);
+  }
 
-    localStorage.setItem('simevent_panitia_biasa_name', newName);
-    document.getElementById('profileCardName').textContent = newName;
-    document.getElementById('headerUserName').textContent = newName;
-    document.getElementById('consoleUserName').textContent = newName;
-
-    document.getElementById('inputPasswordLama').value = '';
-    document.getElementById('inputPasswordBaru').value = '';
-    document.getElementById('inputKonfirmasiPassword').value = '';
-
+  function showProfileMessage(message, success) {
+    const alertBox = document.getElementById('profileAlertBox');
     alertBox.style.display = 'block';
-    alertBox.style.background = 'var(--green-bg)';
-    alertBox.style.color = 'var(--green)';
-    alertBox.textContent = passBaru
-      ? 'Profil dan password berhasil diperbarui!'
-      : 'Nama profil panitia berhasil diperbarui!';
+    alertBox.style.background = success ? 'var(--green-bg)' : 'var(--danger-bg)';
+    alertBox.style.color = success ? 'var(--green)' : 'var(--danger)';
+    alertBox.textContent = message;
+  }
+
+  async function handleProfileSave(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const selectedPhoto = document.getElementById('avatarUploadInput').files[0];
+    if (selectedPhoto) formData.set('photo', selectedPhoto);
+    const currentPassword = document.getElementById('inputPasswordLama').value;
+    const newPassword = document.getElementById('inputPasswordBaru').value;
+    const confirmPassword = document.getElementById('inputKonfirmasiPassword').value;
+    if ((newPassword || confirmPassword) && !currentPassword) {
+      showProfileMessage('Masukkan password saat ini untuk mengganti password.', false);
+      return;
+    }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      const response = await fetch("{% url 'panitia_simpan_profil' %}", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value },
+        body: formData,
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Profil gagal disimpan.');
+      document.getElementById('profileCardName').textContent = result.name;
+      document.getElementById('inputNamaPanitia').value = result.name;
+      const preview = document.getElementById('profileAvatarPreview');
+      if (result.photo_url) {
+        const image = document.createElement('img');
+        image.src = result.photo_url;
+        image.alt = `Foto profil ${result.name}`;
+        preview.replaceChildren(image);
+        let removeButton = document.getElementById('removeProfilePhotoButton');
+        if (!removeButton) {
+          removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.id = 'removeProfilePhotoButton';
+          removeButton.className = 'btn-olive';
+          removeButton.style.cssText = 'width:100%; margin-top:8px;';
+          removeButton.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus Foto Profil';
+          removeButton.onclick = removeProfilePhoto;
+          preview.parentElement.insertBefore(removeButton, preview.nextElementSibling.nextElementSibling);
+        } else {
+          removeButton.hidden = false;
+        }
+      }
+      form.querySelector('#inputPasswordLama').value = '';
+      form.querySelector('#inputPasswordBaru').value = '';
+      form.querySelector('#inputKonfirmasiPassword').value = '';
+      form.querySelector('#avatarUploadInput').value = '';
+      showProfileMessage(result.password_updated ? 'Profil dan password berhasil diperbarui.' : 'Profil panitia berhasil diperbarui.', true);
+    } catch (error) {
+      showProfileMessage(error.message, false);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function removeProfilePhoto() {
+    if (!window.confirm('Hapus foto profil panitia?')) return;
+    const form = document.getElementById('committeeProfileForm');
+    const formData = new FormData();
+    formData.set('name', document.getElementById('inputNamaPanitia').value.trim());
+    formData.set('remove_photo', '1');
+    try {
+      const response = await fetch("{% url 'panitia_simpan_profil' %}", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value },
+        body: formData,
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Foto gagal dihapus.');
+      document.getElementById('profileAvatarPreview').innerHTML = '<i class="fa-solid fa-user"></i>';
+      document.getElementById('removeProfilePhotoButton')?.remove();
+      document.getElementById('avatarUploadInput').value = '';
+      showProfileMessage('Foto profil berhasil dihapus.', true);
+    } catch (error) {
+      showProfileMessage(error.message, false);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     loadParticipants();
     updateStatsAndUI();
-
-    const savedName = localStorage.getItem('simevent_panitia_biasa_name');
-    if (savedName) {
-      document.getElementById('inputNamaPanitia').value = savedName;
-      document.getElementById('profileCardName').textContent = savedName;
-      document.getElementById('headerUserName').textContent = savedName;
-      document.getElementById('consoleUserName').textContent = savedName;
-    }
-    const savedAvatar = localStorage.getItem('simevent_panitia_biasa_avatar');
-    if (savedAvatar) {
-      document.getElementById('profileAvatarPreview').innerHTML = `<img src="${savedAvatar}" alt="Foto Profil">`;
-      document.getElementById('headerAvatar').innerHTML = `<img src="${savedAvatar}" alt="Foto Profil">`;
-    }
   });
 </script>

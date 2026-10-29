@@ -96,7 +96,7 @@
 
 <dialog class="dlg dlg--wide" id="inviteDlg" aria-labelledby="invTitle">
   <form method="dialog" id="inviteForm" novalidate>
-    <div class="dlg__head"><div><h2 id="invTitle">Undang panitia</h2><p class="set-sub">Penerima mendapat email berisi tautan untuk membuat kata sandi sendiri.</p></div><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
+    <div class="dlg__head"><div><h2 id="invTitle">Undang panitia</h2><p class="set-sub">Buat tautan undangan yang bisa kamu bagikan secara manual.</p></div><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
     <div class="dlg__body">
       <div class="field"><label for="ivEmail">Email</label><textarea id="ivEmail" name="email" rows="2" placeholder="nama@email.com, nama2@email.com" autocomplete="off"></textarea><small class="hint">Pisahkan dengan koma atau baris baru. Maksimal 10 email.</small></div>
       <fieldset class="field iv-events"><legend>Peran</legend><div class="role-cards" id="ivPeran"></div></fieldset>
@@ -106,9 +106,9 @@
         <div id="ivEventList" class="iv-eventlist" hidden></div>
       </fieldset>
       <div class="field"><label for="ivPesan">Pesan (opsional)</label><textarea id="ivPesan" name="pesan" rows="2" maxlength="200" placeholder="Contoh: Tolong bantu check-in di hari H."></textarea></div>
-      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Kamu bisa mengirim ulang, menyalin tautan, atau membatalkan undangan kapan saja dari tab Undangan tertunda.</p>
+      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Sistem demo tidak mengirim email. Salin tautan untuk membagikannya; kamu bisa memperbarui masa berlaku atau membatalkan undangan dari tab Undangan tertunda.</p>
     </div>
-    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Kirim undangan</button></div>
+    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Buat undangan</button></div>
   </form>
 </dialog>
 

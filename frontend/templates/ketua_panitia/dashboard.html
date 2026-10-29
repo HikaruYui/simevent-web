@@ -216,20 +216,27 @@
   });
 </script>
 
-{% if eo_dashboard_data %}
-  {{ eo_dashboard_data|json_script:"eo-dashboard-data" }}
 
+{% if eo_dashboard_data %}
   <script>
-    (function () {
+    document.addEventListener("DOMContentLoaded", function () {
       const element = document.getElementById("eo-dashboard-data");
+
+      if (!element) return;
+
+      if (!window.EO) {
+        console.error("window.EO belum tersedia!");
+        return;
+      }
+
       const data = JSON.parse(element.textContent);
 
-      // Timpa data dummy khusus halaman dashboard.
+      // Gunakan data PostgreSQL untuk dashboard.
       window.EO.events = data.events;
       window.EO.monthly = data.monthly;
       window.EO.activity = data.activity;
 
-      // Ambil titik grafik kehadiran dari PostgreSQL.
+      // Grafik kehadiran dari PostgreSQL.
       window.EO.series = function (eventId, metric) {
         const eventData = data.attendance_series[String(eventId)];
 
@@ -241,7 +248,9 @@
       };
 
       window.EO_DASHBOARD_FROM_BACKEND = true;
-    })();
+
+      console.log("Dashboard Ketua Panitia: data PostgreSQL berhasil dimuat.");
+    });
   </script>
 {% endif %}
 {% endblock %}

@@ -74,8 +74,10 @@ class AttendanceService:
         if not form.is_valid():
             raise ValidationError("Invalid ticket.")
         token = form.cleaned_data["token"]
+        # QR membawa token rahasia; input manual dari daftar memakai identifier.
         ticket = Ticket.objects.filter(
-            token=token, registration__event_id=event_id,
+            Q(token=token) | Q(identifier=token),
+            registration__event_id=event_id,
         ).select_related("registration__payment").first()
         if ticket is None:
             raise ValidationError("Invalid ticket.")
@@ -91,7 +93,8 @@ class AttendanceService:
         )
 
         ticket = Ticket.objects.filter(
-            token=token, registration__event=event,
+            Q(token=token) | Q(identifier=token),
+            registration__event=event,
         ).select_related("registration__payment").first()
         if (
             ticket is None or not ticket.is_active

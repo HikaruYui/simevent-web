@@ -27,8 +27,9 @@
 
     {% if panitia_db_data %}
       <div class="panel-card" style="padding:16px; margin-bottom:16px;">
-        <form method="get"
-              action="{% url 'panitia_biasa' %}#tab-peserta">
+        <form method="post" action="{% url 'panitia_biasa' %}#tab-peserta">
+          {% csrf_token %}
+          <input type="hidden" name="return_to" value="peserta">
           <label for="selectedEvent"
                 style="font-weight:700; display:block; margin-bottom:8px;">
             Event yang Ditugaskan
@@ -37,7 +38,6 @@
           <select
             id="selectedEvent"
             name="event_id"
-            onchange="this.form.submit()"
             style="width:100%; padding:12px; border-radius:10px;"
           >
             {% for event in panitia_db_data.events %}
@@ -49,6 +49,7 @@
               </option>
             {% endfor %}
           </select>
+          <button type="submit" class="btn-primary" style="margin-top:10px;">Simpan event pilihan</button>
         </form>
       </div>
     {% else %}
@@ -65,37 +66,28 @@
   <div id="tab-profil" class="tab-pane">
     {% include 'panitia_biasa/_profil_panitia_biasa.html' %}
     
-    <!-- TAMBAHAN FORM EDIT JUDUL EVENT -->
+    <!-- PILIH EVENT UTAMA PANITIA -->
     <div class="panel-card" style="padding: 28px; margin-top: 24px;">
-      <h3 style="margin:0 0 6px; font-size:20px; font-weight:800;">Ubah Judul Event</h3>
-      <p style="margin:0 0 16px; font-size:13px; color:var(--muted);">Sesuaikan nama event yang sedang dikelola saat ini.</p>
-      <form onsubmit="handleEventNameSave(event)">
-        <input type="text" id="inputNamaEvent" style="width:100%; height:46px; padding:0 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px; margin-bottom:12px;" value="{{ committee_demo.event_name }}" required>
-        <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Judul Event</button>
-      </form>
+      <h3 style="margin:0 0 6px; font-size:20px; font-weight:800;">Event pilihan panitia</h3>
+      <p style="margin:0 0 16px; font-size:13px; color:var(--muted);">Pilih event yang sedang kamu tangani. Pilihan tersimpan ke akunmu.</p>
+      {% if panitia_db_data %}
+        <form method="post" action="{% url 'panitia_biasa' %}#tab-profil">
+          {% csrf_token %}
+          <input type="hidden" name="return_to" value="profil">
+          <label for="inputNamaEvent" style="display:block; margin-bottom:8px; font-weight:700;">Event yang ditugaskan</label>
+          <select id="inputNamaEvent" name="event_id" style="width:100%; min-height:46px; padding:0 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px; margin-bottom:12px;">
+            {% for event in panitia_db_data.events %}
+              <option value="{{ event.id }}" {% if event.id == panitia_db_data.selectedEventId %}selected{% endif %}>{{ event.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan event pilihan</button>
+        </form>
+      {% else %}
+        <p style="margin:0; color:var(--muted);">Belum ada event yang ditugaskan ke akun ini.</p>
+      {% endif %}
     </div>
   </div>
   
-  <script>
-    function handleEventNameSave(e) {
-      e.preventDefault();
-      const newEventName = document.getElementById('inputNamaEvent').value;
-      localStorage.setItem('simevent_panitia_event_name', newEventName);
-      
-      const sidebarTitle = document.getElementById('sidebarEventName');
-      if(sidebarTitle) sidebarTitle.textContent = newEventName;
-      
-      alert('Judul Event Berhasil Diperbarui!');
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedEventName = localStorage.getItem('simevent_panitia_event_name');
-      if (savedEventName) {
-        document.getElementById('inputNamaEvent').value = savedEventName;
-      }
-    });
-  </script>
-
 {% if panitia_db_data %}
   {{ panitia_db_data|json_script:"committee-backend-data" }}
 
