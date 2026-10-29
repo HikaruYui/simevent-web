@@ -121,7 +121,11 @@ tfoot td { padding: 14px 22px; border-top: 2px solid var(--taupe); font: 800 14p
 .kpi-grid--fin .kpi__value { font-size: 30px; }
 .kpi-grid--fin .kpi__delta { position: static; margin-top: 10px; font: 500 14px/1.4 var(--font-body); }
 /* Audit Log: search di kiri, tabs di sebelahnya */
-.adm-toolbar--search-first .adm-search { flex: 0 1 300px; order: 2; margin-left: auto; }
+.adm-toolbar--search-first .adm-search { flex: 0 0 300px; min-width: 0; order: 2; margin-left: auto; }
+.adm-toolbar--search-first .tabs { flex: 1 1 0; min-width: 0; }
+@media (max-width: 760px) {
+  .adm-toolbar--search-first .adm-search { flex: 1 1 auto; margin-left: 0; order: 0; }
+}
 .adm-card > .adm-log { padding-top: 22px; }
 
 /* ---------- Pengaturan: tabs, baris pengaturan, footer ---------- */
@@ -257,3 +261,12 @@ tfoot td { padding: 14px 22px; border-top: 2px solid var(--taupe); font: 800 14p
 .select-item { padding: 10px 14px; border-radius: 8px; font: 500 14px/1.3 var(--font-body); color: #1e293b; cursor: pointer; transition: background-color .15s, color .15s; }
 .select-item:hover, .select-item.is-selected { background: #2b3022; color: #fff; }
 .dlg__body > .dlg__foot, .dlg__body .dlg__foot { padding-left: 0; padding-right: 0; padding-bottom: 0; }
+/* Audit Log: tabs + search satu baris; search yang menyusut lebih dulu */
+.adm-toolbar--search-first { flex-wrap: nowrap; }
+.adm-toolbar--search-first .tabs { flex: 0 0 auto; max-width: calc(100% - 184px); }
+.adm-toolbar--search-first .adm-search { flex: 1 1 160px; min-width: 160px; max-width: 300px; order: 2; margin-left: auto; }
+@media (max-width: 760px) {
+  .adm-toolbar--search-first { flex-wrap: wrap; }
+  .adm-toolbar--search-first .tabs { flex: 1 1 auto; max-width: none; }
+  .adm-toolbar--search-first .adm-search { flex: 1 1 auto; max-width: none; min-width: 0; margin-left: 0; order: 0; }
+}
