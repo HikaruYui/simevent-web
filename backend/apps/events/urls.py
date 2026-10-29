@@ -14,6 +14,11 @@ urlpatterns = [
         views.download_event_proposal,
         name="download-proposal",
     ),
+    path(
+        "manage/<int:pk>/documentation/",
+        views.EventDocumentationView.as_view(),
+        name="documentation",
+    ),
     path("manage/<int:pk>/<str:action>/", views.EventTransitionView.as_view(), name="transition"),
     path("<slug:slug>/", views.EventDetailView.as_view(), name="detail"),
     

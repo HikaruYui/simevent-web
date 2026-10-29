@@ -91,6 +91,21 @@ class ManagedEventListView(EventManagementMixin, EventListView):
         return JsonResponse(event_data(event), status=201)
 
 
+class EventDocumentationView(EventManagementMixin, View):
+    """Panitia/ketua menyimpan tautan dokumentasi; peserta tidak punya akses ke endpoint ini."""
+    http_method_names = ["post", "options"]
+
+    def post(self, request, pk):
+        event = EventWorkflow(request.user).set_documentation(
+            pk, url=request.POST.get("documentation_url", ""),
+        )
+        return JsonResponse({
+            "id": event.pk,
+            "documentation_url": event.documentation_url,
+            "status": event.status,
+        })
+
+
 class ManagedEventDetailView(EventManagementMixin, EventDetailView):
     http_method_names = ["get", "post", "head", "options"]
 

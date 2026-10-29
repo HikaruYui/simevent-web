@@ -9,7 +9,7 @@
   {% csrf_token %}
 
   {% for event in documentation_events %}
-  <form class="doc-form" data-save-url="{% url 'events:documentation' event.pk %}" style="background:var(--cream-soft); padding:20px; border-radius:16px; border:1px solid var(--line); margin-bottom:16px;">
+  <form class="doc-form" data-save-url="{% url 'panitia_simpan_dokumentasi' %}" data-event-id="{{ event.pk }}" style="background:var(--cream-soft); padding:20px; border-radius:16px; border:1px solid var(--line); margin-bottom:16px;">
     <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px;">
       <h4 style="margin:0; font-size:16px; font-weight:800; color:var(--olive);">{{ event.title }}</h4>
       {% if event.status == "COMPLETED" %}
@@ -36,7 +36,7 @@
   </form>
   {% empty %}
   <p style="margin:0; padding:20px; text-align:center; font-size:14px; color:var(--muted); background:var(--cream-soft); border-radius:16px; border:1px solid var(--line);">
-    Belum ada event terbit atau selesai yang Anda kelola.
+    Belum ada event terbit atau selesai yang ditugaskan kepada Anda.
   </p>
   {% endfor %}
 </div>
@@ -59,7 +59,7 @@
           method: 'POST',
           credentials: 'same-origin',
           headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded'},
-          body: new URLSearchParams({documentation_url: input.value.trim()}),
+          body: new URLSearchParams({event_id: form.dataset.eventId, documentation_url: input.value.trim()}),
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) {

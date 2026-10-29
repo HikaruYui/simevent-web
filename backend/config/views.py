@@ -15,7 +15,6 @@ from django.core.exceptions import PermissionDenied
 from collections import Counter, defaultdict
 from datetime import timedelta
 from decimal import Decimal
-from urllib.parse import urlsplit
 from apps.registrations.models import Ticket
 from apps.registrations.models import (
     Attendance,
@@ -846,6 +845,10 @@ def panitia_biasa_dashboard(request):
         "panitia_biasa_page.html",
         {
             "panitia_db_data": panitia_db_data,
+            "documentation_events": [
+                event for event in event_list
+                if event.status in (EventStatus.PUBLISHED, EventStatus.COMPLETED)
+            ],
         },
     )
 
@@ -1556,6 +1559,7 @@ def panitia_akun(request):
 @require_POST
 @login_required(login_url="login_page")
 def panitia_simpan_dokumentasi(request):
+    """Simpan tautan dokumentasi oleh panitia yang ditugaskan pada event tersebut (respons JSON)."""
     if request.user.role != "COMMITTEE" or not request.user.is_active:
         raise PermissionDenied
 
@@ -1563,61 +1567,23 @@ def panitia_simpan_dokumentasi(request):
         Event.objects.filter(
             committee_assignments__member=request.user,
             committee_assignments__is_active=True,
+            status__in=(EventStatus.PUBLISHED, EventStatus.COMPLETED),
         ),
         pk=request.POST.get("event_id"),
     )
 
     url = request.POST.get("documentation_url", "").strip()
-    parsed = urlsplit(url)
+    try:
+        # Aturan yang sama dengan model: URLField + validator host Google.
+        event._meta.get_field("documentation_url").clean(url, event)
+    except ValidationError as exc:
+        return JsonResponse({"errors": {"documentation_url": exc.messages}}, status=400)
 
-    if (
-        len(url) > 500
-        or parsed.scheme != "https"
-        or parsed.hostname != "drive.google.com"
-        or not parsed.path.startswith("/drive/folders/")
-    ):
-        messages.error(request, "Masukkan URL folder Google Drive yang valid.")
-    else:
-        event.documentation_url = url
-        event.save(update_fields=["documentation_url"])
-        messages.success(request, "Dokumentasi berhasil disimpan ke PostgreSQL.")
-
-    return redirect(f"/panitia_biasa/?event_id={event.pk}#tab-dokumentasi")
-
-
-@require_GET
-@login_required(login_url="login_page")
-def peserta_dokumentasi(request, pk):
-    participant_redirect = _participant_redirect(request)
-    if participant_redirect:
-        return participant_redirect
-
-    registration = get_object_or_404(
-        Registration.objects.owned_by(request.user)
-        .select_related("event", "attendance", "feedback", "payment"),
-        pk=pk,
-        status=RegistrationStatus.REGISTERED,
-        event__status=EventStatus.COMPLETED,
-        event__end_datetime__lte=timezone.now(),
-        attendance__status=Attendance.Status.PRESENT,
-        feedback__isnull=False,
-    )
-
-    if (
-        hasattr(registration, "payment")
-        and registration.payment.status != Payment.Status.APPROVED
-    ):
-        raise PermissionDenied
-
-    url = registration.event.documentation_url
-
-    if (
-        not url
-        or urlsplit(url).scheme != "https"
-        or urlsplit(url).hostname != "drive.google.com"
-        or not urlsplit(url).path.startswith("/drive/folders/")
-    ):
-        raise Http404("Dokumentasi belum tersedia.")
-
-    return redirect(url)
+    event.documentation_url = url
+    event.save(update_fields=["documentation_url", "updated_at"])
+    return JsonResponse({
+        "id": event.pk,
+        "documentation_url": event.documentation_url,
+        "status": event.status,
+    })
 

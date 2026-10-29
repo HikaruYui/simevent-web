@@ -223,6 +223,26 @@ class EventWorkflow:
         )
         return event
 
+    # Abstraction: pemanggil cukup mengirim tautan; izin, status, dan validasi host ditangani di sini.
+    @transaction.atomic
+    def set_documentation(self, event_id, *, url):
+        """Simpan (atau kosongkan) tautan dokumentasi. Tidak mengubah status event."""
+        actor, event, _ = self._lock_event(event_id)
+        self._require(actor, "events.change_event")
+        if event.status not in (EventStatus.PUBLISHED, EventStatus.COMPLETED):
+            raise ValidationError(
+                "Tautan dokumentasi hanya dapat diisi untuk event yang sudah terbit atau selesai."
+            )
+        url = (url or "").strip()
+        try:
+            # Validasi URLField (panjang, https) + validator host Google.
+            event._meta.get_field("documentation_url").clean(url, event)
+        except ValidationError as exc:
+            raise ValidationError({"documentation_url": exc.messages})
+        event.documentation_url = url
+        event.save(update_fields=["documentation_url", "updated_at"])
+        return event
+
     @transaction.atomic
     def delete_draft(self, event_id):
         actor, event, _ = self._lock_event(event_id)

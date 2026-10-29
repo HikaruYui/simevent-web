@@ -1,4 +1,4 @@
-# Menambah tautan dokumentasi event (Google Drive) yang diisi panitia.
+# Memperpanjang tautan dokumentasi (max 1000) dan menambah validator host Google.
 
 import apps.events.models
 from django.db import migrations, models
@@ -7,11 +7,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('events', '0004_event_proposal'),
+        ('events', '0006_event_documentation_url'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name='event',
             name='documentation_url',
             field=models.URLField(blank=True, max_length=1000, validators=[apps.events.models.validate_documentation_url]),

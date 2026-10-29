@@ -2,6 +2,7 @@
 # Fungsi file: Model, relasi, queryset, dan constraint database untuk event, ownership, dan alur approval/publikasi.
 
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 from django.conf import settings
@@ -10,6 +11,25 @@ from django.core.files.storage import FileSystemStorage
 from django.core.validators import FileExtensionValidator, URLValidator
 from django.db import models
 from django.utils import timezone
+
+
+# Tautan dokumentasi tampil kepada peserta, jadi hanya host Google yang diterima.
+DOCUMENTATION_HOSTS = frozenset({
+    "drive.google.com",
+    "photos.google.com",
+    "photos.app.goo.gl",
+})
+
+
+def validate_documentation_url(value):
+    if not value:
+        return
+    URLValidator(schemes=["https"])(value)
+    host = (urlsplit(value).hostname or "").lower()
+    if host not in DOCUMENTATION_HOSTS:
+        raise ValidationError(
+            "Gunakan tautan Google Drive atau Google Foto (https://drive.google.com/...)."
+        )
 
 
 class EventStatus(models.TextChoices):
@@ -127,12 +147,6 @@ class Event(models.Model):
         blank=True,
     )
 
-    documentation_url = models.URLField(
-        max_length=500,
-        blank=True,
-        default="",
-    )
-
     capacity = models.PositiveIntegerField()
 
     price = models.DecimalField(
@@ -155,6 +169,14 @@ class Event(models.Model):
         storage=private_proposal_storage,
         validators=[FileExtensionValidator(["pdf"])],
         blank=True,
+    )
+
+    # Tautan folder dokumentasi (Google Drive) yang diisi panitia.
+    # Hanya dibuka untuk peserta yang hadir setelah event COMPLETED.
+    documentation_url = models.URLField(
+        max_length=1000,
+        blank=True,
+        validators=[validate_documentation_url],
     )
 
     status = models.CharField(

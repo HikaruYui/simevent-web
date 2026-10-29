@@ -23,6 +23,15 @@ class RegistrationStatus(models.TextChoices):
 
 
 class RegistrationQuerySet(models.QuerySet):
+    # Encapsulation: aturan akses dokumentasi hanya ada di sini dan dipakai semua halaman peserta.
+    def with_documentation(self):
+        """Registrasi aktif, hadir, pada event COMPLETED yang sudah punya tautan dokumentasi."""
+        return (
+            self.active()
+            .filter(event__status=EventStatus.COMPLETED, attendance__status="PRESENT")
+            .exclude(event__documentation_url="")
+        )
+
     def active(self):
         return self.filter(status=RegistrationStatus.REGISTERED)
 
