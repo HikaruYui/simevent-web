@@ -629,6 +629,52 @@ def peserta_daftar_event(request):
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
+def peserta_event_selesai(request):
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
+
+    now = timezone.now()
+    registrations = list(
+        Registration.objects.owned_by(request.user)
+        .filter(
+            status=RegistrationStatus.REGISTERED,
+            attendance__status=Attendance.Status.PRESENT,
+        )
+        .filter(
+            Q(event__status=EventStatus.COMPLETED)
+            | Q(event__end_datetime__lte=now)
+        )
+        .select_related("event", "event__event_type", "event__organizer")
+        .order_by("-event__end_datetime", "-pk")
+    )
+    documentation_ids = _documentation_event_ids(request.user)
+    events = []
+    for registration in registrations:
+        event = registration.event
+        event.is_registered = True
+        event.documentation_ready = event.pk in documentation_ids
+        event.is_registration_open = False
+        event.ui_status = "Selesai"
+        events.append(event)
+
+    categories = list(
+        EventType.objects.filter(is_active=True).values_list("name", flat=True)
+    )
+    if not any(category.casefold() == "sosialisasi" for category in categories):
+        categories.append("Sosialisasi")
+    categories.sort(key=str.casefold)
+    return render(request, "peserta/daftar_event.html", {
+        "events": events,
+        "categories": categories,
+        "now": now,
+        "completed_only": True,
+    })
+
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
 def peserta_sertifikat(request):
     participant_redirect = _participant_redirect(request)
     if participant_redirect:

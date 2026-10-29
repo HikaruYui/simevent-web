@@ -168,6 +168,11 @@ urlpatterns = [
         name="peserta_daftar_event",
     ),
     path(
+        "peserta/event-selesai/",
+        views.peserta_event_selesai,
+        name="peserta_event_selesai",
+    ),
+    path(
         "peserta/dokumentasi/<int:event_id>/",
         views.peserta_dokumentasi,
         name="peserta_dokumentasi",

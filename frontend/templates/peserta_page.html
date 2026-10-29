@@ -222,6 +222,49 @@ div:has(> img[src*="logo"]) {
   box-shadow: 0 25px 60px rgba(35, 31, 25, 0.3);
 }
 .feedback-dialog::backdrop { background: rgba(35, 31, 25, 0.42); }
+.ticket-qr-dialog {
+  width: min(420px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid rgba(63, 66, 46, 0.18);
+  border-radius: 24px;
+  color: #3F422E;
+  background: #fffaf0;
+  box-shadow: 0 25px 60px rgba(35, 31, 25, 0.3);
+}
+.ticket-qr-dialog::backdrop { background: rgba(35, 31, 25, 0.48); }
+.my-event-detail-dialog {
+  width: min(720px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid rgba(63, 66, 46, 0.18);
+  border-radius: 24px;
+  color: #3F422E;
+  background: #fff;
+  box-shadow: 0 25px 60px rgba(35, 31, 25, 0.3);
+}
+.my-event-detail-dialog::backdrop { background: rgba(35, 31, 25, 0.48); }
+.my-event-detail-dialog [hidden] { display: none !important; }
+#myEventDetailPoster .my-event-card__img { position:relative; isolation:isolate; display:flex; width:100%; height:240px; align-items:center; justify-content:center; margin:0; overflow:hidden; border-radius:24px 24px 0 0; background:linear-gradient(135deg,#5c6b63,#8d9b83 58%,#c4a86a); color:#fff; }
+#myEventDetailPoster .my-event-card__img[data-kind="workshop"] { background:linear-gradient(135deg,#2824a5,#4d45ee 58%,#168de7); }
+#myEventDetailPoster .my-event-card__img[data-kind="conference"] { background:linear-gradient(135deg,#071b3d,#123c78 60%,#1368a8); }
+#myEventDetailPoster .my-event-card__img[data-kind="seminar"] { background:linear-gradient(135deg,#05b8db,#51ddf2 58%,#077fc9); color:#07385a; }
+#myEventDetailPoster .my-event-card__img[data-kind="webinar"] { background:linear-gradient(135deg,#5c2d91,#9b59b6 58%,#e27c97); }
+#myEventDetailPoster .my-event-card__img.event-poster--art::before,
+#myEventDetailPoster .my-event-card__img.event-poster--art::after { position:absolute; z-index:0; content:""; border-radius:9999px; background:rgba(255,255,255,.12); pointer-events:none; }
+#myEventDetailPoster .my-event-card__img.event-poster--art::before { width:150px; height:150px; right:-38px; top:-64px; }
+#myEventDetailPoster .my-event-card__img.event-poster--art::after { width:90px; height:90px; right:60px; bottom:-50px; }
+#myEventDetailPoster .my-event-card__img-art-content { position:relative; z-index:1; display:flex; width:100%; height:100%; align-items:center; justify-content:space-between; overflow:hidden; padding:16px 28px; text-align:left; }
+#myEventDetailPoster .my-event-card__img-art-text { position:relative; z-index:1; max-width:72%; }
+#myEventDetailPoster .my-event-card__img-art-icon { position:relative; z-index:1; font-size:4rem; opacity:.9; filter:drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+#myEventDetailPoster .my-event-card__img--photo { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
+#myEventDetailPoster .my-event-card__img-art-eyebrow { display:block; font-size:.75rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; opacity:.9; }
+#myEventDetailPoster .my-event-card__img-art-title { display:block; margin-top:.3rem; font-family:'Plus Jakarta Sans','Manrope',sans-serif; font-size:1.5rem; font-weight:800; line-height:1.15; }
+#myEventDetailPoster .my-event-card__img-art-tagline { display:block; margin-top:.5rem; font-size:.75rem; font-weight:600; opacity:.85; }
 #participantDashboard .dashboard-hero {
   isolation: isolate;
   border: 1px solid rgba(255,255,255,.9);
@@ -397,6 +440,7 @@ div:has(> img[src*="logo"]) {
   background: linear-gradient(160deg, #fffaf0, #f7ead0);
   box-shadow: 0 10px 24px rgba(47, 43, 34, 0.08);
   font-family: 'Manrope', sans-serif;
+  cursor: pointer;
   transition: transform .22s ease, box-shadow .22s ease;
 }
 #participantDashboard .my-event-card:hover {
@@ -404,17 +448,47 @@ div:has(> img[src*="logo"]) {
   box-shadow: 0 16px 32px rgba(47, 43, 34, 0.14);
 }
 #participantDashboard .my-event-card__img {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 164px;
   margin: -14px -16px 0;
+  overflow: hidden;
   border-radius: 23px 23px 0 0;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(135deg,#5c6b63,#8d9b83 58%,#c4a86a);
+  color: #fff;
 }
+#participantDashboard .my-event-card__img[data-kind="workshop"] { background: linear-gradient(135deg,#2824a5,#4d45ee 58%,#168de7); }
+#participantDashboard .my-event-card__img[data-kind="conference"] { background: linear-gradient(135deg,#071b3d,#123c78 60%,#1368a8); }
+#participantDashboard .my-event-card__img[data-kind="seminar"] { background: linear-gradient(135deg,#05b8db,#51ddf2 58%,#077fc9); color: #07385a; }
+#participantDashboard .my-event-card__img[data-kind="webinar"] { background: linear-gradient(135deg,#5c2d91,#9b59b6 58%,#e27c97); }
+#participantDashboard .my-event-card__img.event-poster--art::before,
+#participantDashboard .my-event-card__img.event-poster--art::after {
+  position: absolute;
+  z-index: 0;
+  content: "";
+  border-radius: 9999px;
+  background: rgba(255,255,255,.12);
+  pointer-events: none;
+}
+#participantDashboard .my-event-card__img.event-poster--art::before { width: 150px; height: 150px; right: -38px; top: -64px; }
+#participantDashboard .my-event-card__img.event-poster--art::after { width: 90px; height: 90px; right: 60px; bottom: -50px; }
+#participantDashboard .my-event-card__img-art-content { position: relative; z-index: 1; display: flex; height: 100%; width: 100%; align-items: center; justify-content: space-between; overflow: hidden; padding: 12px 16px; text-align: left; }
+#participantDashboard .my-event-card__img-art-text { position: relative; z-index: 1; max-width: 72%; }
+#participantDashboard .my-event-card__img-art-icon { position: relative; z-index: 1; font-size: 2.8rem; opacity: .9; filter: drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+#participantDashboard .my-event-card__img--photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+#participantDashboard .my-event-card__img-art-eyebrow { display: block; font-size: .62rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; opacity: .9; }
+#participantDashboard .my-event-card__img-art-title { display: block; margin-top: .3rem; font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif; font-size: 1.05rem; font-weight: 800; line-height: 1.15; }
+#participantDashboard .my-event-card__img-art-tagline { display: block; margin-top: .5rem; font-size: .62rem; font-weight: 600; opacity: .85; }
 #participantDashboard .my-event-card__chips {
   position: absolute;
   top: 24px; left: 26px; right: 26px;
   display: flex; justify-content: space-between; align-items: center; gap: .5rem;
 }
+#participantDashboard .my-event-card--art .my-event-card__chips { top: 10px; right: 10px; left: auto; justify-content: flex-end; }
+#participantDashboard .my-event-card--art .my-chip--cream { display: none; }
 #participantDashboard .my-chip {
   padding: 4px 14px;
   border-radius: 999px;
@@ -446,7 +520,6 @@ div:has(> img[src*="logo"]) {
   color: #2f2b22;
   margin-top: .1rem;
 }
-#participantDashboard .my-event-card__link::after { content: ""; position: absolute; inset: 0; border-radius: 24px; }
 #participantDashboard .my-event-card__meta {
   display: grid;
   gap: .38rem;
@@ -553,17 +626,44 @@ div:has(> img[src*="logo"]) {
   <section id="myEventsSection">
     <div class="mb-3 flex items-center justify-between gap-3">
       <h2 class="dashboard-section-heading font-display text-2xl font-extrabold text-brand-orangeDeep">Event Saya</h2>
-      <a href="{% url 'peserta_daftar_event' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
+      <a href="{% url 'peserta_event_selesai' %}" class="text-sm font-bold text-brand-orangeDeep hover:underline">Lihat Semua <i class="fa-solid fa-chevron-right ml-1 text-xs"></i></a>
     </div>
 
     {% if registrations %}
     <div id="myEventsGrid" class="my-events-grid">
       {% for registration in registrations|slice:':5' %}
       {% with event=registration.event %}
-      <article class="my-event-card">
-        <div class="my-event-card__img" aria-hidden="true" style="background-image:url('{% if event.banner %}{{ event.banner.url }}{% else %}{% static 'img/hero.jpg' %}{% endif %}')"></div>
+      <article
+        class="my-event-card{% if not event.banner %} my-event-card--art{% endif %}"
+        data-detail-title="{{ event.title }}"
+        data-detail-type="{% if event.event_type.code == 'CONFERENCE' %}Konferensi{% elif event.event_type.code == 'WORKSHOP' %}Lokakarya{% else %}{{ event.event_type.name|default:'Event' }}{% endif %}"
+        data-detail-date="{{ event.start_datetime|date:'j M Y' }}{% if event.end_datetime|date:'Ymd' != event.start_datetime|date:'Ymd' %} sampai {{ event.end_datetime|date:'j M Y' }}{% endif %}"
+        data-detail-time="{{ event.start_datetime|date:'H:i' }} - {{ event.end_datetime|date:'H:i' }}"
+        data-detail-location="{{ event.location|default:event.venue|default:'Daring' }}"
+        data-detail-mode="{{ event.get_delivery_mode_display }}"
+        data-detail-organizer="{{ event.organizer.get_full_name|default:event.organizer.email }}"
+        data-detail-capacity="{{ event.capacity }} peserta"
+        data-detail-price="{% if event.price == 0 %}Gratis{% else %}Rp{{ event.price|floatformat:'0g' }}{% endif %}"
+        data-detail-description="{{ event.description }}"
+        data-detail-status="{% if event.status == 'COMPLETED' or event.end_datetime <= now %}Selesai{% elif event.start_datetime <= now %}Sedang Berlangsung{% else %}Akan Datang{% endif %}"
+        data-detail-documentation="{% if registration.documentation_ready %}{% url 'peserta_dokumentasi' event.pk %}{% endif %}"
+      >
+        <div class="my-event-card__img {% if not event.banner %}event-poster--art{% endif %}" data-kind="{{ event.event_type.code|lower }}" aria-hidden="true">
+          {% if event.banner %}
+          <img src="{{ event.banner.url }}" alt="" class="my-event-card__img--photo">
+          {% else %}
+          <span class="my-event-card__img-art-content">
+            <span class="my-event-card__img-art-text">
+              <span class="my-event-card__img-art-eyebrow">{% if event.event_type.code == 'CONFERENCE' %}Konferensi{% elif event.event_type.code == 'WORKSHOP' %}Lokakarya{% else %}{{ event.event_type.name|default:'Event' }}{% endif %}</span>
+              <span class="my-event-card__img-art-title">{{ event.title|truncatechars:34 }}</span>
+              <span class="my-event-card__img-art-tagline">Belajar bersama SIMEVENT</span>
+            </span>
+            <i class="my-event-card__img-art-icon fa-solid {% if event.event_type.code == 'WORKSHOP' %}fa-laptop-code{% elif event.event_type.code == 'CONFERENCE' %}fa-microchip{% elif event.event_type.code == 'SEMINAR' %}fa-shield-halved{% else %}fa-video{% endif %}" aria-hidden="true"></i>
+          </span>
+          {% endif %}
+        </div>
         <div class="my-event-card__chips">
-          <span class="my-chip my-chip--cream">{% if event.event_type.code == "CONFERENCE" %}Konferensi{% elif event.event_type.code == "WORKSHOP" %}Lokakarya{% else %}{{ event.get_category_display|default:event.category|default:"Event" }}{% endif %}</span>
+          <span class="my-chip my-chip--cream">{% if event.event_type.code == "CONFERENCE" %}Konferensi{% elif event.event_type.code == "WORKSHOP" %}Lokakarya{% else %}{{ event.event_type.name|default:"Event" }}{% endif %}</span>
           <time class="my-chip my-chip--white" datetime="{{ event.start_datetime|date:'Y-m-d' }}">{{ event.start_datetime|date:"j M Y" }}</time>
         </div>
         {% if event.status == "COMPLETED" or event.end_datetime <= now %}
@@ -574,7 +674,7 @@ div:has(> img[src*="logo"]) {
           <span class="my-status my-status--soon"><i></i> Akan Datang</span>
         {% endif %}
         <h3 class="my-event-card__title">
-          <a href="{% url 'detail_event' event.slug %}" class="my-event-card__link">{{ event.title }}</a>
+          <a href="{% url 'detail_event' event.slug %}" data-my-event-detail class="my-event-card__link">{{ event.title }}</a>
         </h3>
         <ul class="my-event-card__meta">
           <li><i class="fa-solid fa-location-dot"></i> {{ event.location|default:event.venue|default:"Daring" }}</li>
@@ -582,15 +682,18 @@ div:has(> img[src*="logo"]) {
         </ul>
         {% if registration.ticket.is_valid %}
         <div class="my-event-card__actions">
-          <a
-            href="{% url 'registrations:ticket-qr' registration.pk %}"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            data-ticket-qr-open
+            data-qr-url="{% url 'registrations:ticket-qr' registration.pk %}"
+            data-event-title="{{ event.title }}"
+            aria-haspopup="dialog"
+            aria-controls="ticketQrDialog"
             class="participant-button inline-flex justify-center rounded-lg px-3 py-2 text-sm font-bold"
           >
             <i class="fa-solid fa-qrcode mr-2"></i>
             Lihat QR e-Tiket
-          </a>
+          </button>
 
           <button
             type="button"
@@ -654,7 +757,7 @@ div:has(> img[src*="logo"]) {
       <div class="flex flex-col items-center justify-center gap-2 px-5 py-8 text-center text-stone-500 sm:flex-row sm:gap-4">
         <span class="dashboard-empty-icon grid h-12 w-12 shrink-0 place-items-center rounded-full text-xl text-brand-orangeDeep"><i class="fa-solid fa-calendar-plus"></i></span>
         <div class="sm:text-left"><span class="block font-bold text-brand-ink">Belum ada event terdaftar</span><span class="mt-0.5 block text-xs text-stone-500">Temukan acara yang sesuai dengan minat Anda.</span></div>
-        <a class="participant-button inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold" href="{% url 'jelajah' %}">Jelajahi Event <i class="fa-solid fa-arrow-right text-xs"></i></a>
+        <a class="participant-button inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold" href="{% url 'peserta_daftar_event' %}">Cari Event <i class="fa-solid fa-arrow-right text-xs"></i></a>
       </div>
     </div>
     {% endif %}
@@ -778,6 +881,55 @@ div:has(> img[src*="logo"]) {
     </div>
   </section>
 </dialog>
+<dialog id="myEventDetailDialog" class="my-event-detail-dialog" aria-labelledby="myEventDetailTitle">
+  <div class="relative">
+    <div id="myEventDetailPoster" class="overflow-hidden rounded-t-[24px]"></div>
+    <button type="button" data-my-event-detail-close aria-label="Tutup detail event" class="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-lg text-[#3F422E] shadow hover:bg-white">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+    <div class="p-5 sm:p-7">
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="myEventDetailType" class="rounded-full bg-[#e8eadc] px-3 py-1 text-xs font-bold text-[#3F422E]"></span>
+        <span id="myEventDetailStatus" class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800"></span>
+      </div>
+      <h2 id="myEventDetailTitle" class="mt-3 font-display text-2xl font-extrabold leading-tight text-[#3F422E] sm:text-3xl"></h2>
+      <dl class="mt-5 grid gap-4 rounded-2xl bg-[#faf8f1] p-4 sm:grid-cols-2">
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Tanggal</dt><dd id="myEventDetailDate" class="mt-1 font-semibold"></dd></div>
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Waktu</dt><dd id="myEventDetailTime" class="mt-1 font-semibold"></dd></div>
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Lokasi</dt><dd id="myEventDetailLocation" class="mt-1 font-semibold"></dd></div>
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Mode</dt><dd id="myEventDetailMode" class="mt-1 font-semibold"></dd></div>
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Penyelenggara</dt><dd id="myEventDetailOrganizer" class="mt-1 font-semibold"></dd></div>
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Kapasitas</dt><dd id="myEventDetailCapacity" class="mt-1 font-semibold"></dd></div>
+        <div><dt class="text-xs font-bold uppercase tracking-wide text-stone-500">Biaya</dt><dd id="myEventDetailPrice" class="mt-1 font-semibold"></dd></div>
+      </dl>
+      <section class="mt-5">
+        <h3 class="font-bold text-[#3F422E]">Deskripsi</h3>
+        <p id="myEventDetailDescription" class="mt-2 whitespace-pre-line text-sm leading-relaxed text-stone-600"></p>
+      </section>
+      <div class="mt-6 flex flex-wrap justify-end gap-2">
+        <a id="myEventDetailDocumentation" href="#" target="_blank" rel="noopener noreferrer" hidden class="participant-button rounded-full px-5 py-2.5 text-sm font-bold"><i class="fa-regular fa-images mr-2" aria-hidden="true"></i>Lihat Dokumentasi</a>
+        <button type="button" data-my-event-detail-close class="participant-outline rounded-full px-5 py-2.5 text-sm font-bold">Tutup</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+<dialog id="ticketQrDialog" class="ticket-qr-dialog" aria-labelledby="ticketQrDialogTitle">
+  <div class="p-5 text-center sm:p-7">
+    <div class="flex items-start justify-between gap-3 text-left">
+      <div class="min-w-0">
+        <h2 id="ticketQrDialogTitle" class="font-display text-xl font-extrabold text-[#3F422E]">QR e-Tiket</h2>
+        <p id="ticketQrEventTitle" class="mt-1 text-sm text-stone-600"></p>
+      </div>
+      <button type="button" data-ticket-qr-close aria-label="Tutup QR" class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8eadc] text-lg text-[#3F422E] hover:bg-[#dce0cc]">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="mx-auto mt-5 grid w-fit place-items-center rounded-2xl border border-[#e7dfca] bg-white p-3 shadow-sm">
+      <img id="ticketQrImage" alt="QR e-Tiket peserta" class="block h-auto w-[260px] max-w-full" decoding="async">
+    </div>
+    <p class="mt-4 text-sm leading-relaxed text-stone-600">Tunjukkan QR ini kepada panitia saat melakukan check-in.</p>
+  </div>
+</dialog>
 <script>
 
 // Arahkan logo SIMEVENT di sidebar ke landing page saat ditekan (Pasti Berhasil)
@@ -835,6 +987,72 @@ achievementModal.addEventListener('click', (event) => {
  if (event.target === achievementModal) achievementModal.close();
 });
 
+const myEventDetailDialog = document.getElementById('myEventDetailDialog');
+const myEventDetailFields = {
+ title: document.getElementById('myEventDetailTitle'),
+ type: document.getElementById('myEventDetailType'),
+ status: document.getElementById('myEventDetailStatus'),
+ date: document.getElementById('myEventDetailDate'),
+ time: document.getElementById('myEventDetailTime'),
+ location: document.getElementById('myEventDetailLocation'),
+ mode: document.getElementById('myEventDetailMode'),
+ organizer: document.getElementById('myEventDetailOrganizer'),
+ capacity: document.getElementById('myEventDetailCapacity'),
+ price: document.getElementById('myEventDetailPrice'),
+ description: document.getElementById('myEventDetailDescription'),
+ poster: document.getElementById('myEventDetailPoster'),
+ documentation: document.getElementById('myEventDetailDocumentation'),
+};
+function openMyEventDetails(card) {
+ const data = card.dataset;
+ myEventDetailFields.title.textContent = data.detailTitle;
+ myEventDetailFields.type.textContent = data.detailType;
+ myEventDetailFields.status.textContent = data.detailStatus;
+ myEventDetailFields.date.textContent = data.detailDate;
+ myEventDetailFields.time.textContent = data.detailTime;
+ myEventDetailFields.location.textContent = data.detailLocation;
+ myEventDetailFields.mode.textContent = data.detailMode;
+ myEventDetailFields.organizer.textContent = data.detailOrganizer;
+ myEventDetailFields.capacity.textContent = data.detailCapacity;
+ myEventDetailFields.price.textContent = data.detailPrice;
+ myEventDetailFields.description.textContent = data.detailDescription;
+ const eventPoster = card.querySelector('.my-event-card__img').cloneNode(true);
+ myEventDetailFields.poster.replaceChildren(eventPoster);
+ myEventDetailFields.documentation.hidden = !data.detailDocumentation;
+ if (data.detailDocumentation) myEventDetailFields.documentation.href = data.detailDocumentation;
+ else myEventDetailFields.documentation.removeAttribute('href');
+ myEventDetailDialog.showModal();
+}
+document.querySelectorAll('.my-event-card[data-detail-title]').forEach((card) => {
+ card.addEventListener('click', (event) => {
+  if (!(event.target instanceof Element)) return;
+  const detailTrigger = event.target.closest('[data-my-event-detail]');
+  if (detailTrigger) event.preventDefault();
+  else if (event.target.closest('a, button, input, select, textarea, label, form, dialog')) return;
+  openMyEventDetails(card);
+ });
+});
+document.querySelectorAll('[data-my-event-detail-close]').forEach((button) => {
+ button.addEventListener('click', () => myEventDetailDialog.close());
+});
+myEventDetailDialog.addEventListener('click', (event) => {
+ if (event.target === myEventDetailDialog) myEventDetailDialog.close();
+});
+
+const ticketQrDialog = document.getElementById('ticketQrDialog');
+const ticketQrImage = document.getElementById('ticketQrImage');
+document.querySelectorAll('[data-ticket-qr-open]').forEach((button) => {
+ button.addEventListener('click', () => {
+  document.getElementById('ticketQrEventTitle').textContent = button.dataset.eventTitle;
+  ticketQrImage.src = button.dataset.qrUrl;
+  ticketQrDialog.showModal();
+ });
+});
+document.querySelector('[data-ticket-qr-close]').addEventListener('click', () => ticketQrDialog.close());
+ticketQrDialog.addEventListener('click', (event) => {
+ if (event.target === ticketQrDialog) ticketQrDialog.close();
+});
+ticketQrDialog.addEventListener('close', () => ticketQrImage.removeAttribute('src'));
 
 async function copyTicketToken(button) {
   try {

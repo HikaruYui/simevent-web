@@ -34,8 +34,8 @@
     .participant-main > div.space-y-5 { position:relative; top:-19px; }
   }
  </style>
- <header class="participant-page-intro participant-hero event-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7"><div class="relative z-10 max-w-[72%] sm:max-w-[62%]"><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">Daftar Event</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.</p></div>{% include 'peserta/_pesut_hero_art.html' %}</header>
- <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(250px,1fr)_repeat(2,minmax(160px,190px))]">
+ <header class="participant-page-intro participant-hero event-page-intro relative overflow-hidden rounded-[24px] px-5 sm:px-6 lg:px-7"><div class="relative z-10 max-w-[72%] sm:max-w-[62%]"><h1 class="font-display text-3xl font-extrabold text-brand-ink sm:text-4xl">{% if completed_only %}Event Selesai{% else %}Daftar Event{% endif %}</h1><p class="mt-2 text-sm text-brand-ink sm:text-base">{% if completed_only %}Event yang sudah Anda hadiri dan selesai.{% else %}Temukan berbagai event menarik dan tingkatkan pengalaman Anda bersama SIMEVENT.{% endif %}</p></div>{% include 'peserta/_pesut_hero_art.html' %}</header>
+ <div class="participant-card grid gap-2.5 rounded-2xl p-3 sm:p-4 xl:grid-cols-[minmax(230px,1fr)_repeat(3,minmax(145px,180px))]">
   <label class="flex min-h-[50px] items-center gap-3 rounded-xl border border-[#3F422E] bg-white/80 px-4 py-3"><i class="fa-solid fa-magnifying-glass text-[#3F422E]"></i><input id="eventSearch" type="search" class="w-full bg-transparent text-sm outline-none" placeholder="Cari event berdasarkan nama, kategori, atau penyelenggara..."></label>
   <div class="event-filter-dropdown" data-event-dropdown>
    <select id="eventCategory" hidden><option value="">Semua Kategori</option>{% for category in categories %}<option value="{{ category|lower }}">{% if category|lower == "conference" %}Konferensi{% elif category|lower == "workshop" %}Lokakarya{% else %}{{ category }}{% endif %}</option>{% endfor %}</select>
@@ -55,8 +55,18 @@
     <button type="button" class="event-filter-option" role="option" data-value="Selesai" aria-selected="false">Selesai</button>
    </div>
   </div>
+  <div class="event-filter-dropdown" data-event-dropdown>
+   <select id="eventSort" hidden><option value="soonest">Tanggal terdekat</option><option value="latest">Tanggal terjauh</option><option value="name-asc">Nama A–Z</option><option value="name-desc">Nama Z–A</option></select>
+   <button type="button" class="event-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="eventSortMenu"><i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i><span>Urutkan: Tanggal terdekat</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></button>
+   <div id="eventSortMenu" class="event-filter-menu" role="listbox" aria-label="Urutkan event" hidden>
+    <button type="button" class="event-filter-option" role="option" data-value="soonest" aria-selected="true">Tanggal terdekat</button>
+    <button type="button" class="event-filter-option" role="option" data-value="latest" aria-selected="false">Tanggal terjauh</button>
+    <button type="button" class="event-filter-option" role="option" data-value="name-asc" aria-selected="false">Nama A–Z</button>
+    <button type="button" class="event-filter-option" role="option" data-value="name-desc" aria-selected="false">Nama Z–A</button>
+   </div>
+  </div>
  </div>
- <div class="space-y-3">
+ <div id="eventList" class="space-y-3">
   {% for event in events %}
 
   <article
@@ -65,6 +75,8 @@
     data-search="{{ event.title|lower }} {{ event.event_type.name|lower }} {{ event.organizer.get_full_name|default:event.organizer.email|lower }}"
     data-category="{{ event.event_type.name|lower }}"
     data-status="{{ event.ui_status }}"
+    data-start="{{ event.start_datetime|date:'U' }}"
+    data-title="{{ event.title|lower }}"
     data-detail-title="{{ event.title }}"
     data-detail-type="{% if event.event_type.code == "CONFERENCE" %}Konferensi{% elif event.event_type.code == "WORKSHOP" %}Lokakarya{% else %}{{ event.event_type.name }}{% endif %}"
     data-detail-date="{{ event.start_datetime|date:"j M Y" }}{% if event.end_datetime|date:"Ymd" != event.start_datetime|date:"Ymd" %} – {{ event.end_datetime|date:"j M Y" }}{% endif %}"
@@ -113,7 +125,7 @@
    </div>
   </article>
   {% empty %}
-  <div class="participant-card rounded-2xl p-10 text-center text-stone-500">Belum ada event yang tersedia.</div>
+  <div class="participant-card rounded-2xl p-10 text-center text-stone-500">{% if completed_only %}Belum ada event selesai yang Anda hadiri.{% else %}Belum ada event yang tersedia.{% endif %}</div>
   {% endfor %}
   <p id="eventEmpty" class="participant-card hidden rounded-2xl p-8 text-center text-stone-500">Tidak ada event yang sesuai dengan pencarian atau filter.</p>
  </div>
@@ -166,7 +178,9 @@ document.querySelectorAll('.free-registration').forEach((form) => {
 const search = document.getElementById('eventSearch');
 const category = document.getElementById('eventCategory');
 const status = document.getElementById('eventStatus');
+const sort = document.getElementById('eventSort');
 const rows = [...document.querySelectorAll('.event-row')];
+const eventList = document.getElementById('eventList');
 const empty = document.getElementById('eventEmpty');
 const visibleCount = document.getElementById('eventVisibleCount');
 function filterEvents() {
@@ -177,14 +191,26 @@ function filterEvents() {
    && (!category.value || row.dataset.category === category.value)
     && (!status.value || row.dataset.status === status.value);
   row.hidden = !show;
+  row.style.display = show ? '' : 'none';
   if (show) visible += 1;
  });
+ const sortedRows = [...rows].sort((left, right) => {
+  const dateDelta = Number(left.dataset.start) - Number(right.dataset.start);
+  const nameDelta = left.dataset.title.localeCompare(right.dataset.title, 'id');
+  if (sort.value === 'latest') return -dateDelta || nameDelta;
+  if (sort.value === 'name-asc') return nameDelta || dateDelta;
+  if (sort.value === 'name-desc') return -nameDelta || dateDelta;
+  return dateDelta || nameDelta;
+ });
+ sortedRows.forEach((row) => eventList.insertBefore(row, empty));
  visibleCount.textContent = visible;
- empty.classList.toggle('hidden', visible !== 0);
+ empty.classList.toggle('hidden', visible !== 0 || rows.length === 0);
 }
 search.addEventListener('input', filterEvents);
 category.addEventListener('change', filterEvents);
 status.addEventListener('change', filterEvents);
+sort.addEventListener('change', filterEvents);
+filterEvents();
 document.querySelectorAll('[data-event-dropdown]').forEach((dropdown) => {
  const trigger = dropdown.querySelector('.event-filter-trigger');
  const menu = dropdown.querySelector('.event-filter-menu');
