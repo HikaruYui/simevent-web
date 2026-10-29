@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 
 
+# Inheritance: ReasonActionForm mewarisi perilaku ActionForm untuk diperluas sesuai kebutuhan class ini.
 class ReasonActionForm(ActionForm):
     reason = forms.CharField(
         label="Alasan",
@@ -90,7 +91,9 @@ def run_single_action(
         )
 
 
+# OOP mixin: mengemas aturan akses untuk dipakai ulang melalui pewarisan ganda.
 class ReadOnlyAuditAdmin:
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(
         self,
         request,
@@ -103,9 +106,11 @@ class ReadOnlyAuditAdmin:
             )
         )
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return False
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(
         self,
         request,
@@ -113,6 +118,7 @@ class ReadOnlyAuditAdmin:
     ):
         return False
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(
         self,
         request,

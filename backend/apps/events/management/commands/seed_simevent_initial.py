@@ -58,9 +58,11 @@ def tanggal(value, hour=9):
     return timezone.make_aware(dt, timezone.get_current_timezone())
 
 
+# Inheritance: Command mewarisi kerangka perintah manage.py.
 class Command(BaseCommand):
     help = "Initial data lengkap SIMEVENT untuk development."
 
+    # Polymorphism: menentukan argumen khusus untuk perintah Django.
     def add_arguments(self, parser):
         parser.add_argument(
             "--refresh",
@@ -68,6 +70,7 @@ class Command(BaseCommand):
             help="Perbarui data event dengan slug demo yang sudah ada.",
         )
 
+    # Polymorphism: menyediakan implementasi perintah yang dipanggil oleh BaseCommand.
     @transaction.atomic
     def handle(self, *args, **options):
         if not settings.DEBUG:

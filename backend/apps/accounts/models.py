@@ -5,17 +5,21 @@ from django.db import models
 from django.db.models.functions import Lower
 
 
+# Inheritance: UserManager mewarisi perilaku BaseUserManager untuk diperluas sesuai kebutuhan class ini.
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
+    # Polymorphism: memperluas normalisasi email dari manager induk.
     @classmethod
     def normalize_email(cls, email):
         return super().normalize_email(email).strip().lower()
 
+    # Polymorphism: menyesuaikan pencarian akun menggunakan email tanpa membedakan huruf besar/kecil.
     def get_by_natural_key(self, email):
         email = self.normalize_email(email)
         return self.get(email__iexact=email)
 
+    # Polymorphism: menyediakan pencarian akun asinkron dengan aturan email yang sama.
     async def aget_by_natural_key(self, email):
         email = self.normalize_email(email)
         return await self.aget(email__iexact=email)
@@ -147,11 +151,13 @@ class User(AbstractUser):
             ),
         ]
 
+    # Polymorphism: menyesuaikan proses penyimpanan sebelum meneruskan ke implementasi induk.
     def save(self, *args, **kwargs):
         self.email = type(self).objects.normalize_email(self.email)
         super().save(*args, **kwargs)
 
     # Role dihitung dari permission yang diberikan melalui grup Role.
+    # Encapsulation: role menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
     @property
     def role(self):
         if self.has_perm("accounts.manage_platform"):
@@ -162,6 +168,7 @@ class User(AbstractUser):
             return "COMMITTEE"
         return "PARTICIPANT"
 
+    # Encapsulation: profile_complete menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
     @property
     def profile_complete(self):
         return all((
@@ -174,12 +181,15 @@ class User(AbstractUser):
             self.phone_number.strip(),
         ))
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return self.email
 
 
+# Inheritance: AccountAccessChange mewarisi pemetaan atribut ke database dan operasi ORM.
 class AccountAccessChange(models.Model):
 
+    # Inheritance: Action mewarisi enum Django untuk pilihan nilai dan label.
     class Action(models.TextChoices):
         SET_PARTICIPANT = ("SET_PARTICIPANT", "Jadikan Peserta")
         SET_COMMITTEE = ("SET_COMMITTEE", "Jadikan Panitia")

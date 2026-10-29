@@ -18,11 +18,13 @@ from django.utils import timezone
 from apps.events.models import EventStatus
 
 
+# Inheritance: RegistrationStatus mewarisi enum Django untuk pilihan nilai dan label.
 class RegistrationStatus(models.TextChoices):
     REGISTERED = "REGISTERED", "Registered"
     CANCELLED = "CANCELLED", "Cancelled"
 
 
+# Inheritance: RegistrationQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
 class RegistrationQuerySet(models.QuerySet):
     # Encapsulation: aturan akses dokumentasi hanya ada di sini dan dipakai semua halaman peserta.
     def with_documentation(self):
@@ -33,15 +35,18 @@ class RegistrationQuerySet(models.QuerySet):
             .exclude(event__documentation_url="")
         )
 
+    # Abstraction: active() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def active(self):
         return self.filter(status=RegistrationStatus.REGISTERED)
 
+    # Abstraction: owned_by() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def owned_by(self, user):
         if not user.is_authenticated or not user.is_active:
             return self.none()
         return self.filter(participant=user)
 
 
+# Inheritance: Registration mewarisi pemetaan atribut ke database dan operasi ORM.
 class Registration(models.Model):
     participant = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
@@ -83,10 +88,12 @@ class Registration(models.Model):
             models.Index(fields=["event", "status"], name="registration_event_status_idx"),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Registration #{self.pk} for event #{self.event_id}"
 
 
+# Inheritance: Ticket mewarisi pemetaan atribut ke database dan operasi ORM.
 class Ticket(models.Model):
     registration = models.OneToOneField(
         Registration, on_delete=models.PROTECT, related_name="ticket",
@@ -112,6 +119,7 @@ class Ticket(models.Model):
             and timezone.now() < registration.event.end_datetime
         )
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return str(self.identifier)
 
@@ -125,7 +133,9 @@ def validate_payment_proof_size(file):
         raise ValidationError("Ukuran bukti pembayaran maksimal 5 MB.")
 
 
+# Inheritance: Payment mewarisi pemetaan atribut ke database dan operasi ORM.
 class Payment(models.Model):
+    # Inheritance: Status mewarisi enum Django untuk pilihan nilai dan label.
     class Status(models.TextChoices):
         AWAITING_PROOF = "AWAITING_PROOF", "Menunggu bukti"
         UNDER_REVIEW = "UNDER_REVIEW", "Menunggu verifikasi"
@@ -181,10 +191,12 @@ class Payment(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Payment for registration #{self.registration_id}"
 
 
+# Inheritance: PaymentInstructions mewarisi pemetaan atribut ke database dan operasi ORM.
 class PaymentInstructions(models.Model):
     is_active = models.BooleanField(default=True)
     bank_name = models.CharField(max_length=100)
@@ -200,6 +212,7 @@ class PaymentInstructions(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"{self.bank_name} — {self.account_number}"
 
@@ -208,6 +221,7 @@ def certificate_template_upload_path(instance, filename):
     return f"certificate-templates/{uuid4().hex}{Path(filename).suffix.lower()}"
 
 
+# Inheritance: CertificateTemplate mewarisi pemetaan atribut ke database dan operasi ORM.
 class CertificateTemplate(models.Model):
     background = models.ImageField(upload_to=certificate_template_upload_path)
     is_active = models.BooleanField(default=True)
@@ -235,11 +249,14 @@ class CertificateTemplate(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Template sertifikat #{self.pk}"
 
 
+# Inheritance: Attendance mewarisi pemetaan atribut ke database dan operasi ORM.
 class Attendance(models.Model):
+    # Inheritance: Status mewarisi enum Django untuk pilihan nilai dan label.
     class Status(models.TextChoices):
         PRESENT = "PRESENT", "Present"
         VOIDED = "VOIDED", "Voided"
@@ -286,6 +303,7 @@ class Attendance(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Attendance for registration #{self.registration_id}"
 
@@ -295,7 +313,9 @@ RATING_FIELDS = (
 )
 
 
+# Inheritance: FeedbackQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
 class FeedbackQuerySet(models.QuerySet):
+    # Abstraction: eligible() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def eligible(self):
         return self.filter(
             registration__status=RegistrationStatus.REGISTERED,
@@ -304,6 +324,7 @@ class FeedbackQuerySet(models.QuerySet):
         )
 
 
+# Inheritance: Feedback mewarisi pemetaan atribut ke database dan operasi ORM.
 class Feedback(models.Model):
     registration = models.OneToOneField(
         Registration, on_delete=models.PROTECT, related_name="feedback",
@@ -336,6 +357,7 @@ class Feedback(models.Model):
             for field in RATING_FIELDS
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Feedback for registration #{self.registration_id}"
 
@@ -354,6 +376,7 @@ def validate_certificate_size(file):
         raise ValidationError("Ukuran file sertifikat maksimal 5 MB.")
 
 
+# Inheritance: UploadedCertificate mewarisi pemetaan atribut ke database dan operasi ORM.
 class UploadedCertificate(models.Model):
     """Sertifikat yang diunggah panitia untuk satu peserta (satu file per registrasi)."""
 
@@ -373,5 +396,6 @@ class UploadedCertificate(models.Model):
     )
     uploaded_at = models.DateTimeField(auto_now=True)
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Sertifikat registrasi #{self.registration_id}"

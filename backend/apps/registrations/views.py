@@ -40,8 +40,10 @@ def attendance_data(attendance):
     return {"status": attendance.status, "checked_in_at": attendance.checked_in_at}
 
 
+# OOP mixin: mengemas aturan akses untuk dipakai ulang melalui pewarisan ganda.
 @method_decorator(never_cache, name="dispatch")
 class ParticipantAccessMixin:
+    # Polymorphism: menambahkan pemeriksaan akses sebelum meneruskan request ke handler.
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated or not request.user.is_active:
             return JsonResponse({"error": "Authentication required."}, status=401)
@@ -52,13 +54,16 @@ class ParticipantAccessMixin:
             return JsonResponse({"errors": errors}, status=400)
 
 
+# Inheritance (pewarisan ganda): RegistrationListView menggabungkan perilaku ParticipantAccessMixin, ListView.
 class RegistrationListView(ParticipantAccessMixin, ListView):
     paginate_by = 20
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
         return Registration.objects.owned_by(self.request.user).select_related("event", "payment")
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse({
             "results": [registration_data(item) for item in context["object_list"]],
@@ -67,9 +72,11 @@ class RegistrationListView(ParticipantAccessMixin, ListView):
         })
 
 
+# Inheritance (pewarisan ganda): RegistrationCreateView menggabungkan perilaku ParticipantAccessMixin, View.
 class RegistrationCreateView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, event_id):
         form = ConfirmationForm(request.POST)
         if not form.is_valid():
@@ -78,9 +85,11 @@ class RegistrationCreateView(ParticipantAccessMixin, View):
         return JsonResponse(registration_data(registration), status=201)
 
 
+# Inheritance (pewarisan ganda): PaidRegistrationCreateView menggabungkan perilaku ParticipantAccessMixin, View.
 class PaidRegistrationCreateView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, event_id):
         registration = RegistrationService(request.user).start_paid_registration(event_id)
         payment = registration.payment
@@ -91,9 +100,11 @@ class PaidRegistrationCreateView(ParticipantAccessMixin, View):
         }, status=201)
 
 
+# Inheritance (pewarisan ganda): PaymentProofView menggabungkan perilaku ParticipantAccessMixin, View.
 class PaymentProofView(ParticipantAccessMixin, View):
     http_method_names = ["get", "post", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         payment = get_object_or_404(
             Payment.objects.select_related("registration__event"),
@@ -116,6 +127,7 @@ class PaymentProofView(ParticipantAccessMixin, View):
             } if instructions else None,
         })
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         payment = get_object_or_404(
             Payment.objects.select_related("registration"),
@@ -142,9 +154,11 @@ class PaymentProofView(ParticipantAccessMixin, View):
         return JsonResponse({"status": payment.status}, status=202)
 
 
+# Inheritance (pewarisan ganda): PaymentProofDownloadView menggabungkan perilaku ParticipantAccessMixin, View.
 class PaymentProofDownloadView(ParticipantAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         payment = get_object_or_404(
             Payment.objects.select_related("registration__event"),
@@ -167,9 +181,11 @@ class PaymentProofDownloadView(ParticipantAccessMixin, View):
         return response
 
 
+# Inheritance (pewarisan ganda): PaymentReviewView menggabungkan perilaku ParticipantAccessMixin, View.
 class PaymentReviewView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         action = request.POST.get("action")
         if action not in ("approve", "reject"):
@@ -180,9 +196,11 @@ class PaymentReviewView(ParticipantAccessMixin, View):
         return JsonResponse({"status": payment.status})
 
 
+# Inheritance (pewarisan ganda): CertificatePDFView menggabungkan perilaku ParticipantAccessMixin, View.
 class CertificatePDFView(ParticipantAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         registration = get_object_or_404(
             Registration.objects.select_related(
@@ -242,9 +260,11 @@ def generate_certificate_pdf(registration, template, response):
     background.save(image_buffer, format="PDF", resolution=150)
     response.write(image_buffer.getvalue())
 
+# Inheritance (pewarisan ganda): RegistrationCancelView menggabungkan perilaku ParticipantAccessMixin, View.
 class RegistrationCancelView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         get_object_or_404(Registration.objects.owned_by(request.user), pk=pk)
         form = ConfirmationForm(request.POST)
@@ -254,6 +274,7 @@ class RegistrationCancelView(ParticipantAccessMixin, View):
         return JsonResponse(registration_data(registration))
 
 
+# Inheritance: TicketAccessMixin mewarisi perilaku ParticipantAccessMixin untuk diperluas sesuai kebutuhan class ini.
 class TicketAccessMixin(ParticipantAccessMixin):
     def get_ticket(self, request, pk):
         return get_object_or_404(
@@ -264,9 +285,11 @@ class TicketAccessMixin(ParticipantAccessMixin):
         )
 
 
+# Inheritance (pewarisan ganda): TicketDetailView menggabungkan perilaku TicketAccessMixin, View.
 class TicketDetailView(TicketAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         ticket = self.get_ticket(request, pk)
         is_valid = ticket.is_valid
@@ -278,9 +301,11 @@ class TicketDetailView(TicketAccessMixin, View):
         })
 
 
+# Inheritance (pewarisan ganda): TicketQRView menggabungkan perilaku TicketAccessMixin, View.
 class TicketQRView(TicketAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         ticket = self.get_ticket(request, pk)
         if not ticket.is_valid:
@@ -290,9 +315,11 @@ class TicketQRView(TicketAccessMixin, View):
         return response
 
 
+# Inheritance (pewarisan ganda): MeetingAccessView menggabungkan perilaku TicketAccessMixin, View.
 class MeetingAccessView(TicketAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         ticket = self.get_ticket(request, pk)
         if not ticket.is_valid:
@@ -304,7 +331,9 @@ class MeetingAccessView(TicketAccessMixin, View):
         })
 
 
+# Inheritance: ParticipantListView mewarisi perilaku RegistrationListView untuk diperluas sesuai kebutuhan class ini.
 class ParticipantListView(RegistrationListView):
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
         require_organizer(self.request.user)
         event = get_object_or_404(
@@ -314,6 +343,7 @@ class ParticipantListView(RegistrationListView):
             "event", "participant", "attendance",
         )
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         response = {
             "results": [{

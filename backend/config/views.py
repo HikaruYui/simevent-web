@@ -1016,7 +1016,10 @@ def panitia_biasa_dashboard(request):
         "panitia_biasa_page.html",
         {
             "panitia_db_data": panitia_db_data,
-            "documentation_events": event_list,
+            "documentation_events": [
+                event for event in event_list
+                if not event.hide_from_committee_documentation
+            ],
             "certificate_rows": certificate_rows,
             "certificate_event": selected_event,
             "certificate_events": event_list,

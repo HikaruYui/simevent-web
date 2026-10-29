@@ -11,14 +11,17 @@ from .forms import FeedbackForm
 from .models import Attendance, Feedback, Registration, RegistrationStatus
 
 
+# Encapsulation: identitas peserta dan aturan pengiriman feedback disatukan dalam objek service.
 class FeedbackService:
     """Submit once, under the same event lock used by attendance moderation."""
 
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
 
+    # Abstraction: mengirim feedback melalui satu method yang memeriksa kelayakan dan mencegah duplikasi.
     @transaction.atomic
     def submit(self, registration_id, *, data):
         actor = lock_accounts(self._actor_id).get(self._actor_id)

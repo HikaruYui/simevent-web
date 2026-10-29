@@ -24,6 +24,7 @@ FIRST_NAMES = _catalog["first_names"]
 LAST_NAMES = _catalog["last_names"]
 
 
+# Encapsulation: state generator dan operasi pembaruan angka disatukan dalam satu objek.
 class DemoRNG:
     """Generator deterministik yang mempertahankan identitas peserta demo lama."""
 

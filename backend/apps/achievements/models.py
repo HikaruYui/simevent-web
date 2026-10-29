@@ -8,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 
+# Inheritance: Achievement mewarisi pemetaan atribut ke database dan operasi ORM.
 class Achievement(models.Model):
     code = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=150)
@@ -30,18 +31,23 @@ class Achievement(models.Model):
             ),
         ]
 
+    # Encapsulation: scope_label menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
     @property
     def scope_label(self):
         return self.event_type.name if self.event_type_id else "All event types"
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return self.name
 
 
+# Inheritance: UserAchievementQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
 class UserAchievementQuerySet(models.QuerySet):
+    # Abstraction: active() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def active(self):
         return self.filter(is_active=True)
 
+    # Abstraction: eligible_for() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def eligible_for(self, user):
         if not user.is_authenticated or not user.is_active:
             return self.none()
@@ -65,6 +71,7 @@ class UserAchievementQuerySet(models.QuerySet):
         ).filter(current_count__gte=models.F("achievement__required_count"))
 
 
+# Inheritance: UserAchievement mewarisi pemetaan atribut ke database dan operasi ORM.
 class UserAchievement(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
@@ -98,10 +105,12 @@ class UserAchievement(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"{self.user} — {self.achievement}"
 
 
+# Inheritance: Reward mewarisi pemetaan atribut ke database dan operasi ORM.
 class Reward(models.Model):
     achievement = models.OneToOneField(
         Achievement, on_delete=models.PROTECT, related_name="reward",
@@ -120,10 +129,12 @@ class Reward(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"{self.achievement}: {self.percentage}%"
 
 
+# Inheritance: EventRewardPolicy mewarisi pemetaan atribut ke database dan operasi ORM.
 class EventRewardPolicy(models.Model):
     event = models.OneToOneField(
         "events.Event", on_delete=models.CASCADE, related_name="reward_policy",
@@ -150,5 +161,6 @@ class EventRewardPolicy(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Reward policy for event #{self.event_id}"

@@ -23,15 +23,18 @@ def achievement_data(assignment):
     }
 
 
+# Inheritance: MyAchievementsView mewarisi dispatch request berdasarkan metode HTTP.
 @method_decorator(never_cache, name="dispatch")
 class MyAchievementsView(View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: menambahkan pemeriksaan akses sebelum meneruskan request ke handler.
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated or not request.user.is_active:
             return JsonResponse({"error": "Authentication required."}, status=401)
         return super().dispatch(request, *args, **kwargs)
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request):
         assignments = UserAchievement.objects.eligible_for(request.user).select_related(
             "achievement", "achievement__event_type",
@@ -41,9 +44,11 @@ class MyAchievementsView(View):
         })
 
 
+# Inheritance: ReconcileAchievementsView mewarisi perilaku MyAchievementsView untuk diperluas sesuai kebutuhan class ini.
 class ReconcileAchievementsView(MyAchievementsView):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request):
         AchievementService(request.user).evaluate()
         return self.get(request)

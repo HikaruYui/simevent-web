@@ -22,10 +22,12 @@ def proposal_data(proposal):
     }
 
 
+# Inheritance: ApplicantView mewarisi dispatch request berdasarkan metode HTTP.
 @method_decorator(never_cache, name="dispatch")
 class ApplicantView(View):
     http_method_names = ["get", "post", "head", "options"]
 
+    # Polymorphism: menambahkan pemeriksaan akses sebelum meneruskan request ke handler.
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse({"error": "Authentication required."}, status=401)
@@ -36,18 +38,23 @@ class ApplicantView(View):
             return JsonResponse({"errors": errors}, status=400)
 
 
+# Inheritance: ProposalListView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
 class ProposalListView(ApplicantView):
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request):
         page = Paginator(OrganizerProposal.objects.owned_by(request.user), 20).get_page(request.GET.get("page"))
         return JsonResponse({"results": [proposal_data(proposal) for proposal in page],
                              "page": page.number, "pages": page.paginator.num_pages})
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request):
         proposal = create_proposal(actor=request.user, data=request.POST)
         return JsonResponse(proposal_data(proposal), status=201)
 
 
+# Inheritance: ProposalDetailView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
 class ProposalDetailView(ApplicantView):
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         proposal = get_object_or_404(OrganizerProposal.objects.owned_by(request.user), pk=pk)
         data = proposal_data(proposal)
@@ -55,16 +62,21 @@ class ProposalDetailView(ApplicantView):
         data["reviews"] = list(proposal.reviews.values("from_status", "to_status", "reason", "created_at"))
         return JsonResponse(data)
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         return JsonResponse(proposal_data(edit_proposal(actor=request.user, proposal_id=pk, data=request.POST)))
 
 
+# Inheritance: ProposalSubmitView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
 class ProposalSubmitView(ApplicantView):
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         return JsonResponse(proposal_data(submit_proposal(actor=request.user, proposal_id=pk)))
 
 
+# Inheritance: ProposalDeleteView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
 class ProposalDeleteView(ApplicantView):
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         # Resolve ownership even when the confirmation is missing.
         get_object_or_404(OrganizerProposal.objects.owned_by(request.user), pk=pk)

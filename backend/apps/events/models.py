@@ -32,6 +32,7 @@ def validate_documentation_url(value):
         )
 
 
+# Inheritance: EventStatus mewarisi enum Django untuk pilihan nilai dan label.
 class EventStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
     SUBMITTED = "SUBMITTED", "Submitted"
@@ -43,6 +44,7 @@ class EventStatus(models.TextChoices):
     CANCELLED = "CANCELLED", "Cancelled"
 
 
+# Inheritance: DeliveryMode mewarisi enum Django untuk pilihan nilai dan label.
 class DeliveryMode(models.TextChoices):
     OFFLINE = "OFFLINE", "Offline"
     ONLINE = "ONLINE", "Online"
@@ -53,6 +55,7 @@ def banner_upload_path(instance, filename):
     return f"event-banners/{uuid4().hex}{Path(filename).suffix.lower()}"
 
 
+# Inheritance: EventType mewarisi pemetaan atribut ke database dan operasi ORM.
 class EventType(models.Model):
     code = models.SlugField(max_length=32, unique=True)
     name = models.CharField(max_length=100)
@@ -61,11 +64,14 @@ class EventType(models.Model):
     class Meta:
         ordering = ("name",)
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return self.name
 
 
+# Inheritance: EventQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
 class EventQuerySet(models.QuerySet):
+    # Abstraction: public() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def public(self):
         return self.filter(
             status__in=(
@@ -74,6 +80,7 @@ class EventQuerySet(models.QuerySet):
             )
         )
 
+    # Abstraction: managed_by() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def managed_by(self, user):
         if not user.is_authenticated or not user.is_active:
             return self.none()
@@ -111,6 +118,7 @@ def proposal_upload_path(instance, filename):
 # MODEL EVENT
 # =========================================================
 
+# Inheritance: Event mewarisi pemetaan atribut ke database dan operasi ORM.
 class Event(models.Model):
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -177,6 +185,10 @@ class Event(models.Model):
         max_length=1000,
         blank=True,
         validators=[validate_documentation_url],
+    )
+    hide_from_committee_documentation = models.BooleanField(
+        default=False,
+        help_text="Sembunyikan hanya dari daftar Dokumentasi Event Panitia Biasa.",
     )
 
     status = models.CharField(
@@ -260,6 +272,7 @@ class Event(models.Model):
             ),
         ]
 
+    # Encapsulation: is_editable menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
     @property
     def is_editable(self):
         return self.status in (
@@ -267,6 +280,7 @@ class Event(models.Model):
             EventStatus.NEEDS_REVISION,
         )
 
+    # Encapsulation: is_ongoing menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
     @property
     def is_ongoing(self):
         return (
@@ -276,6 +290,7 @@ class Event(models.Model):
             < self.end_datetime
         )
 
+    # Polymorphism: menambahkan validasi khusus pada hook clean() milik Django.
     def clean(self):
         super().clean()
 
@@ -317,6 +332,7 @@ class Event(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return self.title
 
@@ -325,6 +341,7 @@ class Event(models.Model):
 # AKSES PRIVAT EVENT ONLINE / HYBRID
 # =========================================================
 
+# Inheritance: EventAccess mewarisi pemetaan atribut ke database dan operasi ORM.
 class EventAccess(models.Model):
     event = models.OneToOneField(
         Event,
@@ -345,6 +362,7 @@ class EventAccess(models.Model):
         blank=True,
     )
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"Private access for event #{self.event_id}"
 
@@ -353,6 +371,7 @@ class EventAccess(models.Model):
 # RIWAYAT PERUBAHAN STATUS EVENT
 # =========================================================
 
+# Inheritance: EventTransition mewarisi pemetaan atribut ke database dan operasi ORM.
 class EventTransition(models.Model):
     event = models.ForeignKey(
         Event,
@@ -419,6 +438,7 @@ class EventTransition(models.Model):
         ]
 
 
+# Inheritance: EventCommitteeAssignment mewarisi pemetaan atribut ke database dan operasi ORM.
 class EventCommitteeAssignment(models.Model):
     event = models.ForeignKey(
         "events.Event",
@@ -441,10 +461,12 @@ class EventCommitteeAssignment(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"{self.member_id} - {self.event_id}"
 
 
+# Inheritance: CommitteePreference mewarisi pemetaan atribut ke database dan operasi ORM.
 class CommitteePreference(models.Model):
     member = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -461,6 +483,7 @@ class CommitteePreference(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+# Inheritance: OrganizerPreference mewarisi pemetaan atribut ke database dan operasi ORM.
 class OrganizerPreference(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -472,6 +495,7 @@ class OrganizerPreference(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+# Inheritance: OrganizerInvitation mewarisi pemetaan atribut ke database dan operasi ORM.
 class OrganizerInvitation(models.Model):
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -497,7 +521,9 @@ class OrganizerInvitation(models.Model):
         ]
 
 
+# Inheritance: OrganizerSupportTicket mewarisi pemetaan atribut ke database dan operasi ORM.
 class OrganizerSupportTicket(models.Model):
+    # Inheritance: Status mewarisi enum Django untuk pilihan nilai dan label.
     class Status(models.TextChoices):
         IN_PROGRESS = "IN_PROGRESS", "Sedang ditangani"
         RESOLVED = "RESOLVED", "Selesai"
@@ -530,6 +556,7 @@ class OrganizerSupportTicket(models.Model):
         ordering = ("-created_at", "-pk")
 
 
+# Inheritance: PlatformSettings mewarisi pemetaan atribut ke database dan operasi ORM.
 class PlatformSettings(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     platform_fee_percent = models.DecimalField(max_digits=4, decimal_places=2, default=5)
@@ -558,6 +585,7 @@ class PlatformSettings(models.Model):
         ]
 
 
+# Inheritance: PlatformPayout mewarisi pemetaan atribut ke database dan operasi ORM.
 class PlatformPayout(models.Model):
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -582,6 +610,7 @@ class PlatformPayout(models.Model):
         ]
 
 
+# Inheritance: PlatformAuditLog mewarisi pemetaan atribut ke database dan operasi ORM.
 class PlatformAuditLog(models.Model):
     category = models.CharField(max_length=20)
     description = models.CharField(max_length=500)

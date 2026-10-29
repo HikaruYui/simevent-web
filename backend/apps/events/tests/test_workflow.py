@@ -73,10 +73,10 @@ class EventWorkflowTests(TestCase):
             with self.assertRaises(Http404):
                 operation()
 
-    def test_organizer_cannot_review_publish_or_unpublish_even_with_direct_permission(self):
+    def test_organizer_cannot_reject_revise_publish_or_unpublish_even_with_direct_permission(self):
         event = self.draft()
         self.owner.user_permissions.add(Permission.objects.get(codename="publish_event"))
-        for action in ("approve", "publish", "unpublish", "reject", "request_revision"):
+        for action in ("publish", "unpublish", "reject", "request_revision"):
             with self.subTest(action=action), self.assertRaises(PermissionDenied):
                 EventWorkflow(self.owner).transition(event.pk, action=action, reason="Attempt")
 

@@ -12,6 +12,7 @@ from django.contrib.auth.forms import (
 from .models import User
 
 
+# Inheritance: RegistrationForm mewarisi perilaku UserCreationForm untuk diperluas sesuai kebutuhan class ini.
 class RegistrationForm(UserCreationForm):
     class Meta:
         model = User
@@ -21,6 +22,7 @@ class RegistrationForm(UserCreationForm):
             "last_name",
         )
 
+    # Abstraction: Django memanggil hook ini saat is_valid() untuk memvalidasi field email.
     def clean_email(self):
         email = User.objects.normalize_email(
             self.cleaned_data["email"]
@@ -37,6 +39,7 @@ class RegistrationForm(UserCreationForm):
         return email
 
 
+# Inheritance: ProfileForm mewarisi pembuatan form, validasi, dan penyimpanan berbasis model.
 class ProfileForm(forms.ModelForm):
     full_name = forms.CharField(
         label="Nama lengkap",
@@ -70,6 +73,7 @@ class ProfileForm(forms.ModelForm):
             "phone_number": forms.TelInput(attrs={"inputmode": "numeric", "pattern": "08[0-9]{8,11}", "maxlength": "13", "autocomplete": "tel"}),
         }
 
+    # OOP inisialisasi: super().__init__() menyiapkan objek induk sebelum field form disesuaikan.
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
@@ -84,6 +88,7 @@ class ProfileForm(forms.ModelForm):
         self.fields["first_name"].widget = forms.HiddenInput()
         self.fields["last_name"].widget = forms.HiddenInput()
 
+    # Polymorphism: menambahkan validasi khusus pada hook clean() milik Django.
     def clean(self):
         cleaned_data = super().clean()
         full_name = (cleaned_data.get("full_name") or "").strip()
@@ -108,6 +113,7 @@ class ProfileForm(forms.ModelForm):
                 self.add_error(field, "Lengkapi biodata ini.")
         return cleaned_data
 
+    # Abstraction: Django memanggil hook ini saat is_valid() untuk memvalidasi field ktp_document.
     def clean_ktp_document(self):
         document = self.cleaned_data.get("ktp_document")
         if not document or getattr(document, "_committed", False):
@@ -122,12 +128,14 @@ class ProfileForm(forms.ModelForm):
             raise forms.ValidationError("File yang diunggah bukan PDF yang valid.")
         return document
 
+    # Abstraction: Django memanggil hook ini saat is_valid() untuk memvalidasi field profile_photo.
     def clean_profile_photo(self):
         photo = self.cleaned_data.get("profile_photo")
         if photo and not getattr(photo, "_committed", False) and photo.size > 5 * 1024 * 1024:
             raise forms.ValidationError("Ukuran foto profil maksimal 5 MB.")
         return photo
 
+    # Abstraction: Django memanggil hook ini saat is_valid() untuk memvalidasi field phone_number.
     def clean_phone_number(self):
         phone = (self.cleaned_data.get("phone_number") or "").strip()
         if phone and not re.fullmatch(r"08\d{8,11}", phone):
@@ -135,6 +143,7 @@ class ProfileForm(forms.ModelForm):
         return phone
 
 
+# Inheritance: EmailAuthenticationForm mewarisi perilaku AuthenticationForm untuk diperluas sesuai kebutuhan class ini.
 class EmailAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(
         label="Email",
@@ -142,6 +151,7 @@ class EmailAuthenticationForm(AuthenticationForm):
     )
 
 
+# Inheritance: AccountChangeForm mewarisi perilaku UserChangeForm untuk diperluas sesuai kebutuhan class ini.
 class AccountChangeForm(UserChangeForm):
     class Meta:
         model = User

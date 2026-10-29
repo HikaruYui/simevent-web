@@ -12,13 +12,6 @@
   <form class="doc-form" data-save-url="{% url 'panitia_simpan_dokumentasi' %}" data-event-id="{{ event.pk }}" style="background:var(--cream-soft); padding:20px; border-radius:16px; border:1px solid var(--line); margin-bottom:16px;">
     <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px;">
       <h4 style="margin:0; font-size:16px; font-weight:800; color:var(--olive);">{{ event.title }}</h4>
-      {% if event.status == "COMPLETED" %}
-        <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#d1fae5; color:#065f46;">Selesai</span>
-      {% elif event.status != "PUBLISHED" %}
-        <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#e5e7eb; color:#374151;">{{ event.get_status_display }}</span>
-      {% else %}
-        <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#fef3c7; color:#92400e;">Terbit · belum selesai</span>
-      {% endif %}
     </div>
     <div style="display:flex; flex-wrap:wrap; gap:10px;">
       <input type="url" name="documentation_url" maxlength="1000" value="{{ event.documentation_url }}"

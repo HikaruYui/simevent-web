@@ -14,15 +14,18 @@ from .models import Attendance, RegistrationStatus, Ticket
 from django.db.models import Q
 
 
+# Encapsulation: identitas pelaku, aturan scan, dan pembatalan kehadiran disatukan dalam objek service.
 class AttendanceService:
     """Validate event scope and serialize attendance with registration changes."""
 
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
     
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     def _require_scanner_access(self, actor):
         if not actor.is_active:
             raise PermissionDenied
@@ -65,6 +68,7 @@ class AttendanceService:
         return actor
 
 
+    # Abstraction: mencatat kehadiran melalui satu method yang memeriksa akses, tiket, dan waktu event.
     @sensitive_variables("token", "ticket")
     @transaction.atomic
     def scan(self, event_id, *, token):
@@ -122,6 +126,7 @@ class AttendanceService:
         )
         return attendance, True
 
+    # Abstraction: membatalkan kehadiran melalui satu method yang memeriksa izin dan mencatat alasan.
     @transaction.atomic
     def void(self, attendance_id, *, reason):
         actor = lock_accounts(self._actor_id)[self._actor_id]

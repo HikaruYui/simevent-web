@@ -36,6 +36,7 @@ def event_data(event):
     }
 
 
+# Inheritance: EventListView mewarisi alur daftar objek dan pagination Django.
 @method_decorator(never_cache, name="dispatch")
 class EventListView(ListView):
     model = Event
@@ -46,6 +47,7 @@ class EventListView(ListView):
     def get_queryset(self):
         return Event.objects.public().select_related("event_type")
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse({
             "results": [event_data(event) for event in context["object_list"]],
@@ -54,20 +56,25 @@ class EventListView(ListView):
         })
 
 
+# Inheritance: EventDetailView mewarisi alur pengambilan detail objek Django.
 @method_decorator(never_cache, name="dispatch")
 class EventDetailView(DetailView):
     model = Event
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
         return Event.objects.public().select_related("event_type")
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(event_data(context["object"]))
 
 
+# OOP mixin: mengemas aturan akses untuk dipakai ulang melalui pewarisan ganda.
 @method_decorator(never_cache, name="dispatch")
 class EventManagementMixin:
+    # Polymorphism: menambahkan pemeriksaan akses sebelum meneruskan request ke handler.
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse({"error": "Authentication required."}, status=401)
@@ -83,18 +90,22 @@ class EventManagementMixin:
         return Event.objects.managed_by(self.request.user).select_related("event_type")
 
 
+# Inheritance (pewarisan ganda): ManagedEventListView menggabungkan perilaku EventManagementMixin, EventListView.
 class ManagedEventListView(EventManagementMixin, EventListView):
     http_method_names = ["get", "post", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request):
         event = EventWorkflow(request.user).create(data=request.POST, files=request.FILES)
         return JsonResponse(event_data(event), status=201)
 
 
+# Inheritance (pewarisan ganda): EventDocumentationView menggabungkan perilaku EventManagementMixin, View.
 class EventDocumentationView(EventManagementMixin, View):
     """Panitia/ketua menyimpan tautan dokumentasi; peserta tidak punya akses ke endpoint ini."""
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         event = EventWorkflow(request.user).set_documentation(
             pk, url=request.POST.get("documentation_url", ""),
@@ -106,12 +117,15 @@ class EventDocumentationView(EventManagementMixin, View):
         })
 
 
+# Inheritance (pewarisan ganda): ManagedEventDetailView menggabungkan perilaku EventManagementMixin, EventDetailView.
 class ManagedEventDetailView(EventManagementMixin, EventDetailView):
     http_method_names = ["get", "post", "head", "options"]
 
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
         return super().get_queryset().select_related("private_access")
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         event = context["object"]
         data = event_data(event)
@@ -123,14 +137,17 @@ class ManagedEventDetailView(EventManagementMixin, EventDetailView):
         ))
         return JsonResponse(data)
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         event = EventWorkflow(request.user).update(pk, data=request.POST, files=request.FILES)
         return JsonResponse(event_data(event))
 
 
+# Inheritance (pewarisan ganda): EventTransitionView menggabungkan perilaku EventManagementMixin, View.
 class EventTransitionView(EventManagementMixin, View):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk, action):
         form = TransitionForm(request.POST)
         if not form.is_valid():
@@ -139,10 +156,12 @@ class EventTransitionView(EventManagementMixin, View):
         return JsonResponse(event_data(event))
 
 
+# Inheritance (pewarisan ganda): EventDeleteView menggabungkan perilaku EventManagementMixin, DetailView.
 class EventDeleteView(EventManagementMixin, DetailView):
     model = Event
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         self.get_object()
         form = DeleteDraftForm(request.POST)

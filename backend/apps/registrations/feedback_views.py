@@ -25,9 +25,11 @@ def feedback_data(feedback):
     }
 
 
+# Inheritance (pewarisan ganda): FeedbackDetailView menggabungkan perilaku ParticipantAccessMixin, View.
 class FeedbackDetailView(ParticipantAccessMixin, View):
     http_method_names = ["get", "post", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         feedback = get_object_or_404(
             Feedback.objects.filter(registration__participant=request.user),
@@ -35,15 +37,18 @@ class FeedbackDetailView(ParticipantAccessMixin, View):
         )
         return JsonResponse(feedback_data(feedback))
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
         feedback = FeedbackService(request.user).submit(pk, data=request.POST)
         return JsonResponse(feedback_data(feedback), status=201)
 
 
+# Inheritance (pewarisan ganda): FeedbackResultsView menggabungkan perilaku ParticipantAccessMixin, ListView.
 class FeedbackResultsView(ParticipantAccessMixin, ListView):
     paginate_by = 20
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
         actor = self.request.user
         require_organizer(actor)
@@ -54,6 +59,7 @@ class FeedbackResultsView(ParticipantAccessMixin, ListView):
         )
         return Feedback.objects.eligible().filter(registration__event=event)
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         summary = self.object_list.aggregate(
             feedback_count=Count("pk"),

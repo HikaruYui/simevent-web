@@ -10,10 +10,12 @@ from .models import Registration
 from .views import ParticipantAccessMixin, attendance_data
 
 
+# Inheritance (pewarisan ganda): TicketScanView menggabungkan perilaku ParticipantAccessMixin, View.
 @method_decorator(sensitive_post_parameters("token"), name="dispatch")
 class TicketScanView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
+    # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, event_id):
         attendance, created = AttendanceService(request.user).scan(
             event_id, token=request.POST.get("token", ""),
@@ -25,9 +27,11 @@ class TicketScanView(ParticipantAccessMixin, View):
         }, status=201 if created else 200)
 
 
+# Inheritance (pewarisan ganda): AttendanceDetailView menggabungkan perilaku ParticipantAccessMixin, View.
 class AttendanceDetailView(ParticipantAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
         registration = get_object_or_404(
             Registration.objects.owned_by(request.user).select_related("attendance"),

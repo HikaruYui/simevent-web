@@ -8,6 +8,7 @@ from .role_service import set_account_role, promote_platform_admin
 from .services import change_account_access
 
 
+# Inheritance: AccountAdmin mewarisi perilaku UserAdmin untuk diperluas sesuai kebutuhan class ini.
 @admin.register(User)
 class AccountAdmin(UserAdmin):
     add_form = RegistrationForm
@@ -111,6 +112,7 @@ class AccountAdmin(UserAdmin):
             "ADMIN": "Admin Platform",
         }.get(obj.role, obj.role)
 
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(self, request, obj=None):
         return request.user.is_active and request.user.has_perm("accounts.manage_platform")
     
@@ -137,12 +139,15 @@ class AccountAdmin(UserAdmin):
             ),
         )
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return request.user.is_active and request.user.is_superuser
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(self, request, obj=None):
         return request.user.is_active and request.user.is_superuser
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(self, request, obj=None):
         return request.user.is_active and request.user.is_superuser
 
@@ -158,6 +163,7 @@ class AccountAdmin(UserAdmin):
             and request.user.has_perm("accounts.manage_accounts")
         )
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     def _access_action(self, request, queryset, action):
         run_single_action(
             self,
@@ -205,6 +211,7 @@ class AccountAdmin(UserAdmin):
         self._access_action(request, queryset, AccountAccessChange.Action.ACTIVATE)
 
 
+# Inheritance (pewarisan ganda): AccountAccessChangeAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(AccountAccessChange)
 class AccountAccessChangeAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("user", "action", "actor", "created_at")

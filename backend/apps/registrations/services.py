@@ -17,11 +17,13 @@ from .models import Registration, RegistrationStatus, Ticket
 class RegistrationService:
     """Serialize seat changes with event transitions and issue tickets atomically."""
 
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     def _lock_actor(self):
         actor = lock_accounts(self._actor_id)[self._actor_id]
         if not actor.is_active:
@@ -67,6 +69,7 @@ class RegistrationService:
             )
         return registration
 
+    # Abstraction: memulai pendaftaran berbayar melalui satu method yang menangani kuota dan pembayaran.
     @transaction.atomic
     def start_paid_registration(self, event_id):
         actor = self._lock_actor()
@@ -120,6 +123,7 @@ class RegistrationService:
         )
         return registration
 
+    # Abstraction: membatalkan registrasi melalui satu method yang mengurus status dan tiket.
     @transaction.atomic
     def cancel(self, registration_id):
         actor = self._lock_actor()

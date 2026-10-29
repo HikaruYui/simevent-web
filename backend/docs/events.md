@@ -707,7 +707,7 @@ Action review dan publikasi juga memerlukan permission `accounts.manage_platform
 | --- | --- | --- | --- | --- | --- |
 | submit | DRAFT, NEEDS_REVISION | SUBMITTED | `events.submit_event` | Tidak | Tidak |
 | request_revision | SUBMITTED, APPROVED | NEEDS_REVISION | `events.review_event` | Ya | Ya |
-| approve | SUBMITTED | APPROVED | `events.review_event` | Ya | Tidak |
+| approve | SUBMITTED | APPROVED | Admin: `events.review_event`; ketua pemilik event: `events.submit_event` | Admin atau ketua pemilik event | Tidak |
 | publish | APPROVED | PUBLISHED | `events.publish_event` | Ya | Tidak |
 | unpublish | PUBLISHED | APPROVED | `events.publish_event` | Ya | Tidak |
 | reject | SUBMITTED | REJECTED | `events.review_event` | Ya | Ya |

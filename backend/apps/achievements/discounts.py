@@ -17,12 +17,15 @@ from .forms import EventRewardPolicyForm
 from .models import EventRewardPolicy, UserAchievement
 
 
+# Encapsulation: identitas pengelola dan aturan perubahan kebijakan reward disatukan dalam objek service.
 class RewardPolicyService:
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
 
+    # Abstraction: mengubah kebijakan reward melalui satu method yang memeriksa akses dan memvalidasi form.
     @transaction.atomic
     def update(self, event_id, *, data):
         actor = lock_accounts(self._actor_id).get(self._actor_id)
@@ -43,6 +46,7 @@ class RewardPolicyService:
         return form.save()
 
 
+# OOP objek nilai: dataclass menyatukan hasil diskon; frozen=True mencegah assignment atribut biasa.
 @dataclass(frozen=True)
 class DiscountQuote:
     original_price: Decimal
@@ -52,9 +56,11 @@ class DiscountQuote:
     reward_id: int | None
 
 
+# Encapsulation: identitas peserta dan aturan perhitungan diskon disatukan dalam objek service.
 class DiscountService:
     """Return a nonbinding preview using current eligibility; never charge money."""
 
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied

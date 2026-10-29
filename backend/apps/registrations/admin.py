@@ -20,6 +20,7 @@ from .models import (
 from .payments import PaymentService
 
 
+# Inheritance (pewarisan ganda): RegistrationAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(Registration)
 class RegistrationAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("id", "event", "participant", "status", "registered_at")
@@ -28,6 +29,7 @@ class RegistrationAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     search_fields = ("event__title", "participant__email")
 
 
+# Inheritance (pewarisan ganda): TicketAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(Ticket)
 class TicketAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     fields = ("identifier", "registration", "is_active", "created_at")
@@ -35,6 +37,7 @@ class TicketAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_select_related = ("registration",)
 
 
+# Inheritance (pewarisan ganda): AttendanceAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(Attendance)
 class AttendanceAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("registration", "status", "checked_in_at", "verified_by")
@@ -57,6 +60,7 @@ class AttendanceAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
         )
 
 
+# Inheritance (pewarisan ganda): FeedbackAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(Feedback)
 class FeedbackAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("registration", "overall_rating", "created_at")
@@ -65,6 +69,7 @@ class FeedbackAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     search_fields = ("registration__event__title", "comment", "suggestion")
 
 
+# Inheritance: PaymentAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "registration", "amount", "status", "submitted_at", "proof_link")
@@ -79,21 +84,26 @@ class PaymentAdmin(admin.ModelAdmin):
     action_form = ReasonActionForm
     actions = ("approve_payments", "reject_payments")
 
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(self, request, obj=None):
         return request.user.is_active and (
             request.user.has_perm("accounts.access_organizer")
             or request.user.has_perm("accounts.manage_platform")
         )
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return False
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(self, request, obj=None):
         return False
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(self, request, obj=None):
         return False
 
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self, request):
         queryset = super().get_queryset(request).select_related(
             "registration__event", "registration__participant",
@@ -111,6 +121,7 @@ class PaymentAdmin(admin.ModelAdmin):
         url = reverse("registrations:payment-proof-download", args=[obj.pk])
         return format_html('<a href="{}">Unduh bukti</a>', url)
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     def _review(self, request, queryset, *, approve):
         note = request.POST.get("reason", "").strip()
         if not approve and not note:
@@ -139,27 +150,34 @@ class PaymentAdmin(admin.ModelAdmin):
         self._review(request, queryset, approve=False)
 
 
+# Inheritance: PaymentInstructionsAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
 @admin.register(PaymentInstructions)
 class PaymentInstructionsAdmin(admin.ModelAdmin):
     list_display = ("bank_name", "account_number", "account_holder", "is_active")
     fields = ("bank_name", "account_number", "account_holder", "instructions", "is_active")
 
+    # Polymorphism: menyesuaikan izin akses modul pada Django admin.
     def has_module_permission(self, request):
         return request.user.is_active and request.user.has_perm("accounts.manage_platform")
 
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(self, request, obj=None):
         return self.has_module_permission(request)
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return self.has_module_permission(request)
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(self, request, obj=None):
         return self.has_module_permission(request)
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(self, request, obj=None):
         return self.has_module_permission(request)
 
 
+# Inheritance: CertificateTemplateAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
 @admin.register(CertificateTemplate)
 class CertificateTemplateAdmin(admin.ModelAdmin):
     list_display = ("id", "background", "is_active")
@@ -169,17 +187,22 @@ class CertificateTemplateAdmin(admin.ModelAdmin):
         ("date_x", "date_y"), ("number_x", "number_y"),
     )
 
+    # Polymorphism: menyesuaikan izin akses modul pada Django admin.
     def has_module_permission(self, request):
         return request.user.is_active and request.user.has_perm("accounts.manage_platform")
 
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(self, request, obj=None):
         return self.has_module_permission(request)
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return self.has_module_permission(request)
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(self, request, obj=None):
         return self.has_module_permission(request)
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(self, request, obj=None):
         return self.has_module_permission(request)

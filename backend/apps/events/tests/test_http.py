@@ -14,6 +14,42 @@ class EventHttpTests(TestCase):
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
+    def test_owner_and_admin_can_approve_submitted_event_with_audit(self):
+        for actor in (self.owner, self.admin):
+            with self.subTest(actor=actor.email):
+                event = EventWorkflow(self.owner).create(data=event_data())
+                EventWorkflow(self.owner).transition(event.pk, action="submit")
+                self.client.force_login(actor)
+                url = reverse("events:transition", args=[event.pk, "approve"])
+                response = self.client.post(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["status"], EventStatus.APPROVED)
+                event.refresh_from_db()
+                self.assertEqual(event.status, EventStatus.APPROVED)
+                review = event.transitions.get(to_status=EventStatus.APPROVED)
+                self.assertEqual(review.actor, actor)
+                self.assertEqual(review.from_status, EventStatus.SUBMITTED)
+                self.assertEqual(self.client.post(url).status_code, 400)
+                self.assertEqual(event.transitions.filter(to_status=EventStatus.APPROVED).count(), 1)
+
+    def test_owner_approval_requires_submission_and_csrf(self):
+        event = EventWorkflow(self.owner).create(data=event_data())
+        self.client.force_login(self.owner)
+        url = reverse("events:transition", args=[event.pk, "approve"])
+        self.assertEqual(self.client.post(url).status_code, 400)
+        EventWorkflow(self.owner).transition(event.pk, action="submit")
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.owner)
+        self.assertEqual(client.post(url).status_code, 403)
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.client.force_login(self.participant)
+        self.assertEqual(self.client.post(url).status_code, 403)
+        self.owner.groups.clear()
+        self.client.force_login(self.owner)
+        self.assertEqual(self.client.post(url).status_code, 403)
+        event.refresh_from_db()
+        self.assertEqual(event.status, EventStatus.SUBMITTED)
+
     def test_public_only_sees_published_and_completed(self):
         draft = EventWorkflow(self.owner).create(data=event_data())
         published = published_event(self.owner, self.admin)

@@ -10,12 +10,15 @@ from apps.events.models import Event
 from .models import Payment, RegistrationStatus, Ticket
 
 
+# Encapsulation: identitas pemeriksa dan aturan peninjauan pembayaran disatukan dalam objek service.
 class PaymentService:
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
 
+    # Abstraction: meninjau pembayaran melalui satu method yang mengurus validasi, status, dan penerbitan tiket.
     @transaction.atomic
     def review(self, payment_id, *, approve, note=""):
         payment = get_object_or_404(

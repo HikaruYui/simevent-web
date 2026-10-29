@@ -10,20 +10,24 @@ from .models import (
 )
 
 
+# Inheritance: ConfirmationForm mewarisi pengelolaan field dan validasi input Django.
 class ConfirmationForm(forms.Form):
     confirm = forms.BooleanField(required=True)
 
 
+# Inheritance: TicketScanForm mewarisi pengelolaan field dan validasi input Django.
 class TicketScanForm(forms.Form):
     token = forms.UUIDField()
 
 
+# Inheritance: FeedbackForm mewarisi pembuatan form, validasi, dan penyimpanan berbasis model.
 class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = (*RATING_FIELDS, "comment", "suggestion")
 
 
+# Inheritance: PaymentProofForm mewarisi pengelolaan field dan validasi input Django.
 class PaymentProofForm(forms.Form):
     proof = forms.FileField(
         validators=[
@@ -33,6 +37,7 @@ class PaymentProofForm(forms.Form):
     )
     note = forms.CharField(max_length=500, required=False)
 
+    # Abstraction: Django memanggil hook ini saat is_valid() untuk memvalidasi field proof.
     def clean_proof(self):
         proof = self.cleaned_data["proof"]
         header = proof.read(8)

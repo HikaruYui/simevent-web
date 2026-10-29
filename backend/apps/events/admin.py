@@ -8,33 +8,39 @@ from .models import Event, EventAccess, EventTransition, EventType
 from .workflow import EventWorkflow
 
 
+# Inheritance: EventTypeAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
 @admin.register(EventType)
 class EventTypeAdmin(admin.ModelAdmin):
     list_display = ("code", "name", "is_active")
     search_fields = ("code", "name")
     actions = None
 
+    # Polymorphism: menentukan field admin yang hanya dapat dibaca.
     def get_readonly_fields(self, request, obj=None):
         return ("code",) if obj else ()
 
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(self, request, obj=None):
         return (
             request.user.has_perm("accounts.manage_platform")
             and super().has_view_permission(request, obj)
         )
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return (
             request.user.has_perm("accounts.manage_platform")
             and super().has_add_permission(request)
         )
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(self, request, obj=None):
         return (
             request.user.has_perm("accounts.manage_platform")
             and super().has_change_permission(request, obj)
         )
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(self, request, obj=None):
         return (
             request.user.is_active
@@ -42,6 +48,7 @@ class EventTypeAdmin(admin.ModelAdmin):
         )
 
 
+# Inheritance (pewarisan ganda): EventAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(Event)
 class EventAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("title", "organizer", "event_type", "status", "start_datetime")
@@ -75,6 +82,7 @@ class EventAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
             and request.user.has_perm("events.cancel_event")
         )
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     def _transition(self, request, queryset, action):
         workflow = EventWorkflow(request.user)
         run_single_action(self, request, queryset, lambda pk, reason: workflow.transition(
@@ -110,12 +118,14 @@ class EventAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
         self._transition(request, queryset, "cancel")
 
 
+# Inheritance (pewarisan ganda): EventAccessAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(EventAccess)
 class EventAccessAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("event",)
     list_select_related = ("event",)
 
 
+# Inheritance (pewarisan ganda): EventTransitionAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(EventTransition)
 class EventTransitionAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("event", "actor", "from_status", "to_status", "created_at")

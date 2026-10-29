@@ -11,9 +11,11 @@ from apps.events.models import DeliveryMode, Event, EventStatus, EventType
 from apps.events.seeds import EMAIL_PANITIA, HARGA, KATEGORI, VENUES
 
 
+# Inheritance: Command mewarisi kerangka perintah manage.py.
 class Command(BaseCommand):
     help = "Isi database dengan 50 event contoh (idempotent: aman dijalankan berulang)."
 
+    # Polymorphism: menyediakan implementasi perintah yang dipanggil oleh BaseCommand.
     @transaction.atomic
     def handle(self, *args, **options):
         User = get_user_model()

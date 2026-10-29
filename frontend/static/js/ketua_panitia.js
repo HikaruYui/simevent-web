@@ -862,6 +862,12 @@
     tbody.addEventListener("click", function (ev) {
       var b = ev.target.closest("[data-detail]"); if (!b) { return; }
       var e = eventById(parseInt(b.dataset.detail, 10));
+      if (!e) {
+        toast("Event tidak ditemukan.");
+        return;
+      }
+
+      var p = proposalOf(e);
       dlg.dataset.eventId = String(e.id);
       $("#detailTitle").textContent = e.nama;
       $("#detailBody").innerHTML =
@@ -903,7 +909,7 @@ var proposalButton = (!p.backend || p.asli)
         '<dt>Target peserta</dt>' +
         '<dd>' + e.kuota + ' peserta, mahasiswa dan umum</dd>' +
         '<dt>Estimasi anggaran</dt>' +
-        '<dd>Rp ' + num(anggaran) + '</dd>' +
+'       <dd>Belum tersedia</dd>' +
       '</dl>' +
       proposalNote;
 
@@ -937,15 +943,24 @@ var proposalButton = (!p.backend || p.asli)
           `
         );
       }
+      if (window.EO_EVENTS_FROM_BACKEND && e.status === "diajukan") {
+        $("#detailProposal").insertAdjacentHTML(
+          "beforeend",
+          '<div style="display:flex;justify-content:flex-end;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid #e5dfcf">' +
+          '<button type="button" class="btn" data-approve-event>Setujui proposal</button></div>'
+        );
+      }
       dlg.showModal();
     });
     $$("[data-close]", dlg).forEach(function (b) { b.addEventListener("click", function () { dlg.close(); }); });
     dlg.addEventListener("click", function (ev) { if (ev.target === dlg) { dlg.close(); } });
     
-    // AJUKAN EVENT KE ADMIN PLATFORM
+    // Pengajuan dan persetujuan menggunakan workflow backend.
     dlg.addEventListener("click", async function (ev) {
-      var button = ev.target.closest("[data-submit-event]");
-      if (!button) return;
+      var button = ev.target.closest("[data-submit-event], [data-approve-event]");
+      if (!button || button.disabled) return;
+      var approving = button.hasAttribute("data-approve-event");
+      var action = approving ? "approve" : "submit";
 
       var eventId = Number(dlg.dataset.eventId);
       var selectedEvent = eventById(eventId);
@@ -956,14 +971,15 @@ var proposalButton = (!p.backend || p.asli)
       }
 
       if (
-        selectedEvent.status !== "draft" &&
-        selectedEvent.status !== "revisi"
+        approving ? selectedEvent.status !== "diajukan" :
+        (selectedEvent.status !== "draft" && selectedEvent.status !== "revisi")
       ) {
-        toast("Event ini tidak dapat diajukan.");
+        toast(approving ? "Proposal ini tidak dapat disetujui." : "Event ini tidak dapat diajukan.");
         return;
       }
 
       var confirmed = window.confirm(
+        approving ? 'Setujui proposal event "' + selectedEvent.nama + '"?' :
         'Ajukan event "' + selectedEvent.nama +
         '" ke Admin Platform untuk diperiksa?'
       );
@@ -983,11 +999,11 @@ var proposalButton = (!p.backend || p.asli)
       var originalText = button.textContent;
 
       button.disabled = true;
-      button.textContent = "Mengajukan...";
+      button.textContent = approving ? "Menyetujui..." : "Mengajukan...";
 
       try {
         var response = await fetch(
-          "/events/manage/" + eventId + "/submit/",
+          "/events/manage/" + eventId + "/" + action + "/",
           {
             method: "POST",
             credentials: "same-origin",
@@ -1003,13 +1019,11 @@ var proposalButton = (!p.backend || p.asli)
           return null;
         });
 
-        if (!response.ok) {
-          if (response.redirected) {
-            throw new Error(
-              "Sesi login berakhir. Silakan login kembali."
-            );
-          }
+        if (response.redirected || !data) {
+          throw new Error("Sesi login berakhir atau respons server tidak valid. Muat ulang halaman.");
+        }
 
+        if (!response.ok) {
           if (data && data.errors) {
             var errors = Object.entries(data.errors)
               .map(function (entry) {
@@ -1027,23 +1041,27 @@ var proposalButton = (!p.backend || p.asli)
           if (response.status === 403) {
             throw new Error(
               "Akses ditolak. Akun tidak memiliki izin " +
-              "mengajukan event atau token CSRF tidak valid."
+              "melakukan tindakan ini atau token CSRF tidak valid."
             );
           }
 
           throw new Error(
             (data && (data.error || data.detail)) ||
-            "Gagal mengajukan event (HTTP " +
+            "Gagal memproses event (HTTP " +
             response.status + ")."
           );
         }
 
         // Sinkronkan data frontend dengan perubahan status.
-        selectedEvent.status = "diajukan";
+        if (data.status !== (approving ? "APPROVED" : "SUBMITTED")) {
+          throw new Error("Status event tidak sesuai. Muat ulang halaman untuk melihat status terbaru.");
+        }
+        selectedEvent.status = approving ? "disetujui" : "diajukan";
 
         dlg.close();
 
         toast(
+          approving ? 'Proposal event "' + selectedEvent.nama + '" berhasil disetujui.' :
           'Event "' + selectedEvent.nama +
           '" berhasil diajukan ke Admin Platform.'
         );
@@ -1055,11 +1073,11 @@ var proposalButton = (!p.backend || p.asli)
         }, 1000);
 
       } catch (error) {
-        console.error("Submit event error:", error);
+        console.error("Event transition error:", error);
 
         toast(
           error.message ||
-          "Terjadi kesalahan saat mengajukan event."
+          "Terjadi kesalahan saat memproses event."
         );
 
       } finally {

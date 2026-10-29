@@ -5,9 +5,11 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 
+# Inheritance: Command mewarisi kerangka perintah manage.py.
 class Command(BaseCommand):
     help = "Provision SIMEVENT groups after migrate; never assigns users to groups."
 
+    # Polymorphism: menyediakan implementasi perintah yang dipanggil oleh BaseCommand.
     @transaction.atomic
     def handle(self, *args, **options):
         roles = {

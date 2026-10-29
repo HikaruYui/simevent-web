@@ -7,20 +7,25 @@ from apps.accounts.admin_support import ReadOnlyAuditAdmin
 from .models import Achievement, EventRewardPolicy, Reward, UserAchievement
 
 
+# Inheritance: PlatformDefinitionAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
 class PlatformDefinitionAdmin(admin.ModelAdmin):
+    # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(self, request, obj=None):
         return request.user.has_perm("accounts.manage_platform") and super().has_view_permission(
             request, obj,
         )
 
+    # Polymorphism: menyesuaikan izin menambah objek pada Django admin.
     def has_add_permission(self, request):
         return request.user.has_perm("accounts.manage_platform") and super().has_add_permission(request)
 
+    # Polymorphism: menyesuaikan izin mengubah objek pada Django admin.
     def has_change_permission(self, request, obj=None):
         return request.user.has_perm("accounts.manage_platform") and super().has_change_permission(
             request, obj,
         )
 
+    # Polymorphism: menyesuaikan izin menghapus objek pada Django admin.
     def has_delete_permission(self, request, obj=None):
         return (
             request.user.is_active
@@ -28,6 +33,7 @@ class PlatformDefinitionAdmin(admin.ModelAdmin):
         )
 
 
+# Inheritance: AchievementAdmin mewarisi perilaku PlatformDefinitionAdmin untuk diperluas sesuai kebutuhan class ini.
 @admin.register(Achievement)
 class AchievementAdmin(PlatformDefinitionAdmin):
     list_display = ("code", "name", "scope_label", "required_count", "is_active")
@@ -36,6 +42,7 @@ class AchievementAdmin(PlatformDefinitionAdmin):
     list_select_related = ("event_type",)
 
 
+# Inheritance: RewardAdmin mewarisi perilaku PlatformDefinitionAdmin untuk diperluas sesuai kebutuhan class ini.
 @admin.register(Reward)
 class RewardAdmin(PlatformDefinitionAdmin):
     list_display = ("achievement", "percentage", "is_active")
@@ -44,12 +51,14 @@ class RewardAdmin(PlatformDefinitionAdmin):
     search_fields = ("achievement__name",)
 
 
+# Inheritance (pewarisan ganda): EventRewardPolicyAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(EventRewardPolicy)
 class EventRewardPolicyAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("event", "accept_achievement_discount", "max_discount_percentage")
     list_select_related = ("event",)
 
 
+# Inheritance (pewarisan ganda): UserAchievementAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
 @admin.register(UserAchievement)
 class UserAchievementAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("user", "achievement", "qualifying_count", "is_active", "awarded_at")

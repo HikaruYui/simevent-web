@@ -9,6 +9,7 @@ from apps.accounts.models import User
 from .models import Event, EventType
 
 
+# Inheritance: BannerField mewarisi perilaku forms.ImageField untuk diperluas sesuai kebutuhan class ini.
 class BannerField(forms.ImageField):
     max_bytes = 5 * 1024 * 1024
     max_dimension = 4096
@@ -30,7 +31,9 @@ class BannerField(forms.ImageField):
         return upload
 
 
+# Inheritance: ProposalField mewarisi perilaku forms.FileField untuk diperluas sesuai kebutuhan class ini.
 class ProposalField(forms.FileField):
+    # Polymorphism: menyesuaikan konversi dan validasi unggahan pada hook field Django.
     def to_python(self, data):
         upload = super().to_python(data)
 
@@ -86,10 +89,12 @@ class EventForm(forms.ModelForm):
             "proposal",
         )
 
+    # OOP inisialisasi: super().__init__() menyiapkan objek induk sebelum field form disesuaikan.
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["event_type"].queryset = EventType.objects.filter(is_active=True)
 
+    # Polymorphism: menambahkan validasi khusus pada hook clean() milik Django.
     def clean(self):
         cleaned = super().clean()
         if cleaned.get("remove_banner") and self.files.get("banner"):
@@ -99,9 +104,11 @@ class EventForm(forms.ModelForm):
 
 # Inheritance: memperluas EventForm dengan pemilihan organizer tanpa menyalin validasi event.
 class AdminEventForm(EventForm):
+    # Inheritance: Meta mewarisi perilaku EventForm.Meta untuk diperluas sesuai kebutuhan class ini.
     class Meta(EventForm.Meta):
         fields = (*EventForm.Meta.fields, "organizer")
 
+    # OOP inisialisasi: super().__init__() menyiapkan objek induk sebelum field form disesuaikan.
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         permission = Q(
@@ -116,9 +123,11 @@ class AdminEventForm(EventForm):
         ).distinct()
 
 
+# Inheritance: TransitionForm mewarisi pengelolaan field dan validasi input Django.
 class TransitionForm(forms.Form):
     reason = forms.CharField(required=False, max_length=2000)
 
 
+# Inheritance: DeleteDraftForm mewarisi pengelolaan field dan validasi input Django.
 class DeleteDraftForm(forms.Form):
     confirm = forms.BooleanField(required=True)

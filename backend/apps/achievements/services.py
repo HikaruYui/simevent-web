@@ -16,14 +16,17 @@ from apps.registrations.models import Attendance, Registration, RegistrationStat
 from .models import Achievement, UserAchievement
 
 
+# Encapsulation: identitas pelaku dan aturan evaluasi achievement disatukan dalam objek service.
 class AchievementService:
     """Evaluate configurable achievement thresholds from valid attendance."""
 
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     @staticmethod
     def _counts_for(user):
         rows = (
@@ -92,6 +95,7 @@ class AchievementService:
                 awarded.append(assignment)
         return awarded
 
+    # Abstraction: mengevaluasi semua akun aktif melalui satu method dengan pemeriksaan izin.
     def evaluate_all(self):
         actor = get_object_or_404(User, pk=self._actor_id)
         if not actor.has_perm("accounts.manage_platform"):

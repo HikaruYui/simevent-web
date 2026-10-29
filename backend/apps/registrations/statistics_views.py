@@ -14,6 +14,7 @@ from .models import Registration
 from .statistics import participation_metrics, statistics_data
 
 
+# Inheritance: StatisticsAccessMixin mewarisi perilaku EventManagementMixin untuk diperluas sesuai kebutuhan class ini.
 class StatisticsAccessMixin(EventManagementMixin):
     def get_events(self):
         if not self.request.user.has_perm("registrations.view_feedback"):
@@ -21,9 +22,11 @@ class StatisticsAccessMixin(EventManagementMixin):
         return Event.objects.managed_by(self.request.user)
 
 
+# Inheritance (pewarisan ganda): EventStatisticsView menggabungkan perilaku StatisticsAccessMixin, View.
 class EventStatisticsView(StatisticsAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, event_id):
         event = get_object_or_404(self.get_events(), pk=event_id)
         metrics = Registration.objects.filter(event=event).aggregate(**participation_metrics())
@@ -36,10 +39,12 @@ class EventStatisticsView(StatisticsAccessMixin, View):
         })
 
 
+# Inheritance (pewarisan ganda): StatisticsOverviewView menggabungkan perilaku StatisticsAccessMixin, ListView.
 class StatisticsOverviewView(StatisticsAccessMixin, ListView):
     paginate_by = 20
     http_method_names = ["get", "head", "options"]
 
+    # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
         self.events = self.get_events()
         return self.events.values(
@@ -47,6 +52,7 @@ class StatisticsOverviewView(StatisticsAccessMixin, ListView):
             event_type_code=F("event_type__code"),
         ).annotate(**participation_metrics("registrations__")).order_by("start_datetime", "pk")
 
+    # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         events = self.events.aggregate(
             total_events=Count("pk"),

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 
 
+# Inheritance: ProposalStatus mewarisi enum Django untuk pilihan nilai dan label.
 class ProposalStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
     SUBMITTED = "SUBMITTED", "Submitted"
@@ -15,11 +16,14 @@ class ProposalStatus(models.TextChoices):
 OPEN_STATUSES = (ProposalStatus.DRAFT, ProposalStatus.SUBMITTED, ProposalStatus.NEEDS_REVISION)
 
 
+# Inheritance: ProposalQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
 class ProposalQuerySet(models.QuerySet):
+    # Abstraction: owned_by() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def owned_by(self, user):
         return self.filter(applicant=user)
 
 
+# Inheritance: OrganizerProposal mewarisi pemetaan atribut ke database dan operasi ORM.
 class OrganizerProposal(models.Model):
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="organizer_proposals")
     organization_name = models.CharField(max_length=200)
@@ -46,10 +50,12 @@ class OrganizerProposal(models.Model):
             ),
         ]
 
+    # Polymorphism: menentukan representasi teks objek saat str() dipanggil.
     def __str__(self):
         return f"{self.organization_name} ({self.status})"
 
 
+# Inheritance: ProposalReview mewarisi pemetaan atribut ke database dan operasi ORM.
 class ProposalReview(models.Model):
     proposal = models.ForeignKey(OrganizerProposal, on_delete=models.PROTECT, related_name="reviews")
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="proposal_reviews")

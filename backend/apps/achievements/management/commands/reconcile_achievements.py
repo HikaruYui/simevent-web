@@ -6,12 +6,15 @@ from apps.accounts.models import User
 from apps.achievements.services import AchievementService
 
 
+# Inheritance: Command mewarisi kerangka perintah manage.py.
 class Command(BaseCommand):
     help = "Evaluate active achievements for one user or all active users."
 
+    # Polymorphism: menentukan argumen khusus untuk perintah Django.
     def add_arguments(self, parser):
         parser.add_argument("--user-id", type=int)
 
+    # Polymorphism: menyediakan implementasi perintah yang dipanggil oleh BaseCommand.
     def handle(self, *args, **options):
         user_id = options["user_id"]
         if user_id:

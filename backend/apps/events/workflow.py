@@ -52,11 +52,13 @@ class EventWorkflow:
         "cancel": EventStatus.CANCELLED,
     }
 
+    # Encapsulation: _actor_id menyimpan identitas pelaku per objek; awalan _ adalah konvensi internal, bukan akses privat yang dipaksakan Python.
     def __init__(self, actor):
         if not actor.is_authenticated:
             raise PermissionDenied
         self._actor_id = actor.pk
 
+    # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
     def _actor(self):
         actor = get_object_or_404(User, pk=self._actor_id)
         require_organizer(actor)
@@ -113,6 +115,7 @@ class EventWorkflow:
             transaction.on_commit(lambda: storage.delete(previous_banner), robust=True)
         return event
 
+    # Abstraction: membuat event melalui satu method yang mengurus izin, form, dan penyimpanan.
     @transaction.atomic
     def create(self, *, data, files=None):
         actor = self._actor()
@@ -135,6 +138,7 @@ class EventWorkflow:
         form.instance.slug = f"{title_slug}-{uuid4().hex}"
         return self._save_content(form)
 
+    # Abstraction: mengubah event melalui satu method yang mengurus izin, status, form, dan kuota.
     @transaction.atomic
     def update(self, event_id, *, data, files=None):
         actor, event, _ = self._lock_event(event_id)
@@ -179,7 +183,13 @@ class EventWorkflow:
         permission = self.permissions[target]
         if action == "unpublish":
             permission = "events.publish_event"
-        if target in self.admin_decisions:
+        if (
+            action == "approve"
+            and event.organizer_id == actor.pk
+            and not actor.has_perm("accounts.manage_platform")
+        ):
+            self._require(actor, "events.submit_event")
+        elif target in self.admin_decisions:
             require_platform_permission(actor, permission)
         else:
             self._require(actor, permission)
@@ -243,6 +253,7 @@ class EventWorkflow:
         event.save(update_fields=["documentation_url", "updated_at"])
         return event
 
+    # Abstraction: menghapus draft melalui satu method yang memeriksa izin dan membersihkan banner.
     @transaction.atomic
     def delete_draft(self, event_id):
         actor, event, _ = self._lock_event(event_id)
