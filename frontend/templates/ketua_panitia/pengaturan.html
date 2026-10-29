@@ -74,12 +74,24 @@
   <section class="set-panel" id="panel-notifikasi" data-panel="notifikasi" aria-labelledby="h-undangan" hidden>
     <h2 id="h-undangan" class="set-h">Undangan tertunda</h2>
     <p class="set-sub">Tautan undangan berlaku 7 hari. Setelah itu undangan harus dikirim ulang.</p>
-    <article class="card adm-table"><div class="table-wrap"><table class="tbl"><thead><tr><th>Penerima / Email</th><th>Informasi undangan</th><th class="num"><span class="sr-only">Aksi</span></th></tr></thead><tbody id="invList"></tbody></table></div></article>
+    <article class="card adm-table"><div class="table-wrap"><table class="tbl invitation-table"><thead><tr><th>Penerima / Email</th><th>Informasi undangan</th><th class="num"><span class="sr-only">Aksi</span></th></tr></thead><tbody id="invList"></tbody></table></div></article>
   </section>
 </div>
 
 <!-- STYLE MODAL UNDANG -->
 <style>
+.invitation-table td { overflow-wrap: anywhere; }
+.invitation-table td.act { white-space: normal; }
+@media (max-width: 640px) {
+  .invitation-table, .invitation-table tbody, .invitation-table tr, .invitation-table td { display: block; min-width: 0; width: 100%; }
+  .invitation-table thead { display: none; }
+  .invitation-table tbody tr + tr { border-top: 1px solid var(--line); }
+  .invitation-table td { border: 0; padding: 8px 16px; text-align: left; }
+  .invitation-table td:first-child { padding-top: 16px; }
+  .invitation-table td.act { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 16px; }
+  .invitation-table .btn { min-height: 44px; }
+  #inviteForm textarea { font-size: 16px; }
+}
   /* Modal Kartu Warna Putih */
   #inviteDlg, 
   #inviteDlg .dlg__body, 
@@ -96,7 +108,7 @@
 
 <dialog class="dlg dlg--wide" id="inviteDlg" aria-labelledby="invTitle">
   <form method="dialog" id="inviteForm" novalidate>
-    <div class="dlg__head"><div><h2 id="invTitle">Undang panitia</h2><p class="set-sub">Buat tautan undangan yang bisa kamu bagikan secara manual.</p></div><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
+    <div class="dlg__head"><div><h2 id="invTitle">Undang panitia</h2><p class="set-sub">Kirim undangan bergabung ke email panitia.</p></div><button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button></div>
     <div class="dlg__body">
       <div class="field"><label for="ivEmail">Email</label><textarea id="ivEmail" name="email" rows="2" placeholder="nama@email.com, nama2@email.com" autocomplete="off"></textarea><small class="hint">Pisahkan dengan koma atau baris baru. Maksimal 10 email.</small></div>
       <fieldset class="field iv-events"><legend>Peran</legend><div class="role-cards" id="ivPeran"></div></fieldset>
@@ -106,9 +118,9 @@
         <div id="ivEventList" class="iv-eventlist" hidden></div>
       </fieldset>
       <div class="field"><label for="ivPesan">Pesan (opsional)</label><textarea id="ivPesan" name="pesan" rows="2" maxlength="200" placeholder="Contoh: Tolong bantu check-in di hari H."></textarea></div>
-      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Sistem demo tidak mengirim email. Salin tautan untuk membagikannya; kamu bisa memperbarui masa berlaku atau membatalkan undangan dari tab Undangan tertunda.</p>
+      <p class="iv-note"><b>Tautan berlaku 7 hari.</b> Undangan dikirim otomatis melalui email. Kamu juga bisa menyalin tautan, mengirim ulang, atau membatalkan undangan dari tab Undangan tertunda.</p>
     </div>
-    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Buat undangan</button></div>
+    <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Kirim undangan</button></div>
   </form>
 </dialog>
 

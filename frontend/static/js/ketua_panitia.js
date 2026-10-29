@@ -1449,11 +1449,19 @@ $("#timStats").innerHTML =
       }).join("") : '<tr><td colspan="5"><p class="tbl-empty">Belum ada anggota. Undang panitia pertamamu.</p></td></tr>';
       $("#invList").innerHTML = invites.length ? invites.map(function (i) {
   return '<tr><td><span class="cell-title">' + esc(i.email) + "</span></td>" +
-    "<td>" + esc(PERAN[i.peran].nama) + " &middot; dikirim " + esc(i.kirim) + " &middot; " + (i.sisa <= 1 ? "kedaluwarsa besok" : "berlaku " + i.sisa + " hari lagi") + "</td>" +
-    '<td class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '" data-url="' + esc(i.url) + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Perbarui masa berlaku</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></td></tr>';
+    "<td>" + esc(PERAN[i.peran].nama) + " &middot; tautan diperbarui " + esc(i.kirim) + " &middot; " + (i.sisa === 0 ? "kedaluwarsa" : i.sisa === 1 ? "berlaku kurang dari 1 hari" : "berlaku " + i.sisa + " hari lagi") +
+    '<span class="cell-sub">' + (i.email_sent ? "Email terakhir dikirim " + esc(i.email_sent_at) : "Email belum terkirim. Gunakan Kirim ulang atau salin tautan.") + "</span></td>" +
+    '<td class="act"><button type="button" class="btn btn--ghost sm" data-copy="' + i.id + '" data-url="' + esc(i.url) + '">Salin tautan</button> <button type="button" class="btn btn--ghost sm" data-resend="' + i.id + '">Kirim ulang</button> <button type="button" class="btn btn--ghost sm" data-cancel="' + i.id + '">Batalkan</button></td></tr>';
 }).join("") : '<tr><td colspan="3"><p class="tbl-empty">Tidak ada undangan tertunda.</p></td></tr>';
     }
     function member(id) { return team.filter(function (m) { return String(m.id) === String(id); })[0]; }
+    function invitationDeliveryMessage(data) {
+      var delivery = data.delivery;
+      if (delivery.failed.length) {
+        return "Undangan tersimpan. " + delivery.sent.length + " email dikirim, " + delivery.failed.length + " gagal. Gunakan Kirim ulang atau salin tautan.";
+      }
+      return delivery.sent.length + " email undangan dikirim. Tautan berlaku 7 hari.";
+    }
     $("#timBody").addEventListener("click", function (ev) {
       var t = ev.target.closest("[data-toggle]"), r = ev.target.closest("[data-remove]");
       if (t) {
@@ -1483,9 +1491,12 @@ $("#timStats").innerHTML =
         else { toast("Tautan: " + link); }
       }
       if (a) {
+        a.disabled = true;
+        a.textContent = "Mengirim…";
         postForm("/ketua-panitia/api/settings/invitations/" + a.dataset.resend + "/", { action: "resend" })
-          .then(function (data) { applySettings(data.settings); toast("Masa berlaku tautan diperbarui selama 7 hari."); })
-          .catch(function (error) { toast(error.message); });
+          .then(function (data) { applySettings(data.settings); toast(invitationDeliveryMessage(data)); })
+          .catch(function (error) { toast(error.message); })
+          .finally(function () { a.disabled = false; a.textContent = "Kirim ulang"; });
       }
       if (c) {
         var invite = invites.filter(function (item) { return String(item.id) === c.dataset.cancel; })[0];
@@ -1528,6 +1539,8 @@ $("#timStats").innerHTML =
         var m = document.createElement("small"); m.className = "err"; m.textContent = err;
         (field ? field.closest(".field") : evList.parentNode).appendChild(m); if (field) { field.focus(); } return;
       }
+      var submit = form.querySelector('[type="submit"]');
+      submit.disabled = true; submit.textContent = "Mengirim…";
       postJSON("/ketua-panitia/api/settings/invitations/", {
         emails: emails,
         event_ids: picked,
@@ -1535,11 +1548,11 @@ $("#timStats").innerHTML =
         message: form.pesan.value.trim()
       }).then(function (data) {
         dlg.close(); applySettings(data.settings);
-        toast("Undangan tersimpan. Salin tautan untuk membagikannya; email tidak dikirim otomatis.");
+        toast(invitationDeliveryMessage(data));
       }).catch(function (error) {
         var m = document.createElement("small"); m.className = "err"; m.textContent = error.message;
         form.email.closest(".field").appendChild(m); form.email.focus();
-      });
+      }).finally(function () { submit.disabled = false; submit.textContent = "Kirim undangan"; });
     });
     renderTim();
 
@@ -1568,14 +1581,16 @@ $("#timStats").innerHTML =
     var pr = (window.EO_SETTINGS && window.EO_SETTINGS.profile) || {}, b = $(".eo-user b"), ava = $(".eo-user__ava");
     if (pr.name && b) { b.textContent = pr.name; }
     if (ava) {
-      ava.style.backgroundImage = pr.photo ? 'url("' + pr.photo + '")' : "";
-      ava.textContent = pr.photo ? "" : sbInitials(b ? b.textContent : "");
+      var hasProfileData = Boolean(window.EO_SETTINGS && window.EO_SETTINGS.profile);
+      var photo = hasProfileData ? pr.photo : ava.dataset.photoUrl;
+      ava.style.backgroundImage = photo ? 'url("' + photo + '")' : "";
+      ava.textContent = photo ? "" : sbInitials(b ? b.textContent : "");
     }
   }
 
+  applySidebarName();
   var pages = { dashboard: pageDashboard, event: pageEvent, peserta: pagePeserta, pendapatan: pagePendapatan, log: pageLog, support: pageSupport, pengaturan: pagePengaturan };  
   var fn = pages[document.body.dataset.page];
   if (fn) { fn(); }
-  applySidebarName(); 
   initNewEvent();
 })();

@@ -16,8 +16,9 @@
   <div class="dlg__body">
     <div class="field"><label for="ufNama">Nama lengkap</label><input id="ufNama" name="nama" type="text" maxlength="80"></div>
     <div class="field"><label for="ufEmail">Email</label><input id="ufEmail" name="email" type="email"></div>
-    <div class="field"><label for="ufPeran">Peran</label><div class="select-wrap"><select id="ufPeran" name="peran"><option value="peserta">Peserta</option><option value="penyelenggara">Ketua Panitia</option><option value="panitia">Panitia</option><option value="admin">Admin Platform</option></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></div></div>
+    <div class="field"><label for="ufPeran">Peran</label><div class="select-wrap"><select id="ufPeran" name="peran"><option value="peserta">Peserta</option><option value="penyelenggara">Ketua Panitia</option><option value="panitia">Panitia</option></select><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></div></div>
     <div class="field"><label for="ufOrg">Organisasi (opsional)</label><input id="ufOrg" name="org" type="text" maxlength="80"></div>
+    <div class="field"><label for="ufPassword">Kata sandi awal</label><input id="ufPassword" name="password" type="password" minlength="12" autocomplete="new-password" placeholder="Minimal 12 karakter"></div>
     <div class="dlg__foot"><button type="button" class="btn btn--ghost" data-close>Batal</button><button type="submit" class="btn">Simpan</button></div>
   </div></form></dialog>
   <button type="button" class="fab fab--fixed" id="addUserBtn"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Tambah pengguna</button>

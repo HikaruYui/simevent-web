@@ -1,0 +1,19 @@
+{% autoescape off %}Halo,
+
+{{ organizer_name }} mengundang kamu bergabung sebagai panitia di SIMEVENT.
+
+{% if invitation.access_all %}Akses: semua event milik ketua panitia.
+{% else %}Akses event:
+{% for name in event_names %}- {{ name }}
+{% endfor %}{% endif %}{% if invitation.message %}
+Pesan dari ketua panitia:
+{{ invitation.message }}
+{% endif %}
+Terima undangan dan buat akun melalui tautan berikut:
+{{ acceptance_url }}
+
+Tautan berlaku sampai {{ expires_at|date:"d M Y, H:i T" }} dan hanya bisa digunakan untuk email {{ invitation.email }}.
+Jika kamu tidak mengenali undangan ini, abaikan email ini.
+
+SIMEVENT
+{% endautoescape %}

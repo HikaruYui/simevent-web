@@ -141,7 +141,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# Email pengembangan ditampilkan di terminal. Produksi perlu konfigurasi SMTP.
+# Email aplikasi dikirim melalui SMTP Gmail menggunakan kredensial lingkungan.
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587

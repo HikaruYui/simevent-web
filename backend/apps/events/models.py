@@ -484,6 +484,7 @@ class OrganizerInvitation(models.Model):
     access_all = models.BooleanField(default=True)
     events = models.ManyToManyField(Event, related_name="committee_invitations", blank=True)
     sent_at = models.DateTimeField(default=timezone.now)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField()
 
     class Meta:
@@ -524,6 +525,77 @@ class OrganizerSupportTicket(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+
+
+class PlatformSettings(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    platform_fee_percent = models.DecimalField(max_digits=4, decimal_places=2, default=5)
+    event_approval_required = models.BooleanField(default=True)
+    notifications = models.JSONField(default=dict, blank=True)
+    category_enabled = models.JSONField(default=dict, blank=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="platform_settings_updates",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(id=1),
+                name="platform_settings_singleton_id",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(platform_fee_percent__gte=0, platform_fee_percent__lte=20),
+                name="platform_fee_percent_range",
+            ),
+        ]
+
+
+class PlatformPayout(models.Model):
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="platform_payouts",
+    )
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="issued_platform_payouts",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(amount__gt=0),
+                name="platform_payout_amount_positive",
+            ),
+        ]
+
+
+class PlatformAuditLog(models.Model):
+    category = models.CharField(max_length=20)
+    description = models.CharField(max_length=500)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="platform_audit_entries",
+    )
+    actor_label = models.CharField(max_length=150, blank=True)
+    actor_role = models.CharField(max_length=80, default="Admin Platform")
+    seed_key = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ("-created_at", "-pk")

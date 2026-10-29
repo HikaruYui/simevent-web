@@ -39,6 +39,22 @@ docker compose exec backend python manage.py createsuperuser
 
 untuk admin cukup tambahkan "/admin/" di belakang untuk akses admin
 
+### Email undangan panitia
+
+Undangan dari **Ketua Panitia → Pengaturan** dikirim otomatis lewat SMTP Gmail.
+Isi `EMAIL_HOST_USER` dengan alamat pengirim dan `EMAIL_HOST_PASSWORD` dengan
+app password Gmail di lingkungan backend, lalu restart backend. Jalankan migrasi
+untuk menambahkan waktu pengiriman email terakhir:
+
+```bash
+docker compose exec backend python manage.py migrate
+```
+
+Email berisi pesan, akses event, dan tautan penerimaan yang berlaku tujuh hari.
+Gunakan alamat web yang bisa diakses penerima; tautan mengikuti alamat saat
+membuka aplikasi. Jika SMTP gagal, undangan tetap tersimpan dan bisa **Kirim ulang**
+atau **Salin tautan**. Seed tidak mengirim email saat dijalankan.
+
 ### PERINTAH LAIN
 
 | Perintah | Fungsi |

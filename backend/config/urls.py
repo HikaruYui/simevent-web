@@ -99,6 +99,13 @@ urlpatterns = [
     path("admin-panel/finance/", views.admin_finance, name="admin_finance"),
     path("admin-panel/audit/", views.admin_audit, name="admin_audit"),
     path("admin-panel/settings/", views.admin_settings, name="admin_settings"),
+    path("admin-panel/api/users/", views.admin_user_mutation, name="admin_user_create"),
+    path("admin-panel/api/users/<int:pk>/", views.admin_user_mutation, name="admin_user_mutation"),
+    path("admin-panel/api/proposals/<int:pk>/review/", views.admin_proposal_review, name="admin_proposal_review"),
+    path("admin-panel/api/support/<str:code>/", views.admin_support_mutation, name="admin_support_mutation"),
+    path("admin-panel/api/payouts/", views.admin_payout, name="admin_payout"),
+    path("admin-panel/api/settings/", views.admin_settings_mutation, name="admin_settings_mutation"),
+    path("admin-panel/api/profile/", views.admin_profile_mutation, name="admin_profile_mutation"),
     path("admin-panel/support/", views.admin_support, name="admin_support"),
 
     path(

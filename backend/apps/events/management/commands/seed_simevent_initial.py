@@ -20,6 +20,8 @@ from apps.events.models import (
     OrganizerInvitation,
     OrganizerPreference,
     OrganizerSupportTicket,
+    PlatformSettings,
+    PlatformAuditLog,
 )
 from apps.registrations.models import (
     Registration,
@@ -147,6 +149,77 @@ class Command(BaseCommand):
 
         admin = accounts["admin@simevent.id"]
         budi = accounts["budi@simevent.id"]
+        ui_seed = load_demo_catalog()["ui"]
+        now = timezone.now()
+
+        shared_settings = ui_seed["shared_defaults"]["settings"]
+        PlatformSettings.objects.get_or_create(
+            pk=1,
+            defaults={
+                "platform_fee_percent": shared_settings["feePct"],
+                "event_approval_required": shared_settings["approvalRequired"],
+                "notifications": shared_settings["notif"],
+                "category_enabled": shared_settings["categories"],
+            },
+        )
+
+        for category_name, enabled in shared_settings["categories"].items():
+            if not EventType.objects.filter(name__iexact=category_name).exists():
+                code = category_name.lower().replace(" ", "-")
+                EventType.objects.get_or_create(
+                    code=code,
+                    defaults={"name": category_name, "is_active": enabled},
+                )
+
+        organizer_names = {
+            item["email"].lower(): item.get("org", "")
+            for item in ui_seed["admin_users"]
+            if item["peran"] == "penyelenggara"
+        }
+        for email, organization in organizer_names.items():
+            organizer = accounts.get(email)
+            if not organizer or not organization:
+                continue
+            preference, _ = OrganizerPreference.objects.get_or_create(user=organizer)
+            if not preference.organization_name:
+                preference.organization_name = organization
+                preference.save(update_fields=("organization_name", "updated_at"))
+
+        seeded_proposals = 0
+        for email, organization, proposal_text, submitted in PROPOSALS:
+            applicant = accounts.get(email.lower())
+            if not applicant or OrganizerProposal.objects.filter(applicant=applicant).exists():
+                continue
+            _, created = OrganizerProposal.objects.get_or_create(
+                applicant=applicant,
+                organization_name=organization,
+                defaults={
+                    "contact_information": applicant.email,
+                    "proposal_text": proposal_text,
+                    "status": ProposalStatus.SUBMITTED,
+                    "submitted_at": tanggal(submitted),
+                },
+            )
+            seeded_proposals += int(created)
+
+        seeded_audit = 0
+        for index, entry in enumerate(ui_seed["audit"], start=1):
+            ago = entry["waktu"]
+            days_ago = 0 if ago == "Hari ini" else int(ago.split()[0]) * (7 if "minggu" in ago else 30 if "bulan" in ago else 1)
+            actor_name = entry["aktor"]
+            actor = admin if actor_name == "{admin}" else None
+            _, created = PlatformAuditLog.objects.get_or_create(
+                seed_key=f"demo-audit-{index}",
+                defaults={
+                    "category": entry["tipe"],
+                    "description": entry["teks"],
+                    "actor": actor,
+                    "actor_label": admin.get_full_name() if actor else actor_name,
+                    "actor_role": entry["peran"],
+                    "created_at": now - timedelta(days=days_ago),
+                },
+            )
+            seeded_audit += int(created)
 
         # EVENT TYPES
 
@@ -318,7 +391,6 @@ class Command(BaseCommand):
             kp_events.append((event, sold, status))
 
         # DATA DEMO KETUA PANITIA: preferensi, tim, undangan, dan tiket support.
-        ui_seed = load_demo_catalog()["ui"]
         organizer_preferences = ui_seed["organizer_notifications"]
         OrganizerPreference.objects.get_or_create(
             user=budi,
@@ -446,6 +518,38 @@ class Command(BaseCommand):
                         "reason": load_demo_catalog()["ui"]["event_rejection_reason"],
                     },
                 )
+
+        seeded_support = 0
+        for ticket_data in ui_seed["extra_tickets"]:
+            event_index = int(ticket_data["eventId"]) - 101
+            if not 0 <= event_index < len(admin_events):
+                continue
+            event = admin_events[event_index][0]
+            organizer = event.organizer
+            created_at = timezone.make_aware(
+                datetime.strptime(ticket_data["tanggal"], "%Y-%m-%d"),
+                timezone.get_current_timezone(),
+            )
+            ticket_status = (
+                OrganizerSupportTicket.Status.RESOLVED
+                if ticket_data["status"] == "selesai"
+                else OrganizerSupportTicket.Status.IN_PROGRESS
+            )
+            _, created = OrganizerSupportTicket.objects.get_or_create(
+                code=ticket_data["id"],
+                defaults={
+                    "organizer": organizer,
+                    "event": event,
+                    "reporter": ticket_data["pelapor"],
+                    "title": ticket_data["judul"],
+                    "description": ticket_data["isi"],
+                    "status": ticket_status,
+                    "reply": ticket_data.get("balasan", ""),
+                    "created_at": created_at,
+                    "resolved_at": created_at if ticket_status == OrganizerSupportTicket.Status.RESOLVED else None,
+                },
+            )
+            seeded_support += int(created)
 
         # 300 PESERTA & REGISTRASI KETUA PANITIA
 
@@ -623,6 +727,12 @@ class Command(BaseCommand):
         )
         self.stdout.write(
             f"Tiket support baru  : {seeded_support}"
+        )
+        self.stdout.write(
+            f"Pengajuan EO baru   : {seeded_proposals}"
+        )
+        self.stdout.write(
+            f"Audit demo baru     : {seeded_audit}"
         )
         self.stdout.write(
             f"Proposal baru      : {proposal_count}"

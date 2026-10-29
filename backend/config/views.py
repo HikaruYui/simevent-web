@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group, Permission
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -20,11 +20,12 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.accounts.forms import ProfileForm
 from apps.accounts.permissions import require_organizer
 from apps.events.forms import AdminEventForm, EventForm
+from apps.events.invitations import send_invitation_emails
 from apps.achievements.models import Achievement
 from django.core.exceptions import PermissionDenied
 from collections import Counter, defaultdict
-from datetime import timedelta
 from decimal import Decimal
+from django.utils.text import slugify
 from apps.registrations.models import Ticket
 from apps.registrations.models import (
     Attendance,
@@ -46,8 +47,16 @@ from apps.events.models import (
     OrganizerInvitation,
     OrganizerPreference,
     OrganizerSupportTicket,
+    PlatformAuditLog,
+    PlatformPayout,
+    PlatformSettings,
 )
 from apps.accounts.forms import RegistrationForm
+from apps.accounts.models import AccountAccessChange
+from apps.accounts.services import change_account_access
+from apps.accounts.role_service import set_account_role
+from apps.partnerships.models import OrganizerProposal, ProposalStatus, ProposalReview
+from apps.partnerships.services import review_proposal
 
 
 @never_cache
@@ -1535,6 +1544,11 @@ def _eo_settings_payload(user):
             "email": invitation.email,
             "peran": "panitia",
             "kirim": timezone.localtime(invitation.sent_at).strftime("%d %b %Y"),
+            "email_sent": invitation.email_sent_at is not None,
+            "email_sent_at": (
+                timezone.localtime(invitation.email_sent_at).strftime("%d %b %Y, %H:%M")
+                if invitation.email_sent_at else ""
+            ),
             "sisa": remaining_days,
             "url": reverse("eo_invitation_accept", args=[invitation.token]),
         })
@@ -1730,6 +1744,7 @@ def eo_settings_invite(request):
 
     now = timezone.now()
     message = str(payload.get("message", ""))[:200]
+    invitations = []
     with transaction.atomic():
         for email in normalized:
             invitation = OrganizerInvitation.objects.create(
@@ -1742,7 +1757,13 @@ def eo_settings_invite(request):
             )
             if not access_all:
                 invitation.events.set(managed_events.filter(pk__in=selected_ids))
-    return JsonResponse({"ok": True, "settings": _eo_settings_payload(request.user)})
+            invitations.append(invitation)
+    delivery = send_invitation_emails(invitations, site_url=request.build_absolute_uri("/"))
+    return JsonResponse({
+        "ok": True,
+        "delivery": delivery,
+        "settings": _eo_settings_payload(request.user),
+    })
 
 
 @login_required(login_url="login_page")
@@ -1753,15 +1774,23 @@ def eo_settings_invitation_action(request, pk):
         OrganizerInvitation.objects.filter(organizer=request.user), pk=pk,
     )
     action = request.POST.get("action")
+    delivery = None
     if action == "cancel":
         invitation.delete()
     elif action == "resend":
         invitation.sent_at = timezone.now()
         invitation.expires_at = invitation.sent_at + timedelta(days=7)
         invitation.save(update_fields=("sent_at", "expires_at"))
+        delivery = send_invitation_emails(
+            [invitation], site_url=request.build_absolute_uri("/"),
+        )
     else:
         return JsonResponse({"error": "Aksi undangan tidak dikenal."}, status=400)
-    return JsonResponse({"ok": True, "settings": _eo_settings_payload(request.user)})
+    return JsonResponse({
+        "ok": True,
+        "delivery": delivery,
+        "settings": _eo_settings_payload(request.user),
+    })
 
 
 def eo_invitation_accept(request, token):
@@ -1938,6 +1967,321 @@ def panitia_event_detail(
         },
     )
 
+def _admin_event_rows():
+    now = timezone.now()
+    events = list(
+        Event.objects.select_related("event_type", "organizer")
+        .annotate(
+            ticket_count=Count(
+                "registrations",
+                filter=(
+                    Q(
+                        registrations__status=RegistrationStatus.REGISTERED,
+                        registrations__ticket__is_active=True,
+                    )
+                    & (
+                        Q(price=0)
+                        | Q(registrations__payment__status=Payment.Status.APPROVED)
+                    )
+                ),
+                distinct=True,
+            )
+        )
+        .order_by("-created_at", "-pk")
+    )
+    reasons = {}
+    for transition in EventTransition.objects.filter(
+        event_id__in=[event.pk for event in events]
+    ).order_by("-created_at", "-pk"):
+        reasons.setdefault(transition.event_id, transition.reason)
+    status_map = {
+        EventStatus.DRAFT: "draft",
+        EventStatus.SUBMITTED: "diajukan",
+        EventStatus.NEEDS_REVISION: "revisi",
+        EventStatus.APPROVED: "disetujui",
+        EventStatus.REJECTED: "ditolak",
+        EventStatus.COMPLETED: "selesai",
+        EventStatus.CANCELLED: "dibatalkan",
+    }
+    rows = []
+    for event in events:
+        if event.status == EventStatus.PUBLISHED:
+            status = (
+                "selesai" if event.end_datetime <= now
+                else "berlangsung" if event.start_datetime <= now
+                else "mendatang"
+            )
+        else:
+            status = status_map.get(event.status, "draft")
+        rows.append({
+            "id": event.pk,
+            "nama": event.title,
+            "jenis": event.event_type.name,
+            "tanggal": timezone.localtime(event.start_datetime).strftime("%Y-%m-%d"),
+            "lokasi": event.venue or "Online",
+            "kuota": event.capacity,
+            "terjual": event.ticket_count,
+            "harga": float(event.price),
+            "status": status,
+            "organizer": event.organizer.get_full_name().strip() or event.organizer.email,
+            "organizer_id": event.organizer_id,
+            "organizer_email": event.organizer.email,
+            "deskripsi": event.description,
+            "has_proposal": bool(event.proposal),
+            "alasan": reasons.get(event.pk, ""),
+        })
+    return rows
+
+
+def _admin_user_rows():
+    User = get_user_model()
+    admin_ids = set(User.objects.filter(
+        Q(is_superuser=True)
+        | Q(user_permissions__content_type__app_label="accounts", user_permissions__codename="manage_platform")
+        | Q(groups__permissions__content_type__app_label="accounts", groups__permissions__codename="manage_platform")
+    ).values_list("pk", flat=True).distinct())
+    organizer_ids = set(User.objects.filter(
+        Q(user_permissions__content_type__app_label="accounts", user_permissions__codename="access_head_organizer")
+        | Q(groups__permissions__content_type__app_label="accounts", groups__permissions__codename="access_head_organizer")
+    ).values_list("pk", flat=True).distinct())
+    committee_ids = set(User.objects.filter(
+        Q(user_permissions__content_type__app_label="accounts", user_permissions__codename="access_organizer")
+        | Q(groups__permissions__content_type__app_label="accounts", groups__permissions__codename="access_organizer")
+    ).values_list("pk", flat=True).distinct())
+    users = list(User.objects.annotate(
+        registration_count=Count(
+            "registrations",
+            filter=Q(registrations__status=RegistrationStatus.REGISTERED),
+            distinct=True,
+        )
+    ).order_by("email"))
+    organizer_preferences = {
+        item.user_id: item.organization_name
+        for item in OrganizerPreference.objects.filter(user_id__in=[u.pk for u in users])
+    }
+    committee_orgs = {}
+    for assignment in EventCommitteeAssignment.objects.filter(
+        member_id__in=[u.pk for u in users], is_active=True,
+    ).select_related("event__organizer"):
+        committee_orgs.setdefault(
+            assignment.member_id,
+            assignment.event.organizer.get_full_name().strip() or assignment.event.organizer.email,
+        )
+    rows = []
+    for user in users:
+        role = (
+            "admin" if user.pk in admin_ids
+            else "penyelenggara" if user.pk in organizer_ids
+            else "panitia" if user.pk in committee_ids
+            else "peserta"
+        )
+        rows.append({
+            "id": user.pk,
+            "email": user.email,
+            "nama": user.get_full_name().strip() or user.email,
+            "peran": role,
+            "org": organizer_preferences.get(user.pk) or committee_orgs.get(user.pk) or ("Platform SIMEVENT" if role == "admin" else "-"),
+            "daftar": user.registration_count,
+            "status": "aktif" if user.is_active else "dibekukan",
+            "is_superuser": user.is_superuser,
+        })
+    return rows
+
+
+def _admin_proposal_rows():
+    statuses = {
+        ProposalStatus.SUBMITTED: "diajukan",
+        ProposalStatus.NEEDS_REVISION: "revisi",
+        ProposalStatus.APPROVED: "disetujui",
+        ProposalStatus.REJECTED: "ditolak",
+        ProposalStatus.DRAFT: "draft",
+    }
+    proposals = OrganizerProposal.objects.select_related("applicant").prefetch_related(
+        Prefetch(
+            "reviews",
+            queryset=ProposalReview.objects.order_by("-created_at", "-pk"),
+            to_attr="admin_reviews",
+        )
+    )
+    return [{
+        "id": proposal.pk,
+        "nama": proposal.applicant.get_full_name().strip() or proposal.applicant.email,
+        "email": proposal.applicant.email,
+        "org": proposal.organization_name,
+        "rencana": proposal.proposal_text,
+        "tanggal": timezone.localtime(proposal.submitted_at or proposal.created_at).strftime("%Y-%m-%d"),
+        "status": statuses[proposal.status],
+        "alasan": proposal.admin_reviews[0].reason if proposal.admin_reviews else "",
+    } for proposal in proposals]
+
+
+def _admin_ticket_rows():
+    return [{
+        "id": ticket.code,
+        "judul": ticket.title,
+        "pelapor": ticket.reporter,
+        "org": ticket.organizer.get_full_name().strip() or ticket.organizer.email,
+        "eventId": ticket.event_id,
+        "tanggal": timezone.localtime(ticket.created_at).date().isoformat(),
+        "status": "selesai" if ticket.status == OrganizerSupportTicket.Status.RESOLVED else "diaudit",
+        "isi": ticket.description,
+        "balasan": ticket.reply,
+    } for ticket in OrganizerSupportTicket.objects.select_related("organizer", "event")]
+
+
+def _admin_finance_payload():
+    settings_row, _ = PlatformSettings.objects.get_or_create(pk=1)
+    fee = Decimal(settings_row.platform_fee_percent)
+    events = list(Event.objects.select_related("organizer"))
+    valid_registrations = Registration.objects.filter(
+        event_id__in=[event.pk for event in events],
+        status=RegistrationStatus.REGISTERED,
+        ticket__is_active=True,
+    ).filter(Q(event__price=0, payment__isnull=True) | Q(payment__status=Payment.Status.APPROVED))
+    ticket_counts = dict(valid_registrations.values("event__organizer_id").annotate(total=Count("pk")).values_list("event__organizer_id", "total"))
+    payments = list(Payment.objects.filter(
+        registration__event_id__in=[event.pk for event in events],
+        registration__status=RegistrationStatus.REGISTERED,
+        status=Payment.Status.APPROVED,
+    ).select_related("registration__event__organizer"))
+    paid_amounts = defaultdict(lambda: Decimal("0"))
+    completed_amounts = defaultdict(lambda: Decimal("0"))
+    monthly = defaultdict(lambda: Decimal("0"))
+    event_count = defaultdict(int)
+    for event in events:
+        if event.status not in (EventStatus.SUBMITTED, EventStatus.REJECTED, EventStatus.DRAFT):
+            event_count[event.organizer_id] += 1
+    for payment in payments:
+        organizer_id = payment.registration.event.organizer_id
+        paid_amounts[organizer_id] += payment.amount
+        if payment.registration.event.status == EventStatus.COMPLETED:
+            completed_amounts[organizer_id] += payment.amount
+        if payment.reviewed_at:
+            key = timezone.localtime(payment.reviewed_at).strftime("%Y-%m")
+            monthly[key] += payment.amount * fee / Decimal("100")
+    payout_totals = defaultdict(lambda: Decimal("0"))
+    for payout in PlatformPayout.objects.all():
+        payout_totals[payout.organizer_id] += payout.amount
+    organizer_ids = set(ticket_counts) | set(paid_amounts) | set(event_count)
+    users = get_user_model().objects.filter(pk__in=organizer_ids).order_by("email")
+    rows = []
+    for user in users:
+        gross = paid_amounts[user.pk]
+        fee_amount = (gross * fee / Decimal("100")).quantize(Decimal("1"))
+        net_completed = completed_amounts[user.pk] - (
+            completed_amounts[user.pk] * fee / Decimal("100")
+        ).quantize(Decimal("1"))
+        withdrawn = payout_totals[user.pk]
+        rows.append({
+            "organizer_id": user.pk,
+            "nama": user.get_full_name().strip() or user.email,
+            "event": event_count[user.pk],
+            "tiket": ticket_counts.get(user.pk, 0),
+            "kotor": float(gross),
+            "fee": float(fee_amount),
+            "bersih": float(gross - fee_amount),
+            "cair": float(withdrawn),
+            "tersedia": float(max(Decimal("0"), net_completed - withdrawn)),
+        })
+    rows.sort(key=lambda row: row["kotor"], reverse=True)
+    now = timezone.localtime(timezone.now())
+    current_month = now.year * 12 + now.month - 1
+    month_keys = []
+    for offset in range(5, -1, -1):
+        year, month_zero = divmod(current_month - offset, 12)
+        month_keys.append(f"{year:04d}-{month_zero + 1:02d}")
+    labels = [datetime.strptime(key, "%Y-%m").strftime("%b") for key in month_keys]
+    values = [float(monthly[key]) for key in month_keys]
+    return {
+        "rows": rows,
+        "fee": float(fee),
+        "kotor": float(sum((Decimal(str(row["kotor"])) for row in rows), Decimal("0"))),
+        "feeTotal": float(sum((Decimal(str(row["fee"])) for row in rows), Decimal("0"))),
+        "cair": float(sum((Decimal(str(row["cair"])) for row in rows), Decimal("0"))),
+        "tersedia": float(sum((Decimal(str(row["tersedia"])) for row in rows), Decimal("0"))),
+        "monthly": {"labels": labels, "values": values},
+    }
+
+
+def _admin_audit_rows():
+    rows = []
+    for entry in PlatformAuditLog.objects.select_related("actor"):
+        rows.append({
+            "tipe": entry.category,
+            "teks": entry.description,
+            "aktor": entry.actor.get_full_name().strip() if entry.actor else entry.actor_label,
+            "peran": entry.actor_role,
+            "waktu": timezone.localtime(entry.created_at).strftime("%d %b %Y, %H:%M"),
+            "sort": entry.created_at.isoformat(),
+        })
+    for change in AccountAccessChange.objects.select_related("actor", "user"):
+        rows.append({
+            "tipe": "pengguna", "teks": f"{change.get_action_display()}: {change.user.email} — {change.reason}",
+            "aktor": change.actor.get_full_name().strip() or change.actor.email,
+            "peran": "Admin Platform", "waktu": timezone.localtime(change.created_at).strftime("%d %b %Y, %H:%M"), "sort": change.created_at.isoformat(),
+        })
+    for transition in EventTransition.objects.select_related("actor", "event"):
+        rows.append({
+            "tipe": "event", "teks": f"Status event {transition.event.title} diperbarui: {transition.get_to_status_display()} {transition.reason}".strip(),
+            "aktor": transition.actor.get_full_name().strip() or transition.actor.email,
+            "peran": "Admin Platform", "waktu": timezone.localtime(transition.created_at).strftime("%d %b %Y, %H:%M"), "sort": transition.created_at.isoformat(),
+        })
+    for review in ProposalReview.objects.select_related("actor", "proposal__applicant"):
+        review_status = {
+            ProposalStatus.APPROVED: "disetujui",
+            ProposalStatus.NEEDS_REVISION: "perlu revisi",
+            ProposalStatus.REJECTED: "ditolak",
+            ProposalStatus.SUBMITTED: "diajukan",
+        }.get(review.to_status, review.to_status)
+        rows.append({
+            "tipe": "pengguna", "teks": f"Pengajuan {review.proposal.organization_name}: {review_status} {review.reason}".strip(),
+            "aktor": review.actor.get_full_name().strip() or review.actor.email,
+            "peran": "Admin Platform", "waktu": timezone.localtime(review.created_at).strftime("%d %b %Y, %H:%M"), "sort": review.created_at.isoformat(),
+        })
+    for payment in Payment.objects.filter(
+        status=Payment.Status.APPROVED,
+        reviewed_at__isnull=False,
+    ).select_related("reviewed_by", "registration__participant", "registration__event"):
+        if not payment.reviewed_by:
+            continue
+        rows.append({
+            "tipe": "keuangan",
+            "teks": f"Pembayaran Rp {payment.amount:,.0f} untuk {payment.registration.event.title} disetujui.",
+            "aktor": payment.reviewed_by.get_full_name().strip() or payment.reviewed_by.email,
+            "peran": "Admin Platform",
+            "waktu": timezone.localtime(payment.reviewed_at).strftime("%d %b %Y, %H:%M"),
+            "sort": payment.reviewed_at.isoformat(),
+        })
+    rows.sort(key=lambda row: row["sort"], reverse=True)
+    return rows
+
+
+def _admin_backend_payload(request):
+    setting_row, _ = PlatformSettings.objects.get_or_create(pk=1)
+    categories = [{"name": item.name, "active": item.is_active} for item in EventType.objects.order_by("name")]
+    profile = request.user
+    return {
+        "events": _admin_event_rows(),
+        "users": _admin_user_rows(),
+        "proposals": _admin_proposal_rows(),
+        "tickets": _admin_ticket_rows(),
+        "finance": _admin_finance_payload(),
+        "audit": _admin_audit_rows(),
+        "settings": {
+            "feePct": float(setting_row.platform_fee_percent),
+            "approvalRequired": setting_row.event_approval_required,
+            "categories": {item.name: item.is_active for item in EventType.objects.all()},
+            "categoryRows": categories,
+            "notif": setting_row.notifications,
+        },
+        "profile": {
+            "nama": profile.get_full_name().strip(),
+            "email": profile.email,
+            "foto": profile.profile_photo.url if profile.profile_photo else "",
+        },
+    }
+
+
 def _admin_panel(template):
     @never_cache
     @require_GET
@@ -1945,10 +2289,9 @@ def _admin_panel(template):
     def view(request):
         _require_role(request, "ADMIN")
 
-        return render(
-            request,
-            f"admin/{template}.html",
-        )
+        return render(request, f"admin/{template}.html", {
+            "admin_backend_data": _admin_backend_payload(request),
+        })
 
     return view
 
@@ -1960,102 +2303,13 @@ admin_users = _admin_panel("kelola_pengguna")
 @login_required(login_url="login_page")
 def admin_events(request):
     _require_role(request, "ADMIN")
-
-    now = timezone.now()
-
-    # Ambil seluruh event dari PostgreSQL.
-    # Halaman ini hanya boleh diakses Admin Platform.
-    events = list(
-        Event.objects
-        .select_related("event_type", "organizer")
-        .annotate(
-            ticket_count=Count(
-                "registrations",
-                filter=(
-                    Q(
-                        registrations__status=RegistrationStatus.REGISTERED,
-                        registrations__ticket__is_active=True,
-                    )
-                    & (
-                        Q(price=0)
-                        | Q(
-                            registrations__payment__status=
-                            Payment.Status.APPROVED
-                        )
-                    )
-                ),
-                distinct=True,
-            )
-        )
-        .order_by("-created_at", "-pk")
-    )
-
-    # Ambil catatan keputusan terbaru dari database.
-    reasons = {}
-
-    for transition in (
-        EventTransition.objects
-        .filter(event_id__in=[e.pk for e in events])
-        .order_by("-created_at", "-pk")
-    ):
-        reasons.setdefault(
-            transition.event_id,
-            transition.reason,
-        )
-
-    status_map = {
-        EventStatus.DRAFT: "draft",
-        EventStatus.SUBMITTED: "diajukan",
-        EventStatus.NEEDS_REVISION: "revisi",
-        EventStatus.APPROVED: "disetujui",
-        EventStatus.REJECTED: "ditolak",
-        EventStatus.COMPLETED: "selesai",
-        EventStatus.CANCELLED: "dibatalkan",
-    }
-
-    event_rows = []
-
-    for event in events:
-        if event.status == EventStatus.PUBLISHED:
-            if event.end_datetime <= now:
-                status = "selesai"
-            elif event.start_datetime <= now:
-                status = "berlangsung"
-            else:
-                status = "mendatang"
-        else:
-            status = status_map.get(
-                event.status,
-                "draft",
-            )
-
-        event_rows.append({
-            "id": event.pk,
-            "nama": event.title,
-            "jenis": event.event_type.name,
-            "tanggal": timezone.localtime(
-                event.start_datetime
-            ).strftime("%Y-%m-%d"),
-            "lokasi": event.venue or "Online",
-            "kuota": event.capacity,
-            "terjual": event.ticket_count,
-            "harga": float(event.price),
-            "status": status,
-            "organizer": (
-                event.organizer.get_full_name().strip()
-                or event.organizer.email
-            ),
-            "organizer_email": event.organizer.email,
-            "deskripsi": event.description,
-            "has_proposal": bool(event.proposal),
-            "alasan": reasons.get(event.pk, ""),
-        })
-
+    data = _admin_backend_payload(request)
     return render(
         request,
         "admin/event_admin.html",
         {
-            "backend_admin_event_rows": event_rows,
+            "backend_admin_event_rows": data["events"],
+            "admin_backend_data": data,
         },
     )
 
@@ -2063,6 +2317,296 @@ admin_support = _admin_panel("support_admin")
 admin_finance = _admin_panel("keuangan_admin")
 admin_audit = _admin_panel("audit_admin")
 admin_settings = _admin_panel("pengaturan_admin")
+
+
+def _admin_audit_write(request, category, description):
+    PlatformAuditLog.objects.create(
+        category=category,
+        description=description[:500],
+        actor=request.user,
+        actor_label=request.user.get_full_name().strip() or request.user.email,
+    )
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def admin_user_mutation(request, pk=None):
+    _require_role(request, "ADMIN")
+    User = get_user_model()
+    action = request.POST.get("action", "save")
+    if pk is None:
+        name = " ".join(request.POST.get("nama", "").split())
+        email = request.POST.get("email", "").strip().lower()
+        role = request.POST.get("peran", "peserta")
+        password = request.POST.get("password", "")
+        if not 3 <= len(name) <= 80:
+            return JsonResponse({"error": "Nama harus berisi 3–80 karakter."}, status=400)
+        try:
+            email = forms.EmailField().clean(email).lower()
+        except ValidationError as exc:
+            return JsonResponse({"error": exc.messages[0]}, status=400)
+        if User.objects.filter(email__iexact=email).exists():
+            return JsonResponse({"error": "Email sudah terdaftar."}, status=400)
+        if len(password) < 12:
+            return JsonResponse({"error": "Kata sandi awal minimal 12 karakter."}, status=400)
+        role_map = {"peserta": "PARTICIPANT", "panitia": "COMMITTEE", "penyelenggara": "ORGANIZER"}
+        if role not in role_map:
+            return JsonResponse({"error": "Role akun tidak dapat dibuat dari menu ini."}, status=400)
+        first, _, last = name.partition(" ")
+        with transaction.atomic():
+            user = User.objects.create_user(email=email, password=password, first_name=first, last_name=last)
+            if role != "peserta":
+                set_account_role(actor=request.user, user_id=user.pk, role=role_map[role], reason="Role ditetapkan saat akun dibuat Admin.")
+            if role == "penyelenggara":
+                OrganizerPreference.objects.update_or_create(
+                    user=user,
+                    defaults={"organization_name": request.POST.get("org", "").strip()[:80]},
+                )
+            _admin_audit_write(request, "pengguna", f"Akun {email} dibuat sebagai {role}.")
+        return JsonResponse({"ok": True, "id": user.pk})
+
+    user = get_object_or_404(User, pk=pk)
+    if user.pk == request.user.pk or user.is_superuser or user.has_perm("accounts.manage_platform"):
+        return JsonResponse({"error": "Akun admin tidak dapat diubah dari menu ini."}, status=403)
+    if action in {"freeze", "activate"}:
+        access_action = (
+            AccountAccessChange.Action.SUSPEND
+            if action == "freeze" else AccountAccessChange.Action.ACTIVATE
+        )
+        try:
+            change = change_account_access(
+                actor=request.user,
+                user_id=user.pk,
+                action=access_action,
+                reason=request.POST.get("reason", "").strip(),
+            )
+        except (ValidationError, PermissionDenied) as exc:
+            message = exc.messages[0] if isinstance(exc, ValidationError) else str(exc)
+            return JsonResponse({"error": message}, status=400)
+        return JsonResponse({"ok": True})
+
+    if action != "save":
+        return JsonResponse({"error": "Aksi pengguna tidak dikenal."}, status=400)
+    name = " ".join(request.POST.get("nama", "").split())
+    role = request.POST.get("peran", "peserta")
+    if not 3 <= len(name) <= 80:
+        return JsonResponse({"error": "Nama harus berisi 3–80 karakter."}, status=400)
+    role_map = {"peserta": "PARTICIPANT", "panitia": "COMMITTEE", "penyelenggara": "ORGANIZER"}
+    if role not in role_map:
+        return JsonResponse({"error": "Role tidak valid."}, status=400)
+    first, _, last = name.partition(" ")
+    current_role = user.role
+    current_role_label = {"PARTICIPANT": "peserta", "COMMITTEE": "panitia", "ORGANIZER": "penyelenggara", "ADMIN": "admin"}[current_role]
+    try:
+        with transaction.atomic():
+            if current_role_label != role:
+                set_account_role(actor=request.user, user_id=user.pk, role=role_map[role], reason="Role diperbarui melalui menu Kelola Pengguna.")
+            user.first_name, user.last_name = first, last
+            user.save(update_fields=("first_name", "last_name"))
+            if role == "penyelenggara":
+                OrganizerPreference.objects.update_or_create(
+                    user=user,
+                    defaults={"organization_name": request.POST.get("org", "").strip()[:80]},
+                )
+            _admin_audit_write(request, "pengguna", f"Profil akun {user.email} diperbarui.")
+    except (ValidationError, PermissionDenied) as exc:
+        message = exc.messages[0] if isinstance(exc, ValidationError) else str(exc)
+        return JsonResponse({"error": message}, status=400)
+    return JsonResponse({"ok": True})
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def admin_proposal_review(request, pk):
+    _require_role(request, "ADMIN")
+    decisions = {
+        "approve": ProposalStatus.APPROVED,
+        "revision": ProposalStatus.NEEDS_REVISION,
+        "reject": ProposalStatus.REJECTED,
+    }
+    decision = decisions.get(request.POST.get("decision"))
+    if not decision:
+        return JsonResponse({"error": "Keputusan proposal tidak valid."}, status=400)
+    try:
+        proposal = review_proposal(
+            actor=request.user,
+            proposal_id=pk,
+            decision=decision,
+            reason=request.POST.get("reason", ""),
+        )
+    except (ValidationError, PermissionDenied) as exc:
+        message = exc.messages[0] if isinstance(exc, ValidationError) else str(exc)
+        return JsonResponse({"error": message}, status=400)
+    return JsonResponse({"ok": True, "status": proposal.status})
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def admin_support_mutation(request, code):
+    _require_role(request, "ADMIN")
+    ticket = get_object_or_404(OrganizerSupportTicket, code=code)
+    action = request.POST.get("action")
+    reply = request.POST.get("reply", "").strip()
+    if action not in {"reply", "resolve"}:
+        return JsonResponse({"error": "Aksi tiket tidak valid."}, status=400)
+    if not reply or len(reply) > 2000:
+        return JsonResponse({"error": "Balasan wajib diisi, maksimal 2000 karakter."}, status=400)
+    ticket.reply = reply
+    ticket.status = (
+        OrganizerSupportTicket.Status.RESOLVED
+        if action == "resolve" else OrganizerSupportTicket.Status.IN_PROGRESS
+    )
+    ticket.resolved_at = timezone.now() if action == "resolve" else None
+    ticket.save(update_fields=("reply", "status", "resolved_at", "updated_at"))
+    _admin_audit_write(request, "support", f"Tiket {ticket.code} {'diselesaikan' if action == 'resolve' else 'dibalas'}.")
+    return JsonResponse({"ok": True})
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def admin_payout(request):
+    _require_role(request, "ADMIN")
+    try:
+        organizer_id = int(request.POST.get("organizer_id", ""))
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Penyelenggara tidak valid."}, status=400)
+    try:
+        with transaction.atomic():
+            organizer = get_object_or_404(get_user_model().objects.select_for_update(), pk=organizer_id)
+            row = next((item for item in _admin_finance_payload()["rows"] if item["organizer_id"] == organizer.pk), None)
+            amount = Decimal(str(row["tersedia"])) if row else Decimal("0")
+            if amount <= 0:
+                return JsonResponse({"error": "Tidak ada dana yang siap dicairkan."}, status=400)
+            payout = PlatformPayout.objects.create(organizer=organizer, actor=request.user, amount=amount)
+            _admin_audit_write(request, "keuangan", f"Pencairan demo Rp {amount:,.0f} dicatat untuk {organizer.email}.")
+    except (ValidationError, PermissionDenied) as exc:
+        message = exc.messages[0] if isinstance(exc, ValidationError) else str(exc)
+        return JsonResponse({"error": message}, status=400)
+    return JsonResponse({"ok": True, "amount": float(payout.amount)})
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def admin_settings_mutation(request):
+    _require_role(request, "ADMIN")
+    setting_row, _ = PlatformSettings.objects.get_or_create(pk=1)
+    action = request.POST.get("action")
+    if action == "platform":
+        try:
+            fee = Decimal(request.POST.get("fee", ""))
+        except Exception:
+            return JsonResponse({"error": "Biaya platform harus berupa angka."}, status=400)
+        if not Decimal("0") <= fee <= Decimal("20"):
+            return JsonResponse({"error": "Biaya platform harus antara 0 dan 20 persen."}, status=400)
+        approval = request.POST.get("approval") == "true"
+        setting_row.platform_fee_percent = fee
+        setting_row.event_approval_required = approval
+        setting_row.updated_by = request.user
+        setting_row.save(update_fields=("platform_fee_percent", "event_approval_required", "updated_by", "updated_at"))
+        description = f"Pengaturan platform diubah: biaya {fee}% dan persetujuan event {'wajib' if approval else 'tidak wajib'}."
+        category = "pengaturan"
+    elif action in {"category-toggle", "category-add"}:
+        name = " ".join(request.POST.get("name", "").split())
+        if action == "category-add":
+            if len(name) < 3 or len(name) > 100:
+                return JsonResponse({"error": "Nama kategori harus berisi 3–100 karakter."}, status=400)
+            code = slugify(name)[:32]
+            if not code:
+                return JsonResponse({"error": "Nama kategori tidak valid."}, status=400)
+            event_type, created = EventType.objects.get_or_create(code=code, defaults={"name": name, "is_active": True})
+            if not created:
+                return JsonResponse({"error": "Kategori sudah ada."}, status=400)
+            setting_row.category_enabled[name] = True
+            description = f'Kategori "{name}" ditambahkan.'
+        else:
+            event_type = get_object_or_404(EventType, name=name)
+            if event_type.is_active and EventType.objects.filter(is_active=True).count() <= 1:
+                return JsonResponse({"error": "Minimal satu kategori harus tetap aktif."}, status=400)
+            event_type.is_active = not event_type.is_active
+            event_type.save(update_fields=("is_active",))
+            setting_row.category_enabled[event_type.name] = event_type.is_active
+            description = f'Kategori "{event_type.name}" {"diaktifkan" if event_type.is_active else "dinonaktifkan"}.'
+        setting_row.updated_by = request.user
+        setting_row.save(update_fields=("category_enabled", "updated_by", "updated_at"))
+        category = "pengaturan"
+    elif action == "notification":
+        key = request.POST.get("key", "")
+        if key not in {"event", "support", "pengajuan", "keuangan"}:
+            return JsonResponse({"error": "Preferensi notifikasi tidak dikenal."}, status=400)
+        setting_row.notifications = dict(setting_row.notifications)
+        setting_row.notifications[key] = request.POST.get("enabled") == "true"
+        setting_row.updated_by = request.user
+        setting_row.save(update_fields=("notifications", "updated_by", "updated_at"))
+        description = f"Notifikasi {key} {'diaktifkan' if setting_row.notifications[key] else 'dinonaktifkan'}."
+        category = "pengaturan"
+    else:
+        return JsonResponse({"error": "Aksi pengaturan tidak dikenal."}, status=400)
+    _admin_audit_write(request, category, description)
+    return JsonResponse({"ok": True})
+
+
+@never_cache
+@require_POST
+@login_required(login_url="login_page")
+def admin_profile_mutation(request):
+    _require_role(request, "ADMIN")
+    user = request.user
+    action = request.POST.get("action")
+    if action == "password":
+        form = PasswordChangeForm(user, {
+            "old_password": request.POST.get("current", ""),
+            "new_password1": request.POST.get("password", ""),
+            "new_password2": request.POST.get("confirm", ""),
+        })
+        if not form.is_valid():
+            errors = [str(error) for items in form.errors.values() for error in items]
+            return JsonResponse({"error": " ".join(errors)}, status=400)
+        user = form.save()
+        update_session_auth_hash(request, user)
+        _admin_audit_write(request, "pengaturan", "Admin mengganti kata sandi akun.")
+        return JsonResponse({"ok": True})
+    if action != "profile":
+        return JsonResponse({"error": "Aksi profil tidak valid."}, status=400)
+    name = " ".join(request.POST.get("name", "").split())
+    email = request.POST.get("email", "").strip().lower()
+    if not 3 <= len(name) <= 80:
+        return JsonResponse({"error": "Nama harus berisi 3–80 karakter."}, status=400)
+    try:
+        email = forms.EmailField().clean(email).lower()
+    except ValidationError as exc:
+        return JsonResponse({"error": exc.messages[0]}, status=400)
+    if get_user_model().objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+        return JsonResponse({"error": "Email sudah digunakan akun lain."}, status=400)
+    upload = request.FILES.get("photo")
+    if upload:
+        if upload.size > 5 * 1024 * 1024 or upload.name.rsplit(".", 1)[-1].lower() not in {"jpg", "jpeg", "png", "webp"}:
+            return JsonResponse({"error": "Gunakan foto JPG, PNG, atau WebP maksimal 5 MB."}, status=400)
+        try:
+            upload = forms.ImageField().clean(upload)
+        except ValidationError as exc:
+            return JsonResponse({"error": exc.messages[0]}, status=400)
+    remove_photo = request.POST.get("remove_photo") == "1"
+    old_name = user.profile_photo.name if user.profile_photo else ""
+    storage = user.profile_photo.storage if user.profile_photo else None
+    first, _, last = name.partition(" ")
+    user.first_name, user.last_name, user.email = first, last, email
+    fields = ["first_name", "last_name", "email"]
+    if upload:
+        user.profile_photo = upload
+        fields.append("profile_photo")
+    elif remove_photo:
+        user.profile_photo = ""
+        fields.append("profile_photo")
+    user.save(update_fields=fields)
+    if old_name and storage and (upload or remove_photo):
+        storage.delete(old_name)
+    _admin_audit_write(request, "pengaturan", "Profil Admin diperbarui.")
+    return JsonResponse({"ok": True})
 
 @never_cache
 @require_http_methods(["GET", "POST"])

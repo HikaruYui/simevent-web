@@ -1,7 +1,17 @@
 (function () {
   "use strict";
 
-  var E = window.EO, S = window.SIM, st = S.state;
+  var E = window.EO;
+  var S = window.SIM || {
+    state: {
+      eventStatus: {}, eventReason: {}, eventPrev: {}, newEvents: [], tickets: {},
+      users: {}, customUsers: [], proposals: {}, payouts: [], activity: [],
+      settings: { feePct: 5, approvalRequired: true, categories: {}, notif: {} }
+    },
+    save: function () {}, log: function () {}, ago: function () { return "Baru saja"; }
+  };
+  var st = S.state;
+  var BACKEND = window.ADMIN_BACKEND || null;
   var ADMIN = (document.querySelector(".eo-user b") || {}).textContent || window.SIMEVENT_DEMO.admin_name;
   var ORG = window.SIMEVENT_DEMO.organizer_name;   /* pemilik 12 event contoh Ketua Panitia */
   // Data database hanya tersedia di halaman Kelola Event Admin.
@@ -9,7 +19,7 @@
 
   var backendAdminEvents = adminRowsElement
     ? JSON.parse(adminRowsElement.textContent)
-    : null;
+    : (BACKEND ? BACKEND.events : null);
 
   /* ---------- Helper ---------- */
   function $(s, r) { return (r || document).querySelector(s); }
@@ -28,6 +38,27 @@
     toastTimer = setTimeout(function () { t.hidden = true; }, 4200);
   }
   function setText(id, v) { var n = document.getElementById(id); if (n) { n.textContent = v; } }
+  function csrfToken() { return document.querySelector('#adminCsrf [name="csrfmiddlewaretoken"]')?.value || ""; }
+  async function adminPost(url, values) {
+    var body = new URLSearchParams(values || {}), csrf = csrfToken();
+    if (!csrf) { throw new Error("Token keamanan tidak ditemukan. Muat ulang halaman."); }
+    var response = await fetch(url, {
+      method: "POST", credentials: "same-origin",
+      headers: { "X-CSRFToken": csrf, "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
+    var data = await response.json().catch(function () { return {}; });
+    if (!response.ok) { throw new Error(data.error || "Permintaan gagal (HTTP " + response.status + ")."); }
+    return data;
+  }
+  async function adminPostForm(url, body) {
+    var csrf = csrfToken();
+    if (!csrf) { throw new Error("Token keamanan tidak ditemukan. Muat ulang halaman."); }
+    var response = await fetch(url, { method: "POST", credentials: "same-origin", headers: { "X-CSRFToken": csrf }, body: body });
+    var data = await response.json().catch(function () { return {}; });
+    if (!response.ok) { throw new Error(data.error || "Permintaan gagal (HTTP " + response.status + ")."); }
+    return data;
+  }
 
   /* Dialog konfirmasi (dengan alasan wajib bila perlu) */
   var dlg = $("#admDlg"), cur = null;
@@ -65,6 +96,7 @@
     o.pendapatan = o.terjual * o.harga;
   });
   function events() {
+    if (BACKEND) { return BACKEND.events; }
     // Halaman Kelola Event menggunakan PostgreSQL.
     if (backendAdminEvents !== null) {
       return backendAdminEvents;
@@ -91,11 +123,9 @@
       return false;
     }
 
-    var csrfInput = document.querySelector(
-      '#adminEventCsrf [name="csrfmiddlewaretoken"]'
-    );
+    var csrf = csrfToken();
 
-    if (!csrfInput) {
+    if (!csrf) {
       toast("Token keamanan tidak ditemukan. Refresh halaman.");
       return false;
     }
@@ -114,7 +144,7 @@
           method: "POST",
           credentials: "same-origin",
           headers: {
-            "X-CSRFToken": csrfInput.value,
+            "X-CSRFToken": csrf,
             "X-Requested-With": "XMLHttpRequest",
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json"
@@ -565,6 +595,7 @@ function openDetail(e, after) {
     return out.slice(0, 48);
   })();
   function users() {
+    if (BACKEND) { return BACKEND.users; }
     var all = BASE_USERS.concat(PESERTA).concat(st.customUsers).map(function (u) {
       var o = st.users[u.email] || {};
       return { email: u.email, nama: u.nama, org: u.org, daftar: u.daftar || 0, peranAsli: u.peran, peran: o.peran || u.peran, status: o.status || u.status || "aktif" };
@@ -574,6 +605,7 @@ function openDetail(e, after) {
   function userByEmail(em) { return users().filter(function (u) { return u.email === em; })[0]; }
   var PROPOSALS = window.SIMEVENT_DEMO.proposals;
   function proposals() {
+    if (BACKEND) { return BACKEND.proposals; }
     return PROPOSALS.map(function (p) { var o = st.proposals[p.id] || {}; return Object.assign({}, p, { status: o.status || "diajukan", alasan: o.alasan || "" }); });
   }
   var PROP_LABEL = { diajukan: "Menunggu Tinjauan", disetujui: "Disetujui", revisi: "Perlu Revisi", ditolak: "Ditolak" };
@@ -586,6 +618,7 @@ function openDetail(e, after) {
   /* ---------- Data: tiket support ---------- */
   var EXTRA_TICKETS = window.SIMEVENT_DEMO.extra_tickets;
   function tickets() {
+    if (BACKEND) { return BACKEND.tickets; }
     var mine = E.tickets.map(function (t) { return { id: t.id, judul: t.judul, pelapor: t.pelapor, org: ORG, eventId: t.eventId, tanggal: t.tanggal, status: t.status, isi: t.isi, balasan: t.balasan || "" }; });
     var more = EXTRA_TICKETS.map(function (t) { var o = st.tickets[t.id] || {}; return Object.assign({}, t, { status: o.status || t.status, balasan: o.balasan || t.balasan || "" }); });
     return mine.concat(more).sort(function (a, b) { return a.tanggal < b.tanggal ? 1 : -1; });
@@ -594,6 +627,7 @@ function openDetail(e, after) {
 
   /* ---------- Data: keuangan ---------- */
   function finance() {
+    if (BACKEND) { return BACKEND.finance; }
     var fee = st.settings.feePct, orgs = {};
     events().forEach(function (e) {
       if (e.status === "diajukan" || e.status === "ditolak") { return; }
@@ -613,6 +647,7 @@ function openDetail(e, after) {
   var AUDIT_SEED = window.SIMEVENT_DEMO.audit.map(function (item) { return Object.assign({}, item, { aktor: item.aktor === "{admin}" ? ADMIN : item.aktor }); });
   var CAT = { daftar: "peserta", hadir: "peserta", bayar: "keuangan", support: "support", event: "event", pengguna: "pengguna", keuangan: "keuangan", pengaturan: "pengaturan" };
   function audit() {
+    if (BACKEND) { return BACKEND.audit; }
     var nEo = st.activity.filter(function (a) { return a.eo; }).length;
     var rows = st.activity.map(function (a) { return { tipe: CAT[a.tipe] || a.tipe, teks: a.teks, aktor: a.aktor, peran: a.peran, waktu: S.ago(a.ts) }; });
     E.activity.slice(nEo).forEach(function (a) { rows.push({ tipe: CAT[a.tipe] || a.tipe, teks: a.teks, aktor: a.tipe === "support" || a.tipe === "event" ? ORG : "Sistem", peran: a.tipe === "support" || a.tipe === "event" ? "Ketua Panitia" : "Sistem", waktu: a.waktu }); });
@@ -813,7 +848,7 @@ function openDetail(e, after) {
       propBox.hidden = !isProp; tableBox.hidden = isProp; $("#userTools").hidden = isProp;
       if (isProp) {
         $("#propList").innerHTML = props.map(function (p) {
-          var act = p.status === "diajukan" || p.status === "revisi"
+          var act = p.status === "diajukan"
             ? '<button type="button" class="btn sm" data-pok="' + p.id + '">Setujui</button> <button type="button" class="btn btn--ghost sm" data-prev="' + p.id + '">Minta revisi</button> <button type="button" class="btn btn--ghost sm" data-pno="' + p.id + '">Tolak</button>' : "";
           return '<li class="prop"><div><b>' + esc(p.org) + "</b><small>Pemohon: " + esc(p.nama) + " &middot; " + esc(p.email) + " &middot; " + fmtDate(p.tanggal) + "</small><p>" + esc(p.rencana) + "</p>" + (p.alasan ? '<p class="muted">Catatan: ' + esc(p.alasan) + "</p>" : "") + '</div><div class="prop__act">' + chip(p.status, PROP_LABEL[p.status]) + act + "</div></li>";
         }).join("");
@@ -823,8 +858,8 @@ function openDetail(e, after) {
       var rows = us.filter(function (u) { return inTab(u, tab) && (!term || (u.nama + " " + u.email + " " + PERAN[u.peran] + " " + u.org).toLowerCase().indexOf(term) !== -1); });
       var pc = Math.max(1, Math.ceil(rows.length / PER)); if (page > pc) { page = pc; }
       body.innerHTML = rows.slice((page - 1) * PER, page * PER).map(function (u) {
-        var self = u.peran === "admin";
-        var act = '<button type="button" class="btn btn--ghost sm" data-edit="' + esc(u.email) + '">Edit</button> <button type="button" class="btn btn--ghost sm" data-reset="' + esc(u.email) + '">Reset sandi</button>';
+        var self = u.peran === "admin" || u.is_superuser;
+        var act = self ? "" : '<button type="button" class="btn btn--ghost sm" data-edit="' + esc(u.email) + '">Edit</button>';
         if (!self) { act += u.status === "aktif" ? ' <button type="button" class="btn btn--ghost sm" data-freeze="' + esc(u.email) + '">Bekukan</button>' : ' <button type="button" class="btn sm" data-unfreeze="' + esc(u.email) + '">Aktifkan</button>'; }
         return '<tr><td><span class="cell-title">' + esc(u.nama) + '</span><span class="cell-sub">' + esc(u.email) + '</span></td><td><span class="role-badge role-badge--' + u.peran + '">' + esc(PERAN[u.peran]) + "</span></td><td>" + esc(u.org) + "</td><td>" +
           (u.peran === "peserta" ? u.daftar + " event" : "-") + "</td><td>" + chip(u.status, { aktif: "Aktif", ditangguhkan: "Ditangguhkan ketua", dibekukan: "Dibekukan admin" }[u.status]) + '</td><td class="act">' + act + "</td></tr>";
@@ -836,28 +871,46 @@ function openDetail(e, after) {
     q.addEventListener("input", function () { page = 1; render(); });
     body.addEventListener("click", function (ev) {
       var b = ev.target.closest("button"); if (!b) { return; }
-      var em = b.dataset.edit || b.dataset.reset || b.dataset.freeze || b.dataset.unfreeze, u = userByEmail(em);
+      var em = b.dataset.edit || b.dataset.freeze || b.dataset.unfreeze, u = userByEmail(em);
       if (b.dataset.freeze) {
         ask({ title: "Bekukan akun " + u.nama + "?", text: "Akun tidak bisa masuk sampai diaktifkan lagi. Datanya tetap tersimpan.", reason: "Alasan pembekuan", ok: "Bekukan", danger: true, onOk: function (r) {
+          if (BACKEND) {
+            adminPost("/admin-panel/api/users/" + u.id + "/", { action: "freeze", reason: r })
+              .then(function () { window.location.reload(); })
+              .catch(function (error) { toast(error.message); });
+            return;
+          }
           st.users[em] = Object.assign(st.users[em] || {}, { status: "dibekukan" });
           S.log("pengguna", "Akun " + u.nama + " (" + PERAN[u.peran] + ") dibekukan: " + r, ADMIN, "Admin Platform", { eo: u.peran === "panitia" || u.nama === ORG });
           toast("Akun " + u.nama + " dibekukan."); render();
         } });
       } else if (b.dataset.unfreeze) {
+        if (BACKEND) {
+          adminPost("/admin-panel/api/users/" + u.id + "/", { action: "activate", reason: "Diaktifkan kembali oleh Admin Platform." })
+            .then(function () { window.location.reload(); })
+            .catch(function (error) { toast(error.message); });
+          return;
+        }
         st.users[em] = Object.assign(st.users[em] || {}, { status: "aktif" });
         S.log("pengguna", "Akun " + u.nama + " diaktifkan kembali", ADMIN, "Admin Platform", { eo: u.peran === "panitia" });
         toast("Akun " + u.nama + " diaktifkan."); render();
-      } else if (b.dataset.reset) {
-        S.log("pengguna", "Tautan atur ulang kata sandi dikirim ke " + u.email, ADMIN, "Admin Platform");
-        toast("Tautan atur ulang kata sandi dikirim ke " + u.email + " (contoh, belum ada email terkirim).");
       } else if (b.dataset.edit) { openForm(u); }
     });
     $("#propList").addEventListener("click", function (ev) {
       var b = ev.target.closest("button"); if (!b) { return; }
       var id = parseInt(b.dataset.pok || b.dataset.prev || b.dataset.pno, 10), p = proposals().filter(function (x) { return x.id === id; })[0];
-      if (b.dataset.pok) { decideProposal(p, "disetujui"); toast(p.nama + " kini menjadi Ketua Panitia untuk " + p.org + "."); render(); }
-      if (b.dataset.prev) { ask({ title: "Minta revisi pengajuan?", text: p.org, reason: "Catatan revisi untuk pemohon", ok: "Kirim permintaan", onOk: function (r) { decideProposal(p, "revisi", r); render(); toast("Permintaan revisi dikirim."); } }); }
-      if (b.dataset.pno) { ask({ title: "Tolak pengajuan?", text: p.org, reason: "Alasan penolakan", ok: "Tolak", danger: true, onOk: function (r) { decideProposal(p, "ditolak", r); render(); toast("Pengajuan ditolak."); } }); }
+      if (b.dataset.pok) {
+        adminPost("/admin-panel/api/proposals/" + p.id + "/review/", { decision: "approve" })
+          .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+      }
+      if (b.dataset.prev) { ask({ title: "Minta revisi pengajuan?", text: p.org, reason: "Catatan revisi untuk pemohon", ok: "Kirim permintaan", onOk: function (r) {
+        adminPost("/admin-panel/api/proposals/" + p.id + "/review/", { decision: "revision", reason: r })
+          .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+      } }); }
+      if (b.dataset.pno) { ask({ title: "Tolak pengajuan?", text: p.org, reason: "Alasan penolakan", ok: "Tolak", danger: true, onOk: function (r) {
+        adminPost("/admin-panel/api/proposals/" + p.id + "/review/", { decision: "reject", reason: r })
+          .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+      } }); }
     });
 
     /* Tambah / edit pengguna */
@@ -867,6 +920,8 @@ function openDetail(e, after) {
       $("#userDlgTitle").textContent = u ? "Edit pengguna" : "Tambah pengguna";
       ufForm.nama.value = u ? u.nama : ""; ufForm.email.value = u ? u.email : ""; ufForm.email.readOnly = !!u;
       ufForm.peran.value = u ? u.peran : "peserta"; ufForm.org.value = u && u.org !== "-" ? u.org : "";
+      var passwordField = ufForm.querySelector("[name=password]");
+      if (passwordField) { passwordField.closest(".field").hidden = !!u; passwordField.required = !u; }
       uf.showModal(); ufForm.nama.focus();
     }
     $("#addUserBtn").addEventListener("click", function () { openForm(null); });
@@ -879,6 +934,19 @@ function openDetail(e, after) {
       else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err = ["email", "Format email tidak valid."]; }
       else if (!editing && userByEmail(email)) { err = ["email", "Email sudah terdaftar."]; }
       if (err) { var m = document.createElement("small"); m.className = "err"; m.textContent = err[1]; ufForm[err[0]].closest(".field").appendChild(m); ufForm[err[0]].focus(); return; }
+      if (BACKEND) {
+        var values = { nama: nama, email: email, peran: ufForm.peran.value, org: ufForm.org.value.trim() };
+        if (editing) {
+          adminPost("/admin-panel/api/users/" + editing.id + "/", Object.assign({ action: "save" }, values))
+            .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+        } else {
+          values.password = ufForm.password.value;
+          adminPost("/admin-panel/api/users/", values)
+            .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+        }
+        uf.close();
+        return;
+      }
       if (editing) {
         st.users[email] = Object.assign(st.users[email] || {}, { peran: ufForm.peran.value });
         S.log("pengguna", "Data " + nama + " diperbarui (peran: " + PERAN[ufForm.peran.value] + ")", ADMIN, "Admin Platform");
@@ -900,6 +968,11 @@ function openDetail(e, after) {
     var tab = "semua", q = $("#tkSearch"), list = $("#tkList"), tabs = $("#tkTabs"), open = {};
     var TABS = [["semua", "Semua"], ["diaudit", "Sedang Diaudit"], ["selesai", "Selesai"]];
     function save(t, status, balasan) {
+      if (BACKEND) {
+        return adminPost("/admin-panel/api/support/" + encodeURIComponent(t.id) + "/", {
+          action: status === "selesai" ? "resolve" : "reply", reply: balasan
+        });
+      }
       st.tickets[t.id] = { status: status, balasan: balasan };
       S.log("support", "Tiket " + t.id + (status === "selesai" ? " ditandai selesai" : " dibalas") + " oleh admin", ADMIN, "Admin Platform", { eo: t.org === ORG });
     }
@@ -928,6 +1001,12 @@ function openDetail(e, after) {
       var id = b.dataset.save || b.dataset.done, t = tickets().filter(function (x) { return x.id === id; })[0], ta = document.getElementById("rp-" + id), txt = ta.value.trim();
       $$("small.err", ta.parentNode).forEach(function (x) { x.remove(); });
       if (b.dataset.done && txt.length < 5) { var m = document.createElement("small"); m.className = "err"; m.textContent = "Tulis balasan (minimal 5 karakter) sebelum menyelesaikan tiket."; ta.parentNode.appendChild(m); ta.focus(); return; }
+      if (BACKEND) {
+        save(t, b.dataset.done ? "selesai" : "diaudit", txt)
+          .then(function () { window.location.reload(); })
+          .catch(function (error) { toast(error.message); });
+        return;
+      }
       if (b.dataset.done) { save(t, "selesai", txt); toast("Tiket " + id + " selesai. Balasan tampil di dashboard " + t.org + "."); }
       else { save(t, "diaudit", txt); toast("Balasan tiket " + id + " disimpan."); }
       render();
@@ -945,17 +1024,25 @@ function openDetail(e, after) {
       setText("fGross", rp0(f.kotor)); setText("fFee", rp0(f.feeTotal)); setText("fFeeNote", "Biaya platform " + f.fee + "% dari tiket terjual");
       setText("fCair", rp0(f.cair)); setText("fAvail", rp0(f.tersedia));
       var scale = f.rows.length ? f.kotor / (f.rows.filter(function (o) { return o.nama === ORG; })[0] || { kotor: f.kotor }).kotor : 1;
-      lineChart($("#finChart"), E.monthly.labels, E.monthly.pendapatan.map(function (v) { return Math.round(v * scale * f.fee / 100); }), "Biaya platform");
+      var monthly = f.monthly || { labels: E.monthly.labels, values: E.monthly.pendapatan.map(function (v) { return Math.round(v * scale * f.fee / 100); }) };
+      lineChart($("#finChart"), monthly.labels, monthly.values, "Biaya platform");
       body.innerHTML = f.rows.map(function (o) {
         var status = o.tersedia > 0 ? chip("menunggu", "Siap dicairkan") : (o.cair > 0 ? chip("dicairkan", "Sudah dicairkan") : chip("belum", "Belum ada dana"));
         return '<tr><td><span class="cell-title">' + esc(o.nama) + '</span><span class="cell-sub">' + o.event + " event &middot; " + num(o.tiket) + ' tiket</span></td><td class="num">' + rp0(o.kotor) + '</td><td class="num">' + rp0(o.fee) + '</td><td class="num">' + rp0(o.bersih) + '</td><td class="num">' + rp0(o.tersedia) + "</td><td>" + status + '</td><td class="act">' +
-          (o.tersedia > 0 ? '<button type="button" class="btn sm" data-pay="' + esc(o.nama) + '">Cairkan</button>' : "") + "</td></tr>";
+          (o.tersedia > 0 ? '<button type="button" class="btn sm" data-pay="' + (o.organizer_id || esc(o.nama)) + '">Cairkan</button>' : "") + "</td></tr>";
       }).join("");
       body.parentNode.querySelector("tfoot").innerHTML = '<tr><td>Total</td><td class="num">' + rp0(f.kotor) + '</td><td class="num">' + rp0(f.feeTotal) + '</td><td class="num">' + rp0(f.kotor - f.feeTotal) + '</td><td class="num">' + rp0(f.tersedia) + "</td><td></td><td></td></tr>";
     }
     body.addEventListener("click", function (ev) {
       var b = ev.target.closest("[data-pay]"); if (!b) { return; }
-      var o = finance().rows.filter(function (x) { return x.nama === b.dataset.pay; })[0];
+      var o = finance().rows.filter(function (x) { return String(x.organizer_id || x.nama) === b.dataset.pay; })[0];
+      if (BACKEND) {
+        ask({ title: "Catat pencairan dana " + o.nama + "?", text: rp0(o.tersedia) + " akan dicatat sebagai dana yang dicairkan. Tidak ada transfer bank otomatis.", ok: "Catat pencairan", onOk: function () {
+          adminPost("/admin-panel/api/payouts/", { organizer_id: o.organizer_id })
+            .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+        } });
+        return;
+      }
       ask({ title: "Cairkan dana " + o.nama + "?", text: rp0(o.tersedia) + " akan ditransfer ke rekening penyelenggara (contoh, belum ada transfer sungguhan).", ok: "Cairkan dana", onOk: function () {
         st.payouts[o.nama] = (st.payouts[o.nama] || 0) + o.tersedia;
         S.log("keuangan", "Dana " + rp0(o.tersedia) + " dicairkan ke " + o.nama, ADMIN, "Admin Platform", { eo: o.nama === ORG });
@@ -1015,27 +1102,30 @@ function openDetail(e, after) {
     }
     window.addEventListener("hashchange", showTab); showTab();
 
-    var cats = st.settings.categories;
+    var settingData = BACKEND ? BACKEND.settings : st.settings;
+    var cats = settingData.categories;
     function stats() {
       if (!$("#setStats")) { return; }
       var names = Object.keys(cats), on = names.filter(function (k) { return cats[k]; }).length;
-      $("#setStats").innerHTML = [["Biaya platform", st.settings.feePct + "%", "dari tiket berbayar"], ["Kategori aktif", on, "dari " + names.length + " kategori"], ["Akun dibekukan", users().filter(function (u) { return u.status === "dibekukan"; }).length, "tidak bisa masuk"]].map(function (s) {
+      $("#setStats").innerHTML = [["Biaya platform", settingData.feePct + "%", "dari tiket berbayar"], ["Kategori aktif", on, "dari " + names.length + " kategori"], ["Akun dibekukan", users().filter(function (u) { return u.status === "dibekukan"; }).length, "tidak bisa masuk"]].map(function (s) {
         return '<article class="card stat"><p class="stat__label">' + s[0] + '</p><p class="stat__value">' + s[1] + '</p><p class="stat__note stat__note--muted">' + s[2] + "</p></article>";
       }).join("");
     }
 
     /* Platform */
     var pf = $("#platformForm");
-    pf.fee.value = st.settings.feePct; pf.approval.setAttribute("aria-checked", String(!!st.settings.approvalRequired));
+    pf.fee.value = settingData.feePct; pf.approval.setAttribute("aria-checked", String(!!settingData.approvalRequired));
     pf.approval.addEventListener("click", function () { this.setAttribute("aria-checked", this.getAttribute("aria-checked") === "true" ? "false" : "true"); });
     var pfBtn = $("#pfSave"), pfState = $("#pfState");
     function pfDirty() {
-      var d = parseFloat(pf.fee.value) !== st.settings.feePct || (pf.approval.getAttribute("aria-checked") === "true") !== !!st.settings.approvalRequired;
+      var d = parseFloat(pf.fee.value) !== settingData.feePct || (pf.approval.getAttribute("aria-checked") === "true") !== !!settingData.approvalRequired;
       pfBtn.disabled = !d; pfState.textContent = d ? "Ada perubahan belum disimpan" : "Belum ada perubahan";
     }
     function pfLast() {
-      var a = st.activity.filter(function (x) { return x.tipe === "pengaturan" && /^Pengaturan platform diubah/.test(x.teks); })[0];
-      $("#pfLastTxt").textContent = a ? "Terakhir diubah oleh " + a.aktor + " · " + S.ago(a.ts) : "Belum ada perubahan tercatat";
+      var a = BACKEND
+        ? BACKEND.audit.filter(function (x) { return x.tipe === "pengaturan" && /^Pengaturan platform diubah/.test(x.teks); })[0]
+        : st.activity.filter(function (x) { return x.tipe === "pengaturan" && /^Pengaturan platform diubah/.test(x.teks); })[0];
+      $("#pfLastTxt").textContent = a ? "Terakhir diubah oleh " + (a.aktor || "Admin") + " · " + (a.waktu || S.ago(a.ts)) : "Belum ada perubahan tercatat";
     }
     pf.fee.addEventListener("input", pfDirty); pf.approval.addEventListener("click", pfDirty); pfDirty(); pfLast();
     pf.addEventListener("submit", function (ev) {
@@ -1043,6 +1133,13 @@ function openDetail(e, after) {
       var fee = parseFloat(pf.fee.value);
       if (!(fee >= 0 && fee <= 20)) { var m = document.createElement("small"); m.className = "err"; m.textContent = "Biaya platform harus antara 0 dan 20 persen."; pf.fee.closest(".sp-row").appendChild(m); pf.fee.focus(); return; }
       var need = pf.approval.getAttribute("aria-checked") === "true", changes = [];
+      if (BACKEND) {
+        pfBtn.disabled = true;
+        adminPost("/admin-panel/api/settings/", { action: "platform", fee: fee, approval: need })
+          .then(function () { window.location.reload(); })
+          .catch(function (error) { pfBtn.disabled = false; toast(error.message); });
+        return;
+      }
       if (fee !== st.settings.feePct) { changes.push("biaya platform " + fee + "%"); }
       if (need !== st.settings.approvalRequired) { changes.push("persetujuan event " + (need ? "wajib" : "tidak wajib")); }
       st.settings.feePct = fee; st.settings.approvalRequired = need; S.save();
@@ -1061,12 +1158,22 @@ function openDetail(e, after) {
       var b = ev.target.closest("[data-cat]"); if (!b) { return; }
       var k = b.dataset.cat, on = !cats[k];
       if (!on && Object.keys(cats).filter(function (x) { return cats[x]; }).length <= 1) { toast("Minimal satu kategori harus aktif."); return; }
+      if (BACKEND) {
+        adminPost("/admin-panel/api/settings/", { action: "category-toggle", name: k })
+          .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+        return;
+      }
       cats[k] = on; S.save(); S.log("pengaturan", 'Kategori "' + k + '" ' + (on ? "diaktifkan" : "dinonaktifkan"), ADMIN, "Admin Platform"); renderCats();
     });
     $("#catForm").addEventListener("submit", function (ev) {
       ev.preventDefault(); var f = ev.target, nama = f.nama.value.trim(); $$("small.err", f).forEach(function (x) { x.remove(); });
       var msg = nama.length < 3 ? "Nama kategori minimal 3 karakter." : Object.keys(cats).some(function (k) { return k.toLowerCase() === nama.toLowerCase(); }) ? "Kategori sudah ada." : "";
       if (msg) { var m = document.createElement("small"); m.className = "err"; m.textContent = msg; f.nama.closest(".field").appendChild(m); f.nama.focus(); return; }
+      if (BACKEND) {
+        adminPost("/admin-panel/api/settings/", { action: "category-add", name: nama })
+          .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+        return;
+      }
       cats[nama] = true; S.save(); S.log("pengaturan", 'Kategori "' + nama + '" ditambahkan', ADMIN, "Admin Platform"); f.reset(); renderCats(); toast("Kategori ditambahkan.");
     });
     renderCats();
@@ -1074,11 +1181,19 @@ function openDetail(e, after) {
     /* Notifikasi */
     var NOTIF = window.SIMEVENT_DEMO.admin_notifications;
     $("#togList").innerHTML = NOTIF.map(function (n) {
-      return '<li class="tog"><div><b id="tg-' + n[0] + '">' + n[1] + "</b><small>" + n[2] + '</small></div><button type="button" class="switch" role="switch" aria-labelledby="tg-' + n[0] + '" aria-checked="' + !!st.settings.notif[n[0]] + '" data-k="' + n[0] + '"><i></i></button></li>';
+      return '<li class="tog"><div><b id="tg-' + n[0] + '">' + n[1] + "</b><small>" + n[2] + '</small></div><button type="button" class="switch" role="switch" aria-labelledby="tg-' + n[0] + '" aria-checked="' + !!settingData.notif[n[0]] + '" data-k="' + n[0] + '"><i></i></button></li>';
     }).join("");
     $("#togList").addEventListener("click", function (ev) {
       var b = ev.target.closest(".switch"); if (!b) { return; }
-      var on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", String(on)); st.settings.notif[b.dataset.k] = on; S.save(); toast("Pengaturan notifikasi disimpan.");
+      var on = b.getAttribute("aria-checked") !== "true";
+      if (BACKEND) {
+        b.disabled = true;
+        adminPost("/admin-panel/api/settings/", { action: "notification", key: b.dataset.k, enabled: on })
+          .then(function () { window.location.reload(); })
+          .catch(function (error) { b.disabled = false; toast(error.message); });
+        return;
+      }
+      b.setAttribute("aria-checked", String(on)); st.settings.notif[b.dataset.k] = on; S.save(); toast("Pengaturan notifikasi disimpan.");
     });
 
     /* Profil & kata sandi */
@@ -1099,18 +1214,26 @@ function openDetail(e, after) {
       ev.preventDefault(); $$("small.err", ev.target).forEach(function (x) { x.remove(); });
       var r = pwState(), msg = !pw.lama.value ? "Isi kata sandi saat ini." : !(r.len && r.mix && r.old && r.same) ? "Kata sandi baru belum memenuhi semua syarat." : "";
       if (msg) { var s = document.createElement("small"); s.className = "err"; s.textContent = msg; $("#pwRules").after(s); return; }
+      if (BACKEND) {
+        var form = ev.target;
+        adminPost("/admin-panel/api/profile/", {
+          action: "password", current: pw.lama.value,
+          password: pw.baru.value, confirm: pw.ulang.value
+        }).then(function () {
+          form.reset(); pwState(); toast("Kata sandi Admin berhasil diperbarui.");
+        }).catch(function (error) { toast(error.message); });
+        return;
+      }
       ev.target.reset(); pwState(); S.log("pengaturan", "Admin mengganti kata sandi", ADMIN, "Admin Platform"); toast("Kata sandi diubah. Ini data contoh, belum tersimpan ke database.");
     });
   }
 
-  /* ---------- Profil admin: foto (dengan crop), nama, email. Data contoh di localStorage ---------- */
-  var PKEY = "simevent_admin_profile_v1";
-  function getProfile() { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } }
-  function setProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); return true; } catch (e) { return false; } }
+  /* ---------- Profil Admin dibaca dan disimpan ke PostgreSQL ---------- */
+  var profileData = BACKEND ? BACKEND.profile : {};
   function adminInitials(n) { return (n || "A").trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join(""); }
-  function curName() { return getProfile().nama || ADMIN; }
+  function curName() { return profileData.nama || ADMIN; }
   function applyProfile() {
-    var pr = getProfile();
+    var pr = profileData;
     $$(".js-adm-ava").forEach(function (el) {
       el.style.backgroundImage = pr.foto ? 'url("' + pr.foto + '")' : "";
       el.textContent = pr.foto ? "" : adminInitials(curName());
@@ -1126,15 +1249,15 @@ function openDetail(e, after) {
       var m = document.createElement("small"); m.className = "err"; m.textContent = text;
       input.closest(".field").appendChild(m); input.focus();
     }
-    emIn.value = getProfile().email || emIn.defaultValue;
+    emIn.value = profileData.email || emIn.defaultValue;
     var nm = $("#nameForm"), nmIn = $("#pfNamaAdm");
-    nmIn.value = getProfile().nama || nmIn.defaultValue;
+    nmIn.value = profileData.nama || nmIn.defaultValue;
     nm.addEventListener("submit", function (ev) {
       ev.preventDefault(); $$("small.err", nm).forEach(function (x) { x.remove(); });
-      var v = nmIn.value.trim().replace(/\s+/g, " "), p = getProfile();
+      var v = nmIn.value.trim().replace(/\s+/g, " ");
       if (v.length < 3) { fieldErr(nmIn, "Nama minimal 3 karakter."); return; }
-      if (v === (p.nama || nmIn.defaultValue)) { toast("Nama tidak berubah."); return; }
-      p.nama = v; setProfile(p); applyProfile(); S.log("pengaturan", "Admin mengganti nama akun", ADMIN, "Admin Platform"); toast("Nama admin diperbarui.");
+      if (v === curName()) { toast("Nama tidak berubah."); return; }
+      saveProfile({ name: v, email: emIn.value.trim() });
     });
 
     function layout(keep) {
@@ -1181,22 +1304,39 @@ function openDetail(e, after) {
       if (!src || !img.naturalWidth) { return; }
       var size = vp.clientWidth, c = document.createElement("canvas"); c.width = c.height = 384;
       c.getContext("2d").drawImage(img, -left / scale, -top / scale, size / scale, size / scale, 0, 0, 384, 384);
-      var p = getProfile(); p.foto = c.toDataURL("image/jpeg", .85);
-      if (!setProfile(p)) { say("Foto gagal disimpan di browser."); closeCrop(); return; }
-      closeCrop(); applyProfile(); S.log("pengaturan", "Admin mengganti foto profil", ADMIN, "Admin Platform"); toast("Foto profil diperbarui.");
+      c.toBlob(function (blob) {
+        if (!blob) { say("Foto gagal diproses."); return; }
+        var body = new FormData();
+        body.set("action", "profile"); body.set("name", nmIn.value.trim()); body.set("email", emIn.value.trim());
+        body.set("photo", new File([blob], "admin-profile.jpg", { type: "image/jpeg" }));
+        adminPostForm("/admin-panel/api/profile/", body)
+          .then(function () { window.location.reload(); })
+          .catch(function (error) { say(error.message); });
+        closeCrop();
+      }, "image/jpeg", .85);
     });
 
     $("#profFotoDel").addEventListener("click", function () {
-      var p = getProfile(); if (!p.foto) { say("Belum ada foto yang bisa dihapus."); return; }
-      delete p.foto; setProfile(p); say(""); applyProfile(); S.log("pengaturan", "Admin menghapus foto profil", ADMIN, "Admin Platform"); toast("Foto profil dihapus.");
+      if (!profileData.foto) { say("Belum ada foto yang bisa dihapus."); return; }
+      if (!window.confirm("Hapus foto profil Admin?")) { return; }
+      var body = new FormData(); body.set("action", "profile"); body.set("name", nmIn.value.trim()); body.set("email", emIn.value.trim()); body.set("remove_photo", "1");
+      adminPostForm("/admin-panel/api/profile/", body)
+        .then(function () { window.location.reload(); })
+        .catch(function (error) { say(error.message); });
     });
     em.addEventListener("submit", function (ev) {
       ev.preventDefault(); $$("small.err", em).forEach(function (x) { x.remove(); });
-      var v = emIn.value.trim(), p = getProfile();
+      var v = emIn.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { fieldErr(emIn, "Format email belum benar."); return; }
-      if (v === (p.email || emIn.defaultValue)) { toast("Email tidak berubah."); return; }
-      p.email = v; setProfile(p); S.log("pengaturan", "Admin mengganti email akun", ADMIN, "Admin Platform"); toast("Email diubah. Ini data contoh, belum tersimpan ke database.");
+      if (v === (profileData.email || emIn.defaultValue)) { toast("Email tidak berubah."); return; }
+      saveProfile({ name: nmIn.value.trim(), email: v });
     });
+    function saveProfile(values) {
+      var body = new FormData(); body.set("action", "profile"); body.set("name", values.name); body.set("email", values.email);
+      adminPostForm("/admin-panel/api/profile/", body)
+        .then(function () { window.location.reload(); })
+        .catch(function (error) { say(error.message); });
+    }
   }
 
   var pages = { admin_dashboard: pageDashboard, admin_users: pageUsers, admin_events: pageEvents, admin_support: pageSupport, admin_finance: pageFinance, admin_audit: pageAudit, admin_settings: pageSettings };

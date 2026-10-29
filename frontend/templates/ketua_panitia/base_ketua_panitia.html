@@ -81,7 +81,7 @@
       <a href="{% url 'eo_pengaturan' %}" {% block nav_pengaturan %}{% endblock %}><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Pengaturan</a>
     </nav>
     <div class="eo-user">
-      <div class="eo-user__id"><span class="eo-user__ava" aria-hidden="true">SS</span><div class="eo-user__txt"><b>{{ request.user.get_full_name|default:"Senku Sartika" }}</b><p>Ketua Panitia</p></div></div>
+      <div class="eo-user__id"><span class="eo-user__ava" data-photo-url="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% endif %}" aria-hidden="true">SS</span><div class="eo-user__txt"><b>{{ request.user.get_full_name|default:"Senku Sartika" }}</b><p>Ketua Panitia</p></div></div>
       <form method="post" action="{% url 'logout_page' %}">{% csrf_token %}
         <button type="submit"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button>
       </form>
@@ -441,6 +441,6 @@
   </script>
 {% endif %}
 
-<script src="{% static 'js/ketua_panitia.js' %}?v=10"></script>
+<script src="{% static 'js/ketua_panitia.js' %}?v=12"></script>
 </body>
 </html>
