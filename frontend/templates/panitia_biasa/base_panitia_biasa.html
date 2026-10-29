@@ -285,6 +285,9 @@ body.participant-page { min-height: 100vh; overflow-x: hidden; }
         <button type="button" class="nav-btn {% if request.path != akun_url %}participant-button{% endif %} rounded-[12px] px-[14px] py-[14px] text-[18px] font-bold" data-target="tab-dokumentasi" onclick="switchPanitiaTab('tab-dokumentasi')">
           <i class="fa-regular fa-folder-open mr-[12px] w-[28px] text-[24px]"></i>Dokumentasi Event
         </button>
+        <button type="button" class="nav-btn rounded-[12px] px-[14px] py-[14px] text-[18px] font-bold text-slate-700" data-target="tab-sertifikat" onclick="switchPanitiaTab('tab-sertifikat')">
+          <i class="fa-solid fa-award mr-[12px] w-[28px] text-[24px]"></i>Sertifikat Peserta
+        </button>
         <a href="{{ akun_url }}" class="nav-btn {% if request.path == akun_url %}participant-button{% else %}text-slate-700{% endif %} rounded-[12px] px-[14px] py-[14px] text-[18px] font-bold">
           <i class="fa-solid fa-gear mr-[12px] w-[28px] text-[24px]"></i>Profil Saya
         </a>

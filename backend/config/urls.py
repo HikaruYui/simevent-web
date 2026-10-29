@@ -165,6 +165,21 @@ urlpatterns = [
         name="peserta_sertifikat",
     ),
     path(
+        "panitia_biasa/sertifikat/unggah/",
+        views.panitia_upload_sertifikat,
+        name="panitia_upload_sertifikat",
+    ),
+    path(
+        "panitia_biasa/sertifikat/hapus/",
+        views.panitia_hapus_sertifikat,
+        name="panitia_hapus_sertifikat",
+    ),
+    path(
+        "peserta/sertifikat/<int:pk>/unggahan/",
+        views.peserta_sertifikat_unggahan,
+        name="peserta_sertifikat_unggahan",
+    ),
+    path(
         "peserta/sertifikat/<int:pk>/",
         views.peserta_sertifikat_detail,
         name="peserta_sertifikat_detail",

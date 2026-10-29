@@ -11,6 +11,7 @@ from django.core.validators import (
     MinValueValidator,
     RegexValidator,
 )
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.utils import timezone
 
@@ -337,3 +338,40 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback for registration #{self.registration_id}"
+
+
+def private_certificate_storage():
+    # Disimpan di luar MEDIA_ROOT: hanya bisa diunduh lewat view yang memeriksa pemilik.
+    return FileSystemStorage(location=settings.BASE_DIR / "private_media")
+
+
+def uploaded_certificate_path(instance, filename):
+    return f"uploaded-certificates/{uuid4().hex}{Path(filename).suffix.lower()}"
+
+
+def validate_certificate_size(file):
+    if file.size > 5 * 1024 * 1024:
+        raise ValidationError("Ukuran file sertifikat maksimal 5 MB.")
+
+
+class UploadedCertificate(models.Model):
+    """Sertifikat yang diunggah panitia untuk satu peserta (satu file per registrasi)."""
+
+    registration = models.OneToOneField(
+        Registration, on_delete=models.CASCADE, related_name="uploaded_certificate",
+    )
+    file = models.FileField(
+        upload_to=uploaded_certificate_path,
+        storage=private_certificate_storage,
+        validators=[
+            FileExtensionValidator(["pdf", "png", "jpg", "jpeg"]),
+            validate_certificate_size,
+        ],
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="uploaded_certificates",
+    )
+    uploaded_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Sertifikat registrasi #{self.registration_id}"

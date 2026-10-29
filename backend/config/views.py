@@ -1,3 +1,4 @@
+from pathlib import Path
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -22,6 +23,7 @@ from apps.registrations.models import (
     Payment,
     Registration,
     RegistrationStatus,
+    UploadedCertificate,
 )
 from django.core.exceptions import ValidationError
 from apps.events.models import (
@@ -611,7 +613,10 @@ def peserta_sertifikat(request):
     registrations = list(
         Registration.objects.owned_by(request.user)
         .filter(status=RegistrationStatus.REGISTERED)
-        .select_related("event", "event__organizer", "attendance", "feedback", "payment")
+        .select_related(
+            "event", "event__organizer", "attendance", "feedback", "payment",
+            "uploaded_certificate",
+        )
         .order_by("-event__start_datetime", "-pk")
     )
     documentation_ids = _documentation_event_ids(request.user)
@@ -756,6 +761,7 @@ def panitia_biasa_dashboard(request):
     event_list = list(assigned_events)
     selected_event = None
     participant_rows = []
+    certificate_rows = []
 
     if event_list:
         selected_id = request.GET.get("event_id")
@@ -787,6 +793,7 @@ def panitia_biasa_dashboard(request):
                 "participant",
                 "ticket",
                 "attendance",
+                "uploaded_certificate",
             )
             .order_by("registered_at", "pk")
         )
@@ -810,6 +817,18 @@ def panitia_biasa_dashboard(request):
                         attendance.checked_in_at
                     ).strftime("%H:%M") + " WITA"
                 )
+
+            if is_present:
+                uploaded = getattr(registration, "uploaded_certificate", None)
+                certificate_rows.append({
+                    "registrationId": registration.pk,
+                    "name": (
+                        participant.get_full_name().strip()
+                        or participant.email
+                    ),
+                    "email": participant.email,
+                    "uploadedAt": uploaded.uploaded_at if uploaded else None,
+                })
 
             participant_rows.append({
                 "registrationId": registration.pk,
@@ -845,10 +864,10 @@ def panitia_biasa_dashboard(request):
         "panitia_biasa_page.html",
         {
             "panitia_db_data": panitia_db_data,
-            "documentation_events": [
-                event for event in event_list
-                if event.status in (EventStatus.PUBLISHED, EventStatus.COMPLETED)
-            ],
+            "documentation_events": event_list,
+            "certificate_rows": certificate_rows,
+            "certificate_event": selected_event,
+            "certificate_events": event_list,
         },
     )
 
@@ -1587,3 +1606,90 @@ def panitia_simpan_dokumentasi(request):
         "status": event.status,
     })
 
+
+@require_POST
+@login_required(login_url="login_page")
+def panitia_upload_sertifikat(request):
+    """Panitia yang ditugaskan mengunggah (atau mengganti) sertifikat peserta yang hadir."""
+    _require_role(request, "COMMITTEE")
+
+    registration = get_object_or_404(
+        Registration.objects.select_related("event", "attendance"),
+        pk=request.POST.get("registration_id"),
+        status=RegistrationStatus.REGISTERED,
+        attendance__status=Attendance.Status.PRESENT,
+        event__committee_assignments__member=request.user,
+        event__committee_assignments__is_active=True,
+    )
+
+    uploaded_file = request.FILES.get("certificate_file")
+    if uploaded_file is None:
+        return JsonResponse({"errors": ["Pilih file sertifikat terlebih dahulu."]}, status=400)
+
+    head = uploaded_file.read(8)
+    uploaded_file.seek(0)
+    if not (head.startswith(b"%PDF") or head.startswith(b"\x89PNG") or head.startswith(b"\xff\xd8\xff")):
+        return JsonResponse({"errors": ["Isi file bukan PDF, PNG, atau JPG yang valid."]}, status=400)
+
+    certificate = getattr(registration, "uploaded_certificate", None)
+    old_name = certificate.file.name if certificate else None
+    if certificate is None:
+        certificate = UploadedCertificate(registration=registration)
+    certificate.file = uploaded_file
+    certificate.uploaded_by = request.user
+    try:
+        certificate.full_clean()
+    except ValidationError as exc:
+        return JsonResponse({"errors": exc.messages}, status=400)
+    certificate.save()
+    if old_name and old_name != certificate.file.name:
+        certificate.file.storage.delete(old_name)
+
+    return JsonResponse({
+        "registration_id": registration.pk,
+        "uploaded_at": timezone.localtime(certificate.uploaded_at).strftime("%d/%m/%Y %H:%M"),
+    })
+
+
+@require_POST
+@login_required(login_url="login_page")
+def panitia_hapus_sertifikat(request):
+    _require_role(request, "COMMITTEE")
+
+    certificate = get_object_or_404(
+        UploadedCertificate,
+        registration_id=request.POST.get("registration_id"),
+        registration__event__committee_assignments__member=request.user,
+        registration__event__committee_assignments__is_active=True,
+    )
+    name, storage = certificate.file.name, certificate.file.storage
+    certificate.delete()
+    storage.delete(name)
+    return JsonResponse({"registration_id": request.POST.get("registration_id")})
+
+
+@never_cache
+@require_GET
+@login_required(login_url="login_page")
+def peserta_sertifikat_unggahan(request, pk):
+    """Peserta mengunduh sertifikat yang diunggah panitia; hanya pemilik registrasi."""
+    participant_redirect = _participant_redirect(request)
+    if participant_redirect:
+        return participant_redirect
+
+    registration = get_object_or_404(
+        Registration.objects.owned_by(request.user).select_related("uploaded_certificate"),
+        pk=pk,
+        status=RegistrationStatus.REGISTERED,
+        uploaded_certificate__isnull=False,
+    )
+    certificate = registration.uploaded_certificate
+    try:
+        handle = certificate.file.open("rb")
+    except OSError:
+        raise Http404("File sertifikat tidak ditemukan.")
+    extension = Path(certificate.file.name).suffix.lower()
+    return FileResponse(
+        handle, as_attachment=True,
+        filename=f"sertifikat-simevent-{registration.pk:06d}{extension}",
+    )

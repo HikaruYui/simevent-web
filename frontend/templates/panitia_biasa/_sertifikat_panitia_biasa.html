@@ -1,0 +1,118 @@
+<div class="panel-card" style="padding: 28px;">
+  <h3 style="margin:0 0 6px; font-size:20px; font-weight:800; color:var(--orange);">
+    <i class="fa-solid fa-award"></i> Upload Sertifikat Peserta
+  </h3>
+  <p style="margin:0 0 20px; font-size:14px; color:var(--muted);">
+    Unggah file sertifikat (PDF, PNG, atau JPG, maks. 5 MB) untuk setiap peserta yang sudah hadir. Peserta dapat mengunduhnya dari halaman Sertifikat mereka.
+  </p>
+
+  {% csrf_token %}
+
+  {% if certificate_event %}
+  <form method="get" action="{% url 'panitia_biasa' %}#tab-sertifikat" style="margin-bottom:16px;">
+    <label for="certificateEvent" style="font-weight:700; display:block; margin-bottom:8px;">Event</label>
+    <select id="certificateEvent" name="event_id" onchange="this.form.submit()" style="width:100%; padding:12px; border-radius:10px;">
+      {% for event in certificate_events %}
+        <option value="{{ event.pk }}" {% if event.pk == certificate_event.pk %}selected{% endif %}>{{ event.title }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <div style="display:grid; gap:12px;">
+    {% for row in certificate_rows %}
+    <div class="cert-row" data-registration-id="{{ row.registrationId }}" style="background:var(--cream-soft); padding:16px 20px; border-radius:16px; border:1px solid var(--line);">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; margin-bottom:10px;">
+        <div>
+          <strong style="color:var(--olive);">{{ row.name }}</strong>
+          <div style="font-size:12px; color:var(--muted);">{{ row.email }}</div>
+        </div>
+        <span class="cert-status" style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; align-self:flex-start; {% if row.uploadedAt %}background:#d1fae5; color:#065f46;{% else %}background:#fef3c7; color:#92400e;{% endif %}">
+          {% if row.uploadedAt %}Terunggah {{ row.uploadedAt|date:"d/m/Y H:i" }}{% else %}Belum diunggah{% endif %}
+        </span>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        <input type="file" class="cert-file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" style="flex:1; min-width:220px; font-size:13px;">
+        <button type="button" class="btn-primary cert-upload"><i class="fa-solid fa-upload"></i> {% if row.uploadedAt %}Ganti{% else %}Unggah{% endif %}</button>
+        <button type="button" class="cert-delete" {% if not row.uploadedAt %}hidden{% endif %} style="padding:10px 16px; border-radius:12px; border:1.5px solid #b91c1c; color:#b91c1c; background:#fff; font-weight:700; cursor:pointer;">Hapus</button>
+      </div>
+      <p class="cert-message" role="status" style="margin:8px 0 0; font-size:13px; font-weight:700;"></p>
+    </div>
+    {% empty %}
+    <p style="margin:0; padding:20px; text-align:center; font-size:14px; color:var(--muted); background:var(--cream-soft); border-radius:16px; border:1px solid var(--line);">
+      Belum ada peserta yang tercatat hadir pada event ini. Lakukan check-in terlebih dahulu.
+    </p>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="margin:0; padding:20px; text-align:center; font-size:14px; color:var(--muted); background:var(--cream-soft); border-radius:16px; border:1px solid var(--line);">
+    Belum ada event yang ditugaskan kepada Anda.
+  </p>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    const csrfInput = document.querySelector('#tab-sertifikat [name="csrfmiddlewaretoken"]');
+    if (!csrfInput) return;
+    const csrf = csrfInput.value;
+    const uploadUrl = "{% url 'panitia_upload_sertifikat' %}";
+    const deleteUrl = "{% url 'panitia_hapus_sertifikat' %}";
+
+    document.querySelectorAll('.cert-row').forEach((row) => {
+      const id = row.dataset.registrationId;
+      const fileInput = row.querySelector('.cert-file');
+      const uploadBtn = row.querySelector('.cert-upload');
+      const deleteBtn = row.querySelector('.cert-delete');
+      const status = row.querySelector('.cert-status');
+      const message = row.querySelector('.cert-message');
+
+      function show(text, ok) {
+        message.style.color = ok ? '#065f46' : '#b91c1c';
+        message.textContent = text;
+      }
+      function markUploaded(text) {
+        status.textContent = 'Terunggah ' + text;
+        status.style.background = '#d1fae5';
+        status.style.color = '#065f46';
+        uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Ganti';
+        deleteBtn.hidden = false;
+      }
+      async function send(url, body) {
+        const response = await fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'X-CSRFToken': csrf}, body});
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error((result.errors || ['Permintaan gagal.']).join(' '));
+        return result;
+      }
+
+      uploadBtn.addEventListener('click', async () => {
+        if (!fileInput.files.length) { show('Pilih file sertifikat terlebih dahulu.', false); return; }
+        const data = new FormData();
+        data.append('registration_id', id);
+        data.append('certificate_file', fileInput.files[0]);
+        uploadBtn.disabled = true; show('Mengunggah...', true);
+        try {
+          const result = await send(uploadUrl, data);
+          markUploaded(result.uploaded_at);
+          fileInput.value = '';
+          show('Sertifikat tersimpan.', true);
+        } catch (error) { show(error.message, false); }
+        finally { uploadBtn.disabled = false; }
+      });
+
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm('Hapus sertifikat peserta ini?')) return;
+        const data = new FormData();
+        data.append('registration_id', id);
+        try {
+          await send(deleteUrl, data);
+          status.textContent = 'Belum diunggah';
+          status.style.background = '#fef3c7';
+          status.style.color = '#92400e';
+          uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Unggah';
+          deleteBtn.hidden = true;
+          show('Sertifikat dihapus.', true);
+        } catch (error) { show(error.message, false); }
+      });
+    });
+  })();
+</script>

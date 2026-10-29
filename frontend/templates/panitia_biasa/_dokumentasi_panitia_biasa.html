@@ -14,18 +14,21 @@
       <h4 style="margin:0; font-size:16px; font-weight:800; color:var(--olive);">{{ event.title }}</h4>
       {% if event.status == "COMPLETED" %}
         <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#d1fae5; color:#065f46;">Selesai</span>
+      {% elif event.status != "PUBLISHED" %}
+        <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#e5e7eb; color:#374151;">{{ event.get_status_display }}</span>
       {% else %}
         <span style="font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; background:#fef3c7; color:#92400e;">Terbit · belum selesai</span>
       {% endif %}
     </div>
     <div style="display:flex; flex-wrap:wrap; gap:10px;">
       <input type="url" name="documentation_url" maxlength="1000" value="{{ event.documentation_url }}"
+             {% if event.status != "PUBLISHED" and event.status != "COMPLETED" %}disabled{% endif %}
              placeholder="https://drive.google.com/drive/folders/..." aria-label="Tautan dokumentasi {{ event.title }}"
              style="flex:1; min-width:240px; padding:12px 16px; border-radius:12px; border:1.5px solid var(--line); font-size:14px;">
-      <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+      <button type="submit" class="btn-primary" {% if event.status != "PUBLISHED" and event.status != "COMPLETED" %}disabled{% endif %}><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
     </div>
     <p class="doc-hint" style="margin:10px 0 0; font-size:12px; color:var(--muted);">
-      {% if event.status != "COMPLETED" %}Peserta baru dapat melihat tautan ini setelah event ditandai Selesai. {% endif %}Kosongkan lalu simpan untuk menghapus tautan.
+      {% if event.status != "PUBLISHED" and event.status != "COMPLETED" %}Tautan hanya dapat diisi setelah event terbit. {% elif event.status != "COMPLETED" %}Peserta baru dapat melihat tautan ini setelah event ditandai Selesai. {% endif %}Kosongkan lalu simpan untuk menghapus tautan.
     </p>
     <p class="doc-message" role="status" style="margin:8px 0 0; font-size:13px; font-weight:700;"></p>
     <a class="doc-open" href="{{ event.documentation_url }}" target="_blank" rel="noopener noreferrer"
@@ -36,7 +39,7 @@
   </form>
   {% empty %}
   <p style="margin:0; padding:20px; text-align:center; font-size:14px; color:var(--muted); background:var(--cream-soft); border-radius:16px; border:1px solid var(--line);">
-    Belum ada event terbit atau selesai yang ditugaskan kepada Anda.
+    Belum ada event yang ditugaskan kepada Anda.
   </p>
   {% endfor %}
 </div>
