@@ -1,9 +1,10 @@
+# OOP — Factory / dynamic dispatch: as_view() mengadaptasi class menjadi callable URL; setiap request memakai instance yang memilih handler get/post melalui dispatch.
 # Fungsi file: Pemetaan URL ke view untuk registrasi, tiket, attendance, feedback, dan statistik.
 
 from django.urls import path
 
 from . import views
-from .attendance_views import AttendanceDetailView, TicketScanView
+from .attendance_views import AttendanceDetailView, AttendanceVoidView, TicketScanView
 from .feedback_views import FeedbackDetailView, FeedbackResultsView
 from .statistics_views import EventStatisticsView, StatisticsOverviewView
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path("payments/<int:pk>/review/", views.PaymentReviewView.as_view(), name="payment-review"),
     path("<int:pk>/certificate.pdf", views.CertificatePDFView.as_view(), name="certificate-pdf"),
     path("<int:pk>/attendance/", AttendanceDetailView.as_view(), name="attendance"),
+    path("<int:pk>/attendance/void/", AttendanceVoidView.as_view(), name="attendance-void"),
     path("", views.RegistrationListView.as_view(), name="list"),
     path("events/<int:event_id>/register/", views.RegistrationCreateView.as_view(), name="create"),
     path("events/<int:event_id>/participants/", views.ParticipantListView.as_view(), name="participants"),

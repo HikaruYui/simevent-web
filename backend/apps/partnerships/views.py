@@ -23,6 +23,8 @@ def proposal_data(proposal):
 
 
 # Inheritance: ApplicantView mewarisi dispatch request berdasarkan metode HTTP.
+# OOP — Hierarchical inheritance: class ini menjadi induk bersama bagi ProposalDeleteView, ProposalDetailView, ProposalListView, ProposalSubmitView.
+# OOP — Method decorator: mengadaptasi decorator fungsi ke method class yang disebutkan, tanpa mengganti pewarisan.
 @method_decorator(never_cache, name="dispatch")
 class ApplicantView(View):
     http_method_names = ["get", "post", "head", "options"]
@@ -32,6 +34,7 @@ class ApplicantView(View):
         if not request.user.is_authenticated:
             return JsonResponse({"error": "Authentication required."}, status=401)
         try:
+            # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
             return super().dispatch(request, *args, **kwargs)
         except ValidationError as exc:
             errors = exc.message_dict if hasattr(exc, "message_dict") else {"__all__": exc.messages}
@@ -39,6 +42,7 @@ class ApplicantView(View):
 
 
 # Inheritance: ProposalListView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
+# OOP — Multilevel inheritance: View → ApplicantView → ProposalListView.
 class ProposalListView(ApplicantView):
     # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request):
@@ -53,6 +57,7 @@ class ProposalListView(ApplicantView):
 
 
 # Inheritance: ProposalDetailView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
+# OOP — Multilevel inheritance: View → ApplicantView → ProposalDetailView.
 class ProposalDetailView(ApplicantView):
     # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
     def get(self, request, pk):
@@ -68,6 +73,7 @@ class ProposalDetailView(ApplicantView):
 
 
 # Inheritance: ProposalSubmitView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
+# OOP — Multilevel inheritance: View → ApplicantView → ProposalSubmitView.
 class ProposalSubmitView(ApplicantView):
     # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):
@@ -75,6 +81,7 @@ class ProposalSubmitView(ApplicantView):
 
 
 # Inheritance: ProposalDeleteView mewarisi perilaku ApplicantView untuk diperluas sesuai kebutuhan class ini.
+# OOP — Multilevel inheritance: View → ApplicantView → ProposalDeleteView.
 class ProposalDeleteView(ApplicantView):
     # Polymorphism: dispatch memilih handler POST ini sesuai jenis request dan class view.
     def post(self, request, pk):

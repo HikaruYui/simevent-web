@@ -16,6 +16,8 @@ def seed_event_types(apps, schema_editor):
         )
 
 
+# OOP — Single inheritance: Migration mewarisi migrations.Migration dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: migrations.Migration juga menjadi induk class saudara lain di proyek.
 class Migration(migrations.Migration):
     dependencies = [("events", "0001_initial")]
     # Keep potentially referenced event types when reversing the seed alone.

@@ -22,6 +22,7 @@ class FeedbackService:
         self._actor_id = actor.pk
 
     # Abstraction: mengirim feedback melalui satu method yang memeriksa kelayakan dan mencegah duplikasi.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def submit(self, registration_id, *, data):
         actor = lock_accounts(self._actor_id).get(self._actor_id)

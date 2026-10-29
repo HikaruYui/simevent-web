@@ -66,7 +66,7 @@
         <i class="fa-solid fa-user"></i>
       {% endif %}
     </div>
-    <h3 id="profileCardName" style="margin:0; font-size:19px; font-weight:800;">{{ request.user.get_full_name|default:committee_demo.profile_name }}</h3>
+    <h3 id="profileCardName" style="margin:0; font-size:19px; font-weight:800;">{{ request.user.get_full_name|default:request.user.email }}</h3>
     <p style="margin:4px 0 16px; font-size:13px; color:var(--muted);">Panitia Biasa - SIMEVENT</p>
 
     <label for="avatarUploadInput" class="btn-primary" style="width:100%; cursor:pointer;">
@@ -96,7 +96,7 @@
       {% csrf_token %}
       <div class="form-group">
         <label for="inputNamaPanitia">Nama Lengkap Panitia</label>
-        <input type="text" id="inputNamaPanitia" name="name" class="form-input" value="{{ request.user.get_full_name|default:committee_demo.profile_name }}" minlength="3" maxlength="80" autocomplete="name" required>
+        <input type="text" id="inputNamaPanitia" name="name" class="form-input" value="{{ request.user.get_full_name|default:request.user.email }}" minlength="3" maxlength="80" autocomplete="name" required>
       </div>
 
       <div class="form-group">
@@ -125,26 +125,22 @@
 </div>
 
 <script>
-  const STORAGE_KEY_PESERTA = 'simevent_panitia_biasa_peserta_list';
-  const defaultParticipants = window.SIMEVENT_DEMO.committee.participants;
+/* OOP — Instantiation: new membentuk instance Date, Error, FormData, Html5Qrcode; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
 
+  // Data operasional dimuat dari payload backend halaman, termasuk ketika kosong.
   let participants = [];
   let currentFilter = 'all';
   let html5QrScanner = null;
   let cameraActive = false;
 
-  function loadParticipants() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_PESERTA));
-      participants = Array.isArray(saved) && saved.length ? saved : defaultParticipants;
-    } catch (e) {
-      participants = defaultParticipants;
-    }
+  function escapeParticipant(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[char]));
   }
-
-  function saveParticipants() {
-    localStorage.setItem(STORAGE_KEY_PESERTA, JSON.stringify(participants));
-  }
+  function loadParticipants() { participants = []; }
+  function saveParticipants() {} // Perubahan kehadiran hanya melalui endpoint scanner.
 
   function updateStatsAndUI() {
     const total = participants.length;
@@ -173,7 +169,7 @@
     const filtered = participants.filter(p => {
       if (currentFilter === 'present' && !p.present) return false;
       if (currentFilter === 'absent' && p.present) return false;
-      if (query && !(`${p.code} ${p.name} ${p.email}`).toLowerCase().includes(query)) return false;
+      if (query && !(`${escapeParticipant(p.code)} ${escapeParticipant(p.name)} ${escapeParticipant(p.email)}`).toLowerCase().includes(query)) return false;
       return true;
     });
 
@@ -184,10 +180,10 @@
 
     tbody.innerHTML = filtered.map(p => `
       <tr>
-        <td><strong>${p.code}</strong></td>
-        <td><strong>${p.name}</strong></td>
-        <td style="color:var(--muted);">${p.email}</td>
-        <td>${p.checkinTime}</td>
+        <td><strong>${escapeParticipant(p.code)}</strong></td>
+        <td><strong>${escapeParticipant(p.name)}</strong></td>
+        <td style="color:var(--muted);">${escapeParticipant(p.email)}</td>
+        <td>${escapeParticipant(p.checkinTime)}</td>
         <td>
           ${p.present
             ? `<span class="badge-hadir"><i class="fa-solid fa-circle-check"></i> Sudah Hadir</span>`
@@ -196,61 +192,19 @@
         </td>
         <td>
           ${p.present
-            ? `<button type="button" onclick="togglePresence('${p.code}')" style="background:transparent; border:1px solid var(--line); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; color:var(--muted);">Batalkan</button>`
-            : `<button type="button" onclick="markParticipantPresent('${p.code}')" class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px;">Absen Hadir</button>`
+            ? `<button type="button" onclick="togglePresence('${escapeParticipant(p.code)}')" style="background:transparent; border:1px solid var(--line); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; color:var(--muted);">Batalkan</button>`
+            : p.voided ? `<span>Presensi dibatalkan</span>` : `<button type="button" onclick="markParticipantPresent('${escapeParticipant(p.code)}')" class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px;">Absen Hadir</button>`
           }
         </td>
       </tr>
     `).join('');
   }
 
-  function markParticipantPresent(rawCode) {
-    const code = (rawCode || '').trim().toUpperCase();
-    const target = participants.find(p => p.code.toUpperCase() === code);
-    const resultBox = document.getElementById('scanResultContainer');
-    const badge = document.getElementById('scanStatusBadge');
-
-    if (!target) {
-      badge.textContent = 'KODE TIDAK DITEMUKAN';
-      badge.style.background = 'var(--danger-bg)';
-      badge.style.color = 'var(--danger)';
-      resultBox.innerHTML = `
-        <div class="scan-success-card" style="border-color:var(--danger); background:#fff5f5;">
-          <h4 style="margin:0 0 6px; color:var(--danger);"><i class="fa-solid fa-circle-exclamation"></i> Kode "${code}" Tidak Terdaftar</h4>
-          <p style="margin:0; font-size:13px; color:var(--muted);">Pastikan kode tiket sesuai dengan daftar peserta (contoh: ${defaultParticipants[2].code}).</p>
-        </div>
-      `;
-      return;
-    }
-
-    const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA';
-    target.present = true;
-    target.checkinTime = nowStr;
-    saveParticipants();
-    updateStatsAndUI();
-
-    badge.textContent = 'BERHASIL ABSEN';
-    badge.style.background = 'var(--green-bg)';
-    badge.style.color = 'var(--green)';
-    resultBox.innerHTML = `
-      <div class="scan-success-card">
-        <span class="badge-hadir" style="margin-bottom:10px;"><i class="fa-solid fa-check"></i> Tercatat Hadir (${nowStr})</span>
-        <h3 style="margin:4px 0; font-size:20px;">${target.name}</h3>
-        <p style="margin:0 0 8px; font-size:13px; color:var(--muted);">${target.email}</p>
-        <p style="margin:0; font-size:13px;">Kode Tiket: <strong>${target.code}</strong></p>
-      </div>
-    `;
+  function markParticipantPresent() {
+    alert('Pilih event yang ditugaskan sebelum melakukan presensi.');
   }
-
-  function togglePresence(code) {
-    const target = participants.find(p => p.code === code);
-    if (!target) return;
-    target.present = !target.present;
-    target.checkinTime = target.present
-      ? new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA'
-      : '-';
-    saveParticipants();
-    updateStatsAndUI();
+  function togglePresence() {
+    alert('Pembatalan kehadiran hanya melalui tindakan Admin yang tercatat.');
   }
 
   function handleManualCheckin(e) {

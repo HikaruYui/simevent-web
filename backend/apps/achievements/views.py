@@ -24,6 +24,7 @@ def achievement_data(assignment):
 
 
 # Inheritance: MyAchievementsView mewarisi dispatch request berdasarkan metode HTTP.
+# OOP — Method decorator: mengadaptasi decorator fungsi ke method class yang disebutkan, tanpa mengganti pewarisan.
 @method_decorator(never_cache, name="dispatch")
 class MyAchievementsView(View):
     http_method_names = ["get", "head", "options"]
@@ -32,6 +33,7 @@ class MyAchievementsView(View):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated or not request.user.is_active:
             return JsonResponse({"error": "Authentication required."}, status=401)
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         return super().dispatch(request, *args, **kwargs)
 
     # Polymorphism: dispatch memilih handler GET ini sesuai jenis request dan class view.
@@ -45,6 +47,7 @@ class MyAchievementsView(View):
 
 
 # Inheritance: ReconcileAchievementsView mewarisi perilaku MyAchievementsView untuk diperluas sesuai kebutuhan class ini.
+# OOP — Multilevel inheritance: View → MyAchievementsView → ReconcileAchievementsView.
 class ReconcileAchievementsView(MyAchievementsView):
     http_method_names = ["post", "options"]
 

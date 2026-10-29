@@ -9,6 +9,7 @@ from .services import change_account_access
 
 
 # Inheritance: AccountAdmin mewarisi perilaku UserAdmin untuk diperluas sesuai kebutuhan class ini.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(User)
 class AccountAdmin(UserAdmin):
     add_form = RegistrationForm
@@ -103,6 +104,8 @@ class AccountAdmin(UserAdmin):
         "set_platform_admin",
     )
 
+    # OOP — Encapsulation: method role_label mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata presentasi yang dibaca Django admin.
     @admin.display(description="Role")
     def role_label(self, obj):
         return {
@@ -116,6 +119,7 @@ class AccountAdmin(UserAdmin):
     def has_view_permission(self, request, obj=None):
         return request.user.is_active and request.user.has_perm("accounts.manage_platform")
     
+    # OOP — Polymorphism: has_promote_admin_permission menyediakan hook khusus yang dipanggil melalui kontrak framework.
     def has_promote_admin_permission(self, request):
         return (
             request.user.is_authenticated
@@ -123,6 +127,8 @@ class AccountAdmin(UserAdmin):
             and request.user.is_superuser
         )
 
+    # OOP — Encapsulation: method set_platform_admin mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(
         description="Jadikan Admin Platform",
         permissions=["promote_admin"],
@@ -151,12 +157,14 @@ class AccountAdmin(UserAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_active and request.user.is_superuser
 
+    # OOP — Polymorphism: has_organizer_access_permission menyediakan hook khusus yang dipanggil melalui kontrak framework.
     def has_organizer_access_permission(self, request):
         return (
             request.user.has_perm("accounts.manage_platform")
             and request.user.has_perm("accounts.manage_organizer_access")
         )
 
+    # OOP — Polymorphism: has_account_state_permission menyediakan hook khusus yang dipanggil melalui kontrak framework.
     def has_account_state_permission(self, request):
         return (
             request.user.has_perm("accounts.manage_platform")
@@ -177,6 +185,7 @@ class AccountAdmin(UserAdmin):
             ),
         )
 
+    # OOP — Encapsulation: _role_action adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
     def _role_action(self, request, queryset, role):
         run_single_action(
             self,
@@ -190,28 +199,40 @@ class AccountAdmin(UserAdmin):
             ),
         )
 
+    # OOP — Encapsulation: method set_participant mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Jadikan Peserta", permissions=["organizer_access"])
     def set_participant(self, request, queryset):
         self._role_action(request, queryset, "PARTICIPANT")
 
+    # OOP — Encapsulation: method set_committee mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Jadikan Panitia", permissions=["organizer_access"])
     def set_committee(self, request, queryset):
         self._role_action(request, queryset, "COMMITTEE")
 
+    # OOP — Encapsulation: method set_organizer mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Jadikan Ketua Panitia", permissions=["organizer_access"])
     def set_organizer(self, request, queryset):
         self._role_action(request, queryset, "ORGANIZER")
 
+    # OOP — Encapsulation: method suspend_account mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Tangguhkan akun", permissions=["account_state"])
     def suspend_account(self, request, queryset):
         self._access_action(request, queryset, AccountAccessChange.Action.SUSPEND)
 
+    # OOP — Encapsulation: method activate_account mengelompokkan operasi terkait objek AccountAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Aktifkan akun", permissions=["account_state"])
     def activate_account(self, request, queryset):
         self._access_action(request, queryset, AccountAccessChange.Action.ACTIVATE)
 
 
 # Inheritance (pewarisan ganda): AccountAccessChangeAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(AccountAccessChange)
 class AccountAccessChangeAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("user", "action", "actor", "created_at")

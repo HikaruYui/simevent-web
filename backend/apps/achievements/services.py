@@ -27,6 +27,7 @@ class AchievementService:
         self._actor_id = actor.pk
 
     # Encapsulation: helper berawalan _ menandai detail internal class menurut konvensi Python.
+    # OOP — Static method: utilitas pada namespace class tanpa parameter self/cls otomatis.
     @staticmethod
     def _counts_for(user):
         rows = (
@@ -46,6 +47,7 @@ class AchievementService:
         return total, by_type
 
     # OOP — Abstraction: pemanggil meminta evaluasi tanpa mengatur penghitungan attendance dan pembaruan award.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def evaluate(self, user_id=None):
         target_id = self._actor_id if user_id is None else user_id

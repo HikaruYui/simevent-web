@@ -15,6 +15,8 @@ from apps.registrations.models import Attendance
 from apps.registrations.services import RegistrationService
 
 
+# OOP — Single inheritance: AttendanceConcurrencyTests mewarisi TransactionTestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TransactionTestCase juga menjadi induk class saudara lain di proyek.
 class AttendanceConcurrencyTests(TransactionTestCase):
     def test_concurrent_scanners_preserve_one_attendance(self):
         owner, other, participant, admin = setup_users()
@@ -37,6 +39,7 @@ class AttendanceConcurrencyTests(TransactionTestCase):
             finally:
                 connections.close_all()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with ThreadPoolExecutor(max_workers=2) as pool:
             futures = [pool.submit(scan, actor) for actor in (owner, admin)]
             results = [future.result(timeout=20) for future in futures]

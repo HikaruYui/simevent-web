@@ -14,11 +14,16 @@ from .support import event_data, published_event, setup_users
 DRIVE_URL = "https://drive.google.com/drive/folders/abc123"
 
 
+# OOP — Single inheritance: DocumentationWorkflowTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class DocumentationWorkflowTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
+    # OOP — Encapsulation: method event mengelompokkan operasi terkait objek DocumentationWorkflowTests.
     def event(self):
         return published_event(self.owner, self.admin)
 
@@ -37,6 +42,7 @@ class DocumentationWorkflowTests(TestCase):
 
     def test_draft_event_cannot_receive_link(self):
         draft = EventWorkflow(self.owner).create(data=event_data())
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).set_documentation(draft.pk, url=DRIVE_URL)
 
@@ -49,6 +55,7 @@ class DocumentationWorkflowTests(TestCase):
             "javascript:alert(1)",
             "bukan url",
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(url=bad), self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).set_documentation(event.pk, url=bad)
         event.refresh_from_db()
@@ -56,8 +63,10 @@ class DocumentationWorkflowTests(TestCase):
 
     def test_other_organizer_and_participant_cannot_change_link(self):
         event = self.event()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(Http404):
             EventWorkflow(self.other).set_documentation(event.pk, url=DRIVE_URL)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             EventWorkflow(self.participant).set_documentation(event.pk, url=DRIVE_URL)
 
@@ -75,9 +84,13 @@ class DocumentationWorkflowTests(TestCase):
         self.assertEqual(self.client.post(url, {"documentation_url": DRIVE_URL}).status_code, 403)
 
 
+# OOP — Single inheritance: DocumentationAccessTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class DocumentationAccessTests(TestCase):
     """Peserta hanya boleh membuka dokumentasi jika hadir dan event sudah COMPLETED."""
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
@@ -89,6 +102,7 @@ class DocumentationAccessTests(TestCase):
         cls.participant.phone_number = "081234567890"
         cls.participant.save()
 
+    # OOP — Encapsulation: method completed_event mengelompokkan operasi terkait objek DocumentationAccessTests.
     def completed_event(self, documentation_url=DRIVE_URL, status=EventStatus.COMPLETED):
         event = published_event(self.owner, self.admin)
         Event.objects.filter(pk=event.pk).update(
@@ -97,6 +111,7 @@ class DocumentationAccessTests(TestCase):
         event.refresh_from_db()
         return event
 
+    # OOP — Encapsulation: method attend mengelompokkan operasi terkait objek DocumentationAccessTests.
     def attend(self, event, status=Attendance.Status.PRESENT):
         registration = Registration.objects.create(participant=self.participant, event=event)
         attendance = Attendance.objects.create(registration=registration, verified_by=self.owner)
@@ -108,6 +123,7 @@ class DocumentationAccessTests(TestCase):
             )
         return registration
 
+    # OOP — Encapsulation: method gate mengelompokkan operasi terkait objek DocumentationAccessTests.
     def gate(self, event):
         self.client.force_login(self.participant)
         return self.client.get(reverse("peserta_dokumentasi", args=[event.pk]))

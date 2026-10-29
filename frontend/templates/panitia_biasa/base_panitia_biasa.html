@@ -1,5 +1,4 @@
-{% load static demo_seed %}
-{% demo_seed "committee" as committee_demo %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -262,7 +261,7 @@ body.participant-page { min-height: 100vh; overflow-x: hidden; }
 </head>
 {% url 'panitia_akun' as akun_url %}{% url 'panitia_biasa' as home_url %}
 <body class="participant-page" data-home-url="{{ home_url }}">
-{% include "partials/demo_seed.html" %}
+{% include "partials/runtime_ui.html" %}
 
 <div class="participant-shell min-h-screen md:flex">
 
@@ -359,6 +358,8 @@ body.participant-page { min-height: 100vh; overflow-x: hidden; }
 </div>
 
 <script>
+/* OOP — Instantiation: new membentuk instance MutationObserver; state dan method mengikuti antarmuka objek masing-masing. */
+
   // GANTI MENU TAB (jika sedang di halaman Profil Saya, kembali ke beranda panitia)
   function switchPanitiaTab(tabId) {
     const target = document.getElementById(tabId);

@@ -26,6 +26,7 @@ def set_account_role(*, actor, user_id, role, reason):
     ):
         raise PermissionDenied("Tidak berwenang mengubah role.")
 
+    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
     with transaction.atomic():
         user = User.objects.select_for_update().get(pk=user_id)
 
@@ -91,6 +92,7 @@ def set_account_role(*, actor, user_id, role, reason):
 
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def promote_platform_admin(*, actor, user_id, reason):
     reason = (reason or "").strip()

@@ -1,3 +1,6 @@
+
+/* OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class.
+ * OOP — Object composition: window.EO menyatukan koleksi data dan method series sebagai objek antarmuka tampilan. */
 /* Adapter tampilan demo. Sumber data: backend/apps/events/seeds/demo.json.
    Aksi lokal tetap memakai SIM sampai masing-masing fitur dihubungkan ke DB. */
 (function () {
@@ -22,5 +25,5 @@
     statusEvent: { berlangsung: "Sedang Berlangsung", mendatang: "Mendatang", selesai: "Selesai" },
     statusTiket: { diaudit: "Sedang Diaudit", selesai: "Selesai" }
   };
-  if (window.SIM) { window.SIM.applyToEO(window.EO); }
+  // Data operasional diisi dari payload database halaman, tanpa overlay localStorage.
 })();

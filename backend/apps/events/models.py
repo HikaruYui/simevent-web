@@ -56,11 +56,13 @@ def banner_upload_path(instance, filename):
 
 
 # Inheritance: EventType mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class EventType(models.Model):
     code = models.SlugField(max_length=32, unique=True)
     name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("name",)
 
@@ -70,6 +72,7 @@ class EventType(models.Model):
 
 
 # Inheritance: EventQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
+# OOP — Hierarchical inheritance: models.QuerySet juga menjadi induk class saudara lain di proyek.
 class EventQuerySet(models.QuerySet):
     # Abstraction: public() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def public(self):
@@ -119,13 +122,16 @@ def proposal_upload_path(instance, filename):
 # =========================================================
 
 # Inheritance: Event mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Event(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="organized_events",
     )
 
+    # OOP — Association (ForeignKey): menghubungkan objek ke EventType; relasi database bukan pewarisan class.
     event_type = models.ForeignKey(
         EventType,
         on_delete=models.PROTECT,
@@ -200,8 +206,10 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # OOP — Factory / delegation: as_manager() membentuk manager yang mengekspos method QuerySet khusus lewat objects.
     objects = EventQuerySet.as_manager()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("start_datetime", "pk")
 
@@ -230,6 +238,7 @@ class Event(models.Model):
             ),
         ]
 
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(
@@ -273,6 +282,7 @@ class Event(models.Model):
         ]
 
     # Encapsulation: is_editable menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
+    # OOP — Property / descriptor: method diakses seperti atribut; nilai dihitung melalui getter.
     @property
     def is_editable(self):
         return self.status in (
@@ -281,6 +291,7 @@ class Event(models.Model):
         )
 
     # Encapsulation: is_ongoing menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
+    # OOP — Property / descriptor: method diakses seperti atribut; nilai dihitung melalui getter.
     @property
     def is_ongoing(self):
         return (
@@ -292,6 +303,7 @@ class Event(models.Model):
 
     # Polymorphism: menambahkan validasi khusus pada hook clean() milik Django.
     def clean(self):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().clean()
 
         errors = {}
@@ -342,7 +354,9 @@ class Event(models.Model):
 # =========================================================
 
 # Inheritance: EventAccess mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class EventAccess(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke Event; relasi database bukan pewarisan class.
     event = models.OneToOneField(
         Event,
         on_delete=models.CASCADE,
@@ -372,13 +386,16 @@ class EventAccess(models.Model):
 # =========================================================
 
 # Inheritance: EventTransition mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class EventTransition(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke Event; relasi database bukan pewarisan class.
     event = models.ForeignKey(
         Event,
         on_delete=models.PROTECT,
         related_name="transitions",
     )
 
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -404,9 +421,11 @@ class EventTransition(models.Model):
         auto_now_add=True,
     )
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("created_at", "pk")
 
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.CheckConstraint(
                 condition=(
@@ -439,12 +458,15 @@ class EventTransition(models.Model):
 
 
 # Inheritance: EventCommitteeAssignment mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class EventCommitteeAssignment(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke 'events.Event'; relasi database bukan pewarisan class.
     event = models.ForeignKey(
         "events.Event",
         on_delete=models.CASCADE,
         related_name="committee_assignments",
     )
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -453,6 +475,7 @@ class EventCommitteeAssignment(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -467,12 +490,15 @@ class EventCommitteeAssignment(models.Model):
 
 
 # Inheritance: CommitteePreference mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class CommitteePreference(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     member = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="committee_preference",
     )
+    # OOP — Association (ForeignKey): menghubungkan objek ke Event; relasi database bukan pewarisan class.
     selected_event = models.ForeignKey(
         Event,
         on_delete=models.SET_NULL,
@@ -484,7 +510,9 @@ class CommitteePreference(models.Model):
 
 
 # Inheritance: OrganizerPreference mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class OrganizerPreference(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -496,7 +524,9 @@ class OrganizerPreference(models.Model):
 
 
 # Inheritance: OrganizerInvitation mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class OrganizerInvitation(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -506,11 +536,13 @@ class OrganizerInvitation(models.Model):
     token = models.UUIDField(default=uuid4, unique=True, editable=False)
     message = models.CharField(max_length=200, blank=True)
     access_all = models.BooleanField(default=True)
+    # OOP — Association (ManyToManyField): menghubungkan objek ke Event; relasi database bukan pewarisan class.
     events = models.ManyToManyField(Event, related_name="committee_invitations", blank=True)
     sent_at = models.DateTimeField(default=timezone.now)
     email_sent_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-sent_at", "-pk")
         constraints = [
@@ -522,6 +554,7 @@ class OrganizerInvitation(models.Model):
 
 
 # Inheritance: OrganizerSupportTicket mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class OrganizerSupportTicket(models.Model):
     # Inheritance: Status mewarisi enum Django untuk pilihan nilai dan label.
     class Status(models.TextChoices):
@@ -529,11 +562,13 @@ class OrganizerSupportTicket(models.Model):
         RESOLVED = "RESOLVED", "Selesai"
 
     code = models.CharField(max_length=20, unique=True)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="support_tickets",
     )
+    # OOP — Association (ForeignKey): menghubungkan objek ke Event; relasi database bukan pewarisan class.
     event = models.ForeignKey(
         Event,
         on_delete=models.CASCADE,
@@ -552,17 +587,35 @@ class OrganizerSupportTicket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-created_at", "-pk")
 
 
 # Inheritance: PlatformSettings mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    message = models.TextField(max_length=3000)
+    reply = models.TextField(max_length=2000, blank=True)
+    status = models.CharField(max_length=20, choices=OrganizerSupportTicket.Status.choices,
+                              default=OrganizerSupportTicket.Status.IN_PROGRESS)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+
+
 class PlatformSettings(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     platform_fee_percent = models.DecimalField(max_digits=4, decimal_places=2, default=5)
     event_approval_required = models.BooleanField(default=True)
     notifications = models.JSONField(default=dict, blank=True)
     category_enabled = models.JSONField(default=dict, blank=True)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -572,6 +625,7 @@ class PlatformSettings(models.Model):
     )
     updated_at = models.DateTimeField(auto_now=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -586,13 +640,16 @@ class PlatformSettings(models.Model):
 
 
 # Inheritance: PlatformPayout mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class PlatformPayout(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="platform_payouts",
     )
     amount = models.DecimalField(max_digits=14, decimal_places=2)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -600,6 +657,7 @@ class PlatformPayout(models.Model):
     )
     created_at = models.DateTimeField(default=timezone.now)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-created_at", "-pk")
         constraints = [
@@ -611,9 +669,11 @@ class PlatformPayout(models.Model):
 
 
 # Inheritance: PlatformAuditLog mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class PlatformAuditLog(models.Model):
     category = models.CharField(max_length=20)
     description = models.CharField(max_length=500)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -626,6 +686,7 @@ class PlatformAuditLog(models.Model):
     seed_key = models.CharField(max_length=64, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-created_at", "-pk")
 

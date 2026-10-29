@@ -21,7 +21,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 
 
+# OOP — Single inheritance: AttendanceTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class AttendanceTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
@@ -42,7 +46,9 @@ class AttendanceTests(TestCase):
         cls.token = cls.registration.ticket.token
 
 
+    # OOP — Encapsulation: method scan mengelompokkan operasi terkait objek AttendanceTests.
     def scan(self, actor=None, token=None):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.attendance.timezone.now", return_value=self.event.start_datetime):
             return AttendanceService(actor or self.owner).scan(
                 self.event.pk, token=token or self.token,
@@ -58,8 +64,10 @@ class AttendanceTests(TestCase):
         self.assertEqual(Attendance.objects.count(), 1)
 
     def test_only_owner_or_platform_admin_can_scan(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(Http404):
             self.scan(self.other)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.scan(self.participant)
         self.assertTrue(self.scan(self.admin)[1])
@@ -82,6 +90,7 @@ class AttendanceTests(TestCase):
         self.assertEqual(committee.role, "COMMITTEE")
 
         # Tanpa penugasan, panitia tidak boleh scan.
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(Http404):
             self.scan(actor=committee)
 
@@ -110,6 +119,7 @@ class AttendanceTests(TestCase):
         assignment.is_active = False
         assignment.save(update_fields=["is_active"])
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(Http404):
             self.scan(actor=committee)
 
@@ -118,6 +128,7 @@ class AttendanceTests(TestCase):
         other_event = published_event(self.owner, self.admin)
         other_registration = RegistrationService(self.participant).register(other_event.pk)
         for token in ("invalid", str(uuid4()), other_registration.ticket.token):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(token=token), self.assertRaises(ValidationError):
                 self.scan(token=token)
         self.assertFalse(Attendance.objects.exists())
@@ -125,29 +136,36 @@ class AttendanceTests(TestCase):
     def test_scan_time_boundaries(self):
         service = AttendanceService(self.owner)
         for now in (self.event.start_datetime - timedelta(microseconds=1), self.event.end_datetime):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with patch("apps.registrations.attendance.timezone.now", return_value=now):
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.assertRaises(ValidationError):
                     service.scan(self.event.pk, token=self.token)
         self.assertTrue(self.scan()[1])
 
     def test_cancelled_registration_and_rotated_token_are_rejected(self):
         RegistrationService(self.participant).cancel(self.registration.pk)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.scan()
         renewed = RegistrationService(self.participant).register(self.event.pk)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.scan()
         self.assertTrue(self.scan(token=renewed.ticket.token)[1])
 
     def test_inactive_ticket_participant_and_scanner_are_rejected(self):
         Ticket.objects.filter(registration=self.registration).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.scan()
         Ticket.objects.filter(registration=self.registration).update(is_active=True)
         type(self.participant).objects.filter(pk=self.participant.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.scan()
         type(self.owner).objects.filter(pk=self.owner.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.scan()
 
@@ -156,6 +174,7 @@ class AttendanceTests(TestCase):
             if status == EventStatus.PUBLISHED:
                 continue
             Event.objects.filter(pk=self.event.pk).update(status=status)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(status=status), self.assertRaises(ValidationError):
                 self.scan()
         self.assertFalse(Attendance.objects.exists())
@@ -163,11 +182,14 @@ class AttendanceTests(TestCase):
     def test_stale_scanner_permissions_are_rechecked(self):
         self.owner.get_all_permissions()
         self.owner.groups.clear()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.scan()
 
     def test_attendance_failure_does_not_consume_ticket(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.attendance.Attendance.objects.create", side_effect=RuntimeError):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 self.scan()
         self.assertFalse(Attendance.objects.exists())
@@ -175,28 +197,36 @@ class AttendanceTests(TestCase):
 
     def test_unique_attendance_enforced_by_database(self):
         self.scan()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             Attendance.objects.create(registration=self.registration, verified_by=self.owner)
 
-    def test_void_is_admin_only_and_cannot_be_undone_by_rescan(self):
+    def test_void_rejects_unassigned_committee_and_cannot_be_undone_by_rescan(self):
         attendance, _ = self.scan()
-        with self.assertRaises(PermissionDenied):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
+        with self.assertRaises(Http404):
             AttendanceService(self.owner).void(attendance.pk, reason="Mistake")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             AttendanceService(self.admin).void(attendance.pk, reason="")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.attendance.timezone.now", return_value=self.event.end_datetime):
             result = AttendanceService(self.admin).void(attendance.pk, reason="Wrong attendee")
         self.assertEqual(result.status, Attendance.Status.VOIDED)
         self.assertEqual(result.voided_by, self.admin)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.scan()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             AttendanceService(self.admin).void(attendance.pk, reason="Again")
 
     def test_void_state_database_constraints(self):
         attendance, _ = self.scan()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             Attendance.objects.filter(pk=attendance.pk).update(status="VOIDED")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             Attendance.objects.filter(pk=attendance.pk).update(
                 status="VOIDED", void_reason="Reason", voided_by=self.admin,
@@ -211,6 +241,7 @@ class AttendanceTests(TestCase):
         self.assertEqual(csrf.post(url, {"token": self.token}).status_code, 403)
         self.client.force_login(self.owner)
         self.assertEqual(self.client.get(url).status_code, 405)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.attendance.timezone.now", return_value=self.event.start_datetime):
             first = self.client.post(url, {"token": self.token, "verified_by": self.other.pk})
             second = self.client.post(url, {"token": self.token})
@@ -245,6 +276,7 @@ class AttendanceTests(TestCase):
         self.assertEqual(image.width, image.height)
         self.assertGreater(image.width, 200)
         self.assertEqual(image.getpixel((0, 0)), 255)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.tickets.qrcode.make", wraps=__import__("qrcode").make) as encode:
             self.client.get(url)
         self.assertEqual(encode.call_args.args, (str(self.token),))
@@ -269,6 +301,7 @@ class AttendanceTests(TestCase):
         self.client.post(url, data)
         attendance.refresh_from_db()
         self.assertEqual(attendance.status, Attendance.Status.PRESENT)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.attendance.timezone.now", return_value=self.event.end_datetime):
             response = self.client.post(url, {**data, "confirm": "on"})
         self.assertEqual(response.status_code, 302)

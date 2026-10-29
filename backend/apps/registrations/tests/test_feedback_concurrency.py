@@ -15,11 +15,15 @@ from apps.registrations.models import Feedback
 from .test_feedback import completed_registration, feedback_input
 
 
+# OOP — Single inheritance: FeedbackConcurrencyTests mewarisi TransactionTestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TransactionTestCase juga menjadi induk class saudara lain di proyek.
 class FeedbackConcurrencyTests(TransactionTestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         owner, other, self.participant, self.admin = setup_users()
         self.event, self.registration = completed_registration(owner, self.admin, self.participant)
 
+    # OOP — Encapsulation: method race mengelompokkan operasi terkait objek FeedbackConcurrencyTests.
     def race(self, operations):
         barrier = Barrier(len(operations))
 
@@ -34,10 +38,12 @@ class FeedbackConcurrencyTests(TransactionTestCase):
             finally:
                 connections.close_all()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with ThreadPoolExecutor(max_workers=len(operations)) as pool:
             futures = [pool.submit(worker, operation) for operation in operations]
             return [future.result(timeout=20) for future in futures]
 
+    # OOP — Encapsulation: method submit mengelompokkan operasi terkait objek FeedbackConcurrencyTests.
     def submit(self):
         return FeedbackService(self.participant).submit(
             self.registration.pk, data=feedback_input(),

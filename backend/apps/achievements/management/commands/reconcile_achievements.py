@@ -7,6 +7,7 @@ from apps.achievements.services import AchievementService
 
 
 # Inheritance: Command mewarisi kerangka perintah manage.py.
+# OOP — Hierarchical inheritance: BaseCommand juga menjadi induk class saudara lain di proyek.
 class Command(BaseCommand):
     help = "Evaluate active achievements for one user or all active users."
 

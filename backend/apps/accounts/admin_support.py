@@ -8,6 +8,7 @@ from django.db import transaction
 
 
 # Inheritance: ReasonActionForm mewarisi perilaku ActionForm untuk diperluas sesuai kebutuhan class ini.
+# OOP — Object composition: objek field disusun sebagai bagian form; validasi didelegasikan ke masing-masing field.
 class ReasonActionForm(ActionForm):
     reason = forms.CharField(
         label="Alasan",
@@ -21,6 +22,8 @@ class ReasonActionForm(ActionForm):
     )
 
 
+# OOP — Duck typing: model_admin cukup menyediakan message_user/log_change; operation cukup callable.
+# OOP — Polymorphism berbasis callable: operasi admin berbeda dijalankan melalui kontrak operation(pk, reason).
 def run_single_action(
     model_admin,
     request,
@@ -57,6 +60,7 @@ def run_single_action(
     obj = objects[0]
 
     try:
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with transaction.atomic():
             operation(
                 obj.pk,
@@ -92,6 +96,7 @@ def run_single_action(
 
 
 # OOP mixin: mengemas aturan akses untuk dipakai ulang melalui pewarisan ganda.
+# OOP — Hierarchical inheritance: class ini menjadi induk bersama bagi AccountAccessChangeAdmin, AttendanceAdmin, EventAccessAdmin, EventAdmin, EventRewardPolicyAdmin, EventTransitionAdmin, FeedbackAdmin, OrganizerProposalAdmin, ProposalReviewAdmin, RegistrationAdmin, TicketAdmin, UserAchievementAdmin.
 class ReadOnlyAuditAdmin:
     # Polymorphism: menyesuaikan izin melihat objek pada Django admin.
     def has_view_permission(

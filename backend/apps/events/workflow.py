@@ -9,7 +9,7 @@ from apps.accounts.models import User
 from apps.accounts.permissions import require_organizer
 from apps.accounts.services import lock_accounts, require_platform_permission
 from .forms import AdminEventForm, EventForm
-from .models import DeliveryMode, Event, EventAccess, EventStatus, EventTransition
+from .models import DeliveryMode, Event, EventAccess, EventStatus, EventTransition, PlatformSettings
 
 
 # Encapsulation: aturan izin, ownership, status, dan audit dirangkum di dalam workflow.
@@ -64,12 +64,15 @@ class EventWorkflow:
         require_organizer(actor)
         return actor
 
+    # OOP — Encapsulation: _require adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
+    # OOP — Static method: utilitas pada namespace class tanpa parameter self/cls otomatis.
     @staticmethod
     def _require(actor, permission):
         require_organizer(actor)
         if not actor.has_perm(permission):
             raise PermissionDenied
 
+    # OOP — Encapsulation: _lock_event adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
     def _lock_event(self, event_id):
         actor = self._actor()
         visible = get_object_or_404(Event.objects.managed_by(actor), pk=event_id)
@@ -81,11 +84,15 @@ class EventWorkflow:
         )
         return actor, event, users[event.organizer_id]
 
+    # OOP — Encapsulation: _valid_form adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
+    # OOP — Static method: utilitas pada namespace class tanpa parameter self/cls otomatis.
     @staticmethod
     def _valid_form(form):
         if not form.is_valid():
             raise ValidationError(form.errors.as_data())
 
+    # OOP — Encapsulation: _save_content adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
+    # OOP — Static method: utilitas pada namespace class tanpa parameter self/cls otomatis.
     @staticmethod
     def _save_content(form, previous_banner=""):
         event = form.save(commit=False)
@@ -93,6 +100,7 @@ class EventWorkflow:
             event.banner = ""
         storage = event.banner.storage
         try:
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with transaction.atomic():
                 event.save()
                 EventAccess.objects.update_or_create(
@@ -116,6 +124,7 @@ class EventWorkflow:
         return event
 
     # Abstraction: membuat event melalui satu method yang mengurus izin, form, dan penyimpanan.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def create(self, *, data, files=None):
         actor = self._actor()
@@ -139,6 +148,7 @@ class EventWorkflow:
         return self._save_content(form)
 
     # Abstraction: mengubah event melalui satu method yang mengurus izin, status, form, dan kuota.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def update(self, event_id, *, data, files=None):
         actor, event, _ = self._lock_event(event_id)
@@ -152,6 +162,8 @@ class EventWorkflow:
             raise ValidationError({"capacity": "Capacity cannot be below active registrations."})
         return self._save_content(form, previous_banner)
 
+    # OOP — Encapsulation: _validate_ready adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
+    # OOP — Static method: utilitas pada namespace class tanpa parameter self/cls otomatis.
     @staticmethod
     def _validate_ready(event, owner):
         event.full_clean()
@@ -161,8 +173,6 @@ class EventWorkflow:
             raise ValidationError("This event type is inactive.")
         if event.start_datetime <= timezone.now():
             raise ValidationError("The event must start in the future.")
-        if event.price != 0:
-            raise ValidationError("Paid events remain drafts until payment is supported.")
         if (
             event.delivery_mode in (DeliveryMode.OFFLINE, DeliveryMode.HYBRID)
             and not event.venue.strip()
@@ -176,6 +186,7 @@ class EventWorkflow:
                 })
             access.full_clean()
 
+    # OOP — Encapsulation: _validate_transition adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
     def _validate_transition(self, actor, event, owner, action, reason):
         target = self.action_targets.get(action)
         if target is None:
@@ -183,13 +194,7 @@ class EventWorkflow:
         permission = self.permissions[target]
         if action == "unpublish":
             permission = "events.publish_event"
-        if (
-            action == "approve"
-            and event.organizer_id == actor.pk
-            and not actor.has_perm("accounts.manage_platform")
-        ):
-            self._require(actor, "events.submit_event")
-        elif target in self.admin_decisions:
+        if target in self.admin_decisions:
             require_platform_permission(actor, permission)
         else:
             self._require(actor, permission)
@@ -219,6 +224,7 @@ class EventWorkflow:
             raise ValidationError("An event that has already ended cannot be cancelled.")
 
     # Abstraction: pemanggil cukup meminta transisi; validasi, locking, dan audit ditangani di sini.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def transition(self, event_id, *, action, reason=""):
         actor, event, owner = self._lock_event(event_id)
@@ -231,9 +237,19 @@ class EventWorkflow:
         EventTransition.objects.create(
             event=event, actor=actor, from_status=previous, to_status=target, reason=reason
         )
+        if action == "submit" and PlatformSettings.objects.filter(
+            pk=1, event_approval_required=False,
+        ).exists():
+            event.status = EventStatus.APPROVED
+            event.save(update_fields=["status", "updated_at"])
+            EventTransition.objects.create(
+                event=event, actor=actor, from_status=target, to_status=EventStatus.APPROVED,
+                reason="Disetujui otomatis sesuai pengaturan platform; menunggu publikasi Admin.",
+            )
         return event
 
     # Abstraction: pemanggil cukup mengirim tautan; izin, status, dan validasi host ditangani di sini.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def set_documentation(self, event_id, *, url):
         """Simpan (atau kosongkan) tautan dokumentasi. Tidak mengubah status event."""
@@ -254,6 +270,7 @@ class EventWorkflow:
         return event
 
     # Abstraction: menghapus draft melalui satu method yang memeriksa izin dan membersihkan banner.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def delete_draft(self, event_id):
         actor, event, _ = self._lock_event(event_id)

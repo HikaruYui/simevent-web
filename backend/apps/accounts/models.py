@@ -10,8 +10,10 @@ class UserManager(BaseUserManager):
     use_in_migrations = True
 
     # Polymorphism: memperluas normalisasi email dari manager induk.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def normalize_email(cls, email):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         return super().normalize_email(email).strip().lower()
 
     # Polymorphism: menyesuaikan pencarian akun menggunakan email tanpa membedakan huruf besar/kecil.
@@ -24,6 +26,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         return await self.aget(email__iexact=email)
 
+    # OOP — Encapsulation: method create_user mengelompokkan operasi terkait objek UserManager.
     def create_user(self, email, password=None, **extra_fields):
         if not email or not email.strip():
             raise ValueError("Email wajib diisi.")
@@ -31,6 +34,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
 
+        # OOP — Factory: manager membangun instance model yang terikat pada self.model, tanpa mengunci class User secara langsung.
         user = self.model(
             email=self.normalize_email(email),
             **extra_fields,
@@ -41,6 +45,7 @@ class UserManager(BaseUserManager):
 
         return user
 
+    # OOP — Encapsulation: method create_superuser mengelompokkan operasi terkait objek UserManager.
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
@@ -68,6 +73,7 @@ class UserManager(BaseUserManager):
         )
 
 # Inheritance: memperluas AbstractUser dengan identitas login berupa email.
+# OOP — Abstract base model Django: field/perilaku AbstractUser diwarisi User yang konkret; abstrak di ORM berbeda dari abc.ABC.
 class User(AbstractUser):
     username = None
     email = models.EmailField(
@@ -111,8 +117,10 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
+    # OOP — Object composition / delegation: model memakai objek manager khusus untuk operasi pembuatan dan pencarian akun.
     objects = UserManager()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         verbose_name = "Pengguna"
         verbose_name_plural = "Pengguna"
@@ -154,10 +162,12 @@ class User(AbstractUser):
     # Polymorphism: menyesuaikan proses penyimpanan sebelum meneruskan ke implementasi induk.
     def save(self, *args, **kwargs):
         self.email = type(self).objects.normalize_email(self.email)
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().save(*args, **kwargs)
 
     # Role dihitung dari permission yang diberikan melalui grup Role.
     # Encapsulation: role menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
+    # OOP — Property / descriptor: method diakses seperti atribut; nilai dihitung melalui getter.
     @property
     def role(self):
         if self.has_perm("accounts.manage_platform"):
@@ -169,6 +179,7 @@ class User(AbstractUser):
         return "PARTICIPANT"
 
     # Encapsulation: profile_complete menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
+    # OOP — Property / descriptor: method diakses seperti atribut; nilai dihitung melalui getter.
     @property
     def profile_complete(self):
         return all((
@@ -187,6 +198,7 @@ class User(AbstractUser):
 
 
 # Inheritance: AccountAccessChange mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class AccountAccessChange(models.Model):
 
     # Inheritance: Action mewarisi enum Django untuk pilihan nilai dan label.
@@ -214,6 +226,7 @@ class AccountAccessChange(models.Model):
             "Aktifkan akun",
         )
 
+    # OOP — Association (ForeignKey): menghubungkan objek ke User; relasi database bukan pewarisan class.
     user = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -221,6 +234,7 @@ class AccountAccessChange(models.Model):
         verbose_name="akun yang diubah",
     )
 
+    # OOP — Association (ForeignKey): menghubungkan objek ke User; relasi database bukan pewarisan class.
     actor = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -245,6 +259,7 @@ class AccountAccessChange(models.Model):
     )
 
     
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         verbose_name = "Riwayat Perubahan Akses"
         verbose_name_plural = "Riwayat Perubahan Akses"

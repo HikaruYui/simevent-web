@@ -9,10 +9,12 @@ from django.utils import timezone
 
 
 # Inheritance: Achievement mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Achievement(models.Model):
     code = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=150)
     description = models.TextField(max_length=2000, blank=True)
+    # OOP — Association (ForeignKey): menghubungkan objek ke 'events.EventType'; relasi database bukan pewarisan class.
     event_type = models.ForeignKey(
         "events.EventType", on_delete=models.PROTECT,
         null=True, blank=True, related_name="achievements",
@@ -22,6 +24,7 @@ class Achievement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("required_count", "name")
         constraints = [
@@ -32,6 +35,7 @@ class Achievement(models.Model):
         ]
 
     # Encapsulation: scope_label menyajikan hasil perhitungan sebagai atribut baca tanpa setter.
+    # OOP — Property / descriptor: method diakses seperti atribut; nilai dihitung melalui getter.
     @property
     def scope_label(self):
         return self.event_type.name if self.event_type_id else "All event types"
@@ -42,6 +46,7 @@ class Achievement(models.Model):
 
 
 # Inheritance: UserAchievementQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
+# OOP — Hierarchical inheritance: models.QuerySet juga menjadi induk class saudara lain di proyek.
 class UserAchievementQuerySet(models.QuerySet):
     # Abstraction: active() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def active(self):
@@ -56,6 +61,7 @@ class UserAchievementQuerySet(models.QuerySet):
             user__registrations__attendance__status="PRESENT",
             user__registrations__event__status="COMPLETED",
         )
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         matching_type = (
             models.Q(achievement__event_type__isnull=True)
             | models.Q(
@@ -72,11 +78,14 @@ class UserAchievementQuerySet(models.QuerySet):
 
 
 # Inheritance: UserAchievement mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class UserAchievement(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
         related_name="achievements",
     )
+    # OOP — Association (ForeignKey): menghubungkan objek ke Achievement; relasi database bukan pewarisan class.
     achievement = models.ForeignKey(
         Achievement, on_delete=models.PROTECT, related_name="user_awards",
     )
@@ -85,10 +94,13 @@ class UserAchievement(models.Model):
     is_active = models.BooleanField(default=True)
     revoked_at = models.DateTimeField(null=True, blank=True)
 
+    # OOP — Factory / delegation: as_manager() membentuk manager yang mengekspos method QuerySet khusus lewat objects.
     objects = UserAchievementQuerySet.as_manager()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-awarded_at", "-pk")
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "achievement"],
@@ -111,7 +123,9 @@ class UserAchievement(models.Model):
 
 
 # Inheritance: Reward mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Reward(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke Achievement; relasi database bukan pewarisan class.
     achievement = models.OneToOneField(
         Achievement, on_delete=models.PROTECT, related_name="reward",
     )
@@ -121,6 +135,7 @@ class Reward(models.Model):
     )
     is_active = models.BooleanField(default=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -135,7 +150,9 @@ class Reward(models.Model):
 
 
 # Inheritance: EventRewardPolicy mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class EventRewardPolicy(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke 'events.Event'; relasi database bukan pewarisan class.
     event = models.OneToOneField(
         "events.Event", on_delete=models.CASCADE, related_name="reward_policy",
     )
@@ -146,7 +163,9 @@ class EventRewardPolicy(models.Model):
     )
     updated_at = models.DateTimeField(auto_now=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.CheckConstraint(
                 condition=(

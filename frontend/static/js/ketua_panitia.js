@@ -1,3 +1,8 @@
+
+/* OOP — Instantiation: new membentuk instance Blob, Date, Error, Event, FormData, MutationObserver, ResizeObserver, URL, URLSearchParams; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Prototype / duck typing: method Array dipinjam dengan call untuk koleksi array-like (misalnya NodeList atau options).
+ * OOP — Prototype: hasOwnProperty dipinjam dari Object.prototype untuk memeriksa properti milik objek sendiri.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
 (function () {
   "use strict";
 
@@ -947,7 +952,7 @@ var proposalButton = (!p.backend || p.asli)
         $("#detailProposal").insertAdjacentHTML(
           "beforeend",
           '<div style="display:flex;justify-content:flex-end;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid #e5dfcf">' +
-          '<button type="button" class="btn" data-approve-event>Setujui proposal</button></div>'
+          '<button type="button" class="btn" disabled>Menunggu persetujuan Admin</button></div>'
         );
       }
       dlg.showModal();
@@ -1053,15 +1058,15 @@ var proposalButton = (!p.backend || p.asli)
         }
 
         // Sinkronkan data frontend dengan perubahan status.
-        if (data.status !== (approving ? "APPROVED" : "SUBMITTED")) {
+        if (!["APPROVED", "SUBMITTED"].includes(data.status)) {
           throw new Error("Status event tidak sesuai. Muat ulang halaman untuk melihat status terbaru.");
         }
-        selectedEvent.status = approving ? "disetujui" : "diajukan";
+        selectedEvent.status = data.status === "APPROVED" ? "disetujui" : "diajukan";
 
         dlg.close();
 
         toast(
-          approving ? 'Proposal event "' + selectedEvent.nama + '" berhasil disetujui.' :
+          data.status === "APPROVED" ? 'Event "' + selectedEvent.nama + '" disetujui. Menunggu publikasi Admin.' :
           'Event "' + selectedEvent.nama +
           '" berhasil diajukan ke Admin Platform.'
         );
@@ -1575,6 +1580,7 @@ $("#timStats").innerHTML =
     renderTim();
 
     /* ----- Notifikasi ----- */
+    if (!$("#togList")) return;
     $("#togList").innerHTML = NOTIF.map(function (n) {
       return '<li class="tog"><div><b id="tg-' + n.k + '">' + esc(n.t) + "</b><small>" + esc(n.d) + '</small></div><button type="button" class="switch" role="switch" aria-labelledby="tg-' + n.k + '" aria-checked="' + n.on + '" data-k="' + n.k + '"><i></i></button></li>';
     }).join("");

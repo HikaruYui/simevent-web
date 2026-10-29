@@ -1,5 +1,5 @@
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -27,8 +27,13 @@ from apps.registrations.models import (
     Registration,
     Ticket,
     Payment,
+    PaymentInstructions,
     Attendance,
+    Feedback,
+    RATING_FIELDS,
 )
+from apps.achievements.models import Achievement
+from apps.achievements.services import AchievementService
 from apps.partnerships.models import OrganizerProposal, ProposalStatus
 from apps.events.seeds import (
     DEMO_ACCOUNTS,
@@ -59,6 +64,7 @@ def tanggal(value, hour=9):
 
 
 # Inheritance: Command mewarisi kerangka perintah manage.py.
+# OOP — Hierarchical inheritance: BaseCommand juga menjadi induk class saudara lain di proyek.
 class Command(BaseCommand):
     help = "Initial data lengkap SIMEVENT untuk development."
 
@@ -71,6 +77,7 @@ class Command(BaseCommand):
         )
 
     # Polymorphism: menyediakan implementasi perintah yang dipanggil oleh BaseCommand.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def handle(self, *args, **options):
         if not settings.DEBUG:
@@ -120,6 +127,11 @@ class Command(BaseCommand):
                     last_name=parts[1] if len(parts) > 1 else "",
                     is_active=active,
                     is_staff=(role == "ADMIN"),
+                    # Identitas sintetis untuk akun demo baru; akun yang sudah ada tetap utuh.
+                    ktp_number=f"990000{created_users:010d}",
+                    gender="L", birth_place="Kota Demo", birth_date=date(2000, 1, 1),
+                    address="Alamat contoh untuk demonstrasi SIMEVENT", phone_number="081200000000",
+
                 )
 
                 # Akun demo dibuat tanpa password login.
@@ -154,6 +166,47 @@ class Command(BaseCommand):
         budi = accounts["budi@simevent.id"]
         ui_seed = load_demo_catalog()["ui"]
         now = timezone.now()
+
+
+        # REKENING PEMBAYARAN SIMEVENT (DEVELOPMENT)
+        bank_data = {
+            "bank_name": "BANK DEMO SIMEVENT",
+            "account_number": "0000000000",
+            "account_holder": "SIMEVENT DEMO",
+            "instructions": (
+                "Silakan ikuti instruksi pembayaran. "
+                "Setelah mendaftar, unggah bukti pembayaran untuk diverifikasi."
+            ),
+        }
+
+        rekening = PaymentInstructions.objects.filter(
+            is_active=True
+        ).order_by("pk").first()
+
+        if rekening:
+            for field, value in bank_data.items():
+                setattr(rekening, field, value)
+
+            rekening.save(update_fields=list(bank_data.keys()))
+        else:
+            rekening = PaymentInstructions.objects.create(
+                **bank_data,
+                is_active=True,
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Rekening pembayaran diperbarui: {rekening.bank_name}"
+            )
+        )
+
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Instruksi pembayaran aktif tersedia."
+            )
+        )
+
 
         shared_settings = ui_seed["shared_defaults"]["settings"]
         PlatformSettings.objects.get_or_create(
@@ -670,6 +723,51 @@ class Command(BaseCommand):
                     hadir=i < present_count,
                     verifier=event.organizer,
                 )
+
+        # Skenario lintas peran: identitas peserta yang sama dipakai pada event
+        # mendatang, berjalan, dan selesai; seluruh panel membaca registrasi ini.
+        demo_people = [accounts[email] for email, _, role in DEMO_ACCOUNTS if role == "PARTICIPANT"]
+        demo_people += [
+            ensure_user(item["email"], item["name"])
+            for item in ui_seed["committee"]["participants"]
+        ]
+        demo_committee = [
+            accounts[email] for email, _, role in DEMO_ACCOUNTS
+            if role == "COMMITTEE" and accounts[email].is_active
+        ]
+        scenarios = (
+            ("upcoming", "Demo Terpadu - Pendaftaran", now + timedelta(days=7), EventStatus.PUBLISHED),
+            ("live", "Demo Terpadu - Absensi", now - timedelta(hours=1), EventStatus.PUBLISHED),
+            ("completed", "Demo Terpadu - Hasil Kegiatan", now - timedelta(days=7), EventStatus.COMPLETED),
+        )
+        for stage, title, start, status in scenarios:
+            event = save_event(
+                slug=f"demo-integrated-{stage}", title=title, code="SEMINAR", owner=budi,
+                start=start, venue="Ruang Demonstrasi SIMEVENT", capacity=100, price=0, status=status,
+            )
+            for member in demo_committee:
+                EventCommitteeAssignment.objects.get_or_create(event=event, member=member)
+            for index, user in enumerate(demo_people):
+                add_registration(
+                    user, event, min(now - timedelta(days=1), event.start_datetime - timedelta(days=2)),
+                    hadir=stage == "completed", verifier=demo_committee[0] if demo_committee else budi,
+                )
+                registration = Registration.objects.get(participant=user, event=event)
+                # Satu peserta dibiarkan belum feedback agar alurnya bisa didemokan.
+                if (stage == "completed" and index > 0
+                        and registration.status == "REGISTERED"
+                        and Attendance.objects.filter(registration=registration, status="PRESENT").exists()):
+                    Feedback.objects.get_or_create(registration=registration, defaults={
+                        **{field: 4 for field in RATING_FIELDS},
+                        "comment": "Feedback contoh untuk demonstrasi lintas peran.",
+                    })
+        Achievement.objects.get_or_create(code="demo-first-attendance", defaults={
+            "name": "Langkah Pertama", "description": "Menghadiri satu event yang telah selesai.",
+            "required_count": 1,
+        })
+        for user in demo_people:
+            if user.is_active:
+                AchievementService(user).evaluate()
 
         # 3 PENGAJUAN ORGANIZER
 

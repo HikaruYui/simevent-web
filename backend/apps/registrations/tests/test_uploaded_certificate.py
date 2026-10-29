@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 
 from django.contrib.auth.models import Permission
+from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -26,20 +27,34 @@ def make_committee(email):
     return User.objects.get(pk=user.pk)
 
 
+# OOP — Single inheritance: UploadedCertificateTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class UploadedCertificateTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpClass milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpClass(cls):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().setUpClass()
         cls.tmp = tempfile.mkdtemp()
         cls.override = override_settings(BASE_DIR=Path(cls.tmp))
         cls.override.enable()
+        # FileField mengevaluasi factory storage saat impor; arahkan fixture ke folder sementara.
+        cls.file_field = UploadedCertificate._meta.get_field("file")
+        cls.original_storage = cls.file_field.storage
+        cls.file_field.storage = FileSystemStorage(location=Path(cls.tmp) / "private_media")
 
+    # OOP — Method overriding: framework pengujian memanggil hook tearDownClass milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def tearDownClass(cls):
+        cls.file_field.storage = cls.original_storage
         cls.override.disable()
         shutil.rmtree(cls.tmp, ignore_errors=True)
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().tearDownClass()
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         owner, other, self.participant, admin = setup_users()
         self.event = published_event(owner, admin)
@@ -61,6 +76,7 @@ class UploadedCertificateTests(TestCase):
         )
         self.url = reverse("panitia_upload_sertifikat")
 
+    # OOP — Encapsulation: method upload mengelompokkan operasi terkait objek UploadedCertificateTests.
     def upload(self, registration, name="s.pdf", content=PDF):
         return self.client.post(self.url, {
             "registration_id": registration.pk,

@@ -9,6 +9,12 @@ from apps.accounts.models import User
 from .models import Event, EventType
 
 
+class ContactForm(forms.Form):
+    nama = forms.CharField(min_length=2, max_length=150)
+    email = forms.EmailField()
+    pesan = forms.CharField(min_length=5, max_length=3000)
+
+
 # Inheritance: BannerField mewarisi perilaku forms.ImageField untuk diperluas sesuai kebutuhan class ini.
 class BannerField(forms.ImageField):
     max_bytes = 5 * 1024 * 1024
@@ -19,6 +25,7 @@ class BannerField(forms.ImageField):
     def to_python(self, data):
         if data and data.size > self.max_bytes:
             raise forms.ValidationError("Banner must be at most 5 MiB.")
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         upload = super().to_python(data)
         if upload is None:
             return None
@@ -35,6 +42,7 @@ class BannerField(forms.ImageField):
 class ProposalField(forms.FileField):
     # Polymorphism: menyesuaikan konversi dan validasi unggahan pada hook field Django.
     def to_python(self, data):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         upload = super().to_python(data)
 
         if upload is None:
@@ -50,6 +58,7 @@ class ProposalField(forms.FileField):
                 "Proposal harus berformat PDF."
             )
 
+        # OOP — Duck typing: objek unggahan dipakai melalui read()/seek(); implementasi file di memori atau disk dapat memenuhi protokol yang sama.
         signature = upload.read(5)
         upload.seek(0)
 
@@ -62,6 +71,7 @@ class ProposalField(forms.FileField):
 
 
 # Inheritance: memakai validasi dan penyimpanan ModelForm, lalu menambahkan aturan event.
+# OOP — Object composition: objek field disusun sebagai bagian form; validasi didelegasikan ke masing-masing field.
 class EventForm(forms.ModelForm):
     banner = BannerField(required=False)
     remove_banner = forms.BooleanField(required=False)
@@ -71,6 +81,7 @@ class EventForm(forms.ModelForm):
     proposal = ProposalField(required=False)
     access_instructions = forms.CharField(required=False, max_length=5000)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         model = Event
         fields = (
@@ -91,11 +102,13 @@ class EventForm(forms.ModelForm):
 
     # OOP inisialisasi: super().__init__() menyiapkan objek induk sebelum field form disesuaikan.
     def __init__(self, *args, **kwargs):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().__init__(*args, **kwargs)
         self.fields["event_type"].queryset = EventType.objects.filter(is_active=True)
 
     # Polymorphism: menambahkan validasi khusus pada hook clean() milik Django.
     def clean(self):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         cleaned = super().clean()
         if cleaned.get("remove_banner") and self.files.get("banner"):
             self.add_error("banner", "Choose either a new banner or removal.")
@@ -103,14 +116,18 @@ class EventForm(forms.ModelForm):
 
 
 # Inheritance: memperluas EventForm dengan pemilihan organizer tanpa menyalin validasi event.
+# OOP — Multilevel inheritance: forms.ModelForm → EventForm → AdminEventForm.
 class AdminEventForm(EventForm):
     # Inheritance: Meta mewarisi perilaku EventForm.Meta untuk diperluas sesuai kebutuhan class ini.
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta(EventForm.Meta):
         fields = (*EventForm.Meta.fields, "organizer")
 
     # OOP inisialisasi: super().__init__() menyiapkan objek induk sebelum field form disesuaikan.
     def __init__(self, *args, **kwargs):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().__init__(*args, **kwargs)
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         permission = Q(
             groups__permissions__codename="access_organizer",
             groups__permissions__content_type__app_label="accounts",
@@ -118,16 +135,21 @@ class AdminEventForm(EventForm):
             user_permissions__codename="access_organizer",
             user_permissions__content_type__app_label="accounts",
         )
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         self.fields["organizer"].queryset = User.objects.filter(
             Q(is_superuser=True) | permission, is_active=True
         ).distinct()
 
 
 # Inheritance: TransitionForm mewarisi pengelolaan field dan validasi input Django.
+# OOP — Hierarchical inheritance: forms.Form juga menjadi induk class saudara lain di proyek.
+# OOP — Object composition: objek field disusun sebagai bagian form; validasi didelegasikan ke masing-masing field.
 class TransitionForm(forms.Form):
     reason = forms.CharField(required=False, max_length=2000)
 
 
 # Inheritance: DeleteDraftForm mewarisi pengelolaan field dan validasi input Django.
+# OOP — Hierarchical inheritance: forms.Form juga menjadi induk class saudara lain di proyek.
+# OOP — Object composition: objek field disusun sebagai bagian form; validasi didelegasikan ke masing-masing field.
 class DeleteDraftForm(forms.Form):
     confirm = forms.BooleanField(required=True)

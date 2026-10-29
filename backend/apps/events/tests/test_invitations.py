@@ -16,11 +16,16 @@ from apps.events.workflow import EventWorkflow
 from .support import event_data, setup_users
 
 
+# OOP — Single inheritance: InvitationEmailTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
+# OOP — Decorator Python (override_settings): mengganti settings selama konteks pengujian lalu memulihkannya; tidak menambah pewarisan class.
 @override_settings(
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
     DEFAULT_FROM_EMAIL="SIMEVENT <no-reply@example.com>",
 )
 class InvitationEmailTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
@@ -32,9 +37,11 @@ class InvitationEmailTests(TestCase):
         cls.event = EventWorkflow(cls.owner).create(data=event_data(title="Seminar tim"))
         cls.foreign_event = EventWorkflow(cls.other).create(data=event_data(title="Event lain"))
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.client.force_login(self.owner)
 
+    # OOP — Encapsulation: method invite mengelompokkan operasi terkait objek InvitationEmailTests.
     def invite(self, emails=None, **overrides):
         return self.client.post(reverse("eo_settings_invite"), {
             "emails": emails or ["new-member@example.com"],
@@ -42,6 +49,7 @@ class InvitationEmailTests(TestCase):
             **overrides,
         }, content_type="application/json")
 
+    # OOP — Encapsulation: method invitation_action mengelompokkan operasi terkait objek InvitationEmailTests.
     def invitation_action(self, invitation, action):
         return self.client.post(
             reverse("eo_settings_invitation_action", args=[invitation.pk]),
@@ -72,6 +80,7 @@ class InvitationEmailTests(TestCase):
 
     def test_smtp_connection_failure_keeps_invitations_for_retry(self):
         emails = ["first@example.com", "second@example.com"]
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.invitations.get_connection") as connection:
             connection.return_value.__enter__.side_effect = OSError("Unavailable")
             response = self.invite(emails)
@@ -90,6 +99,7 @@ class InvitationEmailTests(TestCase):
                 raise SMTPRecipientsRefused({"rejected@example.com": (550, b"Rejected")})
             return real_send(message, **kwargs)
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.invitations.EmailMessage.send", autospec=True, side_effect=deliver):
             response = self.invite(["rejected@example.com", "accepted@example.com"])
         self.assertEqual(response.json()["delivery"], {
@@ -100,6 +110,7 @@ class InvitationEmailTests(TestCase):
         self.assertIsNotNone(OrganizerInvitation.objects.get(email="accepted@example.com").email_sent_at)
 
     def test_resend_retries_failed_email_and_renews_expired_invitation(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.invitations.EmailMessage.send", return_value=0):
             self.invite()
         invitation = OrganizerInvitation.objects.get()
@@ -122,6 +133,7 @@ class InvitationEmailTests(TestCase):
         self.invite()
         invitation = OrganizerInvitation.objects.get()
         last_sent = invitation.email_sent_at
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.invitations.EmailMessage.send", side_effect=OSError("Timeout")):
             response = self.invitation_action(invitation, "resend")
         invitation.refresh_from_db()
@@ -134,6 +146,7 @@ class InvitationEmailTests(TestCase):
             {"emails": ["same@example.com", "same@example.com"]},
             {"event_ids": [self.foreign_event.pk], "access_all": False},
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(payload=payload):
                 self.assertEqual(self.invite(**payload).status_code, 400)
         self.assertFalse(OrganizerInvitation.objects.exists())

@@ -18,17 +18,22 @@ from apps.events.workflow import EventWorkflow
 from .support import event_data, published_event, setup_users
 
 
+# OOP — Single inheritance: EventWorkflowTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class EventWorkflowTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
+    # OOP — Encapsulation: method draft mengelompokkan operasi terkait objek EventWorkflowTests.
     def draft(self, **overrides):
         return EventWorkflow(self.owner).create(data=event_data(**overrides))
 
-    def test_four_initial_types_are_seeded(self):
+    def test_initial_types_are_seeded(self):
         self.assertSetEqual(set(EventType.objects.values_list("code", flat=True)), {
-            "CONFERENCE", "WORKSHOP", "SEMINAR", "WEBINAR",
+            "CONFERENCE", "WORKSHOP", "SEMINAR", "WEBINAR", "SOSIALISASI",
         })
 
     def test_owner_creates_draft_and_slug_is_unique_and_stable(self):
@@ -41,10 +46,12 @@ class EventWorkflowTests(TestCase):
         self.assertEqual(updated.slug, first.slug)
 
     def test_admin_creates_with_explicit_organizer(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.admin).create(data=event_data())
         event = EventWorkflow(self.admin).create(data=event_data(organizer=self.owner.pk))
         self.assertEqual(event.organizer, self.owner)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.admin).create(data=event_data(organizer=self.participant.pk))
 
@@ -58,6 +65,7 @@ class EventWorkflowTests(TestCase):
         for staff in (False, True):
             self.participant.is_staff = staff
             self.participant.save()
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(staff=staff), self.assertRaises(PermissionDenied):
                 EventWorkflow(self.participant).create(data=event_data())
 
@@ -70,6 +78,7 @@ class EventWorkflowTests(TestCase):
             lambda: workflow.transition(event.pk, action="submit"),
             lambda: workflow.transition(event.pk, action="cancel", reason="Attempt"),
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(Http404):
                 operation()
 
@@ -77,11 +86,13 @@ class EventWorkflowTests(TestCase):
         event = self.draft()
         self.owner.user_permissions.add(Permission.objects.get(codename="publish_event"))
         for action in ("publish", "unpublish", "reject", "request_revision"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(action=action), self.assertRaises(PermissionDenied):
                 EventWorkflow(self.owner).transition(event.pk, action=action, reason="Attempt")
 
     def test_draft_cannot_skip_to_published_even_for_admin(self):
         event = self.draft()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.admin).transition(event.pk, action="publish")
         self.assertFalse(event.transitions.exists())
@@ -109,10 +120,12 @@ class EventWorkflowTests(TestCase):
     def test_approve_and_unpublish_are_distinct_actions(self):
         event = self.draft()
         EventWorkflow(self.owner).transition(event.pk, action="submit")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.admin).transition(event.pk, action="unpublish")
         EventWorkflow(self.admin).transition(event.pk, action="approve")
         EventWorkflow(self.admin).transition(event.pk, action="publish")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.admin).transition(event.pk, action="approve")
 
@@ -120,10 +133,12 @@ class EventWorkflowTests(TestCase):
         event = self.draft()
         EventWorkflow(self.owner).transition(event.pk, action="submit")
         for actor in (self.owner, self.admin):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 EventWorkflow(actor).update(event.pk, data=event_data())
         EventWorkflow(self.admin).transition(event.pk, action="approve")
         EventWorkflow(self.admin).transition(event.pk, action="publish")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).update(event.pk, data=event_data())
 
@@ -131,34 +146,42 @@ class EventWorkflowTests(TestCase):
         for action in ("cancel", "reject", "request_revision"):
             event = self.draft()
             EventWorkflow(self.owner).transition(event.pk, action="submit")
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(action=action), self.assertRaises(ValidationError):
                 EventWorkflow(self.admin).transition(event.pk, action=action, reason="  ")
         for action in ("cancel", "reject"):
             event = self.draft()
             EventWorkflow(self.owner).transition(event.pk, action="submit")
             EventWorkflow(self.admin).transition(event.pk, action=action, reason="Keputusan admin")
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).transition(event.pk, action="submit")
 
     def test_complete_only_after_end_and_no_unpublish_after_start(self):
         event = published_event(self.owner, self.admin)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).transition(event.pk, action="complete")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.timezone.now", return_value=event.start_datetime):
             self.assertTrue(event.is_ongoing)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 EventWorkflow(self.admin).transition(event.pk, action="unpublish")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.timezone.now", return_value=event.end_datetime):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).transition(event.pk, action="cancel", reason="Too late")
             completed = EventWorkflow(self.owner).transition(event.pk, action="complete")
         self.assertEqual(completed.status, EventStatus.COMPLETED)
         self.assertFalse(completed.is_ongoing)
 
-    def test_paid_events_can_only_remain_drafts(self):
+    def test_paid_events_can_be_submitted_for_manual_payment(self):
         event = self.draft(price="50000.00")
-        with self.assertRaises(ValidationError):
-            EventWorkflow(self.owner).transition(event.pk, action="submit")
+        EventWorkflow(self.owner).transition(event.pk, action="submit")
+        event.refresh_from_db()
+        self.assertEqual(event.status, EventStatus.SUBMITTED)
 
     def test_online_hybrid_and_offline_require_correct_information_at_submission(self):
         for mode, venue, url in (
@@ -166,6 +189,7 @@ class EventWorkflowTests(TestCase):
             ("HYBRID", "Auditorium", ""), ("HYBRID", "", "https://meeting.example/secret"),
         ):
             event = self.draft(delivery_mode=mode, venue=venue, meeting_url=url)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(mode=mode, venue=venue, url=url), self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).transition(event.pk, action="submit")
         event = self.draft(delivery_mode="ONLINE", venue="", meeting_url="https://meeting.example/secret")
@@ -174,10 +198,13 @@ class EventWorkflowTests(TestCase):
     def test_inactive_event_type_and_past_event_fail_submission(self):
         event = self.draft()
         EventType.objects.filter(pk=event.event_type_id).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).transition(event.pk, action="submit")
         EventType.objects.filter(pk=event.event_type_id).update(is_active=True)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.timezone.now", return_value=event.start_datetime):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).transition(event.pk, action="submit")
 
@@ -186,6 +213,7 @@ class EventWorkflowTests(TestCase):
         self.assertTrue(self.owner.has_perm("events.change_event"))
         change_account_access(actor=self.admin, user_id=self.owner.pk,
                               action=AccountAccessChange.Action.REVOKE_ORGANIZER, reason="Revoked")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             EventWorkflow(self.owner).update(event.pk, data=event_data())
 
@@ -194,12 +222,15 @@ class EventWorkflowTests(TestCase):
         User.objects.filter(pk=self.owner.pk).update(is_active=False)
         updated = EventWorkflow(self.admin).transition(event.pk, action="unpublish")
         self.assertEqual(updated.status, EventStatus.APPROVED)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.admin).transition(event.pk, action="publish")
 
     def test_transition_audit_failure_rolls_back_status(self):
         event = self.draft()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.EventTransition.objects.create", side_effect=RuntimeError("audit failure")):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 EventWorkflow(self.owner).transition(event.pk, action="submit")
         event.refresh_from_db()
@@ -207,7 +238,9 @@ class EventWorkflowTests(TestCase):
         self.assertFalse(EventTransition.objects.exists())
 
     def test_event_and_access_are_atomic(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.EventAccess.objects.update_or_create", side_effect=RuntimeError("failure")):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 self.draft()
         self.assertFalse(Event.objects.exists())
@@ -219,6 +252,7 @@ class EventWorkflowTests(TestCase):
         self.assertFalse(EventAccess.objects.exists())
         event = self.draft()
         EventWorkflow(self.owner).transition(event.pk, action="submit")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).delete_draft(event.pk)
 
@@ -229,6 +263,7 @@ class EventWorkflowTests(TestCase):
             {"end_datetime": now}, {"registration_close": now - timedelta(days=2)},
             {"registration_close": now + timedelta(days=20)},
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(invalid=invalid), self.assertRaises(ValidationError):
                 self.draft(**invalid)
         event = self.draft()
@@ -238,5 +273,6 @@ class EventWorkflowTests(TestCase):
             {"registration_close": event.registration_open},
             {"registration_close": event.end_datetime},
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(invalid=invalid), self.assertRaises(IntegrityError), transaction.atomic():
                 Event.objects.filter(pk=event.pk).update(**invalid)

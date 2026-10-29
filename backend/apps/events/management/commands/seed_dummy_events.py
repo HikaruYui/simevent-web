@@ -12,10 +12,12 @@ from apps.events.seeds import EMAIL_PANITIA, HARGA, KATEGORI, VENUES
 
 
 # Inheritance: Command mewarisi kerangka perintah manage.py.
+# OOP — Hierarchical inheritance: BaseCommand juga menjadi induk class saudara lain di proyek.
 class Command(BaseCommand):
     help = "Isi database dengan 50 event contoh (idempotent: aman dijalankan berulang)."
 
     # Polymorphism: menyediakan implementasi perintah yang dipanggil oleh BaseCommand.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def handle(self, *args, **options):
         User = get_user_model()

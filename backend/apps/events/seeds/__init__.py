@@ -5,8 +5,10 @@ from functools import lru_cache
 from pathlib import Path
 
 
+# OOP — Decorator fungsi: membungkus callable dengan cache hasil; tidak memerlukan pewarisan class.
 @lru_cache(maxsize=1)
 def load_demo_catalog():
+    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
     with Path(__file__).with_name("demo.json").open(encoding="utf-8") as source:
         return json.load(source)
 
@@ -28,9 +30,11 @@ LAST_NAMES = _catalog["last_names"]
 class DemoRNG:
     """Generator deterministik yang mempertahankan identitas peserta demo lama."""
 
+    # OOP — Initialization: __init__ menyiapkan state instance; self mengacu pada objek yang sedang diinisialisasi.
     def __init__(self, seed=2026):
         self.state = seed
 
+    # OOP — Encapsulation: method random mengelompokkan operasi terkait objek DemoRNG.
     def random(self):
         self.state = (self.state * 1664525 + 1013904223) & 0xFFFFFFFF
         return self.state / 4294967296
@@ -38,6 +42,7 @@ class DemoRNG:
 
 def demo_participants():
     """Baris peserta yang sama untuk perintah seed dan UI yang belum memakai DB."""
+    # OOP — Instantiation: setiap generator memiliki objek DemoRNG sendiri agar state angka acaknya terisolasi.
     rng = DemoRNG()
     number = 0
     for event_id, event in enumerate(EVENTS_KP, start=1):

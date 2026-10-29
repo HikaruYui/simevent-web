@@ -8,7 +8,7 @@ from django.views.decorators.debug import sensitive_variables
 from apps.accounts.models import User
 from apps.accounts.permissions import require_organizer
 from apps.accounts.services import lock_accounts, require_platform_permission
-from apps.events.models import Event, EventStatus
+from apps.events.models import Event, EventStatus, PlatformAuditLog
 from .forms import TicketScanForm
 from .models import Attendance, RegistrationStatus, Ticket
 from django.db.models import Q
@@ -42,6 +42,7 @@ class AttendanceService:
     
   
     
+    # OOP — Encapsulation: _scannable_events adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
     def _scannable_events(self, actor):
         managed_events = Event.objects.managed_by(actor)
 
@@ -51,6 +52,7 @@ class AttendanceService:
                 committee_assignments__is_active=True,
             ).values("pk")
 
+            # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
             return Event.objects.filter(
                 Q(pk__in=managed_events.values("pk"))
                 | Q(pk__in=assigned_event_ids)
@@ -62,6 +64,7 @@ class AttendanceService:
 
 
 
+    # OOP — Encapsulation: _scanner adalah helper internal menurut konvensi underscore Python, bukan akses private yang dipaksakan.
     def _scanner(self):
         actor = get_object_or_404(User, pk=self._actor_id)
         self._require_scanner_access(actor)
@@ -69,7 +72,9 @@ class AttendanceService:
 
 
     # Abstraction: mencatat kehadiran melalui satu method yang memeriksa akses, tiket, dan waktu event.
+    # OOP — Decorator Python (sensitive_variables): menandai variabel sensitif agar disamarkan dalam laporan error; tidak menambah pewarisan class.
     @sensitive_variables("token", "ticket")
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def scan(self, event_id, *, token):
         actor = self._scanner()
@@ -79,6 +84,7 @@ class AttendanceService:
             raise ValidationError("Invalid ticket.")
         token = form.cleaned_data["token"]
         # QR membawa token rahasia; input manual dari daftar memakai identifier.
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         ticket = Ticket.objects.filter(
             Q(token=token) | Q(identifier=token),
             registration__event_id=event_id,
@@ -96,6 +102,7 @@ class AttendanceService:
             pk=event_id,
         )
 
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         ticket = Ticket.objects.filter(
             Q(token=token) | Q(identifier=token),
             registration__event=event,
@@ -127,17 +134,25 @@ class AttendanceService:
         return attendance, True
 
     # Abstraction: membatalkan kehadiran melalui satu method yang memeriksa izin dan mencatat alasan.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def void(self, attendance_id, *, reason):
         actor = lock_accounts(self._actor_id)[self._actor_id]
-        require_platform_permission(actor, "registrations.void_attendance")
+        if actor.role == "COMMITTEE":
+            self._require_scanner_access(actor)
+        else:
+            require_platform_permission(actor, "registrations.void_attendance")
         reason = reason.strip()
         if not reason or len(reason) > 2000:
             raise ValidationError("A reason of 1–2000 characters is required.")
         attendance = get_object_or_404(
             Attendance.objects.select_related("registration"), pk=attendance_id,
         )
-        Event.objects.select_for_update().get(pk=attendance.registration.event_id)
+        events = Event.objects.all()
+        if actor.role == "COMMITTEE":
+            events = events.filter(committee_assignments__member=actor,
+                                   committee_assignments__is_active=True)
+        get_object_or_404(events.select_for_update(), pk=attendance.registration.event_id)
         attendance.refresh_from_db()
         if attendance.status == Attendance.Status.VOIDED:
             raise ValidationError("This attendance is already voided.")
@@ -146,4 +161,9 @@ class AttendanceService:
         attendance.voided_by = actor
         attendance.void_reason = reason
         attendance.save(update_fields=["status", "voided_at", "voided_by", "void_reason"])
+        PlatformAuditLog.objects.create(
+            actor=actor, actor_label=actor.get_full_name() or actor.email,
+            actor_role=actor.role, category="peserta",
+            description=f"Presensi registrasi {attendance.registration_id} dibatalkan: {reason}"[:500],
+        )
         return attendance

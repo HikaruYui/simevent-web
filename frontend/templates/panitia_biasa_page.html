@@ -25,7 +25,7 @@
   
   <div id="tab-peserta" class="tab-pane">
 
-    {% if panitia_db_data %}
+    {% if panitia_db_data.events %}
       <div class="panel-card" style="padding:16px; margin-bottom:16px;">
         <form method="post" action="{% url 'panitia_biasa' %}#tab-peserta">
           {% csrf_token %}
@@ -54,7 +54,7 @@
       </div>
     {% else %}
       <p style="margin-bottom:16px; font-weight:700;">
-        Mode Demo — belum ada penugasan event database.
+        Belum ada event yang ditugaskan. Hubungi ketua panitia untuk mendapatkan penugasan.
       </p>
     {% endif %}
 
@@ -70,7 +70,7 @@
     <div class="panel-card" style="padding: 28px; margin-top: 24px;">
       <h3 style="margin:0 0 6px; font-size:20px; font-weight:800;">Event pilihan panitia</h3>
       <p style="margin:0 0 16px; font-size:13px; color:var(--muted);">Pilih event yang sedang kamu tangani. Pilihan tersimpan ke akunmu.</p>
-      {% if panitia_db_data %}
+      {% if panitia_db_data.events %}
         <form method="post" action="{% url 'panitia_biasa' %}#tab-profil">
           {% csrf_token %}
           <input type="hidden" name="return_to" value="profil">
@@ -92,6 +92,9 @@
   {{ panitia_db_data|json_script:"committee-backend-data" }}
 
   <script>
+/* OOP — Instantiation: new membentuk instance Date, Error, URLSearchParams; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
     (function () {
       const element = document.getElementById(
         "committee-backend-data"
@@ -115,19 +118,27 @@
       window.renderParticipantTable = function () {
         originalRender();
 
-        // Sembunyikan aksi presensi lokal.
-        document.querySelectorAll(
-          "#participantTableBody td:last-child"
-        ).forEach(cell => {
-          cell.replaceChildren();
-        });
       };
 
-      window.togglePresence = function () {
-        alert(
-          "Pembatalan presensi database hanya dapat dilakukan " +
-          "oleh Admin melalui mekanisme pembatalan resmi."
-        );
+      window.togglePresence = async function (code) {
+        const participant = participants.find(item => item.code === code);
+        if (!participant || !participant.present) return;
+        const reason = window.prompt('Batalkan presensi ' + participant.name + '? Masukkan alasan pembatalan:');
+        if (reason === null) return;
+        if (!reason.trim()) { alert('Alasan pembatalan wajib diisi.'); return; }
+        try {
+          const response = await fetch(`/registrations/${participant.registrationId}/attendance/void/`, {
+            method: 'POST', credentials: 'same-origin',
+            headers: {'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value},
+            body: new URLSearchParams({reason: reason.trim()})
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.errors ? Object.values(result.errors).flat().join(' ') : result.error || 'Pembatalan gagal.');
+          participant.present = false;
+          participant.voided = true;
+          participant.checkinTime = '-';
+          updateStatsAndUI();
+        } catch (error) { alert(error.message); }
       };
 
     // Scanner database akan dihubungkan pada tahap berikutnya.  
@@ -146,6 +157,10 @@
       }
 
       const data = JSON.parse(element.textContent);
+      if (!data.eventId) {
+        alert("Belum ada event yang ditugaskan ke akun ini.");
+        return;
+      }
       const badge = document.getElementById("scanStatusBadge");
       const resultBox = document.getElementById("scanResultContainer");
 

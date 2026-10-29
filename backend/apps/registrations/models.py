@@ -25,7 +25,15 @@ class RegistrationStatus(models.TextChoices):
 
 
 # Inheritance: RegistrationQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
+# OOP — Hierarchical inheritance: models.QuerySet juga menjadi induk class saudara lain di proyek.
 class RegistrationQuerySet(models.QuerySet):
+    # Abstraction: satu aturan tiket sah dipakai oleh daftar panitia dan ringkasan semua peran.
+    def ticketed(self):
+        return self.active().filter(ticket__is_active=True).filter(
+            models.Q(event__price=0, payment__isnull=True)
+            | models.Q(payment__status="APPROVED")
+        )
+
     # Encapsulation: aturan akses dokumentasi hanya ada di sini dan dipakai semua halaman peserta.
     def with_documentation(self):
         """Registrasi aktif, hadir, pada event COMPLETED yang sudah punya tautan dokumentasi."""
@@ -47,11 +55,14 @@ class RegistrationQuerySet(models.QuerySet):
 
 
 # Inheritance: Registration mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Registration(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     participant = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
         related_name="registrations",
     )
+    # OOP — Association (ForeignKey): menghubungkan objek ke 'events.Event'; relasi database bukan pewarisan class.
     event = models.ForeignKey(
         "events.Event", on_delete=models.PROTECT, related_name="registrations",
     )
@@ -63,10 +74,13 @@ class Registration(models.Model):
     cancelled_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # OOP — Factory / delegation: as_manager() membentuk manager yang mengekspos method QuerySet khusus lewat objects.
     objects = RegistrationQuerySet.as_manager()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-registered_at", "-pk")
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.UniqueConstraint(
                 fields=["participant", "event"], name="registration_unique_participant_event",
@@ -94,7 +108,9 @@ class Registration(models.Model):
 
 
 # Inheritance: Ticket mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Ticket(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke Registration; relasi database bukan pewarisan class.
     registration = models.OneToOneField(
         Registration, on_delete=models.PROTECT, related_name="ticket",
     )
@@ -104,6 +120,7 @@ class Ticket(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Encapsulation: aturan validitas tiket, registrasi, peserta, event, dan waktu dirangkum dalam property.
+    # OOP — Property / descriptor: method diakses seperti atribut; nilai dihitung melalui getter.
     @property
     def is_valid(self):
         registration = self.registration
@@ -134,6 +151,7 @@ def validate_payment_proof_size(file):
 
 
 # Inheritance: Payment mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Payment(models.Model):
     # Inheritance: Status mewarisi enum Django untuk pilihan nilai dan label.
     class Status(models.TextChoices):
@@ -142,6 +160,7 @@ class Payment(models.Model):
         REJECTED = "REJECTED", "Ditolak"
         APPROVED = "APPROVED", "Disetujui"
 
+    # OOP — Association (OneToOneField): menghubungkan objek ke Registration; relasi database bukan pewarisan class.
     registration = models.OneToOneField(
         Registration, on_delete=models.PROTECT, related_name="payment",
     )
@@ -156,6 +175,7 @@ class Payment(models.Model):
                     validate_payment_proof_size],
     )
     submitted_at = models.DateTimeField(null=True, blank=True)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True,
         related_name="reviewed_payments",
@@ -163,8 +183,10 @@ class Payment(models.Model):
     reviewed_at = models.DateTimeField(null=True, blank=True)
     review_note = models.TextField(max_length=2000, blank=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-submitted_at", "-pk")
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(amount__gt=0),
@@ -197,6 +219,7 @@ class Payment(models.Model):
 
 
 # Inheritance: PaymentInstructions mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class PaymentInstructions(models.Model):
     is_active = models.BooleanField(default=True)
     bank_name = models.CharField(max_length=100)
@@ -204,6 +227,7 @@ class PaymentInstructions(models.Model):
     account_holder = models.CharField(max_length=150)
     instructions = models.TextField(max_length=2000, blank=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -222,6 +246,7 @@ def certificate_template_upload_path(instance, filename):
 
 
 # Inheritance: CertificateTemplate mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class CertificateTemplate(models.Model):
     background = models.ImageField(upload_to=certificate_template_upload_path)
     is_active = models.BooleanField(default=True)
@@ -241,6 +266,7 @@ class CertificateTemplate(models.Model):
         validators=[RegexValidator(r"^#[0-9A-Fa-f]{6}$", "Gunakan warna hex, contoh #3F422E.")],
     )
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -255,34 +281,40 @@ class CertificateTemplate(models.Model):
 
 
 # Inheritance: Attendance mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Attendance(models.Model):
     # Inheritance: Status mewarisi enum Django untuk pilihan nilai dan label.
     class Status(models.TextChoices):
         PRESENT = "PRESENT", "Present"
         VOIDED = "VOIDED", "Voided"
 
+    # OOP — Association (OneToOneField): menghubungkan objek ke Registration; relasi database bukan pewarisan class.
     registration = models.OneToOneField(
         Registration, on_delete=models.PROTECT, related_name="attendance",
     )
     checked_in_at = models.DateTimeField(default=timezone.now)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     verified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
         related_name="verified_attendances",
     )
     status = models.CharField(max_length=7, choices=Status.choices, default=Status.PRESENT)
     voided_at = models.DateTimeField(null=True, blank=True)
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     voided_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True,
         related_name="voided_attendances",
     )
     void_reason = models.TextField(max_length=2000, blank=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-checked_in_at", "-pk")
         permissions = [
             ("scan_ticket", "Can scan tickets for managed events"),
             ("void_attendance", "Can void an attendance record"),
         ]
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.CheckConstraint(
                 condition=(
@@ -314,6 +346,7 @@ RATING_FIELDS = (
 
 
 # Inheritance: FeedbackQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
+# OOP — Hierarchical inheritance: models.QuerySet juga menjadi induk class saudara lain di proyek.
 class FeedbackQuerySet(models.QuerySet):
     # Abstraction: eligible() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def eligible(self):
@@ -325,7 +358,9 @@ class FeedbackQuerySet(models.QuerySet):
 
 
 # Inheritance: Feedback mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class Feedback(models.Model):
+    # OOP — Association (OneToOneField): menghubungkan objek ke Registration; relasi database bukan pewarisan class.
     registration = models.OneToOneField(
         Registration, on_delete=models.PROTECT, related_name="feedback",
     )
@@ -345,8 +380,10 @@ class Feedback(models.Model):
     suggestion = models.TextField(max_length=2000, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # OOP — Factory / delegation: as_manager() membentuk manager yang mengekspos method QuerySet khusus lewat objects.
     objects = FeedbackQuerySet.as_manager()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-created_at", "-pk")
         constraints = [
@@ -377,9 +414,11 @@ def validate_certificate_size(file):
 
 
 # Inheritance: UploadedCertificate mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class UploadedCertificate(models.Model):
     """Sertifikat yang diunggah panitia untuk satu peserta (satu file per registrasi)."""
 
+    # OOP — Association (OneToOneField): menghubungkan objek ke Registration; relasi database bukan pewarisan class.
     registration = models.OneToOneField(
         Registration, on_delete=models.CASCADE, related_name="uploaded_certificate",
     )
@@ -391,6 +430,7 @@ class UploadedCertificate(models.Model):
             validate_certificate_size,
         ],
     )
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="uploaded_certificates",
     )

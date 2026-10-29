@@ -1,4 +1,4 @@
-{% load static demo_seed %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -118,10 +118,10 @@
     </main>
     {% include 'partials/footer.html' %}
   </div>
-  {% demo_seed "catalogue" as demo_catalogue %}
-  {{ demo_catalogue|json_script:"demo-catalogue" }}
   {{ event_data|json_script:"backend-events" }}
   <script>
+/* OOP — Instantiation: new membentuk instance Date, Error, Event, URLSearchParams; state dan method mengikuti antarmuka objek masing-masing. */
+
     const grid = document.getElementById('jj-grid');
     const search = document.getElementById('jj-search');
     const sort = document.getElementById('jj-sort');
@@ -133,39 +133,7 @@
     const priceSelect = document.getElementById('jj-price');
     const resetButton = document.getElementById('jj-reset');
     const pageSize = 8;
-    /* Data contoh: dipakai hanya bila database belum berisi event publik. */
-    function makeDemoEvents() {
-      const catalogue = JSON.parse(document.getElementById('demo-catalogue').textContent);
-      const categories = catalogue.categories;
-      const venues = catalogue.venues;
-      const organizers = catalogue.organizers;
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const list = [];
-      Object.keys(categories).forEach((category, ci) => {
-        categories[category].titles.forEach((title, i) => {
-          const offset = i === 0 ? 0 : ((i * 9 + ci * 4) % 60) - 14;
-          const day = new Date(today); day.setDate(today.getDate() + offset);
-          const iso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
-          const isOnline = category === 'webinar';
-          list.push({
-            id: `demo-${category}-${i + 1}`,
-            slug: `demo-${category}-${i + 1}`,
-            demo: true,
-            category,
-            categoryName: categories[category].name,
-            status: offset < 0 ? 'done' : (offset <= 1 ? 'live' : 'soon'),
-            date: iso,
-            dateLabel: day.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-            amount: i % 3 === 0 ? 0 : catalogue.prices[(i + ci) % catalogue.prices.length],
-            title,
-            venue: isOnline ? 'Online (Zoom)' : venues[(i + ci) % venues.length],
-            organizer: organizers[(i + ci) % organizers.length],
-            bannerUrl: ''
-          });
-        });
-      });
-      return list;
-    }
+    /* Katalog selalu membaca event publik database, termasuk saat hasilnya kosong. */
     const backendEvents = JSON.parse(
       document.getElementById('backend-events').textContent
     );
@@ -238,8 +206,8 @@
       } else if (!isLoggedIn) {
         registerBtn.href = `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`;
       } else if (event.amount > 0) {
-        registerBtn.textContent = 'Berbayar · Lihat Detail';
-        registerBtn.href = event.detailUrl;
+        registerBtn.textContent = 'Daftar & Bayar';
+        registerBtn.href = "{% url 'peserta_daftar_event' %}#event-" + event.id;
       } else {
         registerBtn.href = '#';
         registerBtn.addEventListener('click', async (clickEvent) => {

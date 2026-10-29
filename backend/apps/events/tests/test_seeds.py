@@ -16,6 +16,8 @@ from apps.partnerships.models import OrganizerProposal
 from apps.registrations.models import Attendance, Payment, Registration, Ticket
 
 
+# OOP — Single inheritance: DemoCatalogTests mewarisi SimpleTestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: SimpleTestCase juga menjadi induk class saudara lain di proyek.
 class DemoCatalogTests(SimpleTestCase):
     def test_ui_keeps_participants_and_event_totals_consistent(self):
         data = demo_ui_data()
@@ -53,8 +55,13 @@ class DemoCatalogTests(SimpleTestCase):
         self.assertEqual(data["participants"][0]["code"], "SIM-001")
 
 
+# OOP — Single inheritance: DemoSeedTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
+# OOP — Decorator Python (override_settings): mengganti settings selama konteks pengujian lalu memulihkannya; tidak menambah pewarisan class.
 @override_settings(DEBUG=True)
 class DemoSeedTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         call_command("seed_simevent_initial", stdout=StringIO())
@@ -84,12 +91,14 @@ class DemoSeedTests(TestCase):
         self.assertEqual(event.title, "Judul yang diedit saat demo")
         self.assertTrue(owner.check_password("Password-demo-yang-sudah-diatur-123!"))
 
+    # OOP — Decorator Python (override_settings): mengganti settings selama konteks pengujian lalu memulihkannya; tidak menambah pewarisan class.
     @override_settings(DEBUG=False)
     def test_seed_still_refuses_to_run_outside_development(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaisesMessage(CommandError, "DEBUG=True"):
             call_command("seed_simevent_initial", stdout=StringIO())
 
-    def test_demo_pages_load_catalog_before_their_scripts(self):
+    def test_pages_load_runtime_labels_without_demo_records(self):
         User = get_user_model()
         for email, pages in (
             ("admin@simevent.id", ("admin_dashboard", "admin_users", "admin_events",
@@ -100,27 +109,28 @@ class DemoSeedTests(TestCase):
         ):
             self.client.force_login(User.objects.get(email=email))
             for page in pages:
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.subTest(page=page):
                     response = self.client.get(reverse(page))
                     self.assertEqual(response.status_code, 200)
                     html = response.content.decode()
-                    self.assertEqual(html.count('id="simevent-demo-seed"'), 1)
+                    self.assertEqual(html.count('id="simevent-ui-config"'), 1)
+                    self.assertNotIn('id="simevent-demo-seed"', html)
                     marker = html.index("window.SIMEVENT_DEMO =")
-                    script = "js/simevent_shared.js" if page != "panitia_biasa" else "const defaultParticipants"
+                    script = ("js/admin_control.js" if page.startswith("admin_") else "js/ketua_panitia.js") if page != "panitia_biasa" else "let participants"
                     self.assertLess(marker, html.index(script))
-                    if page == "panitia_biasa":
-                        self.assertIn('value="Seminar Teknologi Nusantara"', html)
         response = self.client.get(reverse("jelajah"))
-        self.assertContains(response, 'id="demo-catalogue"')
+        self.assertContains(response, 'id="backend-events"')
+        self.assertNotContains(response, 'id="demo-catalogue"')
         self.assertNotContains(response, "const titles =")
 
     def test_public_demo_records_are_rendered_from_catalog(self):
         data = demo_ui_data()
         response = self.client.get(reverse("landing"))
         self.assertEqual(response.content.decode().count('class="event-card"'), 4)
-        for event in data["landing"]["events"]:
-            self.assertContains(response, event["title"])
-            self.assertContains(response, f'?event={event["query_slug"]}')
+        for event in response.context["recommended_events"]:
+            self.assertContains(response, event.title)
+            self.assertContains(response, reverse("detail_event", args=[event.slug]))
         for testimonial in data["landing"]["testimonials"]:
             self.assertContains(response, testimonial["quote"])
         response = self.client.get(reverse("tentang"))

@@ -9,13 +9,18 @@ from apps.events.workflow import EventWorkflow
 from .support import event_data, published_event, setup_users
 
 
+# OOP — Single inheritance: EventHttpTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class EventHttpTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
     def test_owner_and_admin_can_approve_submitted_event_with_audit(self):
         for actor in (self.owner, self.admin):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(actor=actor.email):
                 event = EventWorkflow(self.owner).create(data=event_data())
                 EventWorkflow(self.owner).transition(event.pk, action="submit")
@@ -66,6 +71,7 @@ class EventHttpTests(TestCase):
             if authenticated:
                 self.client.force_login(self.participant)
             for url in (reverse("events:list"), reverse("events:detail", args=[event.slug])):
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.subTest(authenticated=authenticated, url=url):
                     response = self.client.get(url)
                     self.assertEqual(response.status_code, 200)
@@ -92,6 +98,7 @@ class EventHttpTests(TestCase):
         self.assertEqual(self.client.post(detail, event_data()).status_code, 404)
         self.assertEqual(self.client.post(reverse("events:delete", args=[event.pk]), {"confirm": "on"}).status_code, 404)
         for action in EventWorkflow.action_targets:
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(action=action):
                 response = self.client.post(reverse("events:transition", args=[event.pk, action]), {"reason": "Attempt"})
                 self.assertEqual(response.status_code, 404)
@@ -141,6 +148,7 @@ class EventHttpTests(TestCase):
         for _ in range(5):
             published_event(self.owner, self.admin)
         # Count + one joined page query; event type must not produce N+1 queries.
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertNumQueries(2):
             response = self.client.get(reverse("events:list"))
             self.assertEqual(len(response.json()["results"]), 5)

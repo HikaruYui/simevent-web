@@ -37,6 +37,7 @@ def completed_registration(owner, admin, participant):
         end_datetime=now - timedelta(hours=1),
     )
     event.refresh_from_db()
+    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
     with patch("apps.registrations.attendance.timezone.now", return_value=event.start_datetime):
         AttendanceService(owner).scan(event.pk, token=registration.ticket.token)
     EventWorkflow(owner).transition(event.pk, action="complete")
@@ -44,7 +45,11 @@ def completed_registration(owner, admin, participant):
     return event, registration
 
 
+# OOP — Single inheritance: FeedbackTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class FeedbackTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
@@ -52,6 +57,7 @@ class FeedbackTests(TestCase):
             cls.owner, cls.admin, cls.participant,
         )
 
+    # OOP — Encapsulation: method submit mengelompokkan operasi terkait objek FeedbackTests.
     def submit(self, **overrides):
         return FeedbackService(self.participant).submit(
             self.registration.pk, data=feedback_input(**overrides),
@@ -65,11 +71,13 @@ class FeedbackTests(TestCase):
 
     def test_registration_without_attendance_cannot_submit(self):
         registration = Registration.objects.create(participant=self.other, event=self.event)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             FeedbackService(self.other).submit(registration.pk, data=feedback_input())
 
     def test_voided_attendance_cannot_submit(self):
         AttendanceService(self.admin).void(self.registration.attendance.pk, reason="Wrong check-in")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.submit()
 
@@ -78,6 +86,7 @@ class FeedbackTests(TestCase):
             if status == EventStatus.COMPLETED:
                 continue
             Event.objects.filter(pk=self.event.pk).update(status=status)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(status=status), self.assertRaises(ValidationError):
                 self.submit()
         self.assertFalse(Feedback.objects.exists())
@@ -86,22 +95,26 @@ class FeedbackTests(TestCase):
         Registration.objects.filter(pk=self.registration.pk).update(
             status="CANCELLED", cancelled_at=timezone.now(),
         )
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.submit()
 
     def test_other_participant_or_admin_cannot_submit_for_someone_else(self):
         for actor in (self.other, self.admin):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(actor=actor), self.assertRaises(Http404):
                 FeedbackService(actor).submit(self.registration.pk, data=feedback_input())
 
     def test_suspended_actor_is_rechecked(self):
         service = FeedbackService(self.participant)
         User.objects.filter(pk=self.participant.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             service.submit(self.registration.pk, data=feedback_input())
 
     def test_second_submission_does_not_edit_original(self):
         feedback = self.submit()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.submit(overall_rating=1, comment="Replacement")
         feedback.refresh_from_db()
@@ -112,6 +125,7 @@ class FeedbackTests(TestCase):
     def test_rating_form_validates_every_dimension_and_integer(self):
         for field in RATING_FIELDS:
             for value in (0, 6, "invalid", "2.5", ""):
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.subTest(field=field, value=value), self.assertRaises(ValidationError):
                     self.submit(**{field: value})
         self.assertFalse(Feedback.objects.exists())
@@ -119,6 +133,7 @@ class FeedbackTests(TestCase):
 
     def test_text_limits_and_optional_comments(self):
         for field in ("comment", "suggestion"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(field=field), self.assertRaises(ValidationError):
                 self.submit(**{field: "x" * 2001})
         feedback = self.submit(comment="", suggestion="")
@@ -126,11 +141,14 @@ class FeedbackTests(TestCase):
 
     def test_database_constraints_prevent_duplicates_and_out_of_range_ratings(self):
         feedback = self.submit()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             Feedback.objects.create(registration=self.registration, **feedback_input())
         for field in RATING_FIELDS:
             for value in (0, 6):
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.subTest(field=field, value=value):
+                    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                     with self.assertRaises(IntegrityError), transaction.atomic():
                         Feedback.objects.filter(pk=feedback.pk).update(**{field: value})
 
@@ -217,6 +235,7 @@ class FeedbackTests(TestCase):
         self.owner.get_all_permissions()
         request = RequestFactory().get("/", {"page": 2})
         request.user = self.owner
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertNumQueries(4):
             response = FeedbackResultsView.as_view()(request, event_id=self.event.pk)
         data = json.loads(response.content)

@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
@@ -19,7 +20,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from apps.accounts.forms import ProfileForm
 from apps.accounts.permissions import require_organizer
-from apps.events.forms import AdminEventForm, EventForm
+from apps.events.forms import AdminEventForm, ContactForm, EventForm
 from apps.events.invitations import send_invitation_emails
 from apps.achievements.models import Achievement
 from django.core.exceptions import PermissionDenied
@@ -34,6 +35,7 @@ from apps.registrations.models import (
     Registration,
     RegistrationStatus,
     UploadedCertificate,
+    PaymentInstructions,
 )
 from django.core.exceptions import ValidationError
 from apps.events.models import (
@@ -47,6 +49,7 @@ from apps.events.models import (
     OrganizerInvitation,
     OrganizerPreference,
     OrganizerSupportTicket,
+    ContactMessage,
     PlatformAuditLog,
     PlatformPayout,
     PlatformSettings,
@@ -59,7 +62,9 @@ from apps.partnerships.models import OrganizerProposal, ProposalStatus, Proposal
 from apps.partnerships.services import review_proposal
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
 def landing_page(request):
     now = timezone.now()
@@ -71,7 +76,7 @@ def landing_page(request):
             status=EventStatus.PUBLISHED,
             end_datetime__gt=now,
         )
-        .select_related("event_type")
+        .select_related("event_type", "organizer")
         .order_by(
             "start_datetime",
             "pk",
@@ -132,21 +137,33 @@ def landing_page(request):
     )
 
 
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
 def tentang(request):
     return render(
         request,
         "tentang.html",
     )
-@require_GET
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
+@require_http_methods(["GET", "POST"])
 def bantuan(request):
-    return render(
-        request,
-        "bantuan.html",
-    )
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if not form.is_valid():
+            return JsonResponse({"errors": form.errors}, status=400)
+        contact = ContactMessage.objects.create(
+            name=form.cleaned_data["nama"], email=form.cleaned_data["email"],
+            message=form.cleaned_data["pesan"],
+        )
+        request.session["contact_message_id"] = contact.pk
+        return JsonResponse({"ok": True, "code": f"CONTACT-{contact.pk}"}, status=201)
+    contact = ContactMessage.objects.filter(pk=request.session.get("contact_message_id")).first()
+    return render(request, "bantuan.html", {"contact_message": contact})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
 def jelajah(request):
     now = timezone.now()
@@ -265,26 +282,51 @@ def jelajah(request):
 
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
+@never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
+
 @never_cache
 @require_GET
 def detail_event(request, slug):
     event = get_object_or_404(
-        Event.objects
-        .public()
-        .select_related(
+        Event.objects.public().select_related(
             "event_type",
             "organizer",
         ),
         slug=slug,
     )
 
+    now = timezone.now()
+
+    registration_open = (
+        event.status == EventStatus.PUBLISHED
+        and event.registration_open <= now < event.registration_close
+        and now < event.start_datetime
+    )
+
+    already_registered = False
+
+    if request.user.is_authenticated:
+        already_registered = (
+            Registration.objects.owned_by(request.user)
+            .filter(
+                event=event,
+                status=RegistrationStatus.REGISTERED,
+            )
+            .exists()
+        )
+
     return render(
         request,
         "events/detail.html",
         {
             "event": event,
+            "registration_open": registration_open,
+            "already_registered": already_registered,
         },
     )
+
 
 def _participant_redirect(request):
     # Admin dan ketua tetap diarahkan ke dashboard masing-masing.
@@ -325,7 +367,9 @@ def _dashboard_name(user):
         else "peserta_akun"
     )
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
 def login_page(request):
     if request.user.is_authenticated:
@@ -339,7 +383,9 @@ def login_page(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def logout_page(request):
     logout(request)
@@ -349,8 +395,11 @@ def logout_page(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def after_login(request):
     if not request.user.is_active:
@@ -359,8 +408,11 @@ def after_login(request):
     return redirect(_dashboard_name(request.user))
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_http_methods): membatasi view ke daftar metode HTTP yang diberikan; tidak menambah pewarisan class.
 @require_http_methods(["GET", "POST"])
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_akun(request, template_name="peserta/akun.html", success_url="peserta_dashboard"):
     if (
@@ -402,8 +454,11 @@ def peserta_akun(request, template_name="peserta/akun.html", success_url="pesert
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_hapus_foto(request):
     if request.user.role != "PARTICIPANT":
@@ -423,8 +478,11 @@ def peserta_hapus_foto(request):
     return JsonResponse({"deleted": True})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def foto_profil(request):
     photo = request.user.profile_photo
@@ -445,8 +503,11 @@ def foto_profil(request):
     return FileResponse(image_file, content_type=content_type)
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_dashboard(request):
     participant_redirect = _participant_redirect(request)
@@ -567,8 +628,11 @@ def _documentation_event_ids(user):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_dokumentasi(request, event_id):
     """Gerbang dokumentasi: tautan Drive tidak pernah ada di HTML untuk peserta yang tidak berhak."""
@@ -591,8 +655,11 @@ def peserta_dokumentasi(request, event_id):
     return redirect(url)
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_daftar_event(request):
     participant_redirect = _participant_redirect(request)
@@ -640,6 +707,9 @@ def peserta_daftar_event(request):
         "events": events,
         "categories": categories,
         "now": now,
+        "payment_instructions": PaymentInstructions.objects.filter(
+            is_active=True
+        ).first(),
     })
 
 
@@ -666,8 +736,11 @@ def _attach_payment_details(event, registration):
         )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_event_saya(request):
     participant_redirect = _participant_redirect(request)
@@ -678,7 +751,7 @@ def peserta_event_saya(request):
     registrations = list(
         Registration.objects.owned_by(request.user)
         .filter(status=RegistrationStatus.REGISTERED)
-        .select_related("event", "event__event_type", "event__organizer", "payment")
+        .select_related("event", "event__event_type", "event__organizer", "payment", "ticket", "participant")
         .order_by("-registered_at", "-pk")
     )
     documentation_ids = _documentation_event_ids(request.user)
@@ -686,6 +759,13 @@ def peserta_event_saya(request):
     for registration in registrations:
         event = registration.event
         event.is_registered = True
+        event.cancel_url = reverse("registrations:cancel", args=[registration.pk]) if (
+            event.status == EventStatus.CANCELLED or now < event.start_datetime
+        ) else ""
+        ticket = getattr(registration, "ticket", None)
+        event.meeting_url = reverse("registrations:meeting", args=[registration.pk]) if (
+            ticket and ticket.is_valid and event.delivery_mode in ("ONLINE", "HYBRID")
+        ) else ""
         event.documentation_ready = event.pk in documentation_ids
         event.is_registration_open = (
             event.status == EventStatus.PUBLISHED
@@ -711,11 +791,15 @@ def peserta_event_saya(request):
         "categories": categories,
         "now": now,
         "my_registrations": True,
+        "payment_instructions": PaymentInstructions.objects.filter(is_active=True).first(),
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_sertifikat(request):
     participant_redirect = _participant_redirect(request)
@@ -753,8 +837,11 @@ def peserta_sertifikat(request):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_sertifikat_detail(request, pk):
     participant_redirect = _participant_redirect(request)
@@ -781,8 +868,11 @@ def peserta_sertifikat_detail(request, pk):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_achievement(request):
     participant_redirect = _participant_redirect(request)
@@ -856,8 +946,11 @@ def peserta_achievement(request):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_http_methods): membatasi view ke daftar metode HTTP yang diberikan; tidak menambah pewarisan class.
 @require_http_methods(["GET", "POST"])
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_biasa_dashboard(request):
     _require_role(request, "COMMITTEE")
@@ -925,21 +1018,9 @@ def panitia_biasa_dashboard(request):
             preference.selected_event = selected_event
             preference.save(update_fields=("selected_event", "updated_at"))
 
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         registrations = (
-            Registration.objects.filter(
-                event=selected_event,
-                status=RegistrationStatus.REGISTERED,
-                ticket__is_active=True,
-            )
-            .filter(
-                Q(
-                    event__price=0,
-                    payment__isnull=True,
-                )
-                | Q(
-                    payment__status=Payment.Status.APPROVED,
-                )
-            )
+            Registration.objects.ticketed().filter(event=selected_event)
             .select_related(
                 "participant",
                 "ticket",
@@ -983,6 +1064,7 @@ def panitia_biasa_dashboard(request):
 
             participant_rows.append({
                 "registrationId": registration.pk,
+                "participantId": participant.pk,
                 "code": str(registration.ticket.identifier),
                 "name": (
                     participant.get_full_name().strip()
@@ -990,26 +1072,19 @@ def panitia_biasa_dashboard(request):
                 ),
                 "email": participant.email,
                 "present": is_present,
+                "voided": attendance is not None and attendance.status == Attendance.Status.VOIDED,
                 "checkinTime": checkin_time,
             })
 
-    panitia_db_data = None
-
-    if selected_event:
-        panitia_db_data = {
-            "eventId": selected_event.pk,
-            "eventName": selected_event.title,
-            "selectedEventId": selected_event.pk,
-            "documentationUrl": selected_event.documentation_url,
-            "events": [
-                {
-                    "id": event.pk,
-                    "name": event.title,
-                }
-                for event in event_list
-            ],
-            "participants": participant_rows,
-        }
+    # Tidak ada penugasan berarti data kosong, bukan peserta simulasi dari browser.
+    panitia_db_data = {
+        "eventId": selected_event.pk if selected_event else None,
+        "eventName": selected_event.title if selected_event else "Belum ada penugasan event",
+        "selectedEventId": selected_event.pk if selected_event else None,
+        "documentationUrl": selected_event.documentation_url if selected_event else "",
+        "events": [{"id": event.pk, "name": event.title} for event in event_list],
+        "participants": participant_rows,
+    }
 
     return render(
         request,
@@ -1027,8 +1102,11 @@ def panitia_biasa_dashboard(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_dashboard(request):
     _require_role(
@@ -1041,8 +1119,11 @@ def panitia_dashboard(request):
     return redirect(_dashboard_name(request.user))
 
 def _ketua_panitia(template):
+    # OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
     @never_cache
+    # OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
     @require_GET
+    # OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
     @login_required(login_url="login_page")
     def view(request):
         _require_role(request, "ORGANIZER")
@@ -1069,18 +1150,10 @@ def _build_eo_dashboard_data(user):
 
     # Tiket valid: registrasi aktif, tiket aktif, dan
     # pembayaran disetujui (atau event gratis).
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     tickets = list(
         Ticket.objects.filter(
-            registration__event_id__in=event_ids,
-            registration__status=RegistrationStatus.REGISTERED,
-            is_active=True,
-        )
-        .filter(
-            Q(registration__payment__status=Payment.Status.APPROVED)
-            | Q(
-                registration__event__price=0,
-                registration__payment__isnull=True,
-            )
+            registration__in=Registration.objects.ticketed().filter(event_id__in=event_ids),
         )
         .select_related(
             "registration__participant",
@@ -1395,8 +1468,11 @@ def _build_eo_dashboard_data(user):
     return dashboard_data
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_dashboard(request):
     _require_role(request, "ORGANIZER")
@@ -1409,8 +1485,11 @@ def eo_dashboard(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_peserta(request):
     _require_role(request, "ORGANIZER")
@@ -1434,20 +1513,9 @@ def eo_peserta(request):
 
     # Ambil registrasi aktif yang sudah valid pembayarannya.
     # Event gratis tidak membutuhkan pembayaran.
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     registrations = (
-        Registration.objects.filter(
-            event_id__in=event_ids,
-            status=RegistrationStatus.REGISTERED,
-        )
-        .filter(
-            Q(
-                event__price=0,
-                payment__isnull=True,
-            )
-            | Q(
-                payment__status=Payment.Status.APPROVED,
-            )
-        )
+        Registration.objects.ticketed().filter(event_id__in=event_ids)
         .select_related(
             "event",
             "participant",
@@ -1469,6 +1537,8 @@ def eo_peserta(request):
 
         participant_rows.append({
             "no": index,
+            "registrationId": registration.pk,
+            "participantId": user.pk,
             "eventId": registration.event_id,
             "nama": user.get_full_name().strip() or user.email,
             "email": user.email,
@@ -1489,8 +1559,11 @@ def eo_peserta(request):
         },
     )
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_pendapatan(request):
     _require_role(request, "ORGANIZER")
@@ -1499,8 +1572,11 @@ def eo_pendapatan(request):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_log(request):
     _require_role(request, "ORGANIZER")
@@ -1509,8 +1585,11 @@ def eo_log(request):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_support(request):
     _require_role(request, "ORGANIZER")
@@ -1604,8 +1683,11 @@ def _eo_settings_payload(user):
     }
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_pengaturan(request):
     _require_role(request, "ORGANIZER")
@@ -1615,7 +1697,9 @@ def eo_pengaturan(request):
     })
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_support_resolve(request, code):
     _require_role(request, "ORGANIZER")
@@ -1630,7 +1714,9 @@ def eo_support_resolve(request, code):
     return JsonResponse({"ok": True, "status": "selesai"})
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_settings_profile(request):
     _require_role(request, "ORGANIZER")
@@ -1675,7 +1761,9 @@ def eo_settings_profile(request):
     return JsonResponse({"ok": True, "profile": _eo_settings_payload(user)["profile"]})
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_settings_password(request):
     _require_role(request, "ORGANIZER")
@@ -1692,7 +1780,9 @@ def eo_settings_password(request):
     return JsonResponse({"ok": True})
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_settings_notification(request):
     _require_role(request, "ORGANIZER")
@@ -1707,7 +1797,9 @@ def eo_settings_notification(request):
     return JsonResponse({"ok": True, "notifications": notifications})
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_settings_team(request):
     _require_role(request, "ORGANIZER")
@@ -1735,7 +1827,9 @@ def eo_settings_team(request):
     return JsonResponse({"ok": True, "settings": _eo_settings_payload(request.user)})
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_settings_invite(request):
     _require_role(request, "ORGANIZER")
@@ -1781,6 +1875,7 @@ def eo_settings_invite(request):
     now = timezone.now()
     message = str(payload.get("message", ""))[:200]
     invitations = []
+    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
     with transaction.atomic():
         for email in normalized:
             invitation = OrganizerInvitation.objects.create(
@@ -1802,7 +1897,9 @@ def eo_settings_invite(request):
     })
 
 
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def eo_settings_invitation_action(request, pk):
     _require_role(request, "ORGANIZER")
@@ -1843,6 +1940,7 @@ def eo_invitation_accept(request, token):
         form_data["email"] = invitation.email
         form = RegistrationForm(form_data)
         if form.is_valid():
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with transaction.atomic():
                 member = form.save()
                 organizer_group, _ = Group.objects.get_or_create(name="Organizer")
@@ -1874,12 +1972,130 @@ def eo_invitation_accept(request, token):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
+
+@login_required(login_url="login_page")
+@require_http_methods(["GET", "POST"])
+def eo_event_committee(request, event_id):
+    _require_role(request, "ORGANIZER")
+
+    # Ketua Panitia hanya boleh mengatur event miliknya.
+    event = get_object_or_404(
+        Event.objects.managed_by(request.user),
+        pk=event_id,
+    )
+
+    if request.method == "POST":
+        action = request.POST.get("action", "assign")
+
+        if action == "assign":
+            try:
+                email = forms.EmailField().clean(
+                    request.POST.get("email", "").strip()
+                )
+            except ValidationError:
+                return JsonResponse(
+                    {"error": "Format email tidak valid."},
+                    status=400,
+                )
+
+            member = get_user_model().objects.filter(
+                email__iexact=email
+            ).first()
+
+            if member is None:
+                return JsonResponse(
+                    {"error": "Akun dengan email tersebut tidak ditemukan."},
+                    status=404,
+                )
+
+            if not member.is_active:
+                return JsonResponse(
+                    {"error": "Akun panitia tidak aktif."},
+                    status=400,
+                )
+
+            if member.role != "COMMITTEE":
+                return JsonResponse(
+                    {"error": "Akun harus memiliki role Panitia Biasa."},
+                    status=400,
+                )
+
+            assignment, created = (
+                EventCommitteeAssignment.objects.update_or_create(
+                    event=event,
+                    member=member,
+                    defaults={"is_active": True},
+                )
+            )
+
+        elif action == "remove":
+            try:
+                member_id = int(request.POST.get("member_id", ""))
+            except (TypeError, ValueError):
+                return JsonResponse(
+                    {"error": "ID panitia tidak valid."},
+                    status=400,
+                )
+
+            updated = EventCommitteeAssignment.objects.filter(
+                event=event,
+                member_id=member_id,
+                is_active=True,
+            ).update(is_active=False)
+
+            if not updated:
+                return JsonResponse(
+                    {"error": "Penugasan aktif tidak ditemukan."},
+                    status=404,
+                )
+
+        else:
+            return JsonResponse(
+                {"error": "Aksi tidak dikenal."},
+                status=400,
+            )
+
+    members = list(
+        EventCommitteeAssignment.objects.filter(
+            event=event,
+            is_active=True,
+        )
+        .select_related("member")
+        .order_by("member__email")
+        .values(
+            "member_id",
+            "member__email",
+            "member__first_name",
+            "member__last_name",
+        )
+    )
+
+    return JsonResponse({
+        "ok": True,
+        "event_id": event.pk,
+        "members": [
+            {
+                "id": row["member_id"],
+                "email": row["member__email"],
+                "name": (
+                    f'{row["member__first_name"]} '
+                    f'{row["member__last_name"]}'
+                ).strip() or row["member__email"],
+            }
+            for row in members
+        ],
+    })
+
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def eo_event(request):
     _require_role(request, "ORGANIZER")
 
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     events = (
         Event.objects.managed_by(request.user)
         .select_related("event_type")
@@ -1974,8 +2190,11 @@ def eo_event(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_event_detail(
     request,
@@ -2005,21 +2224,19 @@ def panitia_event_detail(
 
 def _admin_event_rows():
     now = timezone.now()
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     events = list(
         Event.objects.select_related("event_type", "organizer")
         .annotate(
+            attendance_count=Count(
+                "registrations",
+                filter=Q(registrations__in=Registration.objects.ticketed(),
+                         registrations__attendance__status=Attendance.Status.PRESENT),
+                distinct=True,
+            ),
             ticket_count=Count(
                 "registrations",
-                filter=(
-                    Q(
-                        registrations__status=RegistrationStatus.REGISTERED,
-                        registrations__ticket__is_active=True,
-                    )
-                    & (
-                        Q(price=0)
-                        | Q(registrations__payment__status=Payment.Status.APPROVED)
-                    )
-                ),
+                filter=Q(registrations__in=Registration.objects.ticketed()),
                 distinct=True,
             )
         )
@@ -2057,6 +2274,7 @@ def _admin_event_rows():
             "lokasi": event.venue or "Online",
             "kuota": event.capacity,
             "terjual": event.ticket_count,
+            "hadir": event.attendance_count,
             "harga": float(event.price),
             "status": status,
             "organizer": event.organizer.get_full_name().strip() or event.organizer.email,
@@ -2071,15 +2289,18 @@ def _admin_event_rows():
 
 def _admin_user_rows():
     User = get_user_model()
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     admin_ids = set(User.objects.filter(
         Q(is_superuser=True)
         | Q(user_permissions__content_type__app_label="accounts", user_permissions__codename="manage_platform")
         | Q(groups__permissions__content_type__app_label="accounts", groups__permissions__codename="manage_platform")
     ).values_list("pk", flat=True).distinct())
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     organizer_ids = set(User.objects.filter(
         Q(user_permissions__content_type__app_label="accounts", user_permissions__codename="access_head_organizer")
         | Q(groups__permissions__content_type__app_label="accounts", groups__permissions__codename="access_head_organizer")
     ).values_list("pk", flat=True).distinct())
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     committee_ids = set(User.objects.filter(
         Q(user_permissions__content_type__app_label="accounts", user_permissions__codename="access_organizer")
         | Q(groups__permissions__content_type__app_label="accounts", groups__permissions__codename="access_organizer")
@@ -2152,7 +2373,7 @@ def _admin_proposal_rows():
 
 
 def _admin_ticket_rows():
-    return [{
+    rows = [{
         "id": ticket.code,
         "judul": ticket.title,
         "pelapor": ticket.reporter,
@@ -2163,17 +2384,25 @@ def _admin_ticket_rows():
         "isi": ticket.description,
         "balasan": ticket.reply,
     } for ticket in OrganizerSupportTicket.objects.select_related("organizer", "event")]
+    rows.extend({
+        "id": f"CONTACT-{contact.pk}", "judul": f"Bantuan dari {contact.name}",
+        "pelapor": f"{contact.name} ({contact.email})", "org": "Pengunjung",
+        "eventId": None, "tanggal": timezone.localtime(contact.created_at).date().isoformat(),
+        "status": "selesai" if contact.status == OrganizerSupportTicket.Status.RESOLVED else "diaudit",
+        "isi": contact.message, "balasan": contact.reply, "contact": True,
+        "can_delete": settings.DEBUG,
+    } for contact in ContactMessage.objects.all())
+    return sorted(rows, key=lambda row: row["tanggal"], reverse=True)
 
 
 def _admin_finance_payload():
     settings_row, _ = PlatformSettings.objects.get_or_create(pk=1)
     fee = Decimal(settings_row.platform_fee_percent)
     events = list(Event.objects.select_related("organizer"))
-    valid_registrations = Registration.objects.filter(
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
+    valid_registrations = Registration.objects.ticketed().filter(
         event_id__in=[event.pk for event in events],
-        status=RegistrationStatus.REGISTERED,
-        ticket__is_active=True,
-    ).filter(Q(event__price=0, payment__isnull=True) | Q(payment__status=Payment.Status.APPROVED))
+    )
     ticket_counts = dict(valid_registrations.values("event__organizer_id").annotate(total=Count("pk")).values_list("event__organizer_id", "total"))
     payments = list(Payment.objects.filter(
         registration__event_id__in=[event.pk for event in events],
@@ -2319,23 +2548,34 @@ def _admin_backend_payload(request):
 
 
 def _admin_panel(template):
+    # OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
     @never_cache
+    # OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
     @require_GET
+    # OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
     @login_required(login_url="login_page")
     def view(request):
         _require_role(request, "ADMIN")
-
-        return render(request, f"admin/{template}.html", {
+        context = {
             "admin_backend_data": _admin_backend_payload(request),
-        })
+        }
+        if template == "keuangan_admin":
+            context["pending_payments"] = Payment.objects.filter(
+                status=Payment.Status.UNDER_REVIEW,
+                registration__status=RegistrationStatus.REGISTERED,
+            ).select_related("registration__participant", "registration__event").order_by("submitted_at", "pk")
+        return render(request, f"admin/{template}.html", context)
 
     return view
 
 admin_dashboard = _admin_panel("dashboard_admin")
 admin_users = _admin_panel("kelola_pengguna")
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_events(request):
     _require_role(request, "ADMIN")
@@ -2364,8 +2604,11 @@ def _admin_audit_write(request, category, description):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_user_mutation(request, pk=None):
     _require_role(request, "ADMIN")
@@ -2390,6 +2633,7 @@ def admin_user_mutation(request, pk=None):
         if role not in role_map:
             return JsonResponse({"error": "Role akun tidak dapat dibuat dari menu ini."}, status=400)
         first, _, last = name.partition(" ")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with transaction.atomic():
             user = User.objects.create_user(email=email, password=password, first_name=first, last_name=last)
             if role != "peserta":
@@ -2435,6 +2679,7 @@ def admin_user_mutation(request, pk=None):
     current_role = user.role
     current_role_label = {"PARTICIPANT": "peserta", "COMMITTEE": "panitia", "ORGANIZER": "penyelenggara", "ADMIN": "admin"}[current_role]
     try:
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with transaction.atomic():
             if current_role_label != role:
                 set_account_role(actor=request.user, user_id=user.pk, role=role_map[role], reason="Role diperbarui melalui menu Kelola Pengguna.")
@@ -2452,8 +2697,11 @@ def admin_user_mutation(request, pk=None):
     return JsonResponse({"ok": True})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_proposal_review(request, pk):
     _require_role(request, "ADMIN")
@@ -2478,13 +2726,22 @@ def admin_proposal_review(request, pk):
     return JsonResponse({"ok": True, "status": proposal.status})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_support_mutation(request, code):
     _require_role(request, "ADMIN")
-    ticket = get_object_or_404(OrganizerSupportTicket, code=code)
+    is_contact = code.startswith("CONTACT-") and code[8:].isdigit()
+    ticket = (get_object_or_404(ContactMessage, pk=int(code[8:])) if is_contact
+              else get_object_or_404(OrganizerSupportTicket, code=code))
     action = request.POST.get("action")
+    if action == "delete" and is_contact and settings.DEBUG:
+        ticket.delete()
+        _admin_audit_write(request, "support", f"Pesan pengujian {code} dihapus.")
+        return JsonResponse({"ok": True})
     reply = request.POST.get("reply", "").strip()
     if action not in {"reply", "resolve"}:
         return JsonResponse({"error": "Aksi tiket tidak valid."}, status=400)
@@ -2497,12 +2754,15 @@ def admin_support_mutation(request, code):
     )
     ticket.resolved_at = timezone.now() if action == "resolve" else None
     ticket.save(update_fields=("reply", "status", "resolved_at", "updated_at"))
-    _admin_audit_write(request, "support", f"Tiket {ticket.code} {'diselesaikan' if action == 'resolve' else 'dibalas'}.")
+    _admin_audit_write(request, "support", f"Tiket {code} {'diselesaikan' if action == 'resolve' else 'dibalas'}.")
     return JsonResponse({"ok": True})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_payout(request):
     _require_role(request, "ADMIN")
@@ -2511,6 +2771,7 @@ def admin_payout(request):
     except (TypeError, ValueError):
         return JsonResponse({"error": "Penyelenggara tidak valid."}, status=400)
     try:
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with transaction.atomic():
             organizer = get_object_or_404(get_user_model().objects.select_for_update(), pk=organizer_id)
             row = next((item for item in _admin_finance_payload()["rows"] if item["organizer_id"] == organizer.pk), None)
@@ -2525,8 +2786,11 @@ def admin_payout(request):
     return JsonResponse({"ok": True, "amount": float(payout.amount)})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_settings_mutation(request):
     _require_role(request, "ADMIN")
@@ -2586,8 +2850,11 @@ def admin_settings_mutation(request):
     return JsonResponse({"ok": True})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def admin_profile_mutation(request):
     _require_role(request, "ADMIN")
@@ -2644,8 +2911,11 @@ def admin_profile_mutation(request):
     _admin_audit_write(request, "pengaturan", "Profil Admin diperbarui.")
     return JsonResponse({"ok": True})
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_http_methods): membatasi view ke daftar metode HTTP yang diberikan; tidak menambah pewarisan class.
 @require_http_methods(["GET", "POST"])
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_akun(request):
     _require_role(request, "COMMITTEE")
@@ -2657,8 +2927,11 @@ def panitia_akun(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_simpan_profil(request):
     _require_role(request, "COMMITTEE")
@@ -2723,7 +2996,9 @@ def panitia_simpan_profil(request):
 
 
 
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_simpan_dokumentasi(request):
     """Simpan tautan dokumentasi oleh panitia yang ditugaskan pada event tersebut (respons JSON)."""
@@ -2755,7 +3030,9 @@ def panitia_simpan_dokumentasi(request):
     })
 
 
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_upload_sertifikat(request):
     """Panitia yang ditugaskan mengunggah (atau mengganti) sertifikat peserta yang hadir."""
@@ -2774,6 +3051,7 @@ def panitia_upload_sertifikat(request):
     if uploaded_file is None:
         return JsonResponse({"errors": ["Pilih file sertifikat terlebih dahulu."]}, status=400)
 
+    # OOP — Duck typing: objek unggahan dipakai melalui read()/seek(); implementasi file di memori atau disk dapat memenuhi protokol yang sama.
     head = uploaded_file.read(8)
     uploaded_file.seek(0)
     if not (head.startswith(b"%PDF") or head.startswith(b"\x89PNG") or head.startswith(b"\xff\xd8\xff")):
@@ -2799,7 +3077,9 @@ def panitia_upload_sertifikat(request):
     })
 
 
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def panitia_hapus_sertifikat(request):
     _require_role(request, "COMMITTEE")
@@ -2816,8 +3096,11 @@ def panitia_hapus_sertifikat(request):
     return JsonResponse({"registration_id": request.POST.get("registration_id")})
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def peserta_sertifikat_unggahan(request, pk):
     """Peserta mengunduh sertifikat yang diunggah panitia; hanya pemilik registrasi."""
@@ -2830,6 +3113,7 @@ def peserta_sertifikat_unggahan(request, pk):
         pk=pk,
         status=RegistrationStatus.REGISTERED,
         uploaded_certificate__isnull=False,
+        attendance__status=Attendance.Status.PRESENT,
     )
     certificate = registration.uploaded_certificate
     try:

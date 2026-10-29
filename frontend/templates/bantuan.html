@@ -263,11 +263,12 @@
           </ul>
         </div>
 
-        <form class="bt-form" id="contactForm" novalidate>
+        <form class="bt-form" id="contactForm" method="post" action="{% url 'bantuan' %}" novalidate>
+          {% csrf_token %}
 
           <div class="bt-form__row">
             <label for="cfNama">Nama</label>
-            <input id="cfNama" name="nama" type="text" autocomplete="name" required>
+            <input id="cfNama" name="nama" type="text" autocomplete="name" minlength="2" maxlength="150" required>
           </div>
 
           <div class="bt-form__row">
@@ -277,10 +278,10 @@
 
           <div class="bt-form__row">
             <label for="cfPesan">Pesan</label>
-            <textarea id="cfPesan" name="pesan" rows="1" required></textarea>
+            <textarea id="cfPesan" name="pesan" rows="1" minlength="5" maxlength="3000" required></textarea>
           </div>
 
-          <p class="bt-form__note" id="contactNote" role="status" hidden></p>
+          <p class="bt-form__note" id="contactNote" role="status" {% if not contact_message %}hidden{% endif %}>{% if contact_message %}Pesan CONTACT-{{ contact_message.pk }}: {{ contact_message.get_status_display }}.{% if contact_message.reply %} Balasan admin: {{ contact_message.reply }}{% endif %}{% endif %}</p>
 
           <button type="submit" class="bt-form__btn">Kirim Pesan</button>
 
@@ -301,6 +302,9 @@
 
 
   <script>
+/* OOP — Prototype / duck typing: method Array dipinjam dengan call untuk koleksi array-like (misalnya NodeList atau options).
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
     (function () {
 
       var list = document.getElementById("faqList");
@@ -364,30 +368,33 @@
       });
 
 
-      /* Formulir kontak: belum ada endpoint backend, jadi pesan dikirim
-         lewat aplikasi email pengguna (mailto) ke alamat tim SIMEVENT. */
       var form = document.getElementById("contactForm");
       var note = document.getElementById("contactNote");
 
-      form.addEventListener("submit", function (e) {
+      form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         if (!form.reportValidity()) { return; }
 
-        var nama = form.nama.value.trim();
-        var email = form.email.value.trim();
-        var pesan = form.pesan.value.trim();
-
-        var subject = "Bantuan SIMEVENT dari " + nama;
-        var body = pesan + "\n\n--\n" + nama + "\n" + email;
-
-        window.location.href =
-          "mailto:halo@simevent.id" +
-          "?subject=" + encodeURIComponent(subject) +
-          "&body=" + encodeURIComponent(body);
-
-        note.textContent = "Aplikasi email Anda akan terbuka. Kirim emailnya untuk menyelesaikan pesan.";
+        var button = form.querySelector('[type="submit"]');
+        if (button.disabled) return;
+        button.disabled = true;
+        note.textContent = "Mengirim pesan…";
         note.hidden = false;
+        try {
+          var response = await fetch(form.action, {
+            method: "POST", credentials: "same-origin", body: new FormData(form),
+            headers: {"X-CSRFToken": form.querySelector('[name="csrfmiddlewaretoken"]').value}
+          });
+          var result = await response.json().catch(function () { return {}; });
+          if (!response.ok) throw new Error(result.errors ? Object.values(result.errors).flat().join(" ") : "Pesan gagal dikirim. Silakan coba lagi.");
+          form.reset();
+          note.textContent = "Pesan " + result.code + " tersimpan di Bantuan Admin. Buka kembali halaman ini di browser yang sama untuk melihat balasan.";
+        } catch (error) {
+          note.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
       });
 
     })();

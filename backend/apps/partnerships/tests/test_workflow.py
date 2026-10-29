@@ -35,18 +35,25 @@ def setup_users():
     return participant, other, admin
 
 
+# OOP — Single inheritance: ProposalWorkflowTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class ProposalWorkflowTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.participant, cls.other, cls.admin = setup_users()
 
+    # OOP — Encapsulation: method draft mengelompokkan operasi terkait objek ProposalWorkflowTests.
     def draft(self):
         return create_proposal(actor=self.participant, data=CONTENT)
 
+    # OOP — Encapsulation: method submitted mengelompokkan operasi terkait objek ProposalWorkflowTests.
     def submitted(self):
         proposal = self.draft()
         return submit_proposal(actor=self.participant, proposal_id=proposal.pk)
 
+    # OOP — Encapsulation: method review mengelompokkan operasi terkait objek ProposalWorkflowTests.
     def review(self, proposal, decision=ProposalStatus.APPROVED, reason="Hasil review admin"):
         return review_proposal(actor=self.admin, proposal_id=proposal.pk, decision=decision, reason=reason)
 
@@ -84,27 +91,34 @@ class ProposalWorkflowTests(TestCase):
 
     def test_only_one_open_proposal(self):
         self.draft()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.draft()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             OrganizerProposal.objects.create(applicant=self.participant, **CONTENT)
 
     def test_state_and_submission_timestamp_constraints(self):
         for values in ({"status": "UNKNOWN"}, {"status": ProposalStatus.SUBMITTED},
                        {"status": ProposalStatus.DRAFT, "submitted_at": timezone.now()}):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(values=values), self.assertRaises(IntegrityError), transaction.atomic():
                 OrganizerProposal.objects.create(applicant=self.participant, **CONTENT, **values)
 
     def test_invalid_transitions_and_revision_reason(self):
         proposal = self.draft()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.review(proposal)
         submit_proposal(actor=self.participant, proposal_id=proposal.pk)
         for decision in (ProposalStatus.REJECTED, ProposalStatus.NEEDS_REVISION, "PUBLISHED"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(decision=decision), self.assertRaises(ValidationError):
                 self.review(proposal, decision, reason="   ")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             submit_proposal(actor=self.participant, proposal_id=proposal.pk)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             edit_proposal(actor=self.participant, proposal_id=proposal.pk, data=CONTENT)
 
@@ -115,6 +129,7 @@ class ProposalWorkflowTests(TestCase):
             lambda: submit_proposal(actor=self.other, proposal_id=proposal.pk),
             lambda: delete_draft(actor=self.other, proposal_id=proposal.pk),
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(Http404):
                 operation()
 
@@ -127,18 +142,21 @@ class ProposalWorkflowTests(TestCase):
                 self.other.groups.clear()
                 self.other.is_staff = True
                 self.other.save()
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(mode=mode), self.assertRaises(PermissionDenied):
                 review_proposal(actor=self.other, proposal_id=proposal.pk, decision=ProposalStatus.APPROVED)
 
     def test_review_permission_alone_is_not_platform_authority(self):
         proposal = self.submitted()
         self.other.user_permissions.add(Permission.objects.get(codename="review_proposal"))
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             review_proposal(actor=self.other, proposal_id=proposal.pk, decision=ProposalStatus.REJECTED, reason="Reason")
 
     def test_self_review_denied(self):
         proposal = self.submitted()
         self.participant.groups.add(Group.objects.get(name="Platform Admin"))
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             review_proposal(actor=self.participant, proposal_id=proposal.pk, decision=ProposalStatus.APPROVED)
 
@@ -147,6 +165,7 @@ class ProposalWorkflowTests(TestCase):
         self.review(proposal)
         change_account_access(actor=self.admin, user_id=self.participant.pk,
                               action=AccountAccessChange.Action.REVOKE_ORGANIZER, reason="Partnership ended")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.review(proposal)
         self.assertEqual(User.objects.get(pk=self.participant.pk).role, "PARTICIPANT")
@@ -154,7 +173,9 @@ class ProposalWorkflowTests(TestCase):
 
     def test_approval_rollback_includes_permission_and_access_log(self):
         proposal = self.submitted()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.partnerships.services.ProposalReview.objects.create", side_effect=RuntimeError("audit failure")):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 self.review(proposal)
         proposal.refresh_from_db()
@@ -165,8 +186,10 @@ class ProposalWorkflowTests(TestCase):
     def test_suspended_applicant_cannot_submit_or_be_approved(self):
         proposal = self.submitted()
         User.objects.filter(pk=self.participant.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.review(proposal)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             submit_proposal(actor=self.participant, proposal_id=proposal.pk)
 
@@ -174,6 +197,7 @@ class ProposalWorkflowTests(TestCase):
         proposal = self.submitted()
         self.assertTrue(self.admin.has_perm("partnerships.review_proposal"))
         self.admin.groups.clear()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.review(proposal)
 
@@ -182,6 +206,7 @@ class ProposalWorkflowTests(TestCase):
         Group.objects.get(name="Platform Admin").permissions.remove(
             Permission.objects.get(codename="manage_organizer_access")
         )
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.review(proposal)
         proposal.refresh_from_db()
@@ -195,11 +220,13 @@ class ProposalWorkflowTests(TestCase):
             {"from_status": ProposalStatus.SUBMITTED, "to_status": ProposalStatus.REJECTED},
             {"from_status": ProposalStatus.SUBMITTED, "to_status": ProposalStatus.APPROVED},
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(values=values), self.assertRaises(IntegrityError), transaction.atomic():
                 ProposalReview.objects.create(proposal=proposal, actor=self.admin, **values)
 
     def test_organizer_cannot_open_new_proposal(self):
         self.participant.groups.add(Group.objects.get(name="Organizer"))
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.draft()
 
@@ -208,15 +235,21 @@ class ProposalWorkflowTests(TestCase):
         delete_draft(actor=self.participant, proposal_id=proposal.pk)
         self.assertFalse(OrganizerProposal.objects.exists())
         proposal = self.submitted()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             delete_draft(actor=self.participant, proposal_id=proposal.pk)
 
 
+# OOP — Single inheritance: ProposalHttpTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class ProposalHttpTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.participant, cls.other, cls.admin = setup_users()
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.client.force_login(self.participant)
         self.proposal = create_proposal(actor=self.participant, data=CONTENT)
@@ -242,6 +275,7 @@ class ProposalHttpTests(TestCase):
     def test_cross_account_posts_are_404(self):
         self.client.force_login(self.other)
         for name in ("detail", "submit", "delete"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(name=name):
                 response = self.client.post(reverse(f"partnerships:{name}", args=[self.proposal.pk]), {**CONTENT, "confirm": True})
                 self.assertEqual(response.status_code, 404)
@@ -267,6 +301,7 @@ class ProposalHttpTests(TestCase):
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.participant)
         for name in ("detail", "submit", "delete"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(name=name):
                 self.assertEqual(client.post(reverse(f"partnerships:{name}", args=[self.proposal.pk]), CONTENT).status_code, 403)
         self.assertEqual(client.post(reverse("partnerships:list"), CONTENT).status_code, 403)
@@ -280,10 +315,14 @@ class ProposalHttpTests(TestCase):
         self.assertEqual(self.client.post(url).status_code, 400)
 
 
+# OOP — Single inheritance: ProposalConcurrencyTests mewarisi TransactionTestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TransactionTestCase juga menjadi induk class saudara lain di proyek.
 class ProposalConcurrencyTests(TransactionTestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.participant, self.other, self.admin = setup_users()
 
+    # OOP — Encapsulation: method race mengelompokkan operasi terkait objek ProposalConcurrencyTests.
     def race(self, operation):
         barrier = Barrier(2)
 
@@ -298,6 +337,7 @@ class ProposalConcurrencyTests(TransactionTestCase):
             finally:
                 connections.close_all()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with ThreadPoolExecutor(max_workers=2) as pool:
             futures = [pool.submit(worker) for _ in range(2)]
             return [future.result(timeout=20) for future in futures]

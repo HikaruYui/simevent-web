@@ -1,3 +1,6 @@
+
+/* OOP — Instantiation: new membentuk instance Error, FormData; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
 // Hubungkan form akun ke session dan CSRF Django tanpa menyimpan password di browser.
 (() => {
   const login = document.getElementById('loginForm');

@@ -15,7 +15,9 @@ from .statistics import participation_metrics, statistics_data
 
 
 # Inheritance: StatisticsAccessMixin mewarisi perilaku EventManagementMixin untuk diperluas sesuai kebutuhan class ini.
+# OOP — Hierarchical inheritance: class ini menjadi induk bersama bagi EventStatisticsView, StatisticsOverviewView.
 class StatisticsAccessMixin(EventManagementMixin):
+    # OOP — Encapsulation: method get_events mengelompokkan operasi terkait objek StatisticsAccessMixin.
     def get_events(self):
         if not self.request.user.has_perm("registrations.view_feedback"):
             raise PermissionDenied
@@ -23,6 +25,8 @@ class StatisticsAccessMixin(EventManagementMixin):
 
 
 # Inheritance (pewarisan ganda): EventStatisticsView menggabungkan perilaku StatisticsAccessMixin, View.
+# OOP — Multiple inheritance: StatisticsAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): EventManagementMixin → StatisticsAccessMixin → EventStatisticsView.
 class EventStatisticsView(StatisticsAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
@@ -40,6 +44,8 @@ class EventStatisticsView(StatisticsAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): StatisticsOverviewView menggabungkan perilaku StatisticsAccessMixin, ListView.
+# OOP — Multiple inheritance: StatisticsAccessMixin, ListView digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): EventManagementMixin → StatisticsAccessMixin → StatisticsOverviewView.
 class StatisticsOverviewView(StatisticsAccessMixin, ListView):
     paginate_by = 20
     http_method_names = ["get", "head", "options"]

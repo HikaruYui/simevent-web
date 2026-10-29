@@ -14,11 +14,16 @@ from apps.events.workflow import EventWorkflow
 from .support import banner_upload, event_data, setup_users
 
 
+# OOP — Single inheritance: EventUploadTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class EventUploadTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.directory = self.enterContext(TemporaryDirectory())
         self.enterContext(self.settings(MEDIA_ROOT=self.directory))
@@ -37,6 +42,7 @@ class EventUploadTests(TestCase):
             SimpleUploadedFile("huge.png", b"x" * (5 * 1024 * 1024 + 1)),
         ]
         for upload in uploads:
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(upload=upload.name), self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).create(data=event_data(), files={"banner": upload})
         self.assertFalse(Event.objects.exists())
@@ -44,18 +50,22 @@ class EventUploadTests(TestCase):
     def test_banner_can_be_replaced_and_removed_after_commit(self):
         event = EventWorkflow(self.owner).create(data=event_data(), files={"banner": banner_upload()})
         old = event.banner.name
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.captureOnCommitCallbacks(execute=True):
             event = EventWorkflow(self.owner).update(event.pk, data=event_data(), files={"banner": banner_upload()})
         self.assertFalse(event.banner.storage.exists(old))
         self.assertTrue(event.banner.storage.exists(event.banner.name))
         previous = event.banner.name
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.captureOnCommitCallbacks(execute=True):
             event = EventWorkflow(self.owner).update(event.pk, data=event_data(remove_banner=True))
         self.assertFalse(event.banner)
         self.assertFalse(event.banner.storage.exists(previous))
 
     def test_failed_content_save_cleans_new_upload(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.EventAccess.objects.update_or_create", side_effect=RuntimeError("failure")):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 EventWorkflow(self.owner).create(data=event_data(), files={"banner": banner_upload()})
         self.assertFalse(Event.objects.exists())
@@ -64,7 +74,9 @@ class EventUploadTests(TestCase):
     def test_failed_replacement_preserves_original_banner(self):
         event = EventWorkflow(self.owner).create(data=event_data(), files={"banner": banner_upload()})
         previous = event.banner.name
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.events.workflow.EventAccess.objects.update_or_create", side_effect=RuntimeError("failure")):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 EventWorkflow(self.owner).update(event.pk, data=event_data(), files={"banner": banner_upload()})
         event.refresh_from_db()
@@ -73,17 +85,20 @@ class EventUploadTests(TestCase):
         self.assertEqual(len([path for path in Path(self.directory).rglob("*") if path.is_file()]), 1)
 
     def test_rejects_ambiguous_banner_removal_and_upload(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).create(data=event_data(remove_banner=True), files={"banner": banner_upload()})
 
     def test_meeting_url_must_use_https(self):
         for url in ("http://meeting.example/room", "javascript:alert(1)", "ftp://meeting.example/room"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(url=url), self.assertRaises(ValidationError):
                 EventWorkflow(self.owner).create(data=event_data(meeting_url=url))
 
     def test_delete_draft_removes_banner_after_commit(self):
         event = EventWorkflow(self.owner).create(data=event_data(), files={"banner": banner_upload()})
         name, storage = event.banner.name, event.banner.storage
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.captureOnCommitCallbacks(execute=True):
             EventWorkflow(self.owner).delete_draft(event.pk)
         self.assertFalse(storage.exists(name))

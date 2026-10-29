@@ -1,3 +1,4 @@
+# OOP — Factory / dynamic dispatch: as_view() mengadaptasi class menjadi callable URL; setiap request memakai instance yang memilih handler get/post melalui dispatch.
 # Fungsi file: Pemetaan URL ke view untuk event, ownership, dan alur approval/publikasi.
 
 from django.urls import path

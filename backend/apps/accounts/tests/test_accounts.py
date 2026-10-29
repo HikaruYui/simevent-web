@@ -17,12 +17,17 @@ from apps.accounts.permissions import require_organizer
 PASSWORD = "a-Long-Unique-Password-932!"
 
 
+# OOP — Single inheritance: AccountTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class AccountTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         call_command("bootstrap_roles", stdout=StringIO())
         cls.user = User.objects.create_user("andi@example.com", PASSWORD)
 
+    # OOP — Encapsulation: method registration_data mengelompokkan operasi terkait objek AccountTests.
     def registration_data(self, **overrides):
         return {
             "email": "new@example.com",
@@ -46,14 +51,17 @@ class AccountTests(TestCase):
         self.assertEqual(authenticate(email="OTHER@EXAMPLE.COM", password=PASSWORD), user)
 
     def test_database_rejects_case_variant_even_with_bulk_create(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             User.objects.bulk_create([User(email="ANDI@example.com")])
 
     def test_database_rejects_empty_email(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             User.objects.bulk_create([User(email="")])
 
     def test_superuser_creation_checks_flags(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValueError):
             User.objects.create_superuser("admin@example.com", PASSWORD, is_staff=False)
         user = User.objects.create_superuser("admin@example.com", PASSWORD)
@@ -137,12 +145,14 @@ class AccountTests(TestCase):
 
     def test_mutations_reject_get(self):
         for name in ("register", "login", "logout"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(name=name):
                 self.assertEqual(self.client.get(reverse(f"accounts:{name}")).status_code, 405)
 
     def test_csrf_is_required_for_all_auth_mutations(self):
         client = Client(enforce_csrf_checks=True)
         for name in ("register", "login", "logout"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(name=name):
                 self.assertEqual(client.post(reverse(f"accounts:{name}"), {}).status_code, 403)
         token = client.get(reverse("accounts:csrf")).json()["csrf_token"]
@@ -151,6 +161,7 @@ class AccountTests(TestCase):
 
     def test_participant_and_anonymous_fail_organizer_gate(self):
         for user in (self.user, AnonymousUser()):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(user=user), self.assertRaises(PermissionDenied):
                 require_organizer(user)
 
@@ -162,6 +173,7 @@ class AccountTests(TestCase):
         self.assertEqual(user.role, "ORGANIZER")
         self.assertFalse(user.has_perm("accounts.manage_platform"))
         self.user.groups.remove(group)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             require_organizer(User.objects.get(pk=self.user.pk))
 
@@ -169,6 +181,7 @@ class AccountTests(TestCase):
         self.user.groups.add(Group.objects.get(name="Organizer"))
         self.user.is_active = False
         self.user.save()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             require_organizer(self.user)
 
@@ -176,6 +189,7 @@ class AccountTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.assertEqual(self.user.role, "PARTICIPANT")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             require_organizer(self.user)
 

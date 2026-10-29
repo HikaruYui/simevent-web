@@ -21,6 +21,8 @@ from .payments import PaymentService
 
 
 # Inheritance (pewarisan ganda): RegistrationAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(Registration)
 class RegistrationAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("id", "event", "participant", "status", "registered_at")
@@ -30,6 +32,8 @@ class RegistrationAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
 
 
 # Inheritance (pewarisan ganda): TicketAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(Ticket)
 class TicketAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     fields = ("identifier", "registration", "is_active", "created_at")
@@ -38,6 +42,8 @@ class TicketAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
 
 
 # Inheritance (pewarisan ganda): AttendanceAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(Attendance)
 class AttendanceAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("registration", "status", "checked_in_at", "verified_by")
@@ -46,12 +52,15 @@ class AttendanceAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     action_form = ReasonActionForm
     actions = ("void",)
 
+    # OOP — Polymorphism: has_void_permission menyediakan hook khusus yang dipanggil melalui kontrak framework.
     def has_void_permission(self, request):
         return (
             request.user.has_perm("accounts.manage_platform")
             and request.user.has_perm("registrations.void_attendance")
         )
 
+    # OOP — Encapsulation: method void mengelompokkan operasi terkait objek AttendanceAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Batalkan attendance", permissions=["void"])
     def void(self, request, queryset):
         run_single_action(
@@ -61,6 +70,8 @@ class AttendanceAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
 
 
 # Inheritance (pewarisan ganda): FeedbackAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(Feedback)
 class FeedbackAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("registration", "overall_rating", "created_at")
@@ -70,6 +81,8 @@ class FeedbackAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
 
 
 # Inheritance: PaymentAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
+# OOP — Hierarchical inheritance: admin.ModelAdmin juga menjadi induk class saudara lain di proyek.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "registration", "amount", "status", "submitted_at", "proof_link")
@@ -105,6 +118,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
     # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self, request):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         queryset = super().get_queryset(request).select_related(
             "registration__event", "registration__participant",
         )
@@ -114,6 +128,8 @@ class PaymentAdmin(admin.ModelAdmin):
             return queryset.filter(registration__event__organizer=request.user)
         return queryset.none()
 
+    # OOP — Encapsulation: method proof_link mengelompokkan operasi terkait objek PaymentAdmin.
+    # OOP — Method decorator: menambahkan metadata presentasi yang dibaca Django admin.
     @admin.display(description="Bukti transfer")
     def proof_link(self, obj):
         if not obj.proof:
@@ -141,16 +157,22 @@ class PaymentAdmin(admin.ModelAdmin):
                     request, f"Pembayaran #{payment.pk} berhasil ditinjau.", messages.SUCCESS,
                 )
 
+    # OOP — Encapsulation: method approve_payments mengelompokkan operasi terkait objek PaymentAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Setujui bukti pembayaran")
     def approve_payments(self, request, queryset):
         self._review(request, queryset, approve=True)
 
+    # OOP — Encapsulation: method reject_payments mengelompokkan operasi terkait objek PaymentAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Tolak bukti pembayaran")
     def reject_payments(self, request, queryset):
         self._review(request, queryset, approve=False)
 
 
 # Inheritance: PaymentInstructionsAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
+# OOP — Hierarchical inheritance: admin.ModelAdmin juga menjadi induk class saudara lain di proyek.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(PaymentInstructions)
 class PaymentInstructionsAdmin(admin.ModelAdmin):
     list_display = ("bank_name", "account_number", "account_holder", "is_active")
@@ -178,6 +200,8 @@ class PaymentInstructionsAdmin(admin.ModelAdmin):
 
 
 # Inheritance: CertificateTemplateAdmin mewarisi tampilan dan operasi pengelolaan model di Django admin.
+# OOP — Hierarchical inheritance: admin.ModelAdmin juga menjadi induk class saudara lain di proyek.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(CertificateTemplate)
 class CertificateTemplateAdmin(admin.ModelAdmin):
     list_display = ("id", "background", "is_active")

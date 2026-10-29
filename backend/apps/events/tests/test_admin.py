@@ -11,16 +11,22 @@ from apps.events.workflow import EventWorkflow
 from .support import event_data, setup_users
 
 
+# OOP — Single inheritance: EventAdminTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class EventAdminTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
         cls.event = EventWorkflow(cls.owner).create(data=event_data())
         EventWorkflow(cls.owner).transition(cls.event.pk, action="submit")
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.client.force_login(self.admin)
 
+    # OOP — Encapsulation: method action mengelompokkan operasi terkait objek EventAdminTests.
     def action(self, action, **overrides):
         return self.client.post(reverse("admin:events_event_changelist"), {
             "action": action, "_selected_action": self.event.pk,
@@ -44,6 +50,7 @@ class EventAdminTests(TestCase):
         root = User.objects.create_superuser("root@events.example", "password")
         self.client.force_login(root)
         for operation in ("change", "delete"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(operation=operation):
                 response = self.client.post(reverse(f"admin:events_event_{operation}", args=[self.event.pk]), {
                     "status": "PUBLISHED",

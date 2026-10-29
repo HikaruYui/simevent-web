@@ -83,6 +83,8 @@
     data-detail-time="{{ event.start_datetime|date:"H:i" }} – {{ event.end_datetime|date:"H:i" }} WIB"
     data-detail-venue="{% if event.venue %}{{ event.venue }}{% elif event.get_delivery_mode_display|lower == "online" %}Daring{% else %}{{ event.get_delivery_mode_display }}{% endif %}"
     {% if event.documentation_ready %}data-detail-doc="{% url 'peserta_dokumentasi' event.pk %}"{% endif %}
+    data-detail-paid="{% if event.price > 0 %}1{% else %}0{% endif %}"
+    data-detail-price="{{ event.price|floatformat:'0g' }}"
   >
 
    <a href="{% url 'detail_event' event.slug %}" data-event-detail class="event-poster {% if not event.banner %}event-poster--art{% endif %} flex h-36 items-center justify-center overflow-hidden rounded-xl text-center text-white" data-kind="{{ event.event_type.code|lower }}">
@@ -115,10 +117,20 @@
     </div>
     <div class="grid grid-cols-2 gap-2">
      <a href="{% url 'detail_event' event.slug %}" data-event-detail class="participant-outline rounded-lg px-3 py-2.5 text-center text-sm font-bold">Lihat Detail</a>
-     {% if event.is_registered %}<span class="rounded-lg bg-emerald-100 px-3 py-2.5 text-center text-sm font-bold text-emerald-800">Terdaftar</span>
-     {% elif event.is_registration_open and event.price == 0 %}
+    {% if event.is_registered %}<span class="rounded-lg bg-emerald-100 px-3 py-2.5 text-center text-sm font-bold text-emerald-800">Terdaftar</span>
+     {% if my_registrations and event.cancel_url %}<button type="button" data-cancel-registration="{{ event.cancel_url }}" class="participant-outline rounded-lg px-3 py-2.5 text-sm font-bold">Batalkan Pendaftaran</button>{% endif %}
+     {% if my_registrations and event.meeting_url %}<button type="button" data-meeting-url="{{ event.meeting_url }}" class="participant-button rounded-lg px-3 py-2.5 text-sm font-bold">Masuk Pertemuan</button>{% endif %}
+    {% elif event.is_registration_open and event.price == 0 %}
       <form class="free-registration" method="post" action="{% url 'registrations:create' event.pk %}">{% csrf_token %}<button type="submit" class="participant-button w-full rounded-lg px-3 py-2.5 text-sm font-bold">Daftar Event</button></form>
-     {% elif event.is_registration_open %}<a href="{% url 'detail_event' event.slug %}" data-event-detail class="participant-button rounded-lg px-2 py-2.5 text-center text-sm font-bold">Berbayar · Lihat Detail</a>
+    {% elif event.is_registration_open %}
+      <button
+        type="button"
+        data-register-paid
+        data-register-url="{% url 'registrations:register-paid' event.pk %}"
+        class="participant-button rounded-lg px-2 py-2.5 text-center text-sm font-bold"
+      >
+        Daftar & Bayar
+      </button>
      {% else %}<span class="rounded-lg bg-stone-100 px-2 py-2.5 text-center text-xs font-bold text-stone-500">Pendaftaran tutup</span>{% endif %}
     </div>
     {% if event.is_registered and event.price > 0 %}
@@ -156,6 +168,66 @@
    <dt>Waktu</dt><dd id="eventDetailTime"></dd>
    <dt>Lokasi</dt><dd id="eventDetailVenue"></dd>
   </dl>
+  <div id="eventDetailPayment"
+      class="mt-6 rounded-2xl border border-[#e8dfca] bg-[#faf6e9] p-5"
+      hidden>
+
+    <h3 class="text-lg font-extrabold text-[#3F422E]">
+      <i class="fa-solid fa-credit-card mr-2"></i>
+      Informasi Pembayaran
+    </h3>
+
+    <p class="mt-3 text-sm text-stone-600">Harga Tiket</p>
+
+    <p id="eventDetailPrice"
+      class="text-xl font-extrabold text-[#3F422E]"></p>
+
+    {% if payment_instructions %}
+      <div class="mt-4 space-y-3 border-t border-[#e8dfca] pt-4">
+
+        <div>
+          <p class="text-xs text-stone-500">Transfer ke Bank</p>
+          <p class="font-bold">
+            {{ payment_instructions.bank_name }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-xs text-stone-500">Nomor Rekening</p>
+          <p class="font-bold">
+            {{ payment_instructions.account_number }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-xs text-stone-500">Atas Nama</p>
+          <p class="font-bold">
+            {{ payment_instructions.account_holder }}
+          </p>
+        </div>
+
+        {% if payment_instructions.instructions %}
+          <p class="whitespace-pre-line text-sm text-stone-600">{{ payment_instructions.instructions }}</p>
+        {% endif %}
+
+      </div>
+
+      <p class="mt-4 text-xs text-amber-800">
+        Daftarkan diri terlebih dahulu sebelum transfer.
+        Setelah transfer, unggah bukti pembayaran melalui
+        halaman pendaftaran. Tiket diterbitkan setelah
+        pembayaran disetujui.
+      </p>
+
+    {% else %}
+      <p class="mt-4 text-sm text-rose-700">
+        Rekening pembayaran belum tersedia.
+        Hubungi admin sebelum melakukan transfer.
+      </p>
+    {% endif %}
+
+  </div>
+
   <div class="mt-8 flex flex-wrap justify-end gap-2">
    <a id="eventDetailDoc" href="#" target="_blank" rel="noopener noreferrer" hidden class="participant-button rounded-full px-6 py-2.5 text-sm font-bold"><i class="fa-regular fa-images mr-2" aria-hidden="true"></i>Lihat Dokumentasi</a>
    <button type="button" class="participant-outline rounded-full px-6 py-2.5 text-sm font-bold" data-dialog-close>Tutup</button>
@@ -187,6 +259,8 @@
  </form>
 </dialog>
 <script>
+/* OOP — Instantiation: new membentuk instance Error, Event, FormData, URLSearchParams; state dan method mengikuti antarmuka objek masing-masing. */
+
 document.querySelectorAll('.free-registration').forEach((form) => {
  form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -319,6 +393,14 @@ document.addEventListener('click', (event) => {
  document.getElementById('eventDetailDate').textContent = row.dataset.detailDate;
  document.getElementById('eventDetailTime').textContent = row.dataset.detailTime;
  document.getElementById('eventDetailVenue').textContent = row.dataset.detailVenue;
+const detailPayment = document.getElementById('eventDetailPayment');
+const detailPrice = document.getElementById('eventDetailPrice');
+const isPaidEvent = row.dataset.detailPaid === '1';
+detailPayment.hidden = !isPaidEvent;
+if (isPaidEvent) {
+  detailPrice.textContent = 'Rp' + row.dataset.detailPrice;
+}
+
  // Tombol dokumentasi hanya ada jika server menandai peserta ini berhak (hadir + event selesai).
  const docLink = document.getElementById('eventDetailDoc');
  const docUrl = row.dataset.detailDoc || '';
@@ -336,32 +418,161 @@ detailDialog.addEventListener('close', () => {
 });
 const paymentProofDialog = document.getElementById('paymentProofDialog');
 const paymentProofForm = document.getElementById('paymentProofForm');
-const paymentProofError = document.getElementById('paymentProofError');
-document.querySelectorAll('[data-payment-proof-open]').forEach((button) => {
+document.querySelectorAll('[data-cancel-registration], [data-meeting-url]').forEach((button) => {
  button.addEventListener('click', async () => {
+  const cancelling = Boolean(button.dataset.cancelRegistration);
+  if (cancelling && !window.confirm('Batalkan pendaftaran ini? Tiket akan dinonaktifkan. Pengembalian dana mengikuti kebijakan penyelenggara.')) return;
+  button.disabled = true;
   try {
-   const response = await fetch(button.dataset.paymentUrl, {credentials: 'same-origin'});
-   const payment = await response.json();
-   if (!response.ok) throw new Error(payment.error || 'Informasi pembayaran tidak dapat dimuat.');
-   paymentProofForm.reset();
-   paymentProofForm.action = button.dataset.paymentUrl;
-   document.getElementById('paymentProofEventTitle').textContent = payment.event_title;
-   document.getElementById('paymentProofAmount').textContent = `Jumlah pembayaran: Rp${Number(payment.amount).toLocaleString('id-ID')}`;
-   const bankInfo = document.getElementById('paymentBankInfo');
-   bankInfo.hidden = !payment.bank;
-   if (payment.bank) {
-    document.getElementById('paymentBankName').textContent = payment.bank.name;
-    document.getElementById('paymentBankAccount').textContent = payment.bank.account_number;
-    document.getElementById('paymentBankHolder').textContent = payment.bank.account_holder;
-    document.getElementById('paymentBankInstructions').textContent = payment.bank.instructions || 'Transfer sesuai jumlah pembayaran, lalu unggah bukti transfer.';
+   const options = cancelling ? {
+    method: 'POST', credentials: 'same-origin',
+    headers: {'X-CSRFToken': paymentProofForm.querySelector('[name="csrfmiddlewaretoken"]').value},
+    body: new URLSearchParams({confirm: 'on'})
+   } : {credentials: 'same-origin'};
+   const response = await fetch(button.dataset.cancelRegistration || button.dataset.meetingUrl, options);
+   const data = await response.json().catch(() => ({}));
+   if (!response.ok) throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : data.error || 'Permintaan gagal.');
+   if (cancelling) window.location.reload();
+   else {
+    if (!data.meeting_url) throw new Error('Tautan pertemuan belum tersedia.');
+    window.location.assign(data.meeting_url);
    }
-   paymentProofError.hidden = true;
-   paymentProofError.textContent = '';
-   paymentProofDialog.showModal();
-  } catch (error) {
-   window.alert(error.message);
-  }
+  } catch (error) { window.alert(error.message); }
+  finally { button.disabled = false; }
  });
+});
+const paymentProofError = document.getElementById('paymentProofError');
+
+async function openPaymentProof(paymentUrl) {
+  const response = await fetch(paymentUrl, {
+    credentials: 'same-origin'
+  });
+
+  const payment = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      payment.error || 'Informasi pembayaran tidak dapat dimuat.'
+    );
+  }
+
+  paymentProofForm.reset();
+  paymentProofForm.action = paymentUrl;
+
+  document.getElementById('paymentProofEventTitle').textContent =
+    payment.event_title;
+
+  document.getElementById('paymentProofAmount').textContent =
+    `Jumlah pembayaran: Rp${Number(payment.amount).toLocaleString('id-ID')}`;
+
+  const bankInfo = document.getElementById('paymentBankInfo');
+  bankInfo.hidden = !payment.bank;
+
+  if (payment.bank) {
+    document.getElementById('paymentBankName').textContent =
+      payment.bank.name;
+
+    document.getElementById('paymentBankAccount').textContent =
+      payment.bank.account_number;
+
+    document.getElementById('paymentBankHolder').textContent =
+      payment.bank.account_holder;
+
+    document.getElementById('paymentBankInstructions').textContent =
+      payment.bank.instructions ||
+      'Transfer sesuai jumlah pembayaran, lalu unggah bukti transfer.';
+  }
+
+  paymentProofError.hidden = true;
+  paymentProofError.textContent = '';
+
+  const submitButton = paymentProofForm.querySelector('[type="submit"]');
+  submitButton.disabled = !payment.bank;
+  submitButton.textContent = 'Kirim Bukti';
+
+  if (!payment.bank) {
+    paymentProofError.textContent =
+      'Rekening pembayaran belum diatur. Hubungi admin sebelum transfer.';
+    paymentProofError.hidden = false;
+  }
+
+  paymentProofDialog.showModal();
+}
+
+// Tombol upload untuk peserta yang sudah mendaftar.
+document.querySelectorAll('[data-payment-proof-open]').forEach((button) => {
+  button.addEventListener('click', async () => {
+    try {
+      await openPaymentProof(button.dataset.paymentUrl);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  });
+});
+
+// Tombol DAFTAR & BAYAR untuk peserta baru.
+document.querySelectorAll('[data-register-paid]').forEach((button) => {
+  button.addEventListener('click', async () => {
+    if (button.disabled) return;
+
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Mendaftar...';
+
+    try {
+      const csrf = paymentProofForm.querySelector(
+        '[name="csrfmiddlewaretoken"]'
+      ).value;
+
+      const response = await fetch(button.dataset.registerUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRFToken': csrf
+        }
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const errors = Object.values(result.errors || {})
+          .flat()
+          .map(item => typeof item === 'string' ? item : item.message)
+          .filter(Boolean);
+
+        throw new Error(
+          errors.join(' ') ||
+          result.error ||
+          'Pendaftaran berbayar gagal.'
+        );
+      }
+
+      if (!result.id) {
+        throw new Error('ID pendaftaran tidak diterima dari server.');
+      }
+
+      // Gunakan endpoint pembayaran asli dari backend.
+      const paymentUrl = `/registrations/${result.id}/payment/`;
+
+      // Langsung membuka popup informasi rekening dan upload bukti.
+      await openPaymentProof(paymentUrl);
+
+      // Refresh sesudah popup ditutup agar status registrasi
+      // dan tombol pembayaran mengikuti data PostgreSQL.
+      paymentProofDialog.addEventListener('close', () => {
+        window.location.reload();
+      }, { once: true });
+
+    } catch (error) {
+      window.alert(
+        error.message +
+        '\nJika pendaftaran sudah tercatat, refresh halaman untuk melanjutkan pembayaran.'
+      );
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  });
 });
 document.querySelectorAll('[data-payment-proof-close]').forEach((button) => {
  button.addEventListener('click', () => paymentProofDialog.close());

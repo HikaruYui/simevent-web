@@ -18,12 +18,17 @@ from apps.registrations.services import RegistrationService
 from apps.registrations.views import RegistrationListView
 
 
+# OOP — Single inheritance: RegistrationTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class RegistrationTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
         cls.event = published_event(cls.owner, cls.admin, capacity=1)
 
+    # OOP — Encapsulation: method register mengelompokkan operasi terkait objek RegistrationTests.
     def register(self, user=None):
         return RegistrationService(user or self.participant).register(self.event.pk)
 
@@ -37,6 +42,7 @@ class RegistrationTests(TestCase):
     def test_duplicate_and_full_event_are_rejected(self):
         self.register()
         for user in (self.participant, self.other):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(user=user), self.assertRaises(ValidationError):
                 self.register(user)
         self.assertEqual(Ticket.objects.count(), 1)
@@ -48,6 +54,7 @@ class RegistrationTests(TestCase):
         ticket.refresh_from_db()
         self.assertFalse(ticket.is_valid)
         other_registration = self.register(self.other)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.register()
         RegistrationService(self.other).cancel(other_registration.pk)
@@ -60,6 +67,7 @@ class RegistrationTests(TestCase):
 
     def test_cancel_is_idempotent_and_only_owner_can_cancel(self):
         registration = self.register()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(Http404):
             RegistrationService(self.other).cancel(registration.pk)
         first = RegistrationService(self.participant).cancel(registration.pk)
@@ -71,6 +79,7 @@ class RegistrationTests(TestCase):
             if status == EventStatus.PUBLISHED:
                 continue
             Event.objects.filter(pk=self.event.pk).update(status=status)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(status=status), self.assertRaises((Http404, ValidationError)):
                 self.register()
 
@@ -78,23 +87,28 @@ class RegistrationTests(TestCase):
         opening = self.event.registration_open
         closing = self.event.registration_close
         for now in (opening - timedelta(seconds=1), closing):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(now=now), patch(
                 "apps.registrations.services.timezone.now", return_value=now
             ), self.assertRaises(ValidationError):
                 self.register()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.services.timezone.now", return_value=opening):
             self.assertIsNotNone(self.register().pk)
 
     def test_paid_event_rejected_even_if_published_by_trusted_operator(self):
         Event.objects.filter(pk=self.event.pk).update(price=10)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.register()
 
     def test_profile_completion_is_required_before_free_or_paid_registration(self):
         type(self.participant).objects.filter(pk=self.participant.pk).update(nim="")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.register()
         Event.objects.filter(pk=self.event.pk).update(price=10000)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             RegistrationService(self.participant).start_paid_registration(self.event.pk)
         self.assertFalse(Registration.objects.exists())
@@ -117,7 +131,9 @@ class RegistrationTests(TestCase):
 
     def test_cancel_at_start_rejected_but_cancelled_event_can_be_cleaned_up(self):
         registration = self.register()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.services.timezone.now", return_value=self.event.start_datetime):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 RegistrationService(self.participant).cancel(registration.pk)
             Event.objects.filter(pk=self.event.pk).update(status=EventStatus.CANCELLED)
@@ -127,11 +143,14 @@ class RegistrationTests(TestCase):
     def test_stale_actor_cannot_bypass_suspension(self):
         service = RegistrationService(self.participant)
         type(self.participant).objects.filter(pk=self.participant.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             service.register(self.event.pk)
 
     def test_ticket_failure_rolls_back_registration(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.services.Ticket.objects.create", side_effect=RuntimeError):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 self.register()
         self.assertFalse(Registration.objects.exists())
@@ -139,7 +158,9 @@ class RegistrationTests(TestCase):
     def test_ticket_failure_rolls_back_reactivation(self):
         registration = self.register()
         RegistrationService(self.participant).cancel(registration.pk)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.services.Ticket.objects.update_or_create", side_effect=RuntimeError):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 self.register()
         registration.refresh_from_db()
@@ -148,7 +169,9 @@ class RegistrationTests(TestCase):
 
     def test_ticket_failure_rolls_back_cancellation(self):
         registration = self.register()
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("django.db.models.query.QuerySet.update", side_effect=RuntimeError):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 RegistrationService(self.participant).cancel(registration.pk)
         registration.refresh_from_db()
@@ -168,9 +191,11 @@ class RegistrationTests(TestCase):
             ),
         ]
         for operation in operations:
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(IntegrityError), transaction.atomic():
                 operation()
         other = Registration.objects.create(participant=self.other, event=self.event)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             Ticket.objects.create(registration=other, token=original_token)
 
@@ -181,6 +206,7 @@ class RegistrationTests(TestCase):
             ticket = Ticket.objects.get(registration=registration)
             self.assertFalse(ticket.is_valid)
         Event.objects.filter(pk=self.event.pk).update(status=EventStatus.PUBLISHED)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.models.timezone.now", return_value=self.event.end_datetime):
             self.assertFalse(Ticket.objects.get(registration=registration).is_valid)
 
@@ -191,6 +217,7 @@ class RegistrationTests(TestCase):
         workflow = EventWorkflow(self.admin)
         workflow.transition(self.event.pk, action="unpublish")
         workflow.transition(self.event.pk, action="request_revision", reason="Capacity review")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).update(self.event.pk, data=event_data(capacity=1))
         self.event.refresh_from_db()
@@ -259,6 +286,7 @@ class RegistrationTests(TestCase):
         self.register()
         request = RequestFactory().get("/registrations/")
         request.user = self.participant
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertNumQueries(2):
             response = RegistrationListView.as_view()(request)
         self.assertEqual(response.status_code, 200)

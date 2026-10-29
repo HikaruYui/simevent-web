@@ -1,3 +1,5 @@
+
+/* OOP — Instantiation: new membentuk instance Date; state dan method mengikuti antarmuka objek masing-masing. */
 /* Adapter demo lama. Muat partials/demo_seed.html sebelum memakai skrip ini. */
 const TODAY=window.SIMEVENT_DEMO.legacy_today;
 const EV=window.SIMEVENT_DEMO.legacy_events;

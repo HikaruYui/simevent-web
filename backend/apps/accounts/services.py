@@ -28,6 +28,7 @@ def require_platform_permission(actor, permission):
         raise PermissionDenied
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def change_account_access(*, actor, user_id, action, reason):
     if not actor.is_authenticated:

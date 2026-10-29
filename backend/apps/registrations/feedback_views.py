@@ -26,6 +26,7 @@ def feedback_data(feedback):
 
 
 # Inheritance (pewarisan ganda): FeedbackDetailView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class FeedbackDetailView(ParticipantAccessMixin, View):
     http_method_names = ["get", "post", "head", "options"]
 
@@ -44,6 +45,7 @@ class FeedbackDetailView(ParticipantAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): FeedbackResultsView menggabungkan perilaku ParticipantAccessMixin, ListView.
+# OOP — Multiple inheritance: ParticipantAccessMixin, ListView digabung; pencarian method mengikuti MRO C3 Python.
 class FeedbackResultsView(ParticipantAccessMixin, ListView):
     paginate_by = 20
     http_method_names = ["get", "head", "options"]

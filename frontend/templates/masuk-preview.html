@@ -6,7 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Masuk | SIMEVENT</title>
+  <title>{% block auth_title %}Masuk{% endblock %} | SIMEVENT</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +20,16 @@
     rel="stylesheet"
     href="{% static 'css/style.css' %}"
   >
+  <style>
+    @media (max-width: 900px) {
+      .page-auth .auth { --u: 1px; grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; gap: 36px; padding: 40px 24px; background: #9F886F; }
+      .page-auth .auth__blob { display: none; }
+      .page-auth .auth__logo { min-width: 0; max-width: 100%; }
+      .page-auth .auth__logo img { width: 280px; }
+      .page-auth .auth__panel { min-width: 0; width: 100%; max-width: 420px; padding-top: 0; }
+      .page-auth .auth__title { font-size: clamp(2rem, 8vw, 40px) !important; }
+    }
+  </style>
 </head>
 
 
@@ -70,6 +80,7 @@
 
 
         <div class="auth__panel">
+          {% block auth_panel %}
 
           <section id="loginPanel">
             <h1
@@ -135,6 +146,7 @@
               class="auth__form form"
               id="loginForm"
               method="post"
+              action="{% url 'accounts:login' %}"
               novalidate
             >
 
@@ -182,7 +194,7 @@
 
               <a
                 class="forgot"
-                href="#"
+                href="{% url 'password_reset' %}"
                 id="forgotPassword"
               >
                 Lupa Password?
@@ -309,6 +321,7 @@
               class="auth__form form"
               id="registerForm"
               method="post"
+              action="{% url 'accounts:register' %}"
               novalidate
             >
 
@@ -446,6 +459,7 @@
 
           </section>
 
+          {% endblock %}
         </div>
 
       </section>
@@ -453,7 +467,11 @@
     </main>
 
   </div>
+  {% block auth_scripts %}
   <script>
+/* OOP — Instantiation: new membentuk instance URLSearchParams; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
 
     const loginPanel = document.getElementById("loginPanel");
     const registerPanel = document.getElementById("registerPanel");
@@ -774,21 +792,6 @@
       .addEventListener("click", loginWithGoogle);
 
 
-    document
-      .getElementById("googleLogin")
-      .addEventListener(
-        "click",
-        googleNotAvailable
-      );
-
-
-    document
-      .getElementById("googleRegister")
-      .addEventListener(
-        "click",
-        googleNotAvailable
-      );
-
   </script>
 
   {% if request.user.is_authenticated %}
@@ -799,5 +802,6 @@
     </script>
   {% endif %}
 
+  {% endblock %}
 </body>
 </html>

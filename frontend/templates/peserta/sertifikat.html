@@ -65,7 +65,7 @@
     <span class="inline-flex rounded-full bg-amber-100 px-3 py-2 text-sm font-bold text-amber-900"><i class="fa-solid fa-hourglass-half mr-2"></i>Menunggu Event Selesai</span>
     <p class="text-xs text-stone-500">Sertifikat akan tersedia setelah event selesai dan kehadiran terverifikasi.</p>
     {% endif %}
-    {% if registration.uploaded_certificate %}
+    {% if registration.uploaded_certificate and registration.attendance.status == "PRESENT" %}
     <a href="{% url 'peserta_sertifikat_unggahan' registration.pk %}" class="participant-button block rounded-lg px-3 py-2 text-center text-sm font-bold"><i class="fa-solid fa-file-arrow-down mr-1" aria-hidden="true"></i>Unduh Sertifikat dari Panitia</a>
     {% endif %}
     {% if registration.documentation_ready %}
@@ -81,6 +81,8 @@
  <p class="pt-1 text-sm text-stone-600">Menampilkan <span id="certificateVisibleCount">{{ registrations|length }}</span> dari {{ registrations|length }} sertifikat</p>
 </div>
 <script>
+/* OOP — Instantiation: new membentuk instance Event; state dan method mengikuti antarmuka objek masing-masing. */
+
 const certificateSearch = document.getElementById('certificateSearch');
 const certificateStatus = document.getElementById('certificateStatus');
 const certificateSort = document.getElementById('certificateSort');

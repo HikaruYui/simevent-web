@@ -14,6 +14,7 @@ from .models import User
 
 # Inheritance: RegistrationForm mewarisi perilaku UserCreationForm untuk diperluas sesuai kebutuhan class ini.
 class RegistrationForm(UserCreationForm):
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         model = User
         fields = (
@@ -40,6 +41,8 @@ class RegistrationForm(UserCreationForm):
 
 
 # Inheritance: ProfileForm mewarisi pembuatan form, validasi, dan penyimpanan berbasis model.
+# OOP — Hierarchical inheritance: forms.ModelForm juga menjadi induk class saudara lain di proyek.
+# OOP — Object composition: objek field disusun sebagai bagian form; validasi didelegasikan ke masing-masing field.
 class ProfileForm(forms.ModelForm):
     full_name = forms.CharField(
         label="Nama lengkap",
@@ -47,6 +50,7 @@ class ProfileForm(forms.ModelForm):
         required=False,
     )
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         model = User
         fields = (
@@ -75,6 +79,7 @@ class ProfileForm(forms.ModelForm):
 
     # OOP inisialisasi: super().__init__() menyiapkan objek induk sebelum field form disesuaikan.
     def __init__(self, *args, **kwargs):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             self.fields["full_name"].initial = self.instance.get_full_name().strip()
@@ -90,6 +95,7 @@ class ProfileForm(forms.ModelForm):
 
     # Polymorphism: menambahkan validasi khusus pada hook clean() milik Django.
     def clean(self):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         cleaned_data = super().clean()
         full_name = (cleaned_data.get("full_name") or "").strip()
         if full_name:
@@ -122,6 +128,7 @@ class ProfileForm(forms.ModelForm):
             raise forms.ValidationError("Ukuran PDF KTP maksimal 5 MB.")
         if not document.name.lower().endswith(".pdf"):
             raise forms.ValidationError("Dokumen KTP harus berformat PDF.")
+        # OOP — Duck typing: objek unggahan dipakai melalui read()/seek(); implementasi file di memori atau disk dapat memenuhi protokol yang sama.
         signature = document.read(5)
         document.seek(0)
         if signature != b"%PDF-":
@@ -144,6 +151,7 @@ class ProfileForm(forms.ModelForm):
 
 
 # Inheritance: EmailAuthenticationForm mewarisi perilaku AuthenticationForm untuk diperluas sesuai kebutuhan class ini.
+# OOP — Object composition: objek field disusun sebagai bagian form; validasi didelegasikan ke masing-masing field.
 class EmailAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(
         label="Email",
@@ -153,6 +161,7 @@ class EmailAuthenticationForm(AuthenticationForm):
 
 # Inheritance: AccountChangeForm mewarisi perilaku UserChangeForm untuk diperluas sesuai kebutuhan class ini.
 class AccountChangeForm(UserChangeForm):
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         model = User
         fields = "__all__"

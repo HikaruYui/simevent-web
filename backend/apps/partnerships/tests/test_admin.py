@@ -10,13 +10,18 @@ from apps.partnerships.services import create_proposal, submit_proposal
 from .test_workflow import CONTENT, setup_users
 
 
+# OOP — Single inheritance: ProposalAdminTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class ProposalAdminTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.participant, cls.other, cls.admin = setup_users()
         cls.proposal = create_proposal(actor=cls.participant, data=CONTENT)
         submit_proposal(actor=cls.participant, proposal_id=cls.proposal.pk)
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.client.force_login(self.admin)
 
@@ -41,6 +46,7 @@ class ProposalAdminTests(TestCase):
         root = User.objects.create_superuser("root@example.com", "password")
         self.client.force_login(root)
         for name in ("change", "delete"):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(name=name):
                 response = self.client.post(reverse(f"admin:partnerships_organizerproposal_{name}", args=[self.proposal.pk]), {"status": "APPROVED"})
                 self.assertEqual(response.status_code, 403)

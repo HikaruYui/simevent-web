@@ -19,6 +19,7 @@ def send_invitation_emails(invitations, *, site_url):
     """Kirim terpisah per penerima; kegagalan SMTP tidak menghapus undangan."""
     sent = []
     try:
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with get_connection() as connection:
             for invitation in invitations:
                 acceptance_url = urljoin(

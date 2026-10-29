@@ -13,10 +13,12 @@ def participation_metrics(prefix=""):
     """Aggregate only Registration and its one-to-one attendance/feedback joins."""
     event_status = "status" if prefix else "event__status"
     active = Q(**{f"{prefix}status": RegistrationStatus.REGISTERED})
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     eligible = active & Q(**{
         f"{event_status}__in": (EventStatus.PUBLISHED, EventStatus.COMPLETED),
     })
     present = Q(**{f"{prefix}attendance__status": Attendance.Status.PRESENT})
+    # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
     valid_feedback = active & present & Q(**{event_status: EventStatus.COMPLETED})
     return {
         "total_registrations": Count(f"{prefix}pk"),

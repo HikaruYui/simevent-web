@@ -338,6 +338,9 @@
   </div>
 </div>
 <script>
+/* OOP — Instantiation: new membentuk instance Event; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
 (() => {
   const picker = document.querySelector('[data-gender-picker]');
   if (!picker) return;
@@ -505,6 +508,9 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
+/* OOP — Instantiation: new membentuk instance DataTransfer, Error, File; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
 (() => {
   const input = document.getElementById("id_profile_photo");
   const modal = document.getElementById("profileCropModal");
@@ -731,6 +737,8 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
+/* OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
 (() => {
   const ring = document.getElementById("accountProgressRing");
   const valueLabel = document.getElementById("accountProgressValue");

@@ -12,8 +12,11 @@ from .forms import EmailAuthenticationForm, ProfileForm, RegistrationForm
 from .models import User
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
 def ktp_document(request):
     document = request.user.ktp_document
@@ -36,21 +39,27 @@ def ktp_document(request):
     return response
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
 def csrf_token(request):
     return JsonResponse({
         "csrf_token": get_token(request)
     })
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (sensitive_post_parameters): menandai parameter POST sensitif agar disamarkan dalam laporan error; tidak menambah pewarisan class.
 @sensitive_post_parameters("password1", "password2")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def register(request):
     form = RegistrationForm(request.POST)
 
     if form.is_valid():
         try:
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with transaction.atomic():
                 form.save()
 
@@ -79,8 +88,11 @@ def register(request):
     )
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (sensitive_post_parameters): menandai parameter POST sensitif agar disamarkan dalam laporan error; tidak menambah pewarisan class.
 @sensitive_post_parameters("password")
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def sign_in(request):
     form = EmailAuthenticationForm(
@@ -104,7 +116,9 @@ def sign_in(request):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_POST): membatasi pemanggilan view ke HTTP POST; tidak menambah pewarisan class.
 @require_POST
 def sign_out(request):
     logout(request)
@@ -114,7 +128,9 @@ def sign_out(request):
     })
 
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_http_methods): membatasi view ke daftar metode HTTP yang diberikan; tidak menambah pewarisan class.
 @require_http_methods(["GET", "POST"])
 def profile(request):
     if not request.user.is_authenticated:

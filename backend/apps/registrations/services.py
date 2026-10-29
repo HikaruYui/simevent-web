@@ -31,6 +31,7 @@ class RegistrationService:
         return actor
 
     # OOP — Abstraction: satu operasi pendaftaran menangani validasi, penguncian kuota, dan penerbitan tiket.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def register(self, event_id):
         actor = self._lock_actor()
@@ -70,6 +71,7 @@ class RegistrationService:
         return registration
 
     # Abstraction: memulai pendaftaran berbayar melalui satu method yang menangani kuota dan pembayaran.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def start_paid_registration(self, event_id):
         actor = self._lock_actor()
@@ -124,6 +126,7 @@ class RegistrationService:
         return registration
 
     # Abstraction: membatalkan registrasi melalui satu method yang mengurus status dan tiket.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def cancel(self, registration_id):
         actor = self._lock_actor()

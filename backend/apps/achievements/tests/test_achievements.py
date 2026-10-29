@@ -32,6 +32,7 @@ def completed_registration(owner, admin, participant, event_type=None):
         end_datetime=now - timedelta(hours=1),
     )
     event.refresh_from_db()
+    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
     with patch("apps.registrations.attendance.timezone.now", return_value=event.start_datetime):
         AttendanceService(owner).scan(event.pk, token=registration.ticket.token)
     EventWorkflow(owner).transition(event.pk, action="complete")
@@ -39,7 +40,11 @@ def completed_registration(owner, admin, participant, event_type=None):
     return event, registration
 
 
+# OOP — Single inheritance: AchievementTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class AchievementTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
@@ -48,12 +53,14 @@ class AchievementTests(TestCase):
             code="WORKSHOP", defaults={"name": "Workshop"},
         )[0]
 
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.achievement = Achievement.objects.create(
             code="seminar-hero", name="Seminar Hero", event_type=self.seminar,
             required_count=2,
         )
 
+    # OOP — Encapsulation: method complete mengelompokkan operasi terkait objek AchievementTests.
     def complete(self, participant=None, event_type=None):
         return completed_registration(
             self.owner, self.admin, participant or self.participant, event_type or self.seminar,
@@ -63,6 +70,7 @@ class AchievementTests(TestCase):
         event = published_event(self.owner, self.admin, event_type=self.seminar.pk)
         registration = RegistrationService(self.participant).register(event.pk)
         self.assertEqual(AchievementService(self.participant).evaluate(), [])
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch("apps.registrations.attendance.timezone.now", return_value=event.start_datetime):
             AttendanceService(self.owner).scan(event.pk, token=registration.ticket.token)
         self.assertEqual(AchievementService(self.participant).evaluate(), [])
@@ -108,6 +116,7 @@ class AchievementTests(TestCase):
         self.complete()
         self.complete()
         first = AchievementService(self.participant).evaluate()[0]
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             UserAchievement.objects.create(
                 user=self.participant, achievement=self.achievement,
@@ -116,9 +125,11 @@ class AchievementTests(TestCase):
         self.assertEqual(AchievementService(self.participant).evaluate()[0].pk, first.pk)
 
     def test_suspended_actor_and_other_user_are_denied(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             AchievementService(self.participant).evaluate(user_id=self.other.pk)
         User.objects.filter(pk=self.participant.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             AchievementService(self.participant).evaluate()
 
@@ -136,6 +147,7 @@ class AchievementTests(TestCase):
 
     def test_database_constraints(self):
         for value in (0, -1):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(IntegrityError), transaction.atomic():
                 Achievement.objects.create(
                     code=f"bad-{value}", name="Bad", required_count=value,
@@ -143,6 +155,7 @@ class AchievementTests(TestCase):
         self.complete()
         self.complete()
         assignment = AchievementService(self.participant).evaluate()[0]
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             UserAchievement.objects.filter(pk=assignment.pk).update(
                 is_active=False, revoked_at=None,

@@ -41,6 +41,8 @@ def attendance_data(attendance):
 
 
 # OOP mixin: mengemas aturan akses untuk dipakai ulang melalui pewarisan ganda.
+# OOP — Hierarchical inheritance: class ini menjadi induk bersama bagi AttendanceDetailView, CertificatePDFView, DiscountQuoteView, FeedbackDetailView, FeedbackResultsView, PaidRegistrationCreateView, PaymentProofDownloadView, PaymentProofView, PaymentReviewView, RegistrationCancelView, RegistrationCreateView, RegistrationListView, TicketAccessMixin, TicketScanView.
+# OOP — Method decorator: mengadaptasi decorator fungsi ke method class yang disebutkan, tanpa mengganti pewarisan.
 @method_decorator(never_cache, name="dispatch")
 class ParticipantAccessMixin:
     # Polymorphism: menambahkan pemeriksaan akses sebelum meneruskan request ke handler.
@@ -48,6 +50,7 @@ class ParticipantAccessMixin:
         if not request.user.is_authenticated or not request.user.is_active:
             return JsonResponse({"error": "Authentication required."}, status=401)
         try:
+            # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
             return super().dispatch(request, *args, **kwargs)
         except ValidationError as exc:
             errors = exc.message_dict if hasattr(exc, "message_dict") else {"__all__": exc.messages}
@@ -55,6 +58,7 @@ class ParticipantAccessMixin:
 
 
 # Inheritance (pewarisan ganda): RegistrationListView menggabungkan perilaku ParticipantAccessMixin, ListView.
+# OOP — Multiple inheritance: ParticipantAccessMixin, ListView digabung; pencarian method mengikuti MRO C3 Python.
 class RegistrationListView(ParticipantAccessMixin, ListView):
     paginate_by = 20
     http_method_names = ["get", "head", "options"]
@@ -73,6 +77,7 @@ class RegistrationListView(ParticipantAccessMixin, ListView):
 
 
 # Inheritance (pewarisan ganda): RegistrationCreateView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class RegistrationCreateView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
@@ -86,6 +91,7 @@ class RegistrationCreateView(ParticipantAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): PaidRegistrationCreateView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class PaidRegistrationCreateView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
@@ -101,6 +107,7 @@ class PaidRegistrationCreateView(ParticipantAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): PaymentProofView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class PaymentProofView(ParticipantAccessMixin, View):
     http_method_names = ["get", "post", "options"]
 
@@ -155,6 +162,7 @@ class PaymentProofView(ParticipantAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): PaymentProofDownloadView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class PaymentProofDownloadView(ParticipantAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
@@ -182,6 +190,7 @@ class PaymentProofDownloadView(ParticipantAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): PaymentReviewView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class PaymentReviewView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
@@ -197,6 +206,7 @@ class PaymentReviewView(ParticipantAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): CertificatePDFView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class CertificatePDFView(ParticipantAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
@@ -236,6 +246,7 @@ def generate_certificate_pdf(registration, template, response):
 
     from PIL import Image, ImageDraw, ImageFont
     from pathlib import Path
+    # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
     with template.background.open("rb") as image_file:
         background = Image.open(image_file).convert("RGB")
     draw = ImageDraw.Draw(background)
@@ -261,6 +272,7 @@ def generate_certificate_pdf(registration, template, response):
     response.write(image_buffer.getvalue())
 
 # Inheritance (pewarisan ganda): RegistrationCancelView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class RegistrationCancelView(ParticipantAccessMixin, View):
     http_method_names = ["post", "options"]
 
@@ -275,7 +287,9 @@ class RegistrationCancelView(ParticipantAccessMixin, View):
 
 
 # Inheritance: TicketAccessMixin mewarisi perilaku ParticipantAccessMixin untuk diperluas sesuai kebutuhan class ini.
+# OOP — Hierarchical inheritance: class ini menjadi induk bersama bagi MeetingAccessView, TicketDetailView, TicketQRView.
 class TicketAccessMixin(ParticipantAccessMixin):
+    # OOP — Encapsulation: method get_ticket mengelompokkan operasi terkait objek TicketAccessMixin.
     def get_ticket(self, request, pk):
         return get_object_or_404(
             Ticket.objects.select_related(
@@ -286,6 +300,8 @@ class TicketAccessMixin(ParticipantAccessMixin):
 
 
 # Inheritance (pewarisan ganda): TicketDetailView menggabungkan perilaku TicketAccessMixin, View.
+# OOP — Multiple inheritance: TicketAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): ParticipantAccessMixin → TicketAccessMixin → TicketDetailView.
 class TicketDetailView(TicketAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
@@ -302,6 +318,8 @@ class TicketDetailView(TicketAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): TicketQRView menggabungkan perilaku TicketAccessMixin, View.
+# OOP — Multiple inheritance: TicketAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): ParticipantAccessMixin → TicketAccessMixin → TicketQRView.
 class TicketQRView(TicketAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
@@ -316,6 +334,8 @@ class TicketQRView(TicketAccessMixin, View):
 
 
 # Inheritance (pewarisan ganda): MeetingAccessView menggabungkan perilaku TicketAccessMixin, View.
+# OOP — Multiple inheritance: TicketAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): ParticipantAccessMixin → TicketAccessMixin → MeetingAccessView.
 class MeetingAccessView(TicketAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 
@@ -332,6 +352,7 @@ class MeetingAccessView(TicketAccessMixin, View):
 
 
 # Inheritance: ParticipantListView mewarisi perilaku RegistrationListView untuk diperluas sesuai kebutuhan class ini.
+# OOP — Multilevel inheritance: ParticipantAccessMixin → RegistrationListView → ParticipantListView.
 class ParticipantListView(RegistrationListView):
     # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):

@@ -11,7 +11,11 @@ from apps.accounts.models import AccountAccessChange, User
 from apps.accounts.services import change_account_access
 
 
+# OOP — Single inheritance: AccessManagementTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class AccessManagementTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         call_command(
@@ -36,6 +40,7 @@ class AccessManagementTests(TestCase):
             "test-password",
         )
 
+    # OOP — Encapsulation: method change mengelompokkan operasi terkait objek AccessManagementTests.
     def change(
         self,
         action,
@@ -101,6 +106,7 @@ class AccessManagementTests(TestCase):
             AccountAccessChange.Action.GRANT_ORGANIZER
         )
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.change(
                 AccountAccessChange.Action.GRANT_ORGANIZER
@@ -114,6 +120,7 @@ class AccessManagementTests(TestCase):
     def test_access_audit_failure_rolls_back_group(
         self,
     ):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with patch(
             "apps.accounts.services."
             "AccountAccessChange.objects.create",
@@ -121,6 +128,7 @@ class AccessManagementTests(TestCase):
                 "audit failure"
             ),
         ):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(RuntimeError):
                 self.change(
                     AccountAccessChange.Action.GRANT_ORGANIZER
@@ -133,12 +141,14 @@ class AccessManagementTests(TestCase):
     def test_reason_and_action_are_validated(
         self,
     ):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.change(
                 AccountAccessChange.Action.GRANT_ORGANIZER,
                 reason=" ",
             )
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.change(
                 "PROMOTE_ADMIN"
@@ -170,6 +180,7 @@ class AccessManagementTests(TestCase):
             401,
         )
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.change(
                 AccountAccessChange.Action.GRANT_ORGANIZER
@@ -203,6 +214,7 @@ class AccessManagementTests(TestCase):
             )
         )
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             change_account_access(
                 actor=self.user,
@@ -225,6 +237,7 @@ class AccessManagementTests(TestCase):
 
         self.admin.groups.clear()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.change(
                 AccountAccessChange.Action.GRANT_ORGANIZER
@@ -233,6 +246,7 @@ class AccessManagementTests(TestCase):
     def test_cannot_manage_self_or_other_admin_even_when_inactive(
         self,
     ):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             change_account_access(
                 actor=self.admin,
@@ -252,6 +266,7 @@ class AccessManagementTests(TestCase):
         self.user.is_active = False
         self.user.save()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             self.change(
                 AccountAccessChange.Action.ACTIVATE
@@ -301,6 +316,7 @@ class AccessManagementTests(TestCase):
             extra
         )
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             self.change(
                 AccountAccessChange.Action.REVOKE_ORGANIZER

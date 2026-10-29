@@ -26,6 +26,7 @@ class RewardPolicyService:
         self._actor_id = actor.pk
 
     # Abstraction: mengubah kebijakan reward melalui satu method yang memeriksa akses dan memvalidasi form.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def update(self, event_id, *, data):
         actor = lock_accounts(self._actor_id).get(self._actor_id)
@@ -47,6 +48,7 @@ class RewardPolicyService:
 
 
 # OOP objek nilai: dataclass menyatukan hasil diskon; frozen=True mencegah assignment atribut biasa.
+# OOP — Class decorator: membangkitkan method data seperti __init__, __repr__, dan __eq__; frozen membatasi assignment atribut.
 @dataclass(frozen=True)
 class DiscountQuote:
     original_price: Decimal
@@ -71,6 +73,7 @@ class DiscountService:
         actor = get_object_or_404(User, pk=self._actor_id)
         if not actor.is_active:
             raise PermissionDenied
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         visible = Event.objects.public() | Event.objects.managed_by(actor)
         event = get_object_or_404(visible, pk=event_id)
         if event.status in (EventStatus.COMPLETED, EventStatus.CANCELLED, EventStatus.REJECTED):

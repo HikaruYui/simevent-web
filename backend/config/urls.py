@@ -2,10 +2,24 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from . import views
 
 urlpatterns = [
+    path("masuk/reset/", auth_views.PasswordResetView.as_view(
+        template_name="password_reset.html", email_template_name="emails/password_reset.txt",
+        subject_template_name="emails/password_reset_subject.txt",
+    ), name="password_reset"),
+    path("masuk/reset/terkirim/", auth_views.PasswordResetDoneView.as_view(
+        template_name="password_reset.html", extra_context={"reset_sent": True},
+    ), name="password_reset_done"),
+    path("masuk/reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(
+        template_name="password_reset.html", extra_context={"reset_confirm": True},
+    ), name="password_reset_confirm"),
+    path("masuk/reset/selesai/", auth_views.PasswordResetCompleteView.as_view(
+        template_name="password_reset.html", extra_context={"reset_complete": True},
+    ), name="password_reset_complete"),
     # Jalur terpisah agar tidak bentrok dengan API /accounts/.
     path("auth/", include("allauth.urls")),
     path(
@@ -137,6 +151,14 @@ urlpatterns = [
     path(
         "registrations/",
         include("apps.registrations.urls"),
+    ),
+
+    path("ketua-panitia/event/", views.eo_event, name="eo_event"),
+    
+    path(
+        "ketua-panitia/api/events/<int:event_id>/committee/",
+        views.eo_event_committee,
+        name="eo_event_committee",
     ),
 
     path(

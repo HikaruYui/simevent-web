@@ -181,6 +181,9 @@
 </div>
 
 <script>
+/* OOP — Instantiation: new membentuk instance MutationObserver; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
+
 (function () {
   // Cari tombol "batalkan absen" asli di sel Aksi (yang disembunyikan) pada baris tersebut
   function findCancelButton(row) {
@@ -200,6 +203,17 @@
   function decorateRows() {
     var rows = document.querySelectorAll('#participantTableBody tr');
     rows.forEach(function (row) {
+      var pendingBadge = row.querySelector('.badge-belum');
+      if (pendingBadge && !row.querySelector('.status-wrap')) {
+        var actionCell = row.querySelector('td:last-child');
+        var pendingAction = actionCell && actionCell.firstElementChild;
+        if (pendingAction) {
+          var pendingWrap = document.createElement('span');
+          pendingWrap.className = 'status-wrap';
+          pendingBadge.parentNode.insertBefore(pendingWrap, pendingBadge);
+          pendingWrap.append(pendingBadge, pendingAction);
+        }
+      }
       var badge = row.querySelector('.badge-hadir');
       if (!badge || row.querySelector('.btn-batal-hadir')) return;
       var cancelBtn = findCancelButton(row);

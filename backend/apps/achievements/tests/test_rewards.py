@@ -17,7 +17,11 @@ from ..views import MyAchievementsView
 from .test_achievements import completed_registration
 
 
+# OOP — Single inheritance: RewardTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class RewardTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
@@ -32,6 +36,7 @@ class RewardTests(TestCase):
             "accept_achievement_discount": True, "max_discount_percentage": "20.00",
         })
 
+    # OOP — Encapsulation: method public_quote mengelompokkan operasi terkait objek RewardTests.
     def public_quote(self):
         # Paid publication remains unavailable in MVP. Trusted fixture lets pricing
         # tests exercise future published paid events without changing that rule.
@@ -97,19 +102,24 @@ class RewardTests(TestCase):
 
     def test_draft_scope_and_current_account_are_enforced(self):
         for user in (self.participant, self.other):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(Http404):
                 DiscountService(user).quote(self.event.pk)
         self.assertEqual(DiscountService(self.owner).quote(self.event.pk).discount_percentage, 0)
         service = DiscountService(self.admin)
         User.objects.filter(pk=self.admin.pk).update(is_active=False)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             service.quote(self.event.pk)
 
     def test_organizer_cannot_update_other_policy_or_publish_paid_event(self):
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(Http404):
             RewardPolicyService(self.other).update(self.event.pk, data={})
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(PermissionDenied):
             RewardPolicyService(self.participant).update(self.event.pk, data={})
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             EventWorkflow(self.owner).transition(self.event.pk, action="submit")
 
@@ -118,6 +128,7 @@ class RewardTests(TestCase):
             if status in (EventStatus.DRAFT, EventStatus.NEEDS_REVISION):
                 continue
             Event.objects.filter(pk=self.event.pk).update(status=status)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(status=status), self.assertRaises(ValidationError):
                 RewardPolicyService(self.admin).update(self.event.pk, data={
                     "accept_achievement_discount": False, "max_discount_percentage": 0,
@@ -135,11 +146,14 @@ class RewardTests(TestCase):
 
     def test_invalid_policy_form_and_database_constraints(self):
         for enabled, value in ((True, 0), (True, 101), (True, -1), (False, 10)):
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(enabled=enabled, value=value):
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.assertRaises(ValidationError):
                     RewardPolicyService(self.owner).update(self.event.pk, data={
                         "accept_achievement_discount": enabled, "max_discount_percentage": value,
                     })
+                # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
                 with self.assertRaises(IntegrityError), transaction.atomic():
                     EventRewardPolicy.objects.filter(event=self.event).update(
                         accept_achievement_discount=enabled, max_discount_percentage=value,
@@ -148,12 +162,16 @@ class RewardTests(TestCase):
     def test_reward_form_and_database_range_and_unique_relationship(self):
         for percentage in (0, -1, 101):
             self.reward.percentage = Decimal(percentage)
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(ValidationError):
                 self.reward.full_clean()
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.assertRaises(IntegrityError), transaction.atomic():
                 Reward.objects.filter(pk=self.reward.pk).update(percentage=percentage)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             Reward.objects.create(achievement=self.achievement, percentage=10)
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(IntegrityError), transaction.atomic():
             EventRewardPolicy.objects.create(event=self.event)
 
@@ -204,6 +222,7 @@ class RewardTests(TestCase):
     def test_achievement_listing_does_not_have_n_plus_one(self):
         request = RequestFactory().get("/achievements/")
         request.user = self.participant
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertNumQueries(1):
             response = MyAchievementsView.as_view()(request)
         self.assertEqual(response.status_code, 200)

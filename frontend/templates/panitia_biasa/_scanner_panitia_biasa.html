@@ -154,20 +154,13 @@
       <form class="manual-form" onsubmit="handleManualCheckin(event)">
         {% csrf_token %}
 
-        <input type="text" id="manualCodeInput" class="manual-input" placeholder="{% if panitia_db_data %}Masukkan token UUID tiket peserta{% else %}CONTOH: SIM-001 ATAU SIM-002{% endif %}" required>
+        <input type="text" id="manualCodeInput" class="manual-input" placeholder="Masukkan kode UUID tiket peserta" required>
         <button type="submit" class="btn-olive">
           <i class="fa-solid fa-check-double"></i> Tandai Hadir
         </button>
       </form>
       <small style="display:block; margin-top:8px; color:var(--muted); font-size:12px;">
-        {% if panitia_db_data %}
-          *Gunakan token UUID dari QR tiket asli peserta untuk melakukan presensi.
-        {% else %}
-          *Kode percobaan:
-          {% for participant in committee_demo.participants %}
-            <strong>{{ participant.code }}</strong>{% if not forloop.last %}, {% endif %}
-          {% endfor %}
-        {% endif %}
+        Gunakan QR atau kode UUID tiket peserta pada event yang dipilih.
       </small>
     </div>
   </div>

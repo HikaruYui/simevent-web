@@ -12,11 +12,16 @@ from apps.events.tests.support import event_data, setup_users
 from apps.registrations.models import Attendance, Registration
 
 
+# OOP — Single inheritance: LandingIntegrationTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class LandingIntegrationTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
+    # OOP — Encapsulation: method event mengelompokkan operasi terkait objek LandingIntegrationTests.
     def event(self, status=EventStatus.PUBLISHED, **overrides):
         data = event_data(**overrides)
         data["event_type_id"] = data.pop("event_type")
@@ -51,7 +56,7 @@ class LandingIntegrationTests(TestCase):
         self.assertEqual(seminar.event_count, 2)
 
     def test_empty_landing_and_recommendation_limit(self):
-        self.assertContains(self.client.get(reverse("landing")), "Belum ada event mendatang")
+        self.assertContains(self.client.get(reverse("landing")), "Belum ada event yang membuka kegiatan mendatang")
         for index in range(6):
             self.event(title=f"Event {index}")
         self.assertEqual(len(self.client.get(reverse("landing")).context["recommended_events"]), 4)
@@ -61,7 +66,7 @@ class LandingIntegrationTests(TestCase):
         self.event(status=EventStatus.DRAFT, title="Hidden draft")
         response = self.client.get(reverse("jelajah"), {"q": "event", "kategori": "seminar"})
         self.assertEqual(len(response.context["event_data"]), 1)
-        self.assertContains(response, 'id="public-events"')
+        self.assertContains(response, 'id="backend-events"')
         self.assertNotContains(response, '</script><script>alert("event")</script>')
         self.assertNotContains(response, "Hidden draft")
         self.assertNotContains(response, "conference-meja-bundar")
@@ -95,7 +100,7 @@ class LandingIntegrationTests(TestCase):
         self.assertContains(response, 'action="/accounts/register/"')
         self.assertNotContains(response, "registerRole")
         self.assertNotContains(response, "localStorage")
-        self.assertContains(response, '/static/js/auth.js')
+        self.assertContains(response, 'loginForm.addEventListener')
         response = self.client.post(reverse("accounts:register"), {
             "email": "new@example.test", "first_name": "New participant",
             "password1": "Very-strong-demo-password-42!", "password2": "Very-strong-demo-password-42!",
@@ -105,7 +110,7 @@ class LandingIntegrationTests(TestCase):
         self.assertEqual(User.objects.get(email="new@example.test").role, "PARTICIPANT")
 
     def test_login_redirect_uses_server_role(self):
-        for user, destination in ((self.participant, "jelajah"), (self.owner, "panitia_dashboard")):
+        for user, destination in ((self.participant, "peserta_dashboard"), (self.owner, "panitia_biasa")):
             self.client.force_login(user)
             response = self.client.get(reverse("after_login"))
             self.assertRedirects(response, reverse(destination), fetch_redirect_response=False)
@@ -126,13 +131,14 @@ class LandingIntegrationTests(TestCase):
             "peserta_achievement",
         )
         for name in paths:
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(page=name):
                 response = self.client.get(reverse(name))
                 self.assertEqual(response.status_code, 200)
         dashboard = self.client.get(reverse("peserta_dashboard"))
         self.assertEqual(dashboard.context["total_registrations"], 1)
         self.assertEqual(dashboard.context["attended_count"], 0)
-        self.assertContains(dashboard, "Achievement Saya")
+        self.assertContains(dashboard, "Pencapaian Saya")
         self.assertContains(self.client.get(reverse("peserta_daftar_event")), event.title)
         self.assertContains(self.client.get(reverse("peserta_achievement")), "Event Enthusiast")
 

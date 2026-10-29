@@ -1,3 +1,7 @@
+
+/* OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class.
+ * OOP — Object facade: window.SIM mengekspos API bersama; state juga diekspos, sehingga bukan state privat sepenuhnya.
+ * OOP — Duck typing: applyToEO menerima objek dengan properti events, tickets, activity, dan statusEvent tanpa syarat class tertentu. */
 /* =========================================================
    SIMEVENT - Penyimpanan bersama antar-peran (data contoh)
    Dipakai Dashboard Admin dan Dashboard Ketua Panitia supaya

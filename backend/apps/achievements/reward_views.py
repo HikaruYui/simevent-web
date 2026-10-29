@@ -23,6 +23,7 @@ def policy_data(policy):
 
 
 # Inheritance (pewarisan ganda): EventRewardPolicyView menggabungkan perilaku EventManagementMixin, View.
+# OOP — Multiple inheritance: EventManagementMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class EventRewardPolicyView(EventManagementMixin, View):
     http_method_names = ["get", "post", "head", "options"]
 
@@ -39,6 +40,7 @@ class EventRewardPolicyView(EventManagementMixin, View):
 
 
 # Inheritance (pewarisan ganda): DiscountQuoteView menggabungkan perilaku ParticipantAccessMixin, View.
+# OOP — Multiple inheritance: ParticipantAccessMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class DiscountQuoteView(ParticipantAccessMixin, View):
     http_method_names = ["get", "head", "options"]
 

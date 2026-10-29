@@ -13,10 +13,14 @@ from apps.events.workflow import EventWorkflow
 from .support import event_data, setup_users
 
 
+# OOP — Single inheritance: EventConcurrencyTests mewarisi TransactionTestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TransactionTestCase juga menjadi induk class saudara lain di proyek.
 class EventConcurrencyTests(TransactionTestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.owner, self.other, self.participant, self.admin = setup_users()
 
+    # OOP — Encapsulation: method race mengelompokkan operasi terkait objek EventConcurrencyTests.
     def race(self, operations):
         barrier = Barrier(len(operations))
 
@@ -31,6 +35,7 @@ class EventConcurrencyTests(TransactionTestCase):
             finally:
                 connections.close_all()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with ThreadPoolExecutor(max_workers=len(operations)) as pool:
             futures = [pool.submit(worker, operation) for operation in operations]
             return [future.result(timeout=20) for future in futures]

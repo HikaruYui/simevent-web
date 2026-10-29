@@ -19,6 +19,7 @@ class PaymentService:
         self._actor_id = actor.pk
 
     # Abstraction: meninjau pembayaran melalui satu method yang mengurus validasi, status, dan penerbitan tiket.
+    # OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
     @transaction.atomic
     def review(self, payment_id, *, approve, note=""):
         payment = get_object_or_404(

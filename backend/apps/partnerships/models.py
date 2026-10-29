@@ -17,6 +17,7 @@ OPEN_STATUSES = (ProposalStatus.DRAFT, ProposalStatus.SUBMITTED, ProposalStatus.
 
 
 # Inheritance: ProposalQuerySet mewarisi operasi query Django untuk menambahkan filter domain.
+# OOP — Hierarchical inheritance: models.QuerySet juga menjadi induk class saudara lain di proyek.
 class ProposalQuerySet(models.QuerySet):
     # Abstraction: owned_by() membungkus aturan filter agar pemanggil dapat memakai ulang query domain.
     def owned_by(self, user):
@@ -24,7 +25,9 @@ class ProposalQuerySet(models.QuerySet):
 
 
 # Inheritance: OrganizerProposal mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class OrganizerProposal(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="organizer_proposals")
     organization_name = models.CharField(max_length=200)
     contact_information = models.CharField(max_length=500)
@@ -34,12 +37,15 @@ class OrganizerProposal(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # OOP — Factory / delegation: as_manager() membentuk manager yang mengekspos method QuerySet khusus lewat objects.
     objects = ProposalQuerySet.as_manager()
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("-created_at", "-pk")
         permissions = [("review_proposal", "Can review organizer proposals")]
         indexes = [models.Index(fields=["status", "submitted_at"], name="proposal_review_queue_idx")]
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.UniqueConstraint(fields=["applicant"], condition=models.Q(status__in=OPEN_STATUSES), name="proposal_one_open_per_user"),
             models.CheckConstraint(condition=models.Q(status__in=ProposalStatus.values), name="proposal_status_valid"),
@@ -56,17 +62,23 @@ class OrganizerProposal(models.Model):
 
 
 # Inheritance: ProposalReview mewarisi pemetaan atribut ke database dan operasi ORM.
+# OOP — Hierarchical inheritance: models.Model juga menjadi induk class saudara lain di proyek.
 class ProposalReview(models.Model):
+    # OOP — Association (ForeignKey): menghubungkan objek ke OrganizerProposal; relasi database bukan pewarisan class.
     proposal = models.ForeignKey(OrganizerProposal, on_delete=models.PROTECT, related_name="reviews")
+    # OOP — Association (ForeignKey): menghubungkan objek ke settings.AUTH_USER_MODEL; relasi database bukan pewarisan class.
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="proposal_reviews")
     from_status = models.CharField(max_length=20, choices=ProposalStatus.choices)
     to_status = models.CharField(max_length=20, choices=ProposalStatus.choices)
     reason = models.TextField(max_length=2000, blank=True)
+    # OOP — Association (OneToOneField): menghubungkan objek ke 'accounts.AccountAccessChange'; relasi database bukan pewarisan class.
     access_change = models.OneToOneField("accounts.AccountAccessChange", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # OOP — Nested class: Meta mengelompokkan konfigurasi deklaratif untuk class Django yang menaunginya.
     class Meta:
         ordering = ("created_at", "pk")
+        # OOP — Operator overloading: | / & pada Q atau QuerySet menyusun kondisi/gabungan query melalui __or__/__and__.
         constraints = [
             models.CheckConstraint(
                 condition=(models.Q(from_status__in=[ProposalStatus.DRAFT, ProposalStatus.NEEDS_REVISION], to_status=ProposalStatus.SUBMITTED)

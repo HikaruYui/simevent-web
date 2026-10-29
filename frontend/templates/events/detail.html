@@ -30,6 +30,37 @@
     <p>{% if event.price == 0 %}Gratis{% else %}Rp{{ event.price|floatformat:"0g" }}{% endif %}</p>
     <div class="event-detail__description">{{ event.description|linebreaksbr }}</div>
     <p>Pendaftaran: {{ event.registration_open|date:"j M Y H:i" }} – {{ event.registration_close|date:"j M Y H:i" }} WITA</p>
+    <div style="margin-top: 24px;">
+      {% if already_registered %}
+        <a href="{% url 'peserta_event_saya' %}"
+          class="btn btn--dark">
+          Sudah Terdaftar — Lihat Event Saya
+        </a>
+
+      {% elif registration_open %}
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'peserta_daftar_event' %}#event-{{ event.pk }}"
+            class="btn btn--dark">
+            {% if event.price > 0 %}
+              Daftar & Bayar — Rp{{ event.price|floatformat:"0g" }}
+            {% else %}
+              Daftar Event Gratis
+            {% endif %}
+          </a>
+        {% else %}
+          <a href="{% url 'login_page' %}"
+            class="btn btn--dark">
+            Masuk untuk Mendaftar
+          </a>
+        {% endif %}
+
+      {% else %}
+        <p style="font-weight: 700;">
+          Pendaftaran event belum dibuka atau sudah ditutup.
+        </p>
+      {% endif %}
+
+    </div>
   </article>
 </section>
 {% endblock %}

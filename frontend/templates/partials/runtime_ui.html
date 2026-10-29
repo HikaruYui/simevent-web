@@ -1,0 +1,6 @@
+{% load demo_seed %}
+{% runtime_ui as runtime_ui_data %}
+{{ runtime_ui_data|json_script:"simevent-ui-config" }}
+<script>
+  window.SIMEVENT_DEMO = JSON.parse(document.getElementById("simevent-ui-config").textContent);
+</script>

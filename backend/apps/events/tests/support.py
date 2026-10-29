@@ -1,6 +1,6 @@
 # Fungsi file: Helper data pengguna, event, dan banner untuk skenario pengujian backend.
 
-from datetime import timedelta
+from datetime import date, timedelta
 from io import BytesIO, StringIO
 
 from django.contrib.auth.models import Group
@@ -25,6 +25,9 @@ def setup_users():
             last_name="Participant",
             nim=f"2026{name}",
             prodi="Informatika",
+            ktp_number="1234567890123456", gender="L", birth_place="Samarinda",
+            birth_date=date(2000, 1, 1), address="Alamat pengujian",
+            phone_number="081234567890",
         )
         if name in ("owner", "other"):
             user.groups.add(Group.objects.get(name="Organizer"))

@@ -1,8 +1,13 @@
+
+/* OOP — Instantiation: new membentuk instance Blob, Date, Error, File, FormData, ResizeObserver, URLSearchParams; state dan method mengikuti antarmuka objek masing-masing.
+ * OOP — Prototype / duck typing: method Array dipinjam dengan call untuk koleksi array-like (misalnya NodeList atau options).
+ * OOP — Encapsulation melalui closure: IIFE membatasi variabel/helper ke lingkup modul; ini bukan pewarisan class. */
 (function () {
   "use strict";
 
   var E = window.EO;
-  var S = window.SIM || {
+  // State UI sementara; data operasional selalu berasal dari ADMIN_BACKEND.
+  var S = {
     state: {
       eventStatus: {}, eventReason: {}, eventPrev: {}, newEvents: [], tickets: {},
       users: {}, customUsers: [], proposals: {}, payouts: [], activity: [],
@@ -48,7 +53,7 @@
       body: body.toString()
     });
     var data = await response.json().catch(function () { return {}; });
-    if (!response.ok) { throw new Error(data.error || "Permintaan gagal (HTTP " + response.status + ")."); }
+    if (!response.ok) { throw new Error(data.errors ? Object.values(data.errors).flat().join(" ") : data.error || "Permintaan gagal (HTTP " + response.status + ")."); }
     return data;
   }
   async function adminPostForm(url, body) {
@@ -989,7 +994,8 @@ function openDetail(e, after) {
         return '<li><details class="ticket" data-id="' + esc(t.id) + '"' + (open[t.id] ? " open" : "") + '><summary><div><span class="ticket__title">' + esc(t.judul) + '</span><span class="ticket__meta">' + esc(t.id) + " &middot; " + esc(t.org) + " &middot; " + (e ? esc(e.nama) : "-") + " &middot; " + fmtDate(t.tanggal) + "</span></div>" +
           chip(t.status === "selesai" ? "selesai" : "diaudit", STATUS_TIKET[t.status]) + '<span class="ticket__chev" aria-hidden="true"><svg class="icon"><use href="#i-chev"/></svg></span></summary><div class="ticket__body"><p>' + esc(t.isi) + '</p><p class="ticket__meta">Dilaporkan oleh ' + esc(t.pelapor) + "</p>" +
           (t.status === "selesai" ? (t.balasan ? '<p class="ticket__reply"><b>Balasan admin:</b> ' + esc(t.balasan) + "</p>" : "")
-            : '<div class="field"><label for="rp-' + esc(t.id) + '">Balasan untuk penyelenggara</label><textarea id="rp-' + esc(t.id) + '" rows="3" maxlength="500" placeholder="Tulis tindak lanjut atau solusi...">' + esc(t.balasan) + '</textarea></div><div class="ticket__actions"><button type="button" class="btn btn--ghost" data-save="' + esc(t.id) + '">Simpan balasan</button><button type="button" class="btn" data-done="' + esc(t.id) + '">Kirim &amp; tandai selesai</button></div>') +
+            : '<div class="field"><label for="rp-' + esc(t.id) + '">Balasan untuk pelapor</label><textarea id="rp-' + esc(t.id) + '" rows="3" maxlength="2000" placeholder="Tulis tindak lanjut atau solusi...">' + esc(t.balasan) + '</textarea></div><div class="ticket__actions"><button type="button" class="btn btn--ghost" data-save="' + esc(t.id) + '">Simpan balasan</button><button type="button" class="btn" data-done="' + esc(t.id) + '">Kirim &amp; tandai selesai</button></div>') +
+          (t.can_delete ? '<button type="button" class="btn btn--ghost" data-delete-contact="' + esc(t.id) + '">Hapus pesan pengujian</button>' : '') +
           "</div></details></li>";
       }).join("") : '<li><p class="tbl-empty">Tidak ada tiket yang cocok.</p></li>';
     }
@@ -997,6 +1003,14 @@ function openDetail(e, after) {
     q.addEventListener("input", render);
     list.addEventListener("toggle", function (ev) { var d = ev.target; if (d.dataset && d.dataset.id) { open[d.dataset.id] = d.open; } }, true);
     list.addEventListener("click", function (ev) {
+      var remove = ev.target.closest("[data-delete-contact]");
+      if (remove) {
+        ask({title: "Hapus pesan pengujian?", text: "Pesan dan balasannya akan dihapus.", ok: "Hapus", danger: true, onOk: function () {
+          adminPost("/admin-panel/api/support/" + encodeURIComponent(remove.dataset.deleteContact) + "/", {action: "delete"})
+            .then(function () { window.location.reload(); }).catch(function (error) { toast(error.message); });
+        }});
+        return;
+      }
       var b = ev.target.closest("button[data-save],button[data-done]"); if (!b) { return; }
       var id = b.dataset.save || b.dataset.done, t = tickets().filter(function (x) { return x.id === id; })[0], ta = document.getElementById("rp-" + id), txt = ta.value.trim();
       $$("small.err", ta.parentNode).forEach(function (x) { x.remove(); });
@@ -1018,6 +1032,21 @@ function openDetail(e, after) {
      KEUANGAN
      ========================================================= */
   function pageFinance() {
+    $("#paymentReviewList").addEventListener("click", function (event) {
+      var button = event.target.closest("[data-review-payment]");
+      if (!button || button.disabled) return;
+      var approve = button.dataset.decision === "approve";
+      ask({title: approve ? "Setujui pembayaran?" : "Tolak pembayaran?",
+        text: approve ? "Pastikan bukti sesuai dengan transfer yang diterima. Tiket peserta akan diaktifkan." : "Peserta dapat mengunggah ulang bukti setelah ditolak.",
+        reason: approve ? "" : "Alasan penolakan", ok: approve ? "Setujui" : "Tolak", danger: !approve,
+        onOk: function (reason) {
+          button.disabled = true;
+          adminPost(button.dataset.reviewPayment, {action: button.dataset.decision, note: reason || ""})
+            .then(function () { window.location.reload(); })
+            .catch(function (error) { button.disabled = false; toast(error.message); });
+        }
+      });
+    });
     var body = $("#finBody");
     function render() {
       var f = finance();

@@ -14,11 +14,16 @@ from apps.registrations.models import Attendance, Feedback, RATING_FIELDS, Regis
 from apps.registrations.statistics_views import EventStatisticsView, StatisticsOverviewView
 
 
+# OOP — Single inheritance: StatisticsTests mewarisi TestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TestCase juga menjadi induk class saudara lain di proyek.
 class StatisticsTests(TestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUpTestData milik subclass untuk menyiapkan/membersihkan fixture.
+    # OOP — Class method: menerima cls sehingga operasi terikat pada class dan tetap mengikuti subclass.
     @classmethod
     def setUpTestData(cls):
         cls.owner, cls.other, cls.participant, cls.admin = setup_users()
 
+    # OOP — Encapsulation: method event mengelompokkan operasi terkait objek StatisticsTests.
     def event(self, owner=None, status=EventStatus.COMPLETED):
         data = event_data()
         data["event_type_id"] = data.pop("event_type")
@@ -27,6 +32,7 @@ class StatisticsTests(TestCase):
             slug=f"statistics-{Event.objects.count()}", **data,
         )
 
+    # OOP — Encapsulation: method registration mengelompokkan operasi terkait objek StatisticsTests.
     def registration(self, event, *, participant=None, attendance=None, rating=None, cancelled=False):
         participant = participant or User.objects.create_user(
             f"statistics-{User.objects.count()}@example.test", None,
@@ -50,10 +56,12 @@ class StatisticsTests(TestCase):
             )
         return registration
 
+    # OOP — Encapsulation: method detail mengelompokkan operasi terkait objek StatisticsTests.
     def detail(self, event):
         self.client.force_login(self.owner)
         return self.client.get(reverse("registrations:event-statistics", args=[event.pk])).json()
 
+    # OOP — Encapsulation: method overview mengelompokkan operasi terkait objek StatisticsTests.
     def overview(self, user=None, **params):
         self.client.force_login(user or self.owner)
         return self.client.get(reverse("registrations:statistics"), params)
@@ -201,6 +209,7 @@ class StatisticsTests(TestCase):
         self.owner.get_all_permissions()
         request = RequestFactory().get("/")
         request.user = self.owner
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertNumQueries(2):
             response = EventStatisticsView.as_view()(request, event_id=event.pk)
         self.assertEqual(json.loads(response.content)["total_attendance"], 1)
@@ -212,6 +221,7 @@ class StatisticsTests(TestCase):
                 self.registration(self.event(), attendance="PRESENT", rating=4)
             request = RequestFactory().get("/")
             request.user = self.owner
+            # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
             with self.subTest(events=count), self.assertNumQueries(4):
                 response = StatisticsOverviewView.as_view()(request)
             self.assertEqual(len(json.loads(response.content)["results"]), count)

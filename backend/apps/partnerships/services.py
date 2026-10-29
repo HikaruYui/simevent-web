@@ -33,6 +33,7 @@ def _save_content(proposal, data):
     return form.save()
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def create_proposal(*, actor, data):
     applicant = _applicant(actor)
@@ -42,6 +43,7 @@ def create_proposal(*, actor, data):
     return _save_content(OrganizerProposal(applicant=applicant), data)
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def edit_proposal(*, actor, proposal_id, data):
     applicant = _applicant(actor)
@@ -52,6 +54,7 @@ def edit_proposal(*, actor, proposal_id, data):
     return _save_content(proposal, data)
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def submit_proposal(*, actor, proposal_id):
     applicant = _applicant(actor)
@@ -68,6 +71,7 @@ def submit_proposal(*, actor, proposal_id):
     return proposal
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def delete_draft(*, actor, proposal_id):
     applicant = _applicant(actor)
@@ -77,6 +81,7 @@ def delete_draft(*, actor, proposal_id):
     proposal.delete()
 
 
+# OOP — Decorator transaksi: membungkus eksekusi dalam transaksi atomik; decorator Python bukan otomatis pola Decorator berbasis class.
 @transaction.atomic
 def review_proposal(*, actor, proposal_id, decision, reason=""):
     if not actor.is_authenticated:

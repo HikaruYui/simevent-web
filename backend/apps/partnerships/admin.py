@@ -9,6 +9,8 @@ from .services import review_proposal
 
 
 # Inheritance (pewarisan ganda): OrganizerProposalAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(OrganizerProposal)
 class OrganizerProposalAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("organization_name", "applicant", "status", "submitted_at")
@@ -18,6 +20,7 @@ class OrganizerProposalAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     action_form = ReasonActionForm
     actions = ("approve", "request_revision", "reject")
 
+    # OOP — Polymorphism: has_review_permission menyediakan hook khusus yang dipanggil melalui kontrak framework.
     def has_review_permission(self, request):
         return request.user.has_perm("accounts.manage_platform") and request.user.has_perm("partnerships.review_proposal")
 
@@ -27,20 +30,28 @@ class OrganizerProposalAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
             actor=request.user, proposal_id=pk, decision=decision, reason=reason,
         ))
 
+    # OOP — Encapsulation: method approve mengelompokkan operasi terkait objek OrganizerProposalAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Setujui proposal", permissions=["review"])
     def approve(self, request, queryset):
         self._review(request, queryset, ProposalStatus.APPROVED)
 
+    # OOP — Encapsulation: method request_revision mengelompokkan operasi terkait objek OrganizerProposalAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Minta revisi", permissions=["review"])
     def request_revision(self, request, queryset):
         self._review(request, queryset, ProposalStatus.NEEDS_REVISION)
 
+    # OOP — Encapsulation: method reject mengelompokkan operasi terkait objek OrganizerProposalAdmin.
+    # OOP — Method decorator: menambahkan metadata action yang dibaca Django admin.
     @admin.action(description="Tolak proposal", permissions=["review"])
     def reject(self, request, queryset):
         self._review(request, queryset, ProposalStatus.REJECTED)
 
 
 # Inheritance (pewarisan ganda): ProposalReviewAdmin menggabungkan perilaku ReadOnlyAuditAdmin, admin.ModelAdmin.
+# OOP — Multiple inheritance: ReadOnlyAuditAdmin, admin.ModelAdmin digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Class decorator / registration: mendaftarkan class ModelAdmin untuk model terkait.
 @admin.register(ProposalReview)
 class ProposalReviewAdmin(ReadOnlyAuditAdmin, admin.ModelAdmin):
     list_display = ("proposal", "actor", "from_status", "to_status", "created_at")

@@ -17,7 +17,10 @@ from ..services import AchievementService
 from .test_achievements import completed_registration
 
 
+# OOP — Single inheritance: AchievementConcurrencyTests mewarisi TransactionTestCase dan menyesuaikan kontrak framework melalui atribut/method class.
+# OOP — Hierarchical inheritance: TransactionTestCase juga menjadi induk class saudara lain di proyek.
 class AchievementConcurrencyTests(TransactionTestCase):
+    # OOP — Method overriding: framework pengujian memanggil hook setUp milik subclass untuk menyiapkan/membersihkan fixture.
     def setUp(self):
         self.owner, self.other, self.participant, self.admin = setup_users()
         self.event, self.registration = completed_registration(
@@ -25,6 +28,7 @@ class AchievementConcurrencyTests(TransactionTestCase):
         )
         Achievement.objects.create(code="one", name="One", required_count=1)
 
+    # OOP — Encapsulation: method race mengelompokkan operasi terkait objek AchievementConcurrencyTests.
     def race(self, operations):
         barrier = Barrier(len(operations))
 
@@ -39,6 +43,7 @@ class AchievementConcurrencyTests(TransactionTestCase):
             finally:
                 connections.close_all()
 
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with ThreadPoolExecutor(max_workers=len(operations)) as pool:
             futures = [pool.submit(worker, operation) for operation in operations]
             return [future.result(timeout=20) for future in futures]
@@ -68,6 +73,7 @@ class AchievementConcurrencyTests(TransactionTestCase):
             }),
         ])
         self.assertEqual(results[0], "ok")
+        # OOP — Context-manager protocol: with memakai __enter__/__exit__ objek untuk mengelola konteks dan cleanup, termasuk saat terjadi exception.
         with self.assertRaises(ValidationError):
             RewardPolicyService(self.owner).update(event.pk, data={
                 "accept_achievement_discount": False, "max_discount_percentage": 0,

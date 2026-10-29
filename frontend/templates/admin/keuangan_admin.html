@@ -11,5 +11,23 @@
   <article class="card kpi"><p class="kpi__label">Siap Dicairkan</p><p class="kpi__value" id="fAvail">0</p><p class="kpi__delta kpi__delta--muted">Dari event yang sudah selesai</p></article>
 </section>
 <article class="card chart-card chart-card--bar" style="margin-top:24px"><h2 class="sec-title">Pendapatan platform per bulan</h2><div class="chart-card__plot" id="finChart"></div></article>
+<article class="card" style="margin-top:24px">
+  <h2 class="sec-title">Verifikasi pembayaran</h2>
+  <ul class="ticket-list" id="paymentReviewList">
+    {% for payment in pending_payments %}
+    <li><details class="ticket">
+      <summary><div><span class="ticket__title">{{ payment.registration.event.title }}</span><span class="ticket__meta">{{ payment.registration.participant.get_full_name|default:payment.registration.participant.email }} · Rp {{ payment.amount }} · {{ payment.submitted_at|date:"d M Y H:i" }}</span></div><span class="chip chip--diaudit">Menunggu verifikasi</span></summary>
+      <div class="ticket__body">
+        <p>{{ payment.registration.participant.email }}</p>
+        {% if payment.proof %}<a class="btn btn--ghost" href="{% url 'registrations:payment-proof-download' payment.pk %}" target="_blank" rel="noopener">Lihat bukti pembayaran</a>{% endif %}
+        <div class="ticket__actions">
+          <button type="button" class="btn" data-review-payment="{% url 'registrations:payment-review' payment.pk %}" data-decision="approve">Setujui</button>
+          <button type="button" class="btn btn--ghost" data-review-payment="{% url 'registrations:payment-review' payment.pk %}" data-decision="reject">Tolak</button>
+        </div>
+      </div>
+    </details></li>
+    {% empty %}<li><p class="tbl-empty">Tidak ada bukti pembayaran yang menunggu verifikasi.</p></li>{% endfor %}
+  </ul>
+</article>
 <article class="card adm-table" style="margin-top:24px"><div class="table-wrap"><table class="tbl"><thead><tr><th>Penyelenggara</th><th class="num">Penjualan</th><th class="num">Biaya platform</th><th class="num">Bersih</th><th class="num">Siap cair</th><th>Status</th><th></th></tr></thead><tbody id="finBody"></tbody><tfoot></tfoot></table></div></article>
 {% endblock %}

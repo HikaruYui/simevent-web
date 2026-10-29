@@ -1,92 +1,184 @@
+
 {% extends "ketua_panitia/base_ketua_panitia.html" %}
 {% block title %}Event{% endblock %}
 {% block page_key %}event{% endblock %}
 {% block nav_event %} class="is-active" aria-current="page"{% endblock %}
 {% block fab %}{% endblock %}
+
 {% block content %}
-<!-- Header dengan Jarak Bawah yang Lebih Longgar -->
-<header class="eo-head" style="margin-bottom: 24px !important;">
+
+<!-- HEADER -->
+<header class="eo-head" style="margin-bottom:24px !important;">
   <h1>Kelola Event</h1>
 </header>
 
-<!-- 1. Toolbar (Di Luar Card Putih) -->
-<div class="event-toolbar-outer" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; width: 100%;">
-  <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
-    <!-- Filter Tabs -->
+<!-- TOOLBAR -->
+<div class="event-toolbar-outer"
+     style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;width:100%;">
+
+  <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+
     <div
       class="tabs"
       id="evTabs"
       role="group"
       aria-label="Filter status"
-      style="flex-shrink: 0;"
-    ></div>
+      style="flex-shrink:0;">
+    </div>
 
-    <!-- Input Cari Event (Warna Putih Bersih) -->
-    <label class="search" style="margin: 0 !important; flex: 1 !important; width: 100% !important; max-width: none !important; display: flex !important; align-items: center !important; background-color: #ffffff !important; border-radius: 9999px; padding: 0 16px;">
-      <svg class="icon" aria-hidden="true" style="flex-shrink: 0;">
-        <use href="#i-search"/>
+    <label class="search"
+           style="margin:0 !important;flex:1 !important;width:100%;max-width:none !important;display:flex;align-items:center;background:#fff !important;border-radius:9999px;padding:0 16px;">
+
+      <svg class="icon" aria-hidden="true" style="flex-shrink:0;">
+        <use href="#i-search"></use>
       </svg>
+
       <span class="sr-only">Cari event</span>
+
       <input
         id="evSearch"
         type="search"
         placeholder="Cari event..."
-        style="width: 100% !important; flex: 1 !important; max-width: none !important; background-color: #ffffff !important; background: #ffffff !important;"
-      >
+        style="width:100% !important;flex:1 !important;max-width:none !important;background:#fff !important;">
     </label>
   </div>
 
-  <div style="flex-shrink: 0;">
-    <!-- Tombol Tambah Event -->
-    <button type="button" class="btn" data-open-new-event style="white-space: nowrap;">
+  <div style="flex-shrink:0;">
+    <button
+      type="button"
+      class="btn"
+      data-open-new-event
+      style="white-space:nowrap;">
       Event baru
     </button>
   </div>
 </div>
 
-<!-- 2. Card Putih Utama untuk Tabel -->
-<div class="card" style="background-color: #ffffff !important; padding: 0 !important; border-radius: 16px; overflow: hidden;">
+<!-- TABEL EVENT -->
+<div class="card"
+     style="background:#fff !important;padding:0 !important;border-radius:16px;overflow:hidden;">
+
   <style>
-    /* Styling Header Tabel: Full Kiri-Kanan & Semua Rata Tengah */
     .table-wrap.card-inner .tbl thead th {
-      background-color: var(--olive, #2b3022) !important;
-      color: #ffffff !important;
-      font-weight: 700 !important;
-      font-size: 13px !important;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      padding: 16px 12px !important;
-      text-align: center !important;
-      border: none !important;
+      background-color:var(--olive,#2b3022) !important;
+      color:#fff !important;
+      font-weight:700 !important;
+      font-size:13px !important;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      padding:16px 12px !important;
+      text-align:center !important;
+      border:none !important;
+    }
+    #detailBody[hidden],
+    #detailProposal[hidden],
+    #eventCommitteeSection[hidden],
+    #eoEditForm[hidden] {
+      display: none !important;
     }
 
-    /* Isi Sel Tabel Rata Tengah */
+    #detailScrollArea {
+      padding-bottom: 28px !important;
+    }
+
     .table-wrap.card-inner .tbl tbody td {
-      background-color: #ffffff !important;
-      text-align: center !important;
-      vertical-align: middle !important;
-      padding: 16px 12px !important;
-      border-bottom: 1px solid #f1f5f9 !important;
+      background:#fff !important;
+      text-align:center !important;
+      vertical-align:middle !important;
+      padding:16px 12px !important;
+      border-bottom:1px solid #f1f5f9 !important;
     }
 
-    /* Khusus Teks Nama Event di Kolom Pertama Dibuat Tetap Rata Kiri Biar Enak Dibaca */
     .table-wrap.card-inner .tbl tbody td:first-child {
-      text-align: left !important;
-      padding-left: 20px !important;
+      text-align:left !important;
+      padding-left:20px !important;
     }
 
-    /* Matikan Hover & Zebra Striping */
     .table-wrap.card-inner .tbl tr:nth-child(even),
     .table-wrap.card-inner .tbl tr:nth-child(odd),
     .table-wrap.card-inner .tbl tr:hover {
-      background-color: #ffffff !important;
-      background: #ffffff !important;
+      background:#fff !important;
+    }
+
+    /* KHUSUS POPUP DETAIL EVENT */
+    #detailDlg {
+      padding:0;
+      overflow:hidden;
+      max-height:calc(100dvh - 28px);
+      flex-direction:column;
+    }
+
+    #detailDlg[open] {
+      display:flex;
+    }
+
+    #detailDlg > .dlg__head {
+      flex:0 0 auto;
+    }
+
+    #detailDlg > .dlg__body {
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      overscroll-behavior:contain;
+    }
+
+    /* FORM EDIT TETAP DI DALAM AREA SCROLL */
+    #eoEditForm[hidden],
+    #eventCommitteeSection[hidden] {
+      display:none !important;
+    }
+
+    /* FOOTER TETAP DI BAWAH POPUP */
+    #detailDlg > .dlg__foot {
+      display:flex !important;
+      flex:0 0 auto;
+      flex-direction:row !important;
+      align-items:center !important;
+      justify-content:flex-end !important;
+      gap:12px !important;
+      padding:16px 24px !important;
+      margin:0 !important;
+      background:#fff !important;
+      border-top:1px solid #e5dfcf;
+    }
+
+    #detailDlg > .dlg__foot .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto !important;
+      width:auto !important;
+      min-width:100px;
+      padding:12px 22px !important;
+      border-radius:999px !important;
+      white-space:nowrap;
+      margin:0 !important;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    #eoEditButton[hidden],
+    #eoEditSave[hidden] {
+      display:none !important;
+    }
+
+    @media (max-width:480px) {
+      #detailDlg > .dlg__foot {
+        gap:8px !important;
+        padding:12px !important;
+      }
+
+      #detailDlg > .dlg__foot .btn {
+        min-width:0;
+        padding:10px 15px !important;
+        font-size:12px;
+      }
     }
   </style>
 
-  <!-- Tabel Event -->
-  <div class="table-wrap card-inner" style="margin: 0; padding: 0;">
-    <table class="tbl" style="width: 100%; margin: 0;">
+  <div class="table-wrap card-inner" style="margin:0;padding:0;">
+    <table class="tbl" style="width:100%;margin:0;">
       <thead>
         <tr>
           <th>Event</th>
@@ -102,17 +194,764 @@
   </div>
 </div>
 
-<dialog class="dlg dlg--wide" id="detailDlg" aria-labelledby="detailTitle">
+<!-- POPUP DETAIL EVENT -->
+<dialog
+  class="dlg dlg--wide"
+  id="detailDlg"
+  aria-labelledby="detailTitle">
+
+  <!-- HEADER POPUP -->
   <div class="dlg__head">
     <h2 id="detailTitle"></h2>
-    <button type="button" class="dlg__x" data-close aria-label="Tutup">&times;</button>
+
+    <button
+      type="button"
+      class="dlg__x"
+      data-close
+      aria-label="Tutup">
+      &times;
+    </button>
   </div>
-  <div class="dlg__body">
+
+  <!-- BODY POPUP: BAGIAN YANG BISA DISCROLL -->
+  <div class="dlg__body" id="detailScrollArea">
+
+    <!-- DATA DETAIL ASLI -->
     <dl class="detail-grid" id="detailBody"></dl>
-    <section id="detailProposal" aria-label="Proposal event"></section>
+
+    <!-- PROPOSAL -->
+    <section
+      id="detailProposal"
+      aria-label="Proposal event">
+    </section>
+
+    <!-- KELOLA PANITIA -->
+    <section
+      id="eventCommitteeSection"
+      style="margin-top:24px;padding-top:20px;border-top:1px solid #e5dfcf;"
+      hidden>
+
+      <h3 style="margin-bottom:8px;">
+        Kelola Panitia Biasa
+      </h3>
+
+      <p style="margin-bottom:16px;">
+        Tugaskan akun Panitia Biasa yang sudah terdaftar ke event ini.
+      </p>
+
+      <form id="assignCommitteeForm">
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="committeeEmail">
+            Email Panitia Biasa
+          </label>
+
+          <input
+            type="email"
+            id="committeeEmail"
+            name="email"
+            placeholder="contoh@gmail.com"
+            required>
+        </div>
+
+        <button
+          type="submit"
+          class="btn"
+          id="assignCommitteeBtn">
+          + Tugaskan Panitia
+        </button>
+      </form>
+
+      <h4 style="margin-top:24px;margin-bottom:12px;">
+        Panitia yang Ditugaskan
+      </h4>
+
+      <p id="committeeMessage" role="status"></p>
+
+      <div id="assignedCommitteeList"></div>
+
+    </section>
+
+    <!-- FORM EDIT EVENT -->
+    <form
+      id="eoEditForm"
+      enctype="multipart/form-data"
+      style="margin-top:24px;padding-top:20px;border-top:1px solid #e5dfcf;"
+      hidden>
+
+      {% csrf_token %}
+
+      <input
+        type="hidden"
+        id="editAccessInstructions"
+        name="access_instructions">
+
+      <h3 style="margin-bottom:16px;">
+        Edit Event
+      </h3>
+
+      <div class="field">
+        <label for="editTitle">Nama Event</label>
+        <input
+          id="editTitle"
+          name="title"
+          maxlength="200"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editDescription">Deskripsi Event</label>
+        <textarea
+          id="editDescription"
+          name="description"
+          rows="4"
+          maxlength="20000"
+          required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="editType">Jenis Event</label>
+
+        <select
+          id="editType"
+          name="event_type"
+          required>
+
+          {% for jenis in event_types %}
+            <option value="{{ jenis.pk }}">
+              {{ jenis.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="editMode">Mode Pelaksanaan</label>
+
+        <select
+          id="editMode"
+          name="delivery_mode"
+          required>
+          <option value="OFFLINE">Offline</option>
+          <option value="ONLINE">Online</option>
+          <option value="HYBRID">Hybrid</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="editStart">Tanggal & Jam Mulai</label>
+        <input
+          id="editStart"
+          type="datetime-local"
+          name="start_datetime"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editEnd">Tanggal & Jam Selesai</label>
+        <input
+          id="editEnd"
+          type="datetime-local"
+          name="end_datetime"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editVenue">Lokasi</label>
+        <input
+          id="editVenue"
+          name="venue"
+          maxlength="500">
+      </div>
+
+      <div class="field">
+        <label for="editMeeting">
+          Link Meeting (jika online/hybrid)
+        </label>
+
+        <input
+          id="editMeeting"
+          type="url"
+          name="meeting_url"
+          placeholder="https://...">
+      </div>
+
+      <div class="field">
+        <label for="editCapacity">Kuota Peserta</label>
+        <input
+          id="editCapacity"
+          type="number"
+          name="capacity"
+          min="1"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editPrice">Harga Tiket (Rp)</label>
+        <input
+          id="editPrice"
+          type="number"
+          name="price"
+          min="0"
+          step="0.01"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editRegOpen">Pendaftaran Dibuka</label>
+        <input
+          id="editRegOpen"
+          type="datetime-local"
+          name="registration_open"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editRegClose">Pendaftaran Ditutup</label>
+        <input
+          id="editRegClose"
+          type="datetime-local"
+          name="registration_close"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="editBanner">Ganti Cover (opsional)</label>
+        <input
+          id="editBanner"
+          type="file"
+          name="banner"
+          accept="image/jpeg,image/png,image/webp">
+      </div>
+
+      <div class="field">
+        <label for="editProposal">Ganti Proposal (opsional)</label>
+        <input
+          id="editProposal"
+          type="file"
+          name="proposal"
+          accept=".pdf,application/pdf">
+      </div>
+
+      <p style="margin:12px 0;color:#6b6657;font-size:13px;">
+        Cover dan proposal lama tetap digunakan jika tidak memilih file baru.
+      </p>
+
+      <p
+        id="eoEditError"
+        role="alert"
+        style="color:#b91c1c;margin:12px 0;">
+      </p>
+
+    </form>
+
   </div>
+
+  <!-- FOOTER POPUP: HANYA TOMBOL, TIDAK IKUT SCROLL -->
   <div class="dlg__foot">
-    <button type="button" class="btn" data-close>Tutup</button>
+
+    <button
+      type="button"
+      id="eoEditButton"
+      class="btn btn--ghost"
+      hidden>
+      Edit Event
+    </button>
+
+    <button
+      type="submit"
+      id="eoEditSave"
+      form="eoEditForm"
+      class="btn"
+      hidden>
+      Simpan Perubahan
+    </button>
+
+    <button
+      type="button"
+      class="btn"
+      data-close>
+      Tutup
+    </button>
+
   </div>
+
 </dialog>
+
+<!-- SCRIPT KELOLA PANITIA -->
+<script>
+(function () {
+  const section = document.getElementById("eventCommitteeSection");
+  const form = document.getElementById("assignCommitteeForm");
+  const list = document.getElementById("assignedCommitteeList");
+  const message = document.getElementById("committeeMessage");
+  const submitButton = document.getElementById("assignCommitteeBtn");
+
+  let activeEventId = null;
+
+  const csrfToken = form.querySelector(
+    '[name="csrfmiddlewaretoken"]'
+  ).value;
+
+  function endpoint(eventId) {
+    return `/ketua-panitia/api/events/${eventId}/committee/`;
+  }
+
+  function showMessage(text) {
+    message.textContent = text;
+  }
+
+  async function requestCommittee(eventId, data = null) {
+    const options = {
+      credentials: "same-origin",
+      headers: {
+        "X-CSRFToken": csrfToken
+      }
+    };
+
+    if (data) {
+      options.method = "POST";
+      options.body = data;
+    }
+
+    const response = await fetch(endpoint(eventId), options);
+    const type = response.headers.get("content-type") || "";
+
+    if (!type.includes("application/json")) {
+      throw new Error(
+        "Server tidak mengirim JSON. Periksa sesi login."
+      );
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "Permintaan gagal."
+      );
+    }
+
+    return result;
+  }
+
+  function renderMembers(members) {
+    list.replaceChildren();
+
+    if (!members.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "Belum ada panitia yang ditugaskan.";
+      list.appendChild(empty);
+      return;
+    }
+
+    members.forEach(function (member) {
+      const row = document.createElement("div");
+
+      row.style.cssText =
+        "display:flex;justify-content:space-between;" +
+        "align-items:center;gap:12px;padding:12px 0;" +
+        "border-bottom:1px solid #e5dfcf;";
+
+      const info = document.createElement("div");
+
+      const name = document.createElement("strong");
+      name.textContent = member.name;
+
+      const email = document.createElement("small");
+      email.textContent = member.email;
+      email.style.display = "block";
+
+      info.append(name, email);
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn btn--ghost";
+      removeButton.textContent = "Cabut Akses";
+      removeButton.dataset.memberId = member.id;
+
+      row.append(info, removeButton);
+      list.appendChild(row);
+    });
+  }
+
+  async function loadMembers(eventId) {
+    activeEventId = eventId;
+    section.hidden = false;
+
+    showMessage("Memuat daftar panitia...");
+    list.replaceChildren();
+
+    try {
+      const result = await requestCommittee(eventId);
+
+      if (activeEventId !== eventId) return;
+
+      renderMembers(result.members);
+      showMessage("");
+    } catch (error) {
+      showMessage(error.message);
+    }
+  }
+
+  document.addEventListener("click", function (event) {
+    const button = event.target.closest("#evBody [data-detail]");
+    if (!button) return;
+
+    if (!window.EO_EVENTS_FROM_BACKEND) return;
+
+    const eventId = Number(button.dataset.detail);
+
+    if (Number.isInteger(eventId) && eventId > 0) {
+      form.reset();
+      loadMembers(eventId);
+    }
+  });
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (!activeEventId || submitButton.disabled) return;
+
+    const eventId = activeEventId;
+    const data = new FormData(form);
+    data.set("action", "assign");
+
+    submitButton.disabled = true;
+    showMessage("Menyimpan penugasan...");
+
+    try {
+      const result = await requestCommittee(eventId, data);
+
+      if (activeEventId !== eventId) return;
+
+      renderMembers(result.members);
+      form.reset();
+      showMessage("Panitia berhasil ditugaskan!");
+    } catch (error) {
+      showMessage(error.message);
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
+  list.addEventListener("click", async function (event) {
+    const button = event.target.closest("[data-member-id]");
+
+    if (!button || button.disabled || !activeEventId) return;
+
+    if (!confirm("Cabut akses panitia ini dari event?")) {
+      return;
+    }
+
+    const eventId = activeEventId;
+    const data = new FormData();
+
+    data.set("action", "remove");
+    data.set("member_id", button.dataset.memberId);
+
+    button.disabled = true;
+
+    try {
+      const result = await requestCommittee(eventId, data);
+
+      if (activeEventId !== eventId) return;
+
+      renderMembers(result.members);
+      showMessage("Akses panitia berhasil dicabut.");
+    } catch (error) {
+      button.disabled = false;
+      showMessage(error.message);
+    }
+  });
+})();
+</script>
+
+<!-- SCRIPT EDIT EVENT -->
+<script>
+(function () {
+  const dialog = document.getElementById("detailDlg");
+  const editButton = document.getElementById("eoEditButton");
+  const form = document.getElementById("eoEditForm");
+  const saveButton = document.getElementById("eoEditSave");
+  const errorBox = document.getElementById("eoEditError");
+  const scrollArea = document.getElementById("detailScrollArea");
+
+  let selectedEventId = null;
+
+  function setField(name, value) {
+    const field = form.elements.namedItem(name);
+
+    if (field) {
+      field.value = value ?? "";
+    }
+  }
+
+  function localDatetime(iso) {
+    const date = new Date(iso);
+
+    if (Number.isNaN(date.getTime())) {
+      throw new Error("Format tanggal event tidak valid.");
+    }
+
+    const local = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    );
+
+    return local.toISOString().slice(0, 16);
+  }
+
+  function describeError(result, status) {
+    if (result && result.errors) {
+      return Object.entries(result.errors)
+        .map(([field, messages]) => {
+          const text = Array.isArray(messages)
+            ? messages.join(", ")
+            : String(messages);
+
+          return `${field}: ${text}`;
+        })
+        .join(" | ");
+    }
+
+    return (
+      result && (result.error || result.detail)
+    ) || `Permintaan gagal (HTTP ${status}).`;
+  }
+
+  // Kembalikan tampilan popup ke mode Detail.
+  
+  function resetEditMode() {
+    form.hidden = true;
+    form.reset();
+    errorBox.textContent = "";
+
+    document.getElementById("detailBody").hidden = false;
+    document.getElementById("detailProposal").hidden = false;
+    document.getElementById("eventCommitteeSection").hidden = false;
+
+    saveButton.hidden = true;
+    editButton.hidden = true;
+  }
+
+
+  // Buka Detail Event.
+  document.addEventListener("click", function (event) {
+    const button = event.target.closest("#evBody [data-detail]");
+
+    if (!button) return;
+
+    selectedEventId = Number(button.dataset.detail);
+
+    resetEditMode();
+
+    const eventData = (window.EO?.events || []).find(
+      item => Number(item.id) === selectedEventId
+    );
+
+    const editable = Boolean(
+      window.EO_EVENTS_FROM_BACKEND &&
+      eventData &&
+      ["draft", "revisi", "DRAFT", "NEEDS_REVISION"]
+        .includes(eventData.status)
+    );
+
+    // Saat Detail: Edit Event + Tutup.
+    editButton.hidden = !editable;
+    saveButton.hidden = true;
+
+    if (scrollArea) {
+      scrollArea.scrollTop = 0;
+    }
+  });
+
+  // Klik tombol Edit Event.
+  editButton.addEventListener("click", async function () {
+    if (!selectedEventId || editButton.disabled) return;
+
+    const eventId = selectedEventId;
+
+    editButton.disabled = true;
+
+    try {
+      const response = await fetch(
+        `/events/manage/${eventId}/`,
+        {
+          credentials: "same-origin",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      const type = response.headers.get("content-type") || "";
+
+      if (!type.includes("application/json")) {
+        throw new Error(
+          "Server tidak mengirim data event JSON."
+        );
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          describeError(data, response.status)
+        );
+      }
+
+      if (!["DRAFT", "NEEDS_REVISION"].includes(data.status)) {
+        throw new Error(
+          "Event ini tidak dapat diedit karena statusnya sudah berubah."
+        );
+      }
+
+      if (selectedEventId !== eventId) return;
+
+      form.reset();
+      errorBox.textContent = "";
+
+      setField("title", data.title);
+      setField("description", data.description);
+      setField("event_type", data.event_type_id);
+      setField("delivery_mode", data.delivery_mode);
+
+      setField(
+        "start_datetime",
+        localDatetime(data.start_datetime)
+      );
+
+      setField(
+        "end_datetime",
+        localDatetime(data.end_datetime)
+      );
+
+      setField(
+        "registration_open",
+        localDatetime(data.registration_open)
+      );
+
+      setField(
+        "registration_close",
+        localDatetime(data.registration_close)
+      );
+
+      setField("venue", data.venue);
+      setField("meeting_url", data.meeting_url);
+      setField(
+        "access_instructions",
+        data.access_instructions
+      );
+      setField("capacity", data.capacity);
+      setField("price", data.price);
+
+      // AKTIFKAN MODE EDIT.
+      
+      // Sembunyikan tampilan Detail saat mengedit.
+      document.getElementById("detailBody").hidden = true;
+      document.getElementById("detailProposal").hidden = true;
+      document.getElementById("eventCommitteeSection").hidden = true;
+
+      // Tampilkan HANYA form Edit.
+      form.hidden = false;
+      editButton.hidden = true;
+      saveButton.hidden = false;
+
+      // Mulai scroll dari bagian atas form.
+      scrollArea.scrollTop = 0;
+
+
+      // INI PERBAIKAN UTAMANYA:
+      // Tombol Edit benar-benar hilang,
+      // digantikan tombol Simpan Perubahan.
+      editButton.hidden = true;
+      saveButton.hidden = false;
+
+      // Scroll hanya isi popup, bukan seluruh dialog.
+      if (scrollArea) {
+        scrollArea.scrollTop = form.offsetTop;
+      }
+
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      editButton.disabled = false;
+    }
+  });
+
+  // Simpan perubahan ke PostgreSQL.
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (!selectedEventId || saveButton.disabled) return;
+
+    errorBox.textContent = "";
+
+    const eventId = selectedEventId;
+    const payload = new FormData(form);
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Menyimpan...";
+
+    try {
+      const response = await fetch(
+        `/events/manage/${eventId}/`,
+        {
+          method: "POST",
+          credentials: "same-origin",
+          body: payload,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      const type = response.headers.get("content-type") || "";
+
+      const result = type.includes("application/json")
+        ? await response.json()
+        : null;
+
+      if (response.redirected || !result) {
+        throw new Error(
+          "Sesi login berakhir atau server tidak mengirim JSON."
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          describeError(result, response.status)
+        );
+      }
+
+      window.alert(
+        `Event "${result.title}" berhasil diperbarui!`
+      );
+
+      window.location.reload();
+
+    } catch (error) {
+      errorBox.textContent = error.message;
+
+      if (scrollArea) {
+        scrollArea.scrollTop = form.offsetTop;
+      }
+
+      console.error("Edit Event gagal:", error);
+
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = "Simpan Perubahan";
+    }
+  });
+
+  // Saat popup ditutup, bersihkan mode Edit.
+  dialog.addEventListener("close", function () {
+    selectedEventId = null;
+    resetEditMode();
+  });
+})();
+</script>
+
 {% endblock %}

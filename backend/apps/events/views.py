@@ -37,6 +37,7 @@ def event_data(event):
 
 
 # Inheritance: EventListView mewarisi alur daftar objek dan pagination Django.
+# OOP — Method decorator: mengadaptasi decorator fungsi ke method class yang disebutkan, tanpa mengganti pewarisan.
 @method_decorator(never_cache, name="dispatch")
 class EventListView(ListView):
     model = Event
@@ -57,6 +58,7 @@ class EventListView(ListView):
 
 
 # Inheritance: EventDetailView mewarisi alur pengambilan detail objek Django.
+# OOP — Method decorator: mengadaptasi decorator fungsi ke method class yang disebutkan, tanpa mengganti pewarisan.
 @method_decorator(never_cache, name="dispatch")
 class EventDetailView(DetailView):
     model = Event
@@ -72,6 +74,8 @@ class EventDetailView(DetailView):
 
 
 # OOP mixin: mengemas aturan akses untuk dipakai ulang melalui pewarisan ganda.
+# OOP — Hierarchical inheritance: class ini menjadi induk bersama bagi EventDeleteView, EventDocumentationView, EventRewardPolicyView, EventTransitionView, ManagedEventDetailView, ManagedEventListView, StatisticsAccessMixin.
+# OOP — Method decorator: mengadaptasi decorator fungsi ke method class yang disebutkan, tanpa mengganti pewarisan.
 @method_decorator(never_cache, name="dispatch")
 class EventManagementMixin:
     # Polymorphism: menambahkan pemeriksaan akses sebelum meneruskan request ke handler.
@@ -80,6 +84,7 @@ class EventManagementMixin:
             return JsonResponse({"error": "Authentication required."}, status=401)
         require_organizer(request.user)
         try:
+            # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
             return super().dispatch(request, *args, **kwargs)
         except ValidationError as exc:
             errors = exc.message_dict if hasattr(exc, "message_dict") else {"__all__": exc.messages}
@@ -91,6 +96,8 @@ class EventManagementMixin:
 
 
 # Inheritance (pewarisan ganda): ManagedEventListView menggabungkan perilaku EventManagementMixin, EventListView.
+# OOP — Multiple inheritance: EventManagementMixin, EventListView digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): ListView → EventListView → ManagedEventListView.
 class ManagedEventListView(EventManagementMixin, EventListView):
     http_method_names = ["get", "post", "head", "options"]
 
@@ -101,6 +108,7 @@ class ManagedEventListView(EventManagementMixin, EventListView):
 
 
 # Inheritance (pewarisan ganda): EventDocumentationView menggabungkan perilaku EventManagementMixin, View.
+# OOP — Multiple inheritance: EventManagementMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class EventDocumentationView(EventManagementMixin, View):
     """Panitia/ketua menyimpan tautan dokumentasi; peserta tidak punya akses ke endpoint ini."""
     http_method_names = ["post", "options"]
@@ -118,17 +126,21 @@ class EventDocumentationView(EventManagementMixin, View):
 
 
 # Inheritance (pewarisan ganda): ManagedEventDetailView menggabungkan perilaku EventManagementMixin, EventDetailView.
+# OOP — Multiple inheritance: EventManagementMixin, EventDetailView digabung; pencarian method mengikuti MRO C3 Python.
+# OOP — Hybrid inheritance (multiple + multilevel): DetailView → EventDetailView → ManagedEventDetailView.
 class ManagedEventDetailView(EventManagementMixin, EventDetailView):
     http_method_names = ["get", "post", "head", "options"]
 
     # Polymorphism: menyesuaikan kumpulan data yang digunakan oleh alur bawaan Django.
     def get_queryset(self):
+        # OOP — Cooperative inheritance: super() meneruskan pemanggilan ke implementasi berikutnya dalam MRO, bukan selalu induk pertama.
         return super().get_queryset().select_related("private_access")
 
     # Polymorphism: mengganti respons bawaan generic view dengan respons aplikasi.
     def render_to_response(self, context, **response_kwargs):
         event = context["object"]
         data = event_data(event)
+        data["event_type_id"] = event.event_type_id
         access = getattr(event, "private_access", None)
         data["meeting_url"] = access.meeting_url if access else ""
         data["access_instructions"] = access.instructions if access else ""
@@ -144,6 +156,7 @@ class ManagedEventDetailView(EventManagementMixin, EventDetailView):
 
 
 # Inheritance (pewarisan ganda): EventTransitionView menggabungkan perilaku EventManagementMixin, View.
+# OOP — Multiple inheritance: EventManagementMixin, View digabung; pencarian method mengikuti MRO C3 Python.
 class EventTransitionView(EventManagementMixin, View):
     http_method_names = ["post", "options"]
 
@@ -157,6 +170,7 @@ class EventTransitionView(EventManagementMixin, View):
 
 
 # Inheritance (pewarisan ganda): EventDeleteView menggabungkan perilaku EventManagementMixin, DetailView.
+# OOP — Multiple inheritance: EventManagementMixin, DetailView digabung; pencarian method mengikuti MRO C3 Python.
 class EventDeleteView(EventManagementMixin, DetailView):
     model = Event
     http_method_names = ["post", "options"]
@@ -172,8 +186,11 @@ class EventDeleteView(EventManagementMixin, DetailView):
 
     
 
+# OOP — Decorator Python (never_cache): membungkus view agar respons tidak disimpan cache browser/proxy; tidak menambah pewarisan class.
 @never_cache
+# OOP — Decorator Python (require_GET): membatasi pemanggilan view ke HTTP GET; tidak menambah pewarisan class.
 @require_GET
+# OOP — Decorator Python (login_required): memeriksa autentikasi sebelum menjalankan view; tidak menambah pewarisan class.
 @login_required(login_url="login_page")
 def download_event_proposal(request, pk):
     # Admin dapat melihat semua event.
