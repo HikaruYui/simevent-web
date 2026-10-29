@@ -62,6 +62,7 @@
       </nav>
     </header>
     <main class="jj">
+      <form id="jelajah-csrf" hidden>{% csrf_token %}</form>
       <div class="jj__crumb">
         <a href="{% url 'landing' %}">
           Beranda
@@ -218,7 +219,7 @@
       status.append(document.createTextNode(` ${statusNames[event.status] || 'Status tidak diketahui'}`));
       const titleLink = card.querySelector('.event-card__link');
       titleLink.textContent = event.title;
-      titleLink.href = `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
+      titleLink.href = event.detailUrl;
       const meta = card.querySelectorAll('.event-card__meta li');
       meta[0].append(document.createTextNode(` ${event.venue || 'Online'}`));
       meta[1].append(document.createTextNode(` ${event.organizer}`));
@@ -229,20 +230,51 @@
       const alreadyRegistered = Boolean(event.isRegistered);
       if (alreadyRegistered && isLoggedIn) {
         registerBtn.innerHTML = `Terdaftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`;
+        registerBtn.href = "{% url 'peserta_dashboard' %}#myEventsSection";
+      } else if (!event.registrationOpen) {
+        registerBtn.textContent = 'Pendaftaran tutup';
+        registerBtn.removeAttribute('href');
+        registerBtn.setAttribute('aria-disabled', 'true');
+      } else if (!isLoggedIn) {
+        registerBtn.href = `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`;
+      } else if (event.amount > 0) {
+        registerBtn.textContent = 'Berbayar · Lihat Detail';
+        registerBtn.href = event.detailUrl;
+      } else {
+        registerBtn.href = '#';
+        registerBtn.addEventListener('click', async (clickEvent) => {
+          clickEvent.preventDefault();
+          if (registerBtn.dataset.submitting === 'true') return;
+          registerBtn.dataset.submitting = 'true';
+          registerBtn.setAttribute('aria-busy', 'true');
+          registerBtn.textContent = 'Mendaftar...';
+          try {
+            const csrfToken = document.querySelector('#jelajah-csrf [name="csrfmiddlewaretoken"]').value;
+            const response = await fetch(event.registrationUrl, {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams({ confirm: 'on' }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              const messages = Object.values(result.errors || {}).flat()
+                .map((item) => typeof item === 'string' ? item : item.message)
+                .filter(Boolean);
+              throw new Error(messages.join(' ') || result.error || 'Pendaftaran event gagal.');
+            }
+            window.location.href = "{% url 'peserta_dashboard' %}#myEventsSection";
+          } catch (error) {
+            window.alert(error.message);
+            registerBtn.dataset.submitting = 'false';
+            registerBtn.removeAttribute('aria-busy');
+            registerBtn.textContent = 'Daftar';
+          }
+        });
       }
-      registerBtn.href = !isLoggedIn
-        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
-        : `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
-
-      if (alreadyRegistered && isLoggedIn) {
-        registerBtn.innerHTML = `Terdaftar <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>`;
-      }
-
-      registerBtn.href = !isLoggedIn
-        ? `{% url 'login_page' %}?event=${encodeURIComponent(event.slug)}`
-        : alreadyRegistered
-          ? "{% url 'peserta_dashboard' %}"
-          : `{% url 'peserta_daftar_event' %}?event=${encodeURIComponent(event.slug)}`;
       return card;
     }
 

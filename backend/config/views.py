@@ -220,6 +220,8 @@ def jelajah(request):
                 "id": event.pk,
                 "isRegistered": event.pk in registered_event_ids,
                 "slug": event.slug,
+                "detailUrl": reverse("detail_event", args=[event.slug]),
+                "registrationUrl": reverse("registrations:create", args=[event.pk]),
 
                 "category": event.event_type.code.lower(),
                 "categoryName": event.event_type.name,
@@ -603,15 +605,21 @@ def peserta_daftar_event(request):
         .select_related("event_type", "organizer")
         .order_by("start_datetime", "pk")
     )
-    registered_ids = set(
+    participant_registrations = (
         Registration.objects.owned_by(request.user)
         .filter(status=RegistrationStatus.REGISTERED)
-        .values_list("event_id", flat=True)
+        .select_related("payment")
     )
+    registrations_by_event = {
+        registration.event_id: registration
+        for registration in participant_registrations
+    }
     documentation_ids = _documentation_event_ids(request.user)
     for event in events:
-        event.is_registered = event.pk in registered_ids
+        registration = registrations_by_event.get(event.pk)
+        event.is_registered = registration is not None
         event.documentation_ready = event.pk in documentation_ids
+        _attach_payment_details(event, registration)
         event.is_registration_open = (
             event.status == EventStatus.PUBLISHED
             and event.registration_open <= now < event.registration_close
@@ -635,10 +643,33 @@ def peserta_daftar_event(request):
     })
 
 
+def _attach_payment_details(event, registration):
+    event.payment_status_code = ""
+    event.payment_status_display = ""
+    event.payment_proof_url = ""
+    event.payment_upload_url = ""
+    event.payment_review_note = ""
+    if not registration or event.price <= 0:
+        return
+
+    payment = getattr(registration, "payment", None)
+    if not payment:
+        return
+
+    event.payment_status_code = payment.status
+    event.payment_status_display = payment.get_status_display()
+    event.payment_review_note = payment.review_note
+    event.payment_upload_url = reverse("registrations:payment", args=[registration.pk])
+    if payment.proof:
+        event.payment_proof_url = reverse(
+            "registrations:payment-proof-download", args=[payment.pk],
+        )
+
+
 @never_cache
 @require_GET
 @login_required(login_url="login_page")
-def peserta_event_selesai(request):
+def peserta_event_saya(request):
     participant_redirect = _participant_redirect(request)
     if participant_redirect:
         return participant_redirect
@@ -646,16 +677,9 @@ def peserta_event_selesai(request):
     now = timezone.now()
     registrations = list(
         Registration.objects.owned_by(request.user)
-        .filter(
-            status=RegistrationStatus.REGISTERED,
-            attendance__status=Attendance.Status.PRESENT,
-        )
-        .filter(
-            Q(event__status=EventStatus.COMPLETED)
-            | Q(event__end_datetime__lte=now)
-        )
-        .select_related("event", "event__event_type", "event__organizer")
-        .order_by("-event__end_datetime", "-pk")
+        .filter(status=RegistrationStatus.REGISTERED)
+        .select_related("event", "event__event_type", "event__organizer", "payment")
+        .order_by("-registered_at", "-pk")
     )
     documentation_ids = _documentation_event_ids(request.user)
     events = []
@@ -663,8 +687,17 @@ def peserta_event_selesai(request):
         event = registration.event
         event.is_registered = True
         event.documentation_ready = event.pk in documentation_ids
-        event.is_registration_open = False
-        event.ui_status = "Selesai"
+        event.is_registration_open = (
+            event.status == EventStatus.PUBLISHED
+            and event.registration_open <= now < event.registration_close
+            and event.start_datetime > now
+        )
+        event.ui_status = (
+            "Selesai" if event.status == EventStatus.COMPLETED or event.end_datetime <= now
+            else "Sedang Berlangsung" if event.start_datetime <= now
+            else "Akan Datang"
+        )
+        _attach_payment_details(event, registration)
         events.append(event)
 
     categories = list(
@@ -677,7 +710,7 @@ def peserta_event_selesai(request):
         "events": events,
         "categories": categories,
         "now": now,
-        "completed_only": True,
+        "my_registrations": True,
     })
 
 

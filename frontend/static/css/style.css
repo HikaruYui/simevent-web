@@ -69,6 +69,7 @@ button, input { font: inherit; }
 }
 .btn--dark { background: var(--olive); color: var(--cream); }
 .btn--dark:hover { background: var(--olive-ink); }
+.event-card__foot .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; pointer-events: none; }
 .btn--outline { height: 46px; border-color: var(--orange); color: var(--olive); }
 .btn--outline:hover { background: var(--orange); color: #fff; }
 .btn--sm { height: 40px; padding: 0 18px; font-size: 14px; gap: 6px; }
